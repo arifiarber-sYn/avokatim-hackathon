@@ -1,0 +1,43 @@
+import uuid
+from datetime import datetime
+
+from pydantic import BaseModel
+
+
+class DocumentOut(BaseModel):
+    id: uuid.UUID
+    matter_id: uuid.UUID | None
+    family_id: uuid.UUID
+    version: int
+    is_latest: bool
+    filename: str
+    mime_type: str
+    size_bytes: int
+    category: str | None
+    ocr_status: str
+    has_text: bool = False
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class TemplateOut(BaseModel):
+    id: uuid.UUID
+    code: str
+    locale: str
+    name: dict
+    practice_area: str | None
+    variables: list
+
+    model_config = {"from_attributes": True}
+
+
+class RenderTemplateIn(BaseModel):
+    template_id: uuid.UUID
+    matter_id: uuid.UUID | None = None
+    variables: dict = {}
+
+
+class RenderTemplateOut(BaseModel):
+    content: str
+    filename: str

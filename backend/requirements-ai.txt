@@ -1,0 +1,6 @@
+# Optional: local embeddings for semantic search (RAG).
+# Without these, BoraLaw falls back to PostgreSQL full-text search.
+sentence-transformers>=3.3
+# Optional: OCR for scanned documents (also requires the tesseract binary
+# with language packs: tesseract-langpack-sqi, -eng, -chi_sim).
+pytesseract>=0.3.13

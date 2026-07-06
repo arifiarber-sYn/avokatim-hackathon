@@ -1,0 +1,36 @@
+# BoraLaw reverse proxy.
+#
+# Default: HTTPS on port 8443 with a locally-trusted certificate (Caddy's
+# internal CA) — works for LAN/WireGuard access via https://<ip-e-serverit>:8443
+#
+# When you get a public domain, replace the site block with:
+#   boralaw.example.com {
+#       reverse_proxy 127.0.0.1:3000
+#   }
+# and Caddy will obtain a real Let's Encrypt certificate automatically.
+
+{
+    auto_https disable_redirects
+}
+
+https://:8443 {
+    tls internal {
+        on_demand
+    }
+
+    # API goes straight to the backend; everything else to Next.js
+    handle /api/* {
+        reverse_proxy 127.0.0.1:8000
+    }
+    handle {
+        reverse_proxy 127.0.0.1:3000
+    }
+
+    # Security headers
+    header {
+        Strict-Transport-Security "max-age=31536000"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+}
