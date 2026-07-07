@@ -10,6 +10,17 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-07 — Dashboard competitor analysis (Cursor / Fable 5)
+
+- Done: web research comparing our dashboard vs Clio, Smokeball, MyCase +
+  2026 legal-KPI best practices (curate 5-7 KPIs; categories: financial/
+  production/capacity/marketing; trends over static numbers). Result canvas:
+  `~/.cursor/projects/home-kllosha-BoraLaw/canvases/dashboard-krahasimi.canvas.tsx`.
+- Findings: we already have real-time clickable KPI cards and a unique
+  differentiator (deadlines with procedural legal basis — nobody has that);
+  main gaps are today-agenda, trend charts, A/R aging, utilization/realization,
+  quick timer. Added as Dashboard P1/P2 items in ROADMAP Phase 2.
+
 ## 2026-07-07 — Sales pitch for Kosovo law firm (Cursor / Fable 5)
 
 - Done: a law firm in Kosovo contacted the owner after he posted about the

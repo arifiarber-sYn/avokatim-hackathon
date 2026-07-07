@@ -24,6 +24,13 @@ Everything in STATE.md "What exists and works".
 - [ ] Local LLM option in production: configure Ollama/vLLM endpoint, quality-test
       "Bora" against DeepSeek on Albanian legal questions.
 - [ ] Email/notification channel for approaching deadlines (currently UI-only).
+- [ ] Dashboard upgrade P1 (from 2026-07-07 competitor analysis vs Clio/Smokeball/MyCase):
+      "Today" agenda section (hearings/deadlines/tasks due today), A/R aging buckets
+      (0-30/31-60/61-90/90+ days), 6-month worked-hours + billed-revenue trend chart,
+      global quick timer in the header.
+- [ ] Dashboard upgrade P2: utilization & realization rates (needs billable-hours
+      target on user profile), intake conversion funnel with client source,
+      profitability by practice area.
 - [ ] Public domain + real TLS certificate (Caddy handles it automatically once a
       domain points here) instead of self-signed on :8443.
 
