@@ -43,7 +43,8 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - **Reminders**: background loop (hourly) notifies the responsible lawyer at
   each deadline's `remind_days_before` offsets; deduped via Redis. Two channels:
   **Web Push** (active — VAPID keys in `backend/.env`, per-device opt-in in
-  Settings → Device notifications) and email (needs SMTP_* in `backend/.env`).
+  Settings → Device notifications) and email (active — Gmail SMTP via App
+  Password in `backend/.env`, test delivery verified 2026-07-07).
 - **Payments**: marking an invoice paid records `paid_on` + optional
   `payment_reference` (bank transaction no.), shown on the invoice card.
 - **Dashboard**: workload, week's deadlines, finances. **/reports**: analytics
@@ -78,10 +79,9 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   automatically when any file in `frontend/src`/`public` is newer than
   `.next/BUILD_ID`, and kills the stale `next-server` before starting a fresh one
   (a stale server over a new build serves 404 chunks → blank pages).
-- SMTP not configured yet — the email channel of reminders is off (push channel
-  works). Set SMTP_HOST/PORT/USER/PASSWORD/FROM in `backend/.env` to enable email.
-  Waiting on owner to create a Gmail **App Password** (regular Gmail passwords
-  are rejected by Google SMTP; never store the owner's real password).
+- ~~SMTP not configured~~ done 2026-07-07: Gmail App Password in `backend/.env`
+  (SMTP_* vars, smtp.gmail.com:587 STARTTLS, from arifi.arber@gmail.com).
+  Test email sent and delivered — both reminder channels (email + push) active.
 - Host has no GPU tooling (`nvidia-smi` absent) and Ollama has no models/service —
   local-LLM option stays unconfigured; DeepSeek remains the provider. To try
   local: `ollama serve` + `ollama pull qwen3:8b` (CPU will be slow), then set

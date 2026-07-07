@@ -10,6 +10,19 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-07 — SMTP live via Gmail App Password (Cursor / Fable 5)
+
+- Done: owner supplied a Gmail App Password; SMTP_* set in `backend/.env`
+  (smtp.gmail.com:587, STARTTLS, user/from arifi.arber@gmail.com). Stack
+  restarted; reminder loop now has both channels (email + push).
+- Verified: real test email sent through `send_email` and delivered to the
+  owner's inbox; dashboard still 200 after restart.
+- Advised owner: no need to buy PositiveSSL from Namecheap — Caddy issues free
+  Let's Encrypt certificates automatically once a domain points at the server;
+  only the domain itself needs purchasing.
+- Left open / next: domain purchase (owner), backup key off-machine (owner),
+  real corpus, pilot firm.
+
 ## 2026-07-07 — Dashboard outage: stale next-server + full audit (Cursor / Fable 5)
 
 - Root cause: owner saw a broken dashboard because the running `next-server`
