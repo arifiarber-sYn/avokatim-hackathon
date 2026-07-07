@@ -38,6 +38,27 @@ Everything in STATE.md "What exists and works".
 - [ ] Assignment & internal workflow (who works the matter, review steps).
 - [ ] Firm-level reporting.
 
+## Competitive gaps (from 2026-07-07 full-app analysis vs Clio/Smokeball/MyCase)
+
+Priority before the law-firm pilot:
+- [ ] AI deadline extraction from court documents (upload ruling/summons →
+      Bora proposes deadlines via our rules engine with legal basis). Combines
+      Clio's flagship 2026 AI feature with our unique differentiator.
+- [ ] Calendar sync via ICS subscription feed (Google/Outlook/phone).
+
+Base competitiveness:
+- [ ] E-signature flow in client portal (simple draw/confirm + hash + audit
+      first; qualified eIDAS/Kosovo e-signature law later).
+- [ ] Client portal v2: secure two-way messaging + document sharing.
+- [ ] AI-drafted client status updates (button on the matter file).
+
+Long-term differentiation:
+- [ ] Kosovo template library built with the pilot firm (our answer to
+      Smokeball's 20k form library — nobody has this for XK).
+- [ ] Local payment tracking (payment reference + status; local processor later).
+- [ ] PWA (installable, push notifications for deadlines).
+- [ ] Public intake form link (feeds funnel with source=web).
+
 ## Phase 4 — More jurisdictions
 
 - [ ] GB seeds (deadline rules, holidays, templates, corpus).

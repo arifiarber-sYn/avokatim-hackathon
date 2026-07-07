@@ -10,6 +10,19 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-07 — Full-app competitor analysis (Cursor / Fable 5)
+
+- Done: researched full 2026 feature sets of Clio (Manage AI, Draft, Grow,
+  Accounting), Smokeball (Archie AI, AutoTime, 20k forms) and MyCase (IQ,
+  built-in e-sign/SMS). Compared 27 capabilities across 5 areas. Canvas:
+  `~/.cursor/projects/home-kllosha-BoraLaw/canvases/krahasimi-i-plote-aplikacionit.canvas.tsx`.
+- Scores: Clio 24/27, Smokeball 21.5/27, MyCase 20/27, BoraLaw 16.5/27.
+  Our structural advantages nobody matches: XK procedural rules as data,
+  RAG with article citations, self-hosting, local-LLM option, sq/en/zh UI.
+  Biggest gaps: multi-user roles, e-signature, calendar sync, AI deadline
+  extraction from court docs, online payments/messaging in portal.
+- Added "Competitive gaps" section to ROADMAP with pilot-blocking priorities.
+
 ## 2026-07-07 — Financial analytics P2 implemented (Cursor / Fable 5)
 
 - Done: migration `44cef654e97a` adds `users.billable_hours_target_monthly`
