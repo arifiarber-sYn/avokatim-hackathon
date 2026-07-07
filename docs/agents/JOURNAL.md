@@ -10,6 +10,21 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-07 — Financial analytics P2 implemented (Cursor / Fable 5)
+
+- Done: migration `44cef654e97a` adds `users.billable_hours_target_monthly`
+  (default 120) and `intake_requests.source` (referral|web|phone|walk_in|other).
+  New `GET /api/reports/analytics`: utilization (MTD billable hours vs target),
+  realization (billed/worked hours, 90d), collection (paid/issued value, 180d),
+  intake funnel with per-source conversion (90d), profitability by practice
+  area (180d). New `PATCH /api/auth/me` for profile/target updates.
+- UI: new sidebar page "Analitika" (`/reports`) with color-coded rate cards
+  (thresholds: utilization 70%, realization 85%, collection 90%), funnel and
+  per-area profitability table; source select in intake form; monthly hours
+  target editable in Settings → Profile.
+- Verified: 9 tests pass; synthetic-data check of all analytics payloads
+  (rolled back); frontend built; stack restarted; /reports returns 200.
+
 ## 2026-07-07 — Dashboard upgrade P1 implemented (Cursor / Fable 5)
 
 - Done: extended `/api/reports/dashboard` with `today_agenda` (pending deadlines

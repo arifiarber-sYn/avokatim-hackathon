@@ -9,6 +9,7 @@ from app.database import get_db
 from app.deps import bearer, get_current_user
 from app.models import Tenant, User
 from app.schemas.auth import (
+    ProfileUpdateRequest,
     LoginRequest,
     RegisterRequest,
     TokenResponse,
@@ -135,4 +136,19 @@ async def enable_2fa(
 
 @router.get("/me", response_model=UserOut)
 async def me(user: User = Depends(get_current_user)):
+    return user
+
+
+@router.patch("/me", response_model=UserOut)
+async def update_me(
+    body: ProfileUpdateRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if body.full_name is not None:
+        user.full_name = body.full_name
+    if body.billable_hours_target_monthly is not None:
+        user.billable_hours_target_monthly = body.billable_hours_target_monthly
+    await db.commit()
+    await db.refresh(user)
     return user

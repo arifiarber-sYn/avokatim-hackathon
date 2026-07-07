@@ -143,6 +143,8 @@ class IntakeRequest(Base, TenantMixin, TimestampMixin):
     client_phone: Mapped[str | None] = mapped_column(String(64))
     opposing_names: Mapped[list] = mapped_column(JSONB, default=list)
     summary: Mapped[str] = mapped_column(Text)
+    # Where the client came from: referral | web | phone | walk_in | other
+    source: Mapped[str | None] = mapped_column(String(32))
     status: Mapped[str] = mapped_column(String(16), default="new", index=True)
     # new | conflict | accepted | declined
     conflict_result: Mapped[dict | None] = mapped_column(JSONB)

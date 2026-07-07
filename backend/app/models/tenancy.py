@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Boolean, ForeignKey, String, UniqueConstraint
+from sqlalchemy import Boolean, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -35,6 +35,10 @@ class User(Base, TimestampMixin):
     role: Mapped[str] = mapped_column(String(20), default="lawyer")  # lawyer | staff | admin
     locale: Mapped[str] = mapped_column(String(8), default="sq")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    # Monthly billable-hours goal, drives the utilization KPI
+    billable_hours_target_monthly: Mapped[int] = mapped_column(
+        Integer, default=120, server_default="120"
+    )
 
     # TOTP 2FA
     totp_secret: Mapped[str | None] = mapped_column(String(64))

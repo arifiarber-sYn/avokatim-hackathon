@@ -58,6 +58,7 @@ async def create_intake(
         client_phone=body.client_phone,
         opposing_names=body.opposing_names,
         summary=body.summary,
+        source=body.source,
         status="conflict" if conflict["has_conflicts"] else "new",
         conflict_result=conflict,
         ai_classification=classification,

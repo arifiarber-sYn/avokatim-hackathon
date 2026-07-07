@@ -26,9 +26,9 @@ Everything in STATE.md "What exists and works".
 - [ ] Email/notification channel for approaching deadlines (currently UI-only).
 - [x] Dashboard upgrade P1 ✅ (2026-07-07): "Today" agenda, A/R aging buckets,
       6-month worked-hours + billed-revenue trend, global quick timer in sidebar.
-- [ ] Dashboard upgrade P2: utilization & realization rates (needs billable-hours
-      target on user profile), intake conversion funnel with client source,
-      profitability by practice area.
+- [x] Dashboard upgrade P2 ✅ (2026-07-07): /reports analytics page with
+      utilization, realization, collection, intake funnel by source,
+      profitability by practice area; hours target in Settings.
 - [ ] Public domain + real TLS certificate (Caddy handles it automatically once a
       domain points here) instead of self-signed on :8443.
 

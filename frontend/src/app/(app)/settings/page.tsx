@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { apiGet, apiPost } from "@/lib/api";
+import { apiGet, apiPatch, apiPost } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { Contact } from "@/lib/types";
 import { Button, Card, ErrorNote, Input, Label, Select, Textarea } from "@/components/ui";
@@ -23,10 +23,55 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8 max-w-3xl">
       <h1 className="text-2xl font-bold">{t.settings}</h1>
+      <ProfileSection />
       <TwoFASection />
       <CorpusSection />
       <PortalSection />
     </div>
+  );
+}
+
+function ProfileSection() {
+  const { t } = useI18n();
+  const [target, setTarget] = useState("");
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    apiGet<{ billable_hours_target_monthly: number }>("/auth/me")
+      .then((me) => setTarget(String(me.billable_hours_target_monthly)))
+      .catch(() => {});
+  }, []);
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    setMessage("");
+    try {
+      await apiPatch("/auth/me", { billable_hours_target_monthly: Number(target) });
+      setMessage("✓");
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  return (
+    <Card className="p-5 space-y-4">
+      <h2 className="font-semibold">{t.profile}</h2>
+      <form onSubmit={save} className="flex gap-3 items-end flex-wrap">
+        <div className="w-64">
+          <Label>{t.monthlyHoursTarget}</Label>
+          <Input
+            type="number"
+            min={1}
+            max={744}
+            value={target}
+            onChange={(e) => setTarget(e.target.value)}
+            required
+          />
+        </div>
+        <Button type="submit">{t.save}</Button>
+        {message && <span className="text-sm">{message}</span>}
+      </form>
+    </Card>
   );
 }
 

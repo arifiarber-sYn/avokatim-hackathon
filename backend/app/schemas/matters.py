@@ -129,6 +129,7 @@ class IntakeIn(BaseModel):
     client_phone: str | None = None
     opposing_names: list[str] = []
     summary: str = Field(min_length=1)
+    source: str | None = None  # referral | web | phone | walk_in | other
 
 
 class IntakeOut(BaseModel):
@@ -138,6 +139,7 @@ class IntakeOut(BaseModel):
     client_phone: str | None
     opposing_names: list
     summary: str
+    source: str | None
     status: str
     conflict_result: dict | None
     ai_classification: dict | None

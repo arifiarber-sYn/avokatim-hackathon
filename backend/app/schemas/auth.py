@@ -41,5 +41,11 @@ class UserOut(BaseModel):
     locale: str
     totp_enabled: bool
     tenant_id: uuid.UUID
+    billable_hours_target_monthly: int
 
     model_config = {"from_attributes": True}
+
+
+class ProfileUpdateRequest(BaseModel):
+    full_name: str | None = Field(default=None, min_length=2, max_length=200)
+    billable_hours_target_monthly: int | None = Field(default=None, ge=1, le=744)

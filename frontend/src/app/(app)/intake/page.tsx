@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { apiGet, apiPost } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { Intake } from "@/lib/types";
-import { Badge, Button, Card, ErrorNote, Input, Label, Spinner, Textarea } from "@/components/ui";
+import { Badge, Button, Card, ErrorNote, Input, Label, Select, Spinner, Textarea } from "@/components/ui";
 
 export default function IntakePage() {
   const { t } = useI18n();
@@ -20,6 +20,7 @@ export default function IntakePage() {
     client_phone: "",
     opposing: "",
     summary: "",
+    source: "referral",
   });
 
   const load = useCallback(() => {
@@ -41,9 +42,10 @@ export default function IntakePage() {
         client_phone: form.client_phone || null,
         opposing_names: form.opposing.split("\n").map((s) => s.trim()).filter(Boolean),
         summary: form.summary,
+        source: form.source,
       });
       setShowNew(false);
-      setForm({ client_name: "", client_email: "", client_phone: "", opposing: "", summary: "" });
+      setForm({ client_name: "", client_email: "", client_phone: "", opposing: "", summary: "", source: "referral" });
       load();
     } catch (err) {
       setError(err instanceof Error ? err.message : t.error);
@@ -83,6 +85,16 @@ export default function IntakePage() {
             <div>
               <Label>{t.phone}</Label>
               <Input value={form.client_phone} onChange={(e) => setForm({ ...form, client_phone: e.target.value })} />
+            </div>
+            <div>
+              <Label>{t.source}</Label>
+              <Select value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })}>
+                <option value="referral">{t.referral}</option>
+                <option value="web">{t.web}</option>
+                <option value="phone">{t.phoneSource}</option>
+                <option value="walk_in">{t.walk_in}</option>
+                <option value="other">{t.other}</option>
+              </Select>
             </div>
             <div className="md:col-span-3">
               <Label>{t.opposingParties}</Label>

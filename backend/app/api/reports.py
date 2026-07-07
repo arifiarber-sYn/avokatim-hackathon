@@ -200,3 +200,167 @@ async def dashboard(
         "ar_aging": aging,
         "monthly_trend": monthly_trend,
     }
+
+
+@router.get("/analytics")
+async def analytics(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Financial practice analytics: utilization, realization, collection,
+    intake conversion funnel, and profitability by practice area."""
+    tenant = user.tenant_id
+    now = datetime.now(UTC)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    window_90 = now - timedelta(days=90)
+    window_180 = now - timedelta(days=180)
+
+    # --- Utilization: billable hours this month vs the user's monthly target ---
+    billable_minutes_mtd = (
+        await db.execute(
+            select(func.coalesce(func.sum(TimeEntry.minutes), 0)).where(
+                TimeEntry.tenant_id == tenant,
+                TimeEntry.billable.is_(True),
+                TimeEntry.started_at >= month_start,
+            )
+        )
+    ).scalar_one()
+    target = user.billable_hours_target_monthly or 120
+    billable_hours_mtd = round(int(billable_minutes_mtd) / 60, 1)
+
+    # --- Realization: share of worked billable time that has been invoiced (90d) ---
+    worked_minutes, billed_minutes = (
+        await db.execute(
+            select(
+                func.coalesce(func.sum(TimeEntry.minutes), 0),
+                func.coalesce(
+                    func.sum(TimeEntry.minutes).filter(TimeEntry.invoice_id.is_not(None)), 0
+                ),
+            ).where(
+                TimeEntry.tenant_id == tenant,
+                TimeEntry.billable.is_(True),
+                TimeEntry.started_at >= window_90,
+            )
+        )
+    ).one()
+
+    # --- Collection: paid vs issued invoice value (180d) ---
+    issued_total, paid_total = (
+        await db.execute(
+            select(
+                func.coalesce(func.sum(InvoiceItem.quantity * InvoiceItem.unit_price), 0),
+                func.coalesce(
+                    func.sum(InvoiceItem.quantity * InvoiceItem.unit_price).filter(
+                        Invoice.status == "paid"
+                    ),
+                    0,
+                ),
+            )
+            .join(Invoice, Invoice.id == InvoiceItem.invoice_id)
+            .where(
+                Invoice.tenant_id == tenant,
+                Invoice.status.in_(["sent", "paid"]),
+                func.coalesce(Invoice.issued_on, func.date(Invoice.created_at))
+                >= window_180.date(),
+            )
+        )
+    ).one()
+
+    # --- Intake funnel (90d): statuses + conversion per source ---
+    intake_rows = (
+        await db.execute(
+            select(IntakeRequest.source, IntakeRequest.status, func.count(IntakeRequest.id))
+            .where(IntakeRequest.tenant_id == tenant, IntakeRequest.created_at >= window_90)
+            .group_by(IntakeRequest.source, IntakeRequest.status)
+        )
+    ).all()
+    funnel = {"total": 0, "accepted": 0, "declined": 0, "pending": 0}
+    by_source: dict[str, dict] = {}
+    for source, status_, count in intake_rows:
+        funnel["total"] += count
+        if status_ == "accepted":
+            funnel["accepted"] += count
+        elif status_ == "declined":
+            funnel["declined"] += count
+        else:
+            funnel["pending"] += count
+        src = source or "other"
+        bucket = by_source.setdefault(src, {"source": src, "total": 0, "accepted": 0})
+        bucket["total"] += count
+        if status_ == "accepted":
+            bucket["accepted"] += count
+    decided = funnel["accepted"] + funnel["declined"]
+    funnel["conversion_pct"] = round(funnel["accepted"] / decided * 100, 1) if decided else None
+    funnel["by_source"] = sorted(by_source.values(), key=lambda b: -b["total"])
+
+    # --- Profitability by practice area (180d) ---
+    area_time = (
+        await db.execute(
+            select(
+                Matter.practice_area,
+                func.coalesce(func.sum(TimeEntry.minutes), 0),
+                func.coalesce(
+                    func.sum(
+                        TimeEntry.minutes / 60.0 * func.coalesce(TimeEntry.hourly_rate, 0)
+                    ),
+                    0,
+                ),
+            )
+            .join(Matter, Matter.id == TimeEntry.matter_id)
+            .where(TimeEntry.tenant_id == tenant, TimeEntry.started_at >= window_180)
+            .group_by(Matter.practice_area)
+        )
+    ).all()
+    area_billed = dict(
+        (
+            await db.execute(
+                select(
+                    Matter.practice_area,
+                    func.coalesce(func.sum(InvoiceItem.quantity * InvoiceItem.unit_price), 0),
+                )
+                .join(Invoice, Invoice.matter_id == Matter.id)
+                .join(InvoiceItem, InvoiceItem.invoice_id == Invoice.id)
+                .where(
+                    Invoice.tenant_id == tenant,
+                    Invoice.status.in_(["sent", "paid"]),
+                    func.coalesce(Invoice.issued_on, func.date(Invoice.created_at))
+                    >= window_180.date(),
+                )
+                .group_by(Matter.practice_area)
+            )
+        ).all()
+    )
+    profitability = [
+        {
+            "practice_area": area,
+            "hours": round(int(minutes) / 60, 1),
+            "worked_value": round(float(worked_value), 2),
+            "billed_value": round(float(area_billed.get(area, 0)), 2),
+        }
+        for area, minutes, worked_value in area_time
+    ]
+    profitability.sort(key=lambda p: -p["billed_value"])
+
+    return {
+        "utilization": {
+            "billable_hours_mtd": billable_hours_mtd,
+            "target_monthly": target,
+            "pct": round(billable_hours_mtd / target * 100, 1) if target else None,
+        },
+        "realization": {
+            "worked_hours_90d": round(int(worked_minutes) / 60, 1),
+            "billed_hours_90d": round(int(billed_minutes) / 60, 1),
+            "pct": round(int(billed_minutes) / int(worked_minutes) * 100, 1)
+            if worked_minutes
+            else None,
+        },
+        "collection": {
+            "issued_180d": float(issued_total),
+            "paid_180d": float(paid_total),
+            "pct": round(float(paid_total) / float(issued_total) * 100, 1)
+            if issued_total
+            else None,
+        },
+        "intake_funnel": funnel,
+        "profitability_by_area": profitability,
+    }
