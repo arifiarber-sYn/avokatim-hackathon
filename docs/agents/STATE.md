@@ -40,11 +40,22 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - **Billing**: time entries, invoices generated from unbilled hours.
 - **Client portal**: full UI at `/portal` — login, matters with hearings,
   two-way messages, e-signature inbox.
-- **Email reminders**: background loop (hourly) mails the responsible lawyer at
-  each deadline's `remind_days_before` offsets; deduped via Redis. Disabled until
-  SMTP_* is set in `backend/.env`.
-- **Dashboard**: workload, week's deadlines, finances. **/reports**: analytics.
-- **PWA**: manifest + icons; installable on phone (add-to-home-screen).
+- **Reminders**: background loop (hourly) notifies the responsible lawyer at
+  each deadline's `remind_days_before` offsets; deduped via Redis. Two channels:
+  **Web Push** (active — VAPID keys in `backend/.env`, per-device opt-in in
+  Settings → Device notifications) and email (needs SMTP_* in `backend/.env`).
+- **Payments**: marking an invoice paid records `paid_on` + optional
+  `payment_reference` (bank transaction no.), shown on the invoice card.
+- **Dashboard**: workload, week's deadlines, finances. **/reports**: analytics
+  incl. **per-lawyer table** (open matters, MTD hours vs target, utilization)
+  when the tenant has >1 active member.
+- **PWA**: manifest + icons; installable on phone; service worker (`public/sw.js`)
+  shows push notifications and opens the matter on tap.
+- **Backups**: `backup.sh` — encrypted (AES-256, key at
+  `~/.config/boralaw/backup.key`) archive of pg_dump + `data/documents` +
+  `backend/.env` into `~/BoraLawBackups/`, retention 14. Daily at 03:00 via
+  systemd user timer `boralaw-backup.timer` (enabled). Restore steps in the
+  script header. **The key file must also be copied somewhere off-machine.**
 - **i18n**: sq / en / zh complete for existing UI.
 - **Audit log** on matter/document actions.
 
@@ -65,9 +76,16 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
 - `start.sh` skips `npm run build` when `frontend/.next` exists — rebuild manually
   after frontend changes (see AGENTS.md §4).
-- SMTP not configured yet — deadline email reminders stay disabled (loop logs
-  "SMTP not configured" and exits). Set SMTP_HOST/PORT/USER/PASSWORD/FROM in
-  `backend/.env` to enable.
+- SMTP not configured yet — the email channel of reminders is off (push channel
+  works). Set SMTP_HOST/PORT/USER/PASSWORD/FROM in `backend/.env` to enable email.
+- Host has no `tesseract` (OCR of scanned PDFs/images falls back to "failed";
+  native PDF text extraction works). Owner must run:
+  `sudo dnf install tesseract tesseract-langpack-sqi tesseract-langpack-eng
+  tesseract-langpack-chi_sim` (needs password; agent cannot).
+- Host has no GPU tooling (`nvidia-smi` absent) and Ollama has no models/service —
+  local-LLM option stays unconfigured; DeepSeek remains the provider. To try
+  local: `ollama serve` + `ollama pull qwen3:8b` (CPU will be slow), then set
+  `LOCAL_LLM_MODEL=qwen3:8b` in `backend/.env`.
 - E-signature is the simple flow (typed name + SHA-256 + audit); qualified
   eIDAS/Kosovo e-signature law compliance is future work.
 - `PUBLIC_BASE_URL` (backend/.env, default http://127.0.0.1:3000) is used in

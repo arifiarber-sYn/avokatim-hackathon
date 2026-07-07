@@ -10,6 +10,28 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-07 — Remaining backlog: backups, push, payments, firm reporting (Cursor / Fable 5)
+
+- Done: migration `fdb43a0e95bc` (`push_subscriptions`, `invoices.paid_on` +
+  `payment_reference`). Web Push end-to-end: VAPID keys generated into
+  `backend/.env`, `services/push.py` (pywebpush, dead-sub cleanup), `/api/push/*`
+  endpoints, `public/sw.js` service worker, opt-in section in Settings; reminder
+  loop now runs when SMTP **or** push is configured and sends both channels.
+  Invoices: mark-paid records date + bank reference (form in Billing UI).
+  /reports/analytics gained `by_lawyer` (open matters, MTD hours vs target,
+  utilization) — table shows when tenant has >1 active member. Encrypted daily
+  backups: `backup.sh` (pg_dump + documents + .env, AES-256, retention 14) +
+  `boralaw-backup.timer` (03:00, enabled); key at `~/.config/boralaw/backup.key`.
+- Verified: 9 tests pass; API roundtrip (invoice paid with TRX ref, by_lawyer
+  payload with temp member, push subscribe/unsubscribe) then synthetic data
+  removed; backup ran and restore-tested (dump + docs + env decrypt OK);
+  frontend built; stack restarted; reminder loop active with push channel.
+- Host checks: tesseract NOT installed (sudo needs password — owner action in
+  STATE); no GPU tooling, Ollama has no models — local LLM documented, not enabled.
+- Left open: SMTP credentials, tesseract install (owner), local-LLM
+  model decision, qualified e-signature, per-matter permissions, XK template
+  library with pilot firm, real corpus from Gazeta Zyrtare, public domain+TLS.
+
 ## 2026-07-07 — Competitive-gap features implemented (Cursor / Fable 5)
 
 - Done: implemented all suggestions from the full-app analysis in one batch.

@@ -341,6 +341,58 @@ async def analytics(
     ]
     profitability.sort(key=lambda p: -p["billed_value"])
 
+    # --- Firm view: per-lawyer workload (MTD hours vs target, matters, 90d worked) ---
+    members = (
+        await db.execute(
+            select(User).where(User.tenant_id == tenant, User.is_active.is_(True))
+        )
+    ).scalars().all()
+    by_lawyer = []
+    if len(members) > 1:
+        mtd_by_user = dict(
+            (
+                await db.execute(
+                    select(
+                        TimeEntry.user_id,
+                        func.coalesce(func.sum(TimeEntry.minutes), 0),
+                    )
+                    .where(
+                        TimeEntry.tenant_id == tenant,
+                        TimeEntry.billable.is_(True),
+                        TimeEntry.started_at >= month_start,
+                    )
+                    .group_by(TimeEntry.user_id)
+                )
+            ).all()
+        )
+        matters_by_user = dict(
+            (
+                await db.execute(
+                    select(Matter.responsible_user_id, func.count(Matter.id))
+                    .where(
+                        Matter.tenant_id == tenant,
+                        Matter.status.in_(["open", "intake", "on_hold"]),
+                    )
+                    .group_by(Matter.responsible_user_id)
+                )
+            ).all()
+        )
+        for m in members:
+            m_target = m.billable_hours_target_monthly or 120
+            hours_mtd = round(int(mtd_by_user.get(m.id, 0)) / 60, 1)
+            by_lawyer.append(
+                {
+                    "user_id": str(m.id),
+                    "full_name": m.full_name,
+                    "role": m.role,
+                    "open_matters": int(matters_by_user.get(m.id, 0)),
+                    "billable_hours_mtd": hours_mtd,
+                    "target_monthly": m_target,
+                    "utilization_pct": round(hours_mtd / m_target * 100, 1) if m_target else None,
+                }
+            )
+        by_lawyer.sort(key=lambda r: -r["billable_hours_mtd"])
+
     return {
         "utilization": {
             "billable_hours_mtd": billable_hours_mtd,
@@ -363,4 +415,5 @@ async def analytics(
         },
         "intake_funnel": funnel,
         "profitability_by_area": profitability,
+        "by_lawyer": by_lawyer,
     }

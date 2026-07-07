@@ -23,6 +23,15 @@ interface Analytics {
     worked_value: number;
     billed_value: number;
   }[];
+  by_lawyer: {
+    user_id: string;
+    full_name: string;
+    role: string;
+    open_matters: number;
+    billable_hours_mtd: number;
+    target_monthly: number;
+    utilization_pct: number | null;
+  }[];
 }
 
 function RateCard({
@@ -226,6 +235,56 @@ export default function ReportsPage() {
           )}
         </Card>
       </div>
+
+      {data.by_lawyer.length > 0 && (
+        <Card className="p-5">
+          <h2 className="font-semibold mb-4">{t.byLawyer}</h2>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs text-slate-500 border-b border-slate-100">
+                <th className="pb-2 font-medium">{t.name}</th>
+                <th className="pb-2 font-medium">{t.roleLabel}</th>
+                <th className="pb-2 font-medium text-right">{t.openMatters}</th>
+                <th className="pb-2 font-medium text-right">{t.hoursThisMonth}</th>
+                <th className="pb-2 font-medium text-right">{t.utilization}</th>
+                <th className="pb-2 w-24" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {data.by_lawyer.map((l) => {
+                const roleKey = `role${l.role.charAt(0).toUpperCase()}${l.role.slice(1)}`;
+                return (
+                  <tr key={l.user_id}>
+                    <td className="py-2 font-medium">{l.full_name}</td>
+                    <td className="py-2 text-xs text-slate-500">{dict[roleKey] || l.role}</td>
+                    <td className="py-2 text-right tabular-nums">{l.open_matters}</td>
+                    <td className="py-2 text-right tabular-nums">
+                      {l.billable_hours_mtd} / {l.target_monthly}
+                    </td>
+                    <td className="py-2 text-right tabular-nums">
+                      {l.utilization_pct === null ? "—" : `${l.utilization_pct}%`}
+                    </td>
+                    <td className="py-2 pl-3">
+                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${
+                            (l.utilization_pct ?? 0) >= 70
+                              ? "bg-emerald-500"
+                              : (l.utilization_pct ?? 0) >= 49
+                                ? "bg-amber-500"
+                                : "bg-indigo-400"
+                          }`}
+                          style={{ width: `${Math.min(l.utilization_pct ?? 0, 100)}%` }}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </Card>
+      )}
     </div>
   );
 }

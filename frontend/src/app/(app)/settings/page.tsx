@@ -24,6 +24,7 @@ export default function SettingsPage() {
     <div className="space-y-8 max-w-3xl">
       <h1 className="text-2xl font-bold">{t.settings}</h1>
       <ProfileSection />
+      <PushSection />
       <TeamSection />
       <CalendarFeedSection />
       <PublicIntakeSection />
@@ -31,6 +32,104 @@ export default function SettingsPage() {
       <CorpusSection />
       <PortalSection />
     </div>
+  );
+}
+
+function urlBase64ToUint8Array(base64: string): Uint8Array {
+  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
+  const raw = atob((base64 + padding).replace(/-/g, "+").replace(/_/g, "/"));
+  return Uint8Array.from(raw, (c) => c.charCodeAt(0));
+}
+
+function PushSection() {
+  const { t } = useI18n();
+  const [supported, setSupported] = useState(true);
+  const [serverEnabled, setServerEnabled] = useState(false);
+  const [vapidKey, setVapidKey] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      setSupported(false);
+      return;
+    }
+    apiGet<{ key: string; enabled: boolean }>("/push/vapid-public-key")
+      .then((r) => {
+        setServerEnabled(r.enabled);
+        setVapidKey(r.key);
+      })
+      .catch(() => {});
+    navigator.serviceWorker.register("/sw.js").then(async (reg) => {
+      const sub = await reg.pushManager.getSubscription();
+      setSubscribed(!!sub);
+    });
+  }, []);
+
+  async function enable() {
+    setBusy(true);
+    setError("");
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") throw new Error(t.error);
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
+      });
+      const json = sub.toJSON();
+      await apiPost("/push/subscribe", {
+        endpoint: sub.endpoint,
+        p256dh: json.keys?.p256dh,
+        auth: json.keys?.auth,
+        user_agent: navigator.userAgent,
+      });
+      setSubscribed(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function disable() {
+    setBusy(true);
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) {
+        await apiPost("/push/unsubscribe", { endpoint: sub.endpoint });
+        await sub.unsubscribe();
+      }
+      setSubscribed(false);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Card className="p-5 space-y-3">
+      <h2 className="font-semibold">{t.pushNotifications}</h2>
+      <p className="text-sm text-slate-500">{t.pushHint}</p>
+      {!supported || !serverEnabled ? (
+        <p className="text-sm text-slate-400">{t.pushNotSupported}</p>
+      ) : subscribed ? (
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">
+            ✓ {t.pushEnabled}
+          </span>
+          <Button variant="secondary" onClick={disable} disabled={busy}>
+            {t.disablePushDevice}
+          </Button>
+        </div>
+      ) : (
+        <Button onClick={enable} disabled={busy}>
+          {busy ? t.loading : t.enablePushDevice}
+        </Button>
+      )}
+      <ErrorNote message={error} />
+    </Card>
   );
 }
 

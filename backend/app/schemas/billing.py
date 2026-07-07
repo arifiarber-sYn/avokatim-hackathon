@@ -55,6 +55,8 @@ class InvoiceOut(BaseModel):
     currency: str
     issued_on: date | None
     due_on: date | None
+    paid_on: date | None
+    payment_reference: str | None
     notes: str | None
     items: list[InvoiceItemOut]
     total: Decimal

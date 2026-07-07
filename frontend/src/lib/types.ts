@@ -115,6 +115,8 @@ export interface Invoice {
   currency: string;
   issued_on: string | null;
   due_on: string | null;
+  paid_on: string | null;
+  payment_reference: string | null;
   items: { id: string; description: string; quantity: string; unit_price: string; amount: string }[];
   total: string;
 }

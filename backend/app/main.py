@@ -18,6 +18,7 @@ from app.api import (
     intake,
     matters,
     portal,
+    push,
     reports,
     team,
     templates,
@@ -67,6 +68,7 @@ app.include_router(team.router, prefix=api_prefix)
 app.include_router(collab.router, prefix=api_prefix)
 app.include_router(calendar_feed.router, prefix=api_prefix)
 app.include_router(intake.public_router, prefix=api_prefix)
+app.include_router(push.router, prefix=api_prefix)
 
 
 @app.get("/api/health")

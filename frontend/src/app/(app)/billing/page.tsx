@@ -161,11 +161,18 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
     load();
   }
 
-  async function setStatus(id: string, status: string) {
-    await fetch(`/api/invoices/${id}/status?new_status=${status}`, {
+  const [payingId, setPayingId] = useState<string | null>(null);
+  const [payRef, setPayRef] = useState("");
+
+  async function setStatus(id: string, status: string, reference?: string) {
+    const params = new URLSearchParams({ new_status: status });
+    if (reference) params.set("payment_reference", reference);
+    await fetch(`/api/invoices/${id}/status?${params}`, {
       method: "PATCH",
       headers: { Authorization: `Bearer ${getToken()}` },
     });
+    setPayingId(null);
+    setPayRef("");
     load();
   }
 
@@ -206,16 +213,45 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
                   <p className="text-xs text-slate-500 mt-1">
                     {inv.items.length} × | {t.total}: {inv.currency} {Number(inv.total).toFixed(2)}
                   </p>
+                  {inv.status === "paid" && (inv.paid_on || inv.payment_reference) && (
+                    <p className="text-xs text-emerald-700 mt-1">
+                      ✓ {t.paid}
+                      {inv.paid_on && ` · ${new Date(inv.paid_on).toLocaleDateString()}`}
+                      {inv.payment_reference && ` · ${t.paymentReference}: ${inv.payment_reference}`}
+                    </p>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   {inv.status === "draft" && (
                     <Button variant="secondary" onClick={() => setStatus(inv.id, "sent")}>{t.markSent}</Button>
                   )}
-                  {inv.status === "sent" && (
-                    <Button onClick={() => setStatus(inv.id, "paid")}>{t.markPaid}</Button>
+                  {inv.status === "sent" && payingId !== inv.id && (
+                    <Button onClick={() => setPayingId(inv.id)}>{t.markPaid}</Button>
                   )}
                 </div>
               </div>
+              {payingId === inv.id && (
+                <form
+                  className="mt-3 pt-3 border-t border-slate-100 flex gap-2 items-end flex-wrap"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setStatus(inv.id, "paid", payRef);
+                  }}
+                >
+                  <div className="flex-1 min-w-56">
+                    <Label>{t.paymentReference}</Label>
+                    <Input
+                      value={payRef}
+                      onChange={(e) => setPayRef(e.target.value)}
+                      placeholder={t.paymentReferenceHint}
+                    />
+                  </div>
+                  <Button type="submit">{t.markPaid}</Button>
+                  <Button type="button" variant="secondary" onClick={() => setPayingId(null)}>
+                    {t.cancel}
+                  </Button>
+                </form>
+              )}
               {inv.items.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-slate-100 space-y-1">
                   {inv.items.map((item) => (

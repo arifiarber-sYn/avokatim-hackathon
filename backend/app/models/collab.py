@@ -29,6 +29,21 @@ class MatterMessage(Base, TenantMixin, TimestampMixin):
     read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
+class PushSubscription(Base, TenantMixin, TimestampMixin):
+    """A browser/device Web Push subscription for a user (PWA notifications)."""
+
+    __tablename__ = "push_subscriptions"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    endpoint: Mapped[str] = mapped_column(Text, unique=True)
+    p256dh: Mapped[str] = mapped_column(String(255))
+    auth: Mapped[str] = mapped_column(String(255))
+    user_agent: Mapped[str | None] = mapped_column(String(255))
+
+
 class SignatureRequest(Base, TenantMixin, TimestampMixin):
     """A request for a client to e-sign a stored document. The signature seals
     the exact document version via its SHA-256 and records who/when/from where."""

@@ -65,6 +65,11 @@ class Settings(BaseSettings):
     smtp_starttls: bool = True
     reminder_check_minutes: int = 60
 
+    # Web Push (PWA notifications). Generated once; empty = push disabled.
+    vapid_public_key: str = ""
+    vapid_private_key: str = ""
+    vapid_subject: str = "mailto:noreply@boralaw.local"
+
 
 @lru_cache
 def get_settings() -> Settings:

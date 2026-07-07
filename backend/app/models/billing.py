@@ -43,6 +43,9 @@ class Invoice(Base, TenantMixin, TimestampMixin):
     currency: Mapped[str] = mapped_column(String(8), default="EUR")
     issued_on: Mapped[date | None] = mapped_column(Date)
     due_on: Mapped[date | None] = mapped_column(Date)
+    paid_on: Mapped[date | None] = mapped_column(Date)
+    # Bank transfer reference / receipt number recorded when marked paid
+    payment_reference: Mapped[str | None] = mapped_column(String(128))
     notes: Mapped[str | None] = mapped_column(Text)
 
     items: Mapped[list["InvoiceItem"]] = relationship(

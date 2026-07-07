@@ -157,6 +157,7 @@ async def get_invoice(
 async def set_invoice_status(
     invoice_id: uuid.UUID,
     new_status: str,
+    payment_reference: str | None = None,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -166,9 +167,14 @@ async def set_invoice_status(
     invoice.status = new_status
     if new_status == "sent" and invoice.issued_on is None:
         invoice.issued_on = date.today()
+    if new_status == "paid":
+        invoice.paid_on = date.today()
+        if payment_reference:
+            invoice.payment_reference = payment_reference[:128]
     await log_action(
         db, tenant_id=user.tenant_id, user_id=user.id, action="invoice.status",
-        entity_type="invoice", entity_id=str(invoice.id), details={"status": new_status},
+        entity_type="invoice", entity_id=str(invoice.id),
+        details={"status": new_status, "payment_reference": payment_reference},
     )
     await db.commit()
     return await _load_invoice(db, user, invoice_id)

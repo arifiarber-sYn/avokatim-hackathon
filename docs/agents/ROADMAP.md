@@ -16,13 +16,17 @@ Everything in STATE.md "What exists and works".
 
 ## Phase 2 — Hardening & daily-use polish (current)
 
-- [ ] Backups: automated encrypted backup of Postgres + `data/documents`
-      (deadline data and client files must survive disk failure).
+- [x] Backups ✅ (2026-07-07): `backup.sh` + daily systemd timer, AES-256
+      encrypted, retention 14, restore-tested. Key must be copied off-machine.
 - [ ] Real legal corpus: load actual Kosovo laws from Gazeta Zyrtare and verify
       RAG citation quality on real questions.
-- [ ] Verify OCR end-to-end on host (tesseract langpacks) with scanned Albanian documents.
+- [ ] Verify OCR end-to-end on host with scanned Albanian documents — BLOCKED on
+      owner: `sudo dnf install tesseract tesseract-langpack-sqi ...` (checked
+      2026-07-07: binary absent, sudo needs password).
 - [ ] Local LLM option in production: configure Ollama/vLLM endpoint, quality-test
-      "Bora" against DeepSeek on Albanian legal questions.
+      "Bora" against DeepSeek on Albanian legal questions. (Checked 2026-07-07:
+      ollama binary present but no models/service and no GPU tooling on host —
+      CPU inference would be slow; needs owner decision on model/hardware.)
 - [x] Email/notification channel for approaching deadlines ✅ (2026-07-07):
       hourly reminder loop mails responsible lawyer per remind_days_before,
       Redis-deduped. Needs SMTP_* in backend/.env to activate.
@@ -40,7 +44,8 @@ Everything in STATE.md "What exists and works".
       Settings → Team (add member, change role, deactivate); matter assignment
       via responsible lawyer select on the matter Overview.
 - [ ] Finer permissions (per-matter visibility, review steps, internal workflow).
-- [ ] Firm-level reporting (per-lawyer utilization on /reports).
+- [x] Firm-level reporting ✅ (2026-07-07): per-lawyer table on /reports (open
+      matters, MTD billable hours vs target, utilization); shows when >1 member.
 
 ## Competitive gaps (from 2026-07-07 full-app analysis vs Clio/Smokeball/MyCase)
 
@@ -63,9 +68,11 @@ Base competitiveness:
 Long-term differentiation:
 - [ ] Kosovo template library built with the pilot firm (our answer to
       Smokeball's 20k form library — nobody has this for XK).
-- [ ] Local payment tracking (payment reference + status; local processor later).
-- [x] PWA ✅ (2026-07-07): manifest + icons, installable. Push notifications for
-      deadlines still open (needs service worker + web-push).
+- [x] Local payment tracking ✅ (2026-07-07): paid_on + payment_reference on
+      invoices, entered when marking paid. (Local processor integration later.)
+- [x] PWA ✅ (2026-07-07): manifest + icons, installable. Push notifications ✅
+      same day: service worker + VAPID web-push, per-device opt-in in Settings,
+      wired into the deadline reminder loop.
 - [x] Public intake form link ✅ (2026-07-07): /apliko/{token} public page,
       feeds intake funnel with source=web; link in Settings.
 

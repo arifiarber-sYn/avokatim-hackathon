@@ -13,6 +13,7 @@ from sqlalchemy import select
 from app.config import settings
 from app.database import SessionLocal
 from app.models import Deadline, Matter, User
+from app.services.push import push_enabled, send_push_to_user
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ async def _check_deadline_reminders(redis: aioredis.Redis) -> None:
             if not await redis.set(key, "1", nx=True, ex=DEDUP_TTL_SECONDS):
                 continue  # already sent
             user = await db.get(User, responsible_id)
-            if user is None or not user.email:
+            if user is None:
                 continue
             subject = f"[BoraLaw] Afat pas {days_left} ditësh: {deadline.title}"
             body = (
@@ -78,14 +79,22 @@ async def _check_deadline_reminders(redis: aioredis.Redis) -> None:
                 + (f"Baza ligjore: {deadline.legal_basis}\n" if deadline.legal_basis else "")
                 + f"\n{settings.public_base_url}/matters/{deadline.matter_id}\n"
             )
-            await send_email(user.email, subject, body)
+            if user.email:
+                await send_email(user.email, subject, body)
+            await send_push_to_user(
+                db,
+                user.id,
+                title=subject,
+                body=f"{ref} — {deadline.title} · {deadline.due_at:%d.%m.%Y}",
+                url=f"/matters/{deadline.matter_id}",
+            )
             logger.info("Reminder sent for deadline %s (%s days)", deadline.id, days_left)
 
 
 async def reminder_loop() -> None:
     """Background task started from the app lifespan."""
-    if not smtp_enabled():
-        logger.info("SMTP not configured — deadline email reminders disabled")
+    if not smtp_enabled() and not push_enabled():
+        logger.info("Neither SMTP nor Web Push configured — deadline reminders disabled")
         return
     redis = aioredis.from_url(settings.redis_url)
     logger.info("Deadline reminder loop started (every %s min)", settings.reminder_check_minutes)

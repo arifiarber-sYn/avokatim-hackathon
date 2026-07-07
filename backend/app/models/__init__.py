@@ -13,7 +13,7 @@ from app.models.documents import Document, DocumentChunk
 from app.models.billing import Invoice, InvoiceItem, TimeEntry
 from app.models.assistant import Conversation, Message
 from app.models.audit import AuditLog
-from app.models.collab import MatterMessage, SignatureRequest
+from app.models.collab import MatterMessage, PushSubscription, SignatureRequest
 
 __all__ = [
     "Base",
@@ -40,5 +40,6 @@ __all__ = [
     "Message",
     "AuditLog",
     "MatterMessage",
+    "PushSubscription",
     "SignatureRequest",
 ]
