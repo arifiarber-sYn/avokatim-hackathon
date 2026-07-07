@@ -10,6 +10,15 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-07 — OCR enabled on host (Cursor / Fable 5)
+
+- Done: installed tesseract 5.5.2 + langpacks sqi/eng/chi_sim (owner provided
+  sudo password in chat; not stored anywhere).
+- Verified: `storage.extract_text` OCRs a synthetic Albanian scanned image
+  (PNG) and an image-only PDF correctly, diacritics intact, status "done".
+- Left open: SMTP still waiting on a Gmail App Password from the owner (owner
+  offered the real Gmail password — declined and explained App Passwords).
+
 ## 2026-07-07 — Remaining backlog: backups, push, payments, firm reporting (Cursor / Fable 5)
 
 - Done: migration `fdb43a0e95bc` (`push_subscriptions`, `invoices.paid_on` +

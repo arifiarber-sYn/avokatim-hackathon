@@ -69,8 +69,8 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - Backend: uvicorn on 127.0.0.1:8000, venv at `backend/.venv`. Frontend: Next.js on :3000.
 - Secrets in `backend/.env` (git-ignored): DeepSeek key, doc encryption key, DB password.
 - Optional extras installed in venv: `requirements-ai.txt` (local embeddings, OCR).
-  System tesseract may still need: `sudo dnf install tesseract tesseract-langpack-sqi
-  tesseract-langpack-eng tesseract-langpack-chi_sim` (verify before relying on OCR).
+- System tesseract 5.5.2 installed (2026-07-07) with sqi/eng/chi_sim langpacks;
+  OCR verified end-to-end on synthetic Albanian scanned image and image-only PDF.
 
 ## Known issues / caveats
 
@@ -78,10 +78,8 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   after frontend changes (see AGENTS.md §4).
 - SMTP not configured yet — the email channel of reminders is off (push channel
   works). Set SMTP_HOST/PORT/USER/PASSWORD/FROM in `backend/.env` to enable email.
-- Host has no `tesseract` (OCR of scanned PDFs/images falls back to "failed";
-  native PDF text extraction works). Owner must run:
-  `sudo dnf install tesseract tesseract-langpack-sqi tesseract-langpack-eng
-  tesseract-langpack-chi_sim` (needs password; agent cannot).
+  Waiting on owner to create a Gmail **App Password** (regular Gmail passwords
+  are rejected by Google SMTP; never store the owner's real password).
 - Host has no GPU tooling (`nvidia-smi` absent) and Ollama has no models/service —
   local-LLM option stays unconfigured; DeepSeek remains the provider. To try
   local: `ollama serve` + `ollama pull qwen3:8b` (CPU will be slow), then set

@@ -20,9 +20,9 @@ Everything in STATE.md "What exists and works".
       encrypted, retention 14, restore-tested. Key must be copied off-machine.
 - [ ] Real legal corpus: load actual Kosovo laws from Gazeta Zyrtare and verify
       RAG citation quality on real questions.
-- [ ] Verify OCR end-to-end on host with scanned Albanian documents — BLOCKED on
-      owner: `sudo dnf install tesseract tesseract-langpack-sqi ...` (checked
-      2026-07-07: binary absent, sudo needs password).
+- [x] Verify OCR end-to-end on host ✅ (2026-07-07): tesseract 5.5.2 +
+      sqi/eng/chi_sim installed; synthetic Albanian scanned image and image-only
+      PDF both OCR correctly (diacritics ë/ç intact).
 - [ ] Local LLM option in production: configure Ollama/vLLM endpoint, quality-test
       "Bora" against DeepSeek on Albanian legal questions. (Checked 2026-07-07:
       ollama binary present but no models/service and no GPU tooling on host —
