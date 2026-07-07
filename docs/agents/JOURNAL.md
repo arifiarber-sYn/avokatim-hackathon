@@ -10,6 +10,20 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-07 — Dashboard upgrade P1 implemented (Cursor / Fable 5)
+
+- Done: extended `/api/reports/dashboard` with `today_agenda` (pending deadlines
+  due today, joined with matter ref/title), `ar_aging` (sent invoices bucketed
+  0-30/31-60/61-90/91+ days by issued_on), `monthly_trend` (last 6 months of
+  worked hours + billed revenue; date_trunc via literal_column — bound params
+  in GROUP BY break Postgres). UI: agenda card on top of dashboard, aging
+  breakdown card, two CSS mini bar charts, `QuickTimer` component in the
+  sidebar (localStorage-backed, saves to POST /time-entries on stop).
+- Verified: 9 backend tests pass; synthetic-data check of all three new
+  payloads (rolled back); frontend rebuilt; stack restarted, health OK.
+- Gotcha: dictionary keys must be unique across the file (`selectMatter`
+  already existed) — TS build enforces `en`/`zh` match `typeof sq`.
+
 ## 2026-07-07 — Dashboard competitor analysis (Cursor / Fable 5)
 
 - Done: web research comparing our dashboard vs Clio, Smokeball, MyCase +

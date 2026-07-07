@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { apiGet, getToken, setToken } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { LocaleSwitcher } from "@/components/ui";
+import { QuickTimer } from "@/components/quick-timer";
 
 interface Me {
   full_name: string;
@@ -64,6 +65,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
         <div className="p-4 border-t border-slate-800 space-y-3">
+          <QuickTimer />
           <LocaleSwitcher />
           {me && <p className="text-xs text-slate-400 truncate">{me.full_name}</p>}
           <button

@@ -6,6 +6,23 @@ import { apiGet } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { Badge, Card, Spinner } from "@/components/ui";
 
+interface AgendaItem {
+  id: string;
+  matter_id: string;
+  matter_reference: string;
+  matter_title: string;
+  kind: string;
+  title: string;
+  due_at: string;
+  legal_basis: string | null;
+}
+
+interface TrendPoint {
+  month: string;
+  hours: number;
+  billed: number;
+}
+
 interface Dashboard {
   matters_by_status: Record<string, number>;
   deadlines_next_7_days: number;
@@ -13,6 +30,9 @@ interface Dashboard {
   intakes_pending: number;
   hours_this_month: number;
   unpaid_invoices_total: number;
+  today_agenda: AgendaItem[];
+  ar_aging: Record<string, number>;
+  monthly_trend: TrendPoint[];
 }
 
 interface Deadline {
@@ -25,8 +45,47 @@ interface Deadline {
   kind: string;
 }
 
+const KIND_STYLES: Record<string, string> = {
+  hearing: "bg-purple-100 text-purple-800",
+  deadline: "bg-amber-100 text-amber-800",
+  meeting: "bg-blue-100 text-blue-800",
+};
+
+function MiniBarChart({
+  title,
+  points,
+  format,
+  barClass,
+}: {
+  title: string;
+  points: { label: string; value: number }[];
+  format: (v: number) => string;
+  barClass: string;
+}) {
+  const max = Math.max(...points.map((p) => p.value), 1);
+  return (
+    <div className="flex-1 min-w-0">
+      <p className="text-xs font-medium text-slate-500 mb-2">{title}</p>
+      <div className="flex items-end gap-2 h-28">
+        {points.map((p) => (
+          <div key={p.label} className="flex-1 flex flex-col items-center justify-end gap-1 min-w-0">
+            <span className="text-[10px] text-slate-600 whitespace-nowrap">
+              {p.value > 0 ? format(p.value) : ""}
+            </span>
+            <div
+              className={`w-full rounded-t ${barClass}`}
+              style={{ height: `${Math.max((p.value / max) * 88, p.value > 0 ? 4 : 1)}px` }}
+            />
+            <span className="text-[10px] text-slate-400">{p.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [data, setData] = useState<Dashboard | null>(null);
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
 
@@ -60,9 +119,71 @@ export default function DashboardPage() {
     },
   ];
 
+  const kindLabel = (kind: string) =>
+    ((t as unknown as Record<string, string>)[kind] as string) || kind;
+
+  const monthLabel = (ym: string) => {
+    const [y, m] = ym.split("-").map(Number);
+    return new Date(y, m - 1, 1).toLocaleDateString(locale, { month: "short" });
+  };
+
+  const agingBuckets = [
+    { key: "0_30", label: `0–30 ${t.agingDays}`, tone: "text-slate-700" },
+    { key: "31_60", label: `31–60 ${t.agingDays}`, tone: "text-amber-600" },
+    { key: "61_90", label: `61–90 ${t.agingDays}`, tone: "text-orange-600" },
+    { key: "91_plus", label: t.agingOver90, tone: "text-red-600" },
+  ];
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t.dashboard}</h1>
+
+      <Card className="p-5 border-indigo-200">
+        <h2 className="font-semibold mb-3">
+          {t.todayAgenda}
+          <span className="ml-2 text-sm font-normal text-slate-400">
+            {new Date().toLocaleDateString(locale, {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+            })}
+          </span>
+        </h2>
+        {data.today_agenda.length === 0 ? (
+          <p className="text-sm text-slate-500">{t.noAgendaToday}</p>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {data.today_agenda.map((a) => (
+              <Link
+                key={a.id}
+                href={`/matters/${a.matter_id}`}
+                className="flex items-center gap-3 py-2.5 hover:bg-slate-50 px-2 -mx-2 rounded"
+              >
+                <span className="text-sm font-semibold tabular-nums w-12">
+                  {new Date(a.due_at).toLocaleTimeString(locale, {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+                <span
+                  className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+                    KIND_STYLES[a.kind] || "bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  {kindLabel(a.kind)}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{a.title}</p>
+                  <p className="text-xs text-slate-500 truncate">
+                    {a.matter_reference} · {a.matter_title}
+                    {a.legal_basis ? ` · ${a.legal_basis}` : ""}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {stats.map((s) => (
@@ -77,6 +198,58 @@ export default function DashboardPage() {
             </Card>
           </Link>
         ))}
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-4">
+        <Card className="p-5 lg:col-span-2">
+          <h2 className="font-semibold mb-4">{t.monthlyTrend}</h2>
+          <div className="flex gap-8">
+            <MiniBarChart
+              title={t.workedHours}
+              points={data.monthly_trend.map((p) => ({
+                label: monthLabel(p.month),
+                value: p.hours,
+              }))}
+              format={(v) => `${v}h`}
+              barClass="bg-indigo-500"
+            />
+            <MiniBarChart
+              title={t.billedRevenue}
+              points={data.monthly_trend.map((p) => ({
+                label: monthLabel(p.month),
+                value: p.billed,
+              }))}
+              format={(v) => `€${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v.toFixed(0)}`}
+              barClass="bg-emerald-500"
+            />
+          </div>
+        </Card>
+
+        <Card className="p-5">
+          <h2 className="font-semibold mb-4">{t.arAging}</h2>
+          <div className="space-y-3">
+            {agingBuckets.map((b) => {
+              const value = data.ar_aging[b.key] || 0;
+              const total = Object.values(data.ar_aging).reduce((s, v) => s + v, 0) || 1;
+              return (
+                <div key={b.key}>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-slate-500">{b.label}</span>
+                    <span className={`font-medium tabular-nums ${b.tone}`}>
+                      €{value.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-slate-400 rounded-full"
+                      style={{ width: `${(value / total) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
       </div>
 
       <Card className="p-5">
