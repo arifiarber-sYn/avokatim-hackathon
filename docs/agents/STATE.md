@@ -63,6 +63,12 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 ## Environment
 
 - Host: owner's Fedora Linux machine; everything runs locally.
+- **Public domain**: https://boraarifi.ai (+ www) via **Cloudflare Tunnel** —
+  tunnel `boralaw` (id d22368e7-b5a0-44fb-80f5-12aa1aa5fa7f), config at
+  `~/.cloudflared/config.yml` (ingress → 127.0.0.1:3000; Next.js rewrites proxy
+  /api → backend). Runs as systemd user service `boralaw-tunnel.service`
+  (enabled). TLS terminates at Cloudflare edge — no cert management needed.
+  DNS on Cloudflare (free plan), domain registered at Namecheap (.ai).
 - **Autostart**: systemd user service `boralaw.service`
   (`~/.config/systemd/user/boralaw.service`) runs `start.sh` on boot; lingering enabled.
 - Containers (restart: unless-stopped): `boralaw-db` (pgvector/pg17, host port 5433),
@@ -88,8 +94,7 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   `LOCAL_LLM_MODEL=qwen3:8b` in `backend/.env`.
 - E-signature is the simple flow (typed name + SHA-256 + audit); qualified
   eIDAS/Kosovo e-signature law compliance is future work.
-- `PUBLIC_BASE_URL` (backend/.env, default http://127.0.0.1:3000) is used in
-  calendar-feed and public-intake links — set it when the app gets a real domain.
+- ~~PUBLIC_BASE_URL placeholder~~ done 2026-07-07: set to https://boraarifi.ai.
 - Caddy serves a self-signed cert on :8443 (browser warning is expected on LAN).
 
 ## Jurisdictions

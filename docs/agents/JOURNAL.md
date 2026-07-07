@@ -10,6 +10,22 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-07 — Public domain live: boraarifi.ai via Cloudflare Tunnel (Cursor / Fable 5)
+
+- Done: owner bought boraarifi.ai (Namecheap) + moved DNS to Cloudflare (free)
+  + authorized `cloudflared tunnel login`. Installed cloudflared 2026.6.1 (rpm),
+  created tunnel `boralaw`, CNAMEs for apex + www (--overwrite-dns over old
+  parking records), config → 127.0.0.1:3000 (Next rewrites carry /api),
+  systemd user service `boralaw-tunnel.service` (enabled, Restart=always).
+  PUBLIC_BASE_URL=https://boraarifi.ai in backend/.env; stack restarted.
+- Verified through the public internet: /login /dashboard /portal /apliko/{token}
+  /manifest.webmanifest /sw.js /api/health /api/public/intake/{token} all 200 on
+  https://boraarifi.ai and www; served by Cloudflare (cf-ray SOF); public-form
+  and calendar-feed URLs now emit the domain. Owner also confirmed backup key
+  copied to USB.
+- Left open / next: real corpus (owner uploads laws), pilot firm demo, PWA
+  install + push opt-in on owner's phone (now easy: valid TLS on the domain).
+
 ## 2026-07-07 — SMTP live via Gmail App Password (Cursor / Fable 5)
 
 - Done: owner supplied a Gmail App Password; SMTP_* set in `backend/.env`
