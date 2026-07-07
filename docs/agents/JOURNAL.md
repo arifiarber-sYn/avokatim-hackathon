@@ -10,6 +10,24 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-07 — Dashboard outage: stale next-server + full audit (Cursor / Fable 5)
+
+- Root cause: owner saw a broken dashboard because the running `next-server`
+  (started 14:50) predated the last `npm run build` (15:11) — old HTML referenced
+  chunk files that the new build had replaced, so the browser got 404s on JS and
+  pages never hydrated. Fixed by `systemctl --user restart boralaw.service` and
+  **hardened `start.sh`**: it now rebuilds when `frontend/src`/`public` is newer
+  than `.next/BUILD_ID` and kills the stale server before starting a fresh one.
+- Full audit (all green): 9 pytest pass; alembic at head `fdb43a0e95bc`; every
+  app page (/, login, dashboard, matters, contacts, calendar, intake, billing,
+  reports, assistant, templates, settings, portal) returns 200; all 11 JS/CSS
+  chunks referenced by /dashboard load 200; /api reports/dashboard + analytics,
+  matters, invoices, time-entries, team, intake, templates all 200 with a real
+  token; public intake page (/apliko/{token}) 200 + its public API OK; ICS feed
+  200; Caddy HTTPS 200; containers healthy; boralaw.service + backup timer
+  enabled (next run 03:00).
+- Left open / next: SMTP app password (owner), real corpus, public domain.
+
 ## 2026-07-07 — OCR enabled on host (Cursor / Fable 5)
 
 - Done: installed tesseract 5.5.2 + langpacks sqi/eng/chi_sim (owner provided

@@ -74,8 +74,10 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
 ## Known issues / caveats
 
-- `start.sh` skips `npm run build` when `frontend/.next` exists — rebuild manually
-  after frontend changes (see AGENTS.md §4).
+- ~~`start.sh` skips `npm run build`~~ fixed 2026-07-07: `start.sh` now rebuilds
+  automatically when any file in `frontend/src`/`public` is newer than
+  `.next/BUILD_ID`, and kills the stale `next-server` before starting a fresh one
+  (a stale server over a new build serves 404 chunks → blank pages).
 - SMTP not configured yet — the email channel of reminders is off (push channel
   works). Set SMTP_HOST/PORT/USER/PASSWORD/FROM in `backend/.env` to enable email.
   Waiting on owner to create a Gmail **App Password** (regular Gmail passwords
@@ -89,7 +91,6 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - `PUBLIC_BASE_URL` (backend/.env, default http://127.0.0.1:3000) is used in
   calendar-feed and public-intake links — set it when the app gets a real domain.
 - Caddy serves a self-signed cert on :8443 (browser warning is expected on LAN).
-- OCR system binary (tesseract) not confirmed installed on host.
 
 ## Jurisdictions
 

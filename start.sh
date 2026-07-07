@@ -24,11 +24,24 @@ done
 curl -sf http://127.0.0.1:8000/api/health > /dev/null && echo "  Backend OK"
 
 echo "[3/3] Frontend (Next.js ne 127.0.0.1:3000)..."
+# Rindertim nese s'ka build OSE nese kodi eshte me i ri se build-i ekzistues.
+# (Nje server i vjeter mbi nje build te ri jep 404 per chunks JS -> faqe bosh.)
+NEEDS_BUILD=0
+if [ ! -f frontend/.next/BUILD_ID ]; then
+    NEEDS_BUILD=1
+else
+    NEWEST_SRC=$(find frontend/src frontend/public frontend/package.json \
+        -type f -newer frontend/.next/BUILD_ID 2>/dev/null | head -1)
+    [ -n "$NEWEST_SRC" ] && NEEDS_BUILD=1
+fi
+if [ "$NEEDS_BUILD" = "1" ]; then
+    echo "  Kodi i frontend-it ka ndryshuar — po rindertohet..."
+    (cd frontend && npm run build > /dev/null 2>&1)
+    # Serveri i vjeter (nese ekziston) mban referenca te build-it te vjeter — ndaloje
+    pkill -f "next-serve[r]" 2>/dev/null || true
+    sleep 2
+fi
 if ! curl -sf http://127.0.0.1:3000 > /dev/null 2>&1; then
-    # Rindertim vetem nese s'ka build ekzistues (pas ndryshimeve ne kod fshije frontend/.next)
-    if [ ! -d frontend/.next ]; then
-        (cd frontend && npm run build > /dev/null 2>&1)
-    fi
     (cd frontend && nohup npm start >> ../data/frontend.log 2>&1 &)
 fi
 for _ in $(seq 1 60); do
