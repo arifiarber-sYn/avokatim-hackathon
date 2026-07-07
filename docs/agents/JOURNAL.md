@@ -10,6 +10,15 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-07 — Sales pitch for Kosovo law firm (Cursor / Fable 5)
+
+- Done: a law firm in Kosovo contacted the owner after he posted about the
+  project. Wrote the presentation text (Albanian) in
+  `docs/pitch/prezantimi-firma-avokatesh.md`, framed as a founding-partner
+  pilot offer (their expertise shapes the firm module, Phase 3).
+- Note for future agents: if the pilot happens, Phase 3 (roles, matter
+  assignment, firm reporting) becomes top priority in ROADMAP.
+
 ## 2026-07-06 — Agent management system + autostart (Cursor / Fable 5)
 
 - Done: created the agent operating system for this repo: root `AGENTS.md`
