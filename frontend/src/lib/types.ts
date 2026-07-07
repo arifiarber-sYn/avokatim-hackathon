@@ -18,6 +18,7 @@ export interface Matter {
   practice_area: string;
   status: string;
   client: Contact | null;
+  responsible_user_id: string | null;
   court_name: string | null;
   court_case_number: string | null;
   opened_on: string | null;

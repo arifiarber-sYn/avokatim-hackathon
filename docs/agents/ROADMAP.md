@@ -23,7 +23,9 @@ Everything in STATE.md "What exists and works".
 - [ ] Verify OCR end-to-end on host (tesseract langpacks) with scanned Albanian documents.
 - [ ] Local LLM option in production: configure Ollama/vLLM endpoint, quality-test
       "Bora" against DeepSeek on Albanian legal questions.
-- [ ] Email/notification channel for approaching deadlines (currently UI-only).
+- [x] Email/notification channel for approaching deadlines ✅ (2026-07-07):
+      hourly reminder loop mails responsible lawyer per remind_days_before,
+      Redis-deduped. Needs SMTP_* in backend/.env to activate.
 - [x] Dashboard upgrade P1 ✅ (2026-07-07): "Today" agenda, A/R aging buckets,
       6-month worked-hours + billed-revenue trend, global quick timer in sidebar.
 - [x] Dashboard upgrade P2 ✅ (2026-07-07): /reports analytics page with
@@ -34,30 +36,38 @@ Everything in STATE.md "What exists and works".
 
 ## Phase 3 — Multi-lawyer / law firms
 
-- [ ] Roles & permissions inside a tenant (partner, associate, paralegal, admin).
-- [ ] Assignment & internal workflow (who works the matter, review steps).
-- [ ] Firm-level reporting.
+- [x] Multi-user + roles (admin/lawyer/staff) inside a tenant ✅ (2026-07-07):
+      Settings → Team (add member, change role, deactivate); matter assignment
+      via responsible lawyer select on the matter Overview.
+- [ ] Finer permissions (per-matter visibility, review steps, internal workflow).
+- [ ] Firm-level reporting (per-lawyer utilization on /reports).
 
 ## Competitive gaps (from 2026-07-07 full-app analysis vs Clio/Smokeball/MyCase)
 
 Priority before the law-firm pilot:
-- [ ] AI deadline extraction from court documents (upload ruling/summons →
-      Bora proposes deadlines via our rules engine with legal basis). Combines
-      Clio's flagship 2026 AI feature with our unique differentiator.
-- [ ] Calendar sync via ICS subscription feed (Google/Outlook/phone).
+- [x] AI deadline extraction from court documents ✅ (2026-07-07): button on any
+      document with text → Bora proposes deadlines (date, legal basis,
+      confidence), lawyer accepts selected ones.
+- [x] Calendar sync via ICS subscription feed ✅ (2026-07-07): signed-token URL
+      in Settings, works with Google/Outlook/phone.
 
 Base competitiveness:
-- [ ] E-signature flow in client portal (simple draw/confirm + hash + audit
-      first; qualified eIDAS/Kosovo e-signature law later).
-- [ ] Client portal v2: secure two-way messaging + document sharing.
-- [ ] AI-drafted client status updates (button on the matter file).
+- [x] E-signature flow in client portal ✅ (2026-07-07): typed-name signature
+      bound to document SHA-256 + IP + timestamp, audit-logged. Qualified
+      eIDAS/Kosovo e-signature law compliance still future work.
+- [x] Client portal v2 ✅ (2026-07-07): full portal UI at /portal — login,
+      matters, two-way messages per matter, signature inbox.
+- [x] AI-drafted client status updates ✅ (2026-07-07): button on matter AI tab,
+      send straight to portal messages or copy.
 
 Long-term differentiation:
 - [ ] Kosovo template library built with the pilot firm (our answer to
       Smokeball's 20k form library — nobody has this for XK).
 - [ ] Local payment tracking (payment reference + status; local processor later).
-- [ ] PWA (installable, push notifications for deadlines).
-- [ ] Public intake form link (feeds funnel with source=web).
+- [x] PWA ✅ (2026-07-07): manifest + icons, installable. Push notifications for
+      deadlines still open (needs service worker + web-push).
+- [x] Public intake form link ✅ (2026-07-07): /apliko/{token} public page,
+      feeds intake funnel with source=web; link in Settings.
 
 ## Phase 4 — More jurisdictions
 

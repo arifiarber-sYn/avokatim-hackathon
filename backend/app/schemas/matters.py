@@ -55,6 +55,7 @@ class MatterUpdate(BaseModel):
     practice_area: str | None = None
     status: str | None = None
     client_id: uuid.UUID | None = None
+    responsible_user_id: uuid.UUID | None = None
     court_name: str | None = None
     court_case_number: str | None = None
     opened_on: date | None = None
@@ -71,6 +72,7 @@ class MatterOut(BaseModel):
     status: str
     jurisdiction_id: uuid.UUID
     client: ContactOut | None
+    responsible_user_id: uuid.UUID
     court_name: str | None
     court_case_number: str | None
     opened_on: date | None

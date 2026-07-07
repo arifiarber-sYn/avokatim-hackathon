@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 
@@ -8,6 +9,8 @@ from app.api import (
     assistant,
     auth,
     billing,
+    calendar_feed,
+    collab,
     contacts,
     corpus,
     deadlines,
@@ -16,11 +19,13 @@ from app.api import (
     matters,
     portal,
     reports,
+    team,
     templates,
 )
 from app.config import settings
 from app.database import SessionLocal
 from app.seeds import seed_jurisdictions
+from app.services.notifications import reminder_loop
 
 logging.basicConfig(level=logging.INFO)
 
@@ -30,7 +35,9 @@ async def lifespan(app: FastAPI):
     settings.documents_dir.mkdir(parents=True, exist_ok=True)
     async with SessionLocal() as db:
         await seed_jurisdictions(db)
+    reminders = asyncio.create_task(reminder_loop())
     yield
+    reminders.cancel()
 
 
 app = FastAPI(title="BoraLaw API", version="0.1.0", lifespan=lifespan)
@@ -56,6 +63,10 @@ app.include_router(corpus.router, prefix=api_prefix)
 app.include_router(billing.router, prefix=api_prefix)
 app.include_router(reports.router, prefix=api_prefix)
 app.include_router(portal.router, prefix=api_prefix)
+app.include_router(team.router, prefix=api_prefix)
+app.include_router(collab.router, prefix=api_prefix)
+app.include_router(calendar_feed.router, prefix=api_prefix)
+app.include_router(intake.public_router, prefix=api_prefix)
 
 
 @app.get("/api/health")

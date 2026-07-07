@@ -178,6 +178,83 @@ async def ask_bora(
     return result.content, citations
 
 
+EXTRACT_DEADLINES_PROMPT = """Analizo këtë dokument gjyqësor dhe nxirr TË GJITHA datat
+dhe afatet procedurale që përmban ose që rrjedhin prej tij.
+
+Kthe VETËM JSON të vlefshëm — një listë objektesh me këto fusha:
+- title: emërtim i shkurtër i afatit/ngjarjes në shqip (p.sh. "Afati i ankesës", "Seanca kryesore")
+- kind: një nga [deadline, hearing, meeting]
+- date: data në format YYYY-MM-DD (nëse dokumenti e cek direkt), ose null
+- trigger_date: data e ngjarjes nga e cila rrjedh afati (p.sh. data e pranimit të vendimit), format YYYY-MM-DD, ose null
+- days: numri i ditëve të afatit nëse përmendet (p.sh. 15 për ankesë), ose null
+- legal_basis: baza ligjore nëse përmendet ose dihet (p.sh. "LPK neni 176"), ose null
+- confidence: një nga [high, medium, low]
+
+Rregulla:
+- Përfshi edhe afatet e nënkuptuara nga lloji i dokumentit (p.sh. vendim i shkallës së parë → afati i ankesës).
+- Mos shpik data. Nëse data s'është e qartë, vendos null dhe confidence "low".
+- Maksimum 10 rezultate, vetëm çka është relevante procedurale.
+
+DOKUMENTI:
+{text}"""
+
+
+async def extract_deadlines_from_text(
+    text: str, provider_name: str | None = None
+) -> list[dict]:
+    """Ask the LLM to extract procedural dates/deadlines from a court document."""
+    provider = get_provider(provider_name)
+    result = await provider.chat(
+        [
+            ChatMessage(role="system", content=SYSTEM_PROMPT),
+            ChatMessage(
+                role="user", content=EXTRACT_DEADLINES_PROMPT.format(text=text[:24000])
+            ),
+        ]
+    )
+    match = re.search(r"\[.*\]", result.content, re.DOTALL)
+    if not match:
+        single = _extract_json(result.content)
+        return [single] if single else []
+    try:
+        parsed = json.loads(match.group(0))
+        return parsed if isinstance(parsed, list) else []
+    except json.JSONDecodeError:
+        return []
+
+
+CLIENT_UPDATE_PROMPT = """Drafto një njoftim të shkurtër profesional për klientin e kësaj
+lënde, në emër të avokatit. Njoftimi duhet:
+- të shkruhet në gjuhën shqipe, me ton të ngrohtë por profesional
+- të përmbledhë ku ndodhet lënda aktualisht (pa zhargon të tepërt juridik)
+- të tregojë hapat e radhës dhe afatet/seancat e ardhshme nëse ka
+- të mos premtojë rezultate dhe të mos japë këshilla të reja ligjore
+- maksimum 200 fjalë, pa hyrje "Shpresoj se..." të tepërta
+
+Kthe vetëm tekstin e njoftimit, pa shpjegime shtesë."""
+
+
+async def draft_client_update(
+    db: AsyncSession,
+    *,
+    matter_id: uuid.UUID,
+    extra_instructions: str | None = None,
+    provider_name: str | None = None,
+) -> str:
+    context = await build_matter_context(db, matter_id)
+    question = CLIENT_UPDATE_PROMPT
+    if extra_instructions:
+        question += f"\n\nUdhëzime shtesë nga avokati: {extra_instructions}"
+    provider = get_provider(provider_name)
+    result = await provider.chat(
+        [
+            ChatMessage(role="system", content=SYSTEM_PROMPT),
+            ChatMessage(role="user", content=f"{context}\n\n=== DETYRA ===\n{question}"),
+        ]
+    )
+    return result.content
+
+
 HEARING_PREP_PROMPT = """Përgatit avokatin për seancën gjyqësore të kësaj lënde.
 Struktura e përgjigjes:
 1. KRONOLOGJIA E FAKTEVE — faktet kyçe në rend kohor

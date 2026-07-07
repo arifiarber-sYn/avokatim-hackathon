@@ -53,6 +53,18 @@ class Settings(BaseSettings):
     default_locale: str = "sq"
     supported_locales: list[str] = ["sq", "en", "zh"]
 
+    # Public base URL used in links (calendar feed, public intake form)
+    public_base_url: str = "http://127.0.0.1:3000"
+
+    # Email notifications (deadline reminders). Empty smtp_host = disabled.
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = "BoraLaw <noreply@boralaw.local>"
+    smtp_starttls: bool = True
+    reminder_check_minutes: int = 60
+
 
 @lru_cache
 def get_settings() -> Settings:

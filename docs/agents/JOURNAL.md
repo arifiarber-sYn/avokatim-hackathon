@@ -10,6 +10,34 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-07 — Competitive-gap features implemented (Cursor / Fable 5)
+
+- Done: implemented all suggestions from the full-app analysis in one batch.
+  Migration `fc080e9898a0`: `matter_messages`, `signature_requests`,
+  `tenants.intake_token`. New backend: `/api/team` (multi-user + roles,
+  admin/lawyer manage), `/api/calendar/feed.ics` (ICS with signed token),
+  `extract-deadlines` + `deadlines/bulk` (AI reads court doc → proposals →
+  accept), matter/portal messages, signature request/sign/decline (SHA-256 +
+  IP + timestamp, audit), `client-update-draft`, public intake
+  (`/api/public/intake/{token}`), reminder loop (`services/notifications.py`,
+  SMTP config in `config.py`, Redis dedup). `MatterOut/Update` now carry
+  `responsible_user_id`.
+- UI: Settings → Team/Calendar sync/Public form sections; matter page →
+  Messages tab, responsible-lawyer select, per-document "Extract deadlines" +
+  "Request signature", AI tab → client-update draft with send-to-portal;
+  new `/portal` (client login, matters, chat, signature inbox); new
+  `/apliko/[token]` public form; PWA manifest + generated icons.
+- Verified: 9 tests pass; full E2E via API with synthetic data (portal login,
+  message roundtrip both directions, sign flow, real DeepSeek extraction —
+  found appeal deadline art. LPK + hearing date from a synthetic judgment —
+  bulk accept created 2 deadlines, client-update draft in Albanian, ICS shows
+  2 events, team member create/deactivate); synthetic data cleaned up;
+  frontend built; stack restarted; /portal, /apliko/…, /manifest.webmanifest
+  all 200.
+- Left open: SMTP credentials (reminders auto-enable once set), push
+  notifications for PWA, qualified e-signature, per-matter permissions,
+  payment tracking, XK template library with pilot firm.
+
 ## 2026-07-07 — Full-app competitor analysis (Cursor / Fable 5)
 
 - Done: researched full 2026 feature sets of Clio (Manage AI, Draft, Grow,

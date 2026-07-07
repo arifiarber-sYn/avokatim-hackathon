@@ -24,11 +24,180 @@ export default function SettingsPage() {
     <div className="space-y-8 max-w-3xl">
       <h1 className="text-2xl font-bold">{t.settings}</h1>
       <ProfileSection />
+      <TeamSection />
+      <CalendarFeedSection />
+      <PublicIntakeSection />
       <TwoFASection />
       <CorpusSection />
       <PortalSection />
     </div>
   );
+}
+
+interface TeamMember {
+  id: string;
+  email: string;
+  full_name: string;
+  role: string;
+  is_active: boolean;
+}
+
+function TeamSection() {
+  const { t } = useI18n();
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [form, setForm] = useState({ full_name: "", email: "", password: "", role: "lawyer" });
+  const [error, setError] = useState("");
+
+  const roleLabels: Record<string, string> = {
+    admin: t.roleAdmin,
+    lawyer: t.roleLawyer,
+    staff: t.roleStaff,
+  };
+
+  const load = useCallback(() => {
+    apiGet<TeamMember[]>("/team").then(setMembers).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  async function add(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    try {
+      await apiPost("/team", form);
+      setForm({ full_name: "", email: "", password: "", role: "lawyer" });
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  async function toggleActive(m: TeamMember) {
+    try {
+      await apiPatch(`/team/${m.id}`, { is_active: !m.is_active });
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  async function changeRole(m: TeamMember, role: string) {
+    try {
+      await apiPatch(`/team/${m.id}`, { role });
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  return (
+    <Card className="p-5 space-y-4">
+      <h2 className="font-semibold">{t.team}</h2>
+      <div className="divide-y divide-slate-100">
+        {members.map((m) => (
+          <div key={m.id} className="flex items-center justify-between py-2 text-sm gap-3">
+            <div className="min-w-0">
+              <p className={`font-medium truncate ${m.is_active ? "" : "text-slate-400 line-through"}`}>
+                {m.full_name}
+              </p>
+              <p className="text-xs text-slate-500 truncate">{m.email}</p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Select
+                value={m.role}
+                onChange={(e) => changeRole(m, e.target.value)}
+                className="text-xs w-36"
+              >
+                {Object.entries(roleLabels).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </Select>
+              <button
+                onClick={() => toggleActive(m)}
+                className={`text-xs hover:underline ${m.is_active ? "text-red-600" : "text-emerald-600"}`}
+              >
+                {m.is_active ? t.deactivate : t.activate}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <form onSubmit={add} className="grid md:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+        <div>
+          <Label>{t.fullName}</Label>
+          <Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required />
+        </div>
+        <div>
+          <Label>{t.email}</Label>
+          <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+        </div>
+        <div>
+          <Label>{t.password}</Label>
+          <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={10} />
+        </div>
+        <div>
+          <Label>{t.roleLabel}</Label>
+          <Select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
+            {Object.entries(roleLabels).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </Select>
+        </div>
+        <div className="md:col-span-2 flex items-center gap-3">
+          <Button type="submit">{t.addMember}</Button>
+          <ErrorNote message={error} />
+        </div>
+      </form>
+    </Card>
+  );
+}
+
+function CopyLinkCard({ title, hint, url }: { title: string; hint: string; url: string }) {
+  const { t } = useI18n();
+  const [copied, setCopied] = useState(false);
+
+  async function copy() {
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <Card className="p-5 space-y-3">
+      <h2 className="font-semibold">{title}</h2>
+      <p className="text-sm text-slate-500">{hint}</p>
+      {url && (
+        <div className="flex gap-2 items-center">
+          <p className="flex-1 font-mono text-xs bg-slate-100 rounded-lg px-3 py-2 break-all select-all">
+            {url}
+          </p>
+          <Button variant="secondary" onClick={copy}>
+            {copied ? t.copied : t.copyLink}
+          </Button>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function CalendarFeedSection() {
+  const { t } = useI18n();
+  const [url, setUrl] = useState("");
+  useEffect(() => {
+    apiGet<{ url: string }>("/calendar/feed-url").then((r) => setUrl(r.url)).catch(() => {});
+  }, []);
+  return <CopyLinkCard title={t.calendarSync} hint={t.calendarSyncHint} url={url} />;
+}
+
+function PublicIntakeSection() {
+  const { t } = useI18n();
+  const [url, setUrl] = useState("");
+  useEffect(() => {
+    apiGet<{ url: string }>("/intake/public-form").then((r) => setUrl(r.url)).catch(() => {});
+  }, []);
+  return <CopyLinkCard title={t.publicIntakeForm} hint={t.publicIntakeHint} url={url} />;
 }
 
 function ProfileSection() {

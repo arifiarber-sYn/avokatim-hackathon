@@ -1,15 +1,18 @@
 import logging
+import secrets
 import uuid
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.matters import _next_reference
+from app.config import settings
 from app.database import get_db
 from app.deps import get_current_user
-from app.models import Contact, IntakeRequest, Jurisdiction, Matter, MatterParty, User
+from app.models import Contact, IntakeRequest, Jurisdiction, Matter, MatterParty, Tenant, User
 from app.schemas.matters import IntakeIn, IntakeOut
 from app.services.audit import log_action
 from app.services.conflicts import check_conflicts
@@ -17,6 +20,7 @@ from app.services.assistant import classify_intake
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/intake", tags=["intake"])
+public_router = APIRouter(prefix="/public", tags=["public"])
 
 
 @router.get("", response_model=list[IntakeOut])
@@ -133,6 +137,72 @@ async def accept_intake(
     await db.commit()
     await db.refresh(intake)
     return intake
+
+
+@router.get("/public-form")
+async def get_public_form(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return (creating on first call) the tenant's public intake form URL."""
+    tenant = await db.get(Tenant, user.tenant_id)
+    if not tenant.intake_token:
+        tenant.intake_token = secrets.token_urlsafe(24)
+        await db.commit()
+    return {"url": f"{settings.public_base_url}/apliko/{tenant.intake_token}"}
+
+
+class PublicIntakeIn(BaseModel):
+    client_name: str = Field(min_length=2, max_length=255)
+    client_email: str | None = Field(default=None, max_length=255)
+    client_phone: str | None = Field(default=None, max_length=64)
+    summary: str = Field(min_length=10, max_length=8000)
+
+
+@public_router.get("/intake/{token}")
+async def public_intake_info(token: str, db: AsyncSession = Depends(get_db)):
+    """Practice name for the public form header. 404 keeps tokens unguessable."""
+    tenant = (
+        await db.execute(select(Tenant).where(Tenant.intake_token == token))
+    ).scalar_one_or_none()
+    if tenant is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Not found")
+    return {"practice_name": tenant.name}
+
+
+@public_router.post("/intake/{token}", status_code=201)
+async def public_intake_submit(
+    token: str,
+    body: PublicIntakeIn,
+    db: AsyncSession = Depends(get_db),
+):
+    """Anonymous submission from the firm's public intake link. No AI here —
+    classification happens when the lawyer opens the intake list."""
+    tenant = (
+        await db.execute(select(Tenant).where(Tenant.intake_token == token))
+    ).scalar_one_or_none()
+    if tenant is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Not found")
+
+    conflict = await check_conflicts(db, tenant.id, [body.client_name])
+    intake = IntakeRequest(
+        tenant_id=tenant.id,
+        client_name=body.client_name,
+        client_email=body.client_email,
+        client_phone=body.client_phone,
+        summary=body.summary,
+        source="web",
+        status="conflict" if conflict["has_conflicts"] else "new",
+        conflict_result=conflict,
+    )
+    db.add(intake)
+    await db.flush()
+    await log_action(
+        db, tenant_id=tenant.id, user_id=None, action="intake.public_submit",
+        entity_type="intake", entity_id=str(intake.id),
+    )
+    await db.commit()
+    return {"received": True}
 
 
 @router.post("/{intake_id}/decline", response_model=IntakeOut)

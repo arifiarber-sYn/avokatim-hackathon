@@ -17,6 +17,8 @@ class Tenant(Base, TimestampMixin):
     kind: Mapped[str] = mapped_column(String(20), default="solo")  # solo | firm
     default_locale: Mapped[str] = mapped_column(String(8), default="sq")
     default_jurisdiction_code: Mapped[str] = mapped_column(String(8), default="XK")
+    # Opaque token for the public intake form URL; null = form disabled
+    intake_token: Mapped[str | None] = mapped_column(String(64), unique=True)
 
     users: Mapped[list["User"]] = relationship(back_populates="tenant")
 
