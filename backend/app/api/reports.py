@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import func, literal_column, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.matters import restricted_visibility_filter
 from app.database import get_db
 from app.deps import get_current_user
 from app.models import Deadline, IntakeRequest, Invoice, InvoiceItem, Matter, TimeEntry, User
@@ -102,6 +103,7 @@ async def dashboard(
                 Deadline.status == "pending",
                 Deadline.due_at >= day_start,
                 Deadline.due_at < day_end,
+                restricted_visibility_filter(user),
             )
             .order_by(Deadline.due_at)
         )

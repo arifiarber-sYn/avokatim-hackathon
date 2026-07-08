@@ -3,9 +3,9 @@
 > Update this file whenever the state changes (new module, dependency, behavior,
 > known issue). Keep it a snapshot, not a history — history lives in JOURNAL.md.
 
-**Last updated:** 2026-07-07
+**Last updated:** 2026-07-08
 
-## Status: MVP built and running + competitive-gap features
+## Status: MVP built and running + competitive-gap + firm-readiness features
 
 All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
@@ -20,6 +20,25 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   (tenant token from Settings; submissions arrive with source=web).
 - **Matters**: digital case file — parties, documents, deadlines, notes, history,
   **two-way client messages** (Messages tab ↔ portal).
+- **Per-matter permissions** (2026-07-08): `matters.restricted` + `matter_members`
+  table. A restricted matter is visible only to admins, the responsible lawyer and
+  explicit members — enforced centrally in `get_owned_matter` +
+  `restricted_visibility_filter` (matter list, upcoming deadlines, ICS feed,
+  dashboard agenda). UI: checkbox + member picker on matter Overview (shows when
+  team > 1).
+- **Document approval workflow** (2026-07-08): draft → in_review → approved /
+  changes_requested. `POST /documents/{id}/request-review` (pick reviewer),
+  `POST /documents/{id}/review` (reviewer or admin decides, optional note),
+  `GET /documents/review-inbox`. UI: "Rishikimi" column in the matter Documents tab.
+- **CSV data import** (2026-07-08): Settings → Data import; `POST /import/contacts`
+  and `/import/matters` (utf-8/latin-1, header row, dedupe by name, client
+  auto-link/create, dates YYYY-MM-DD or dd.mm.yyyy). Template CSVs downloadable
+  in the UI. Max 2000 rows per file.
+- **Fiscal invoices** (2026-07-08): tenant carries `fiscal_number` (NUI),
+  `vat_number`, `address`, `default_vat_rate` (18) — editable in Settings → Firm
+  profile (admin only, `GET/PATCH /firm`). New invoices get `vat_rate` from tenant
+  default (overridable per invoice); `vat_amount`/`total_with_vat` computed and
+  shown on the invoice card. Numbering remains sequential per year (F-YYYY-NNNN).
 - **Deadline engine**: Kosovo procedural rules (LPK, KPPRK, LKA) seeded as data,
   automatic calculation with official holidays. Tests in `test_deadline_engine.py`.
 - **AI deadline extraction**: button on any document with text — Bora proposes

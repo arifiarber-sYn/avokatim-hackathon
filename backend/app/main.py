@@ -15,6 +15,8 @@ from app.api import (
     corpus,
     deadlines,
     documents,
+    firm,
+    imports,
     intake,
     matters,
     portal,
@@ -69,6 +71,8 @@ app.include_router(collab.router, prefix=api_prefix)
 app.include_router(calendar_feed.router, prefix=api_prefix)
 app.include_router(intake.public_router, prefix=api_prefix)
 app.include_router(push.router, prefix=api_prefix)
+app.include_router(firm.router, prefix=api_prefix)
+app.include_router(imports.router, prefix=api_prefix)
 
 
 @app.get("/api/health")

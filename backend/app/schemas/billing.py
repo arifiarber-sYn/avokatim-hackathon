@@ -44,6 +44,8 @@ class InvoiceCreateIn(BaseModel):
     items: list[InvoiceItemIn] = []
     # Pull all unbilled billable time entries of the matter into the invoice
     include_unbilled_time: bool = False
+    # None = use the tenant's default VAT rate; 0 = VAT-free invoice
+    vat_rate: int | None = Field(None, ge=0, le=30)
 
 
 class InvoiceOut(BaseModel):
@@ -57,6 +59,9 @@ class InvoiceOut(BaseModel):
     due_on: date | None
     paid_on: date | None
     payment_reference: str | None
+    vat_rate: int = 0
+    vat_amount: Decimal = Decimal("0")
+    total_with_vat: Decimal = Decimal("0")
     notes: str | None
     items: list[InvoiceItemOut]
     total: Decimal

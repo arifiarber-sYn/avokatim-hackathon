@@ -23,6 +23,7 @@ export interface Matter {
   court_case_number: string | null;
   opened_on: string | null;
   closed_on: string | null;
+  restricted: boolean;
 }
 
 export interface Deadline {
@@ -58,6 +59,10 @@ export interface Doc {
   category: string | null;
   ocr_status: string;
   has_text: boolean;
+  approval_status: string;
+  reviewer_id: string | null;
+  approval_note: string | null;
+  reviewed_at: string | null;
   created_at: string;
 }
 
@@ -117,6 +122,9 @@ export interface Invoice {
   due_on: string | null;
   paid_on: string | null;
   payment_reference: string | null;
+  vat_rate: number;
+  vat_amount: string;
+  total_with_vat: string;
   items: { id: string; description: string; quantity: string; unit_price: string; amount: string }[];
   total: string;
 }

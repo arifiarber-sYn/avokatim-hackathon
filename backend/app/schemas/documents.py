@@ -16,9 +16,22 @@ class DocumentOut(BaseModel):
     category: str | None
     ocr_status: str
     has_text: bool = False
+    approval_status: str = "none"
+    reviewer_id: uuid.UUID | None = None
+    approval_note: str | None = None
+    reviewed_at: datetime | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class ReviewRequestIn(BaseModel):
+    reviewer_id: uuid.UUID
+
+
+class ReviewDecisionIn(BaseModel):
+    decision: str  # "approve" | "request_changes"
+    note: str | None = None
 
 
 class TemplateOut(BaseModel):

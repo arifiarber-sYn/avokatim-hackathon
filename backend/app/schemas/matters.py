@@ -77,10 +77,16 @@ class MatterOut(BaseModel):
     court_case_number: str | None
     opened_on: date | None
     closed_on: date | None
+    restricted: bool = False
     extra: dict
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class MatterMembersUpdate(BaseModel):
+    restricted: bool
+    user_ids: list[uuid.UUID] = []
 
 
 class MatterNoteIn(BaseModel):

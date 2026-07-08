@@ -212,6 +212,14 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
                   </div>
                   <p className="text-xs text-slate-500 mt-1">
                     {inv.items.length} × | {t.total}: {inv.currency} {Number(inv.total).toFixed(2)}
+                    {inv.vat_rate > 0 && (
+                      <>
+                        {" "}+ {t.vat} {inv.vat_rate}% ({Number(inv.vat_amount).toFixed(2)}) ={" "}
+                        <span className="font-semibold text-slate-700">
+                          {inv.currency} {Number(inv.total_with_vat).toFixed(2)}
+                        </span>
+                      </>
+                    )}
                   </p>
                   {inv.status === "paid" && (inv.paid_on || inv.payment_reference) && (
                     <p className="text-xs text-emerald-700 mt-1">

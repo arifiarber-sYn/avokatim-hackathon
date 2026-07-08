@@ -2,15 +2,24 @@ import uuid
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select, true
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.deps import get_current_user
-from app.models import Contact, Jurisdiction, Matter, MatterNote, MatterParty, User
+from app.models import (
+    Contact,
+    Jurisdiction,
+    Matter,
+    MatterMember,
+    MatterNote,
+    MatterParty,
+    User,
+)
 from app.schemas.matters import (
     MatterIn,
+    MatterMembersUpdate,
     MatterNoteIn,
     MatterNoteOut,
     MatterOut,
@@ -42,6 +51,36 @@ async def _next_reference(db: AsyncSession, tenant_id: uuid.UUID, practice_area:
     return f"{prefix}{count + 1:04d}"
 
 
+def restricted_visibility_filter(user: User):
+    """SQL filter usable on any query joined to Matter: hides restricted
+    matters from everyone except admins, the responsible lawyer and members."""
+    member_exists = (
+        select(MatterMember.id)
+        .where(MatterMember.matter_id == Matter.id, MatterMember.user_id == user.id)
+        .exists()
+    )
+    if user.role == "admin":
+        return true()
+    return or_(
+        Matter.restricted.is_(False),
+        Matter.responsible_user_id == user.id,
+        member_exists,
+    )
+
+
+async def _can_access(db: AsyncSession, user: User, matter: Matter) -> bool:
+    if not matter.restricted or user.role == "admin" or matter.responsible_user_id == user.id:
+        return True
+    member = (
+        await db.execute(
+            select(MatterMember.id).where(
+                MatterMember.matter_id == matter.id, MatterMember.user_id == user.id
+            )
+        )
+    ).scalar_one_or_none()
+    return member is not None
+
+
 async def get_owned_matter(db: AsyncSession, user: User, matter_id: uuid.UUID) -> Matter:
     matter = (
         await db.execute(
@@ -50,7 +89,7 @@ async def get_owned_matter(db: AsyncSession, user: User, matter_id: uuid.UUID) -
             .where(Matter.id == matter_id, Matter.tenant_id == user.tenant_id)
         )
     ).scalar_one_or_none()
-    if matter is None:
+    if matter is None or not await _can_access(db, user, matter):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Matter not found")
     return matter
 
@@ -66,7 +105,7 @@ async def list_matters(
     stmt = (
         select(Matter)
         .options(selectinload(Matter.client))
-        .where(Matter.tenant_id == user.tenant_id)
+        .where(Matter.tenant_id == user.tenant_id, restricted_visibility_filter(user))
     )
     if status_filter:
         stmt = stmt.where(Matter.status == status_filter)
@@ -138,6 +177,66 @@ async def update_matter(
     )
     await db.commit()
     return await get_owned_matter(db, user, matter.id)
+
+
+@router.get("/{matter_id}/members")
+async def list_members(
+    matter_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    matter = await get_owned_matter(db, user, matter_id)
+    rows = (
+        await db.execute(
+            select(MatterMember.user_id, User.full_name)
+            .join(User, User.id == MatterMember.user_id)
+            .where(MatterMember.matter_id == matter_id)
+        )
+    ).all()
+    return {
+        "restricted": matter.restricted,
+        "members": [{"user_id": str(uid), "full_name": name} for uid, name in rows],
+    }
+
+
+@router.put("/{matter_id}/members")
+async def set_members(
+    matter_id: uuid.UUID,
+    body: MatterMembersUpdate,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    matter = await get_owned_matter(db, user, matter_id)
+    if user.role != "admin" and matter.responsible_user_id != user.id:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, "Only admins or the responsible lawyer can change access"
+        )
+    valid_ids = {
+        uid
+        for (uid,) in (
+            await db.execute(
+                select(User.id).where(User.tenant_id == user.tenant_id, User.is_active.is_(True))
+            )
+        ).all()
+    }
+    wanted = {uid for uid in body.user_ids if uid in valid_ids}
+    existing = (
+        await db.execute(select(MatterMember).where(MatterMember.matter_id == matter_id))
+    ).scalars().all()
+    for m in existing:
+        if m.user_id not in wanted:
+            await db.delete(m)
+    have = {m.user_id for m in existing}
+    for uid in wanted - have:
+        db.add(MatterMember(matter_id=matter_id, user_id=uid))
+    matter.restricted = body.restricted
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="matter.access_change",
+        entity_type="matter", entity_id=str(matter.id),
+        details={"restricted": body.restricted, "members": [str(u) for u in wanted]},
+    )
+    await db.commit()
+    return {"ok": True, "restricted": matter.restricted, "member_count": len(wanted)}
 
 
 @router.get("/{matter_id}/parties", response_model=list[MatterPartyOut])

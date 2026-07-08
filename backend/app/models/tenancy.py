@@ -20,6 +20,13 @@ class Tenant(Base, TimestampMixin):
     # Opaque token for the public intake form URL; null = form disabled
     intake_token: Mapped[str | None] = mapped_column(String(64), unique=True)
 
+    # Fiscal identity printed on invoices (Kosovo: NUI / VAT no.)
+    fiscal_number: Mapped[str | None] = mapped_column(String(32))
+    vat_number: Mapped[str | None] = mapped_column(String(32))
+    address: Mapped[str | None] = mapped_column(String(500))
+    # Default VAT percentage applied to new invoices (Kosovo standard: 18)
+    default_vat_rate: Mapped[int] = mapped_column(Integer, default=18, server_default="18")
+
     users: Mapped[list["User"]] = relationship(back_populates="tenant")
 
 

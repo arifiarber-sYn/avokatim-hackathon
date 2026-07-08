@@ -8,7 +8,15 @@ from app.models.jurisdiction import (
     LegalCorpusChunk,
     LegalCorpusDoc,
 )
-from app.models.matters import Contact, Deadline, IntakeRequest, Matter, MatterNote, MatterParty
+from app.models.matters import (
+    Contact,
+    Deadline,
+    IntakeRequest,
+    Matter,
+    MatterMember,
+    MatterNote,
+    MatterParty,
+)
 from app.models.documents import Document, DocumentChunk
 from app.models.billing import Invoice, InvoiceItem, TimeEntry
 from app.models.assistant import Conversation, Message
@@ -27,6 +35,7 @@ __all__ = [
     "LegalCorpusChunk",
     "Contact",
     "Matter",
+    "MatterMember",
     "MatterParty",
     "MatterNote",
     "Deadline",

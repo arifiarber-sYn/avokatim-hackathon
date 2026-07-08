@@ -64,6 +64,9 @@ class Matter(Base, TenantMixin, TimestampMixin):
     court_case_number: Mapped[str | None] = mapped_column(String(128))
     opened_on: Mapped[date | None] = mapped_column(Date)
     closed_on: Mapped[date | None] = mapped_column(Date)
+    # Confidential matter: visible only to admins, the responsible lawyer and
+    # explicit MatterMember entries (per-matter permissions for firms)
+    restricted: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     # Free-form structured facts the AI can use when drafting (claim value, etc.)
     extra: Mapped[dict] = mapped_column(JSONB, default=dict)
 
@@ -92,6 +95,21 @@ class MatterParty(Base, TimestampMixin):
 
     matter: Mapped[Matter] = relationship(back_populates="parties")
     contact: Mapped[Contact] = relationship()
+
+
+class MatterMember(Base, TimestampMixin):
+    """Explicit access grant to a restricted matter."""
+
+    __tablename__ = "matter_members"
+    __table_args__ = (UniqueConstraint("matter_id", "user_id"),)
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    matter_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("matters.id", ondelete="CASCADE"), index=True
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
 
 
 class MatterNote(Base, TenantMixin, TimestampMixin):

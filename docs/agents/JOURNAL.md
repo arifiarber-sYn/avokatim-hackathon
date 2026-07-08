@@ -10,6 +10,33 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-08 — ICL offer folder + firm-readiness features (Cursor / Fable 5)
+
+- Done (offer): researched ICL Law / Virtus Invesco (Mehmet Berisha), competitor
+  pricing (Clio/Smokeball/MyCase July 2026), Kosovo market; produced a full offer
+  canvas (3 models: SaaS €24/user/mo w/ 3-month pilot; license+source €18k;
+  partnership €25k → 25–30% co-ownership) and exported it to
+  `~/Desktop/Oferta-BoraLaw-ICL/` (HTML + WeasyPrint PDF + cover email text).
+- Done (code): migration `3a316e59b755`. Per-matter permissions
+  (`matters.restricted` + `matter_members`; enforcement centralized in
+  `get_owned_matter` + `restricted_visibility_filter`, applied to matter list,
+  upcoming deadlines, ICS feed, dashboard agenda; PUT
+  /matters/{id}/members admin/responsible-only; audit-logged). Document approval
+  workflow (request-review → approve/request_changes + review-inbox; "Rishikimi"
+  column in Documents tab). CSV import (Settings → Data import, contacts +
+  matters, template downloads). Fiscal invoices (tenant NUI/VAT/address/
+  default_vat_rate 18% via GET/PATCH /firm, Settings → Firm profile; invoices
+  carry vat_rate/vat_amount/total_with_vat, shown in Billing). i18n sq/en/zh
+  for all new strings.
+- Verified: 9 pytest pass; tsc clean; E2E script (temp lawyer): restricted matter
+  hidden from non-member (list + direct 404) then visible after membership;
+  review flow request→inbox→approve; CSV imports create 1+1 rows; VAT 18% math
+  on a €100 invoice = €118. Synthetic data fully cleaned. Frontend rebuilt,
+  stack restarted, health + dashboard + https://boraarifi.ai all 200.
+- Left open / next: their practice templates + data migration with the pilot
+  firm's real files; real corpus; qualified e-signature (Law 06/L-037 provider);
+  LMDhP compliance docs; demo meeting with Mehmet Berisha.
+
 ## 2026-07-07 — Public domain live: boraarifi.ai via Cloudflare Tunnel (Cursor / Fable 5)
 
 - Done: owner bought boraarifi.ai (Namecheap) + moved DNS to Cloudflare (free)

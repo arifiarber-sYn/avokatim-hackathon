@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { apiGet, apiPatch, apiPost } from "@/lib/api";
+import { apiGet, apiPatch, apiPost, apiUpload } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { Contact } from "@/lib/types";
 import { Button, Card, ErrorNote, Input, Label, Select, Textarea } from "@/components/ui";
@@ -24,14 +24,202 @@ export default function SettingsPage() {
     <div className="space-y-8 max-w-3xl">
       <h1 className="text-2xl font-bold">{t.settings}</h1>
       <ProfileSection />
+      <FirmSection />
       <PushSection />
       <TeamSection />
       <CalendarFeedSection />
       <PublicIntakeSection />
+      <ImportSection />
       <TwoFASection />
       <CorpusSection />
       <PortalSection />
     </div>
+  );
+}
+
+function FirmSection() {
+  const { t } = useI18n();
+  const [form, setForm] = useState({
+    name: "",
+    fiscal_number: "",
+    vat_number: "",
+    address: "",
+    default_vat_rate: "18",
+  });
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    apiGet<{
+      name: string;
+      fiscal_number: string | null;
+      vat_number: string | null;
+      address: string | null;
+      default_vat_rate: number;
+    }>("/firm")
+      .then((r) =>
+        setForm({
+          name: r.name || "",
+          fiscal_number: r.fiscal_number || "",
+          vat_number: r.vat_number || "",
+          address: r.address || "",
+          default_vat_rate: String(r.default_vat_rate ?? 18),
+        })
+      )
+      .catch(() => {});
+  }, []);
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setSaved(false);
+    try {
+      await apiPatch("/firm", {
+        name: form.name || undefined,
+        fiscal_number: form.fiscal_number || null,
+        vat_number: form.vat_number || null,
+        address: form.address || null,
+        default_vat_rate: Number(form.default_vat_rate),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  return (
+    <Card className="p-5 space-y-4">
+      <div>
+        <h2 className="font-semibold">{t.firmProfile}</h2>
+        <p className="text-xs text-slate-500 mt-0.5">{t.firmProfileHint}</p>
+      </div>
+      <form onSubmit={save} className="grid grid-cols-2 gap-3">
+        <div className="col-span-2">
+          <Label>{t.firmName}</Label>
+          <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        </div>
+        <div>
+          <Label>{t.fiscalNumber}</Label>
+          <Input
+            value={form.fiscal_number}
+            onChange={(e) => setForm({ ...form, fiscal_number: e.target.value })}
+            placeholder="NUI"
+          />
+        </div>
+        <div>
+          <Label>{t.vatNumber}</Label>
+          <Input
+            value={form.vat_number}
+            onChange={(e) => setForm({ ...form, vat_number: e.target.value })}
+          />
+        </div>
+        <div className="col-span-2">
+          <Label>{t.address}</Label>
+          <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+        </div>
+        <div>
+          <Label>{t.defaultVatRate}</Label>
+          <Input
+            type="number"
+            min={0}
+            max={30}
+            value={form.default_vat_rate}
+            onChange={(e) => setForm({ ...form, default_vat_rate: e.target.value })}
+          />
+        </div>
+        <div className="col-span-2 flex items-center gap-3">
+          <Button type="submit">{t.save}</Button>
+          {saved && <span className="text-sm text-emerald-700">✓ {t.saved}</span>}
+          <ErrorNote message={error} />
+        </div>
+      </form>
+    </Card>
+  );
+}
+
+function ImportSection() {
+  const { t } = useI18n();
+  const [result, setResult] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function importFile(kind: "contacts" | "matters", e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBusy(true);
+    setResult("");
+    setError("");
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const r = await apiUpload<{ created: number; skipped?: number; errors: string[] }>(
+        `/import/${kind}`,
+        form
+      );
+      let msg = `${t.importedCount}: ${r.created}`;
+      if (r.skipped) msg += ` · ${t.skippedCount}: ${r.skipped}`;
+      if (r.errors?.length) msg += ` · ${t.errorsCount}: ${r.errors.length} (${r.errors[0]})`;
+      setResult(msg);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setBusy(false);
+      e.target.value = "";
+    }
+  }
+
+  function templateCsv(kind: "contacts" | "matters") {
+    const content =
+      kind === "contacts"
+        ? "display_name,kind,email,phone,address,national_id,notes\nFilan Fisteku,person,filan@shembull.com,+38344123456,Prishtinë,,\n"
+        : "title,practice_area,status,client_name,court_name,court_case_number,opened_on,description\nKontest pronësor,civil,open,Filan Fisteku,Gjykata Themelore Prishtinë,C-123/2026,2026-01-15,\n";
+    const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = kind === "contacts" ? "shabllon-kontaktet.csv" : "shabllon-lendet.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <Card className="p-5 space-y-4">
+      <div>
+        <h2 className="font-semibold">{t.dataImport}</h2>
+        <p className="text-xs text-slate-500 mt-0.5">{t.dataImportHint}</p>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        {(["contacts", "matters"] as const).map((kind) => (
+          <div key={kind} className="border border-slate-200 rounded-lg p-4 space-y-2">
+            <p className="text-sm font-medium">
+              {kind === "contacts" ? t.importContacts : t.importMatters}
+            </p>
+            <label className="cursor-pointer inline-block">
+              <span className="px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 text-white hover:bg-indigo-700 inline-block">
+                {busy ? t.loading : t.chooseCsv}
+              </span>
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                disabled={busy}
+                onChange={(e) => importFile(kind, e)}
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => templateCsv(kind)}
+              className="block text-xs text-indigo-600 hover:underline"
+            >
+              {t.downloadTemplate}
+            </button>
+          </div>
+        ))}
+      </div>
+      {result && <p className="text-sm text-emerald-700">✓ {result}</p>}
+      <ErrorNote message={error} />
+    </Card>
   );
 }
 

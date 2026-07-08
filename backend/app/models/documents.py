@@ -1,7 +1,8 @@
 import uuid
+from datetime import datetime
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -37,6 +38,17 @@ class Document(Base, TenantMixin, TimestampMixin):
     text_content: Mapped[str | None] = mapped_column(Text)
     ocr_status: Mapped[str] = mapped_column(String(16), default="none")
     # none | pending | done | failed
+
+    # Internal review workflow: draft goes to a partner before it leaves the firm.
+    # none | in_review | approved | changes_requested
+    approval_status: Mapped[str] = mapped_column(
+        String(20), default="none", server_default="none"
+    )
+    reviewer_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL")
+    )
+    approval_note: Mapped[str | None] = mapped_column(Text)
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     chunks: Mapped[list["DocumentChunk"]] = relationship(
         back_populates="document", cascade="all, delete-orphan"

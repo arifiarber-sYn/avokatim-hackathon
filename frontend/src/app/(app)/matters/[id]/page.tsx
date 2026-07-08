@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useCallback, useEffect, useState } from "react";
-import { apiGet, apiPatch, apiPost, apiUpload, getToken } from "@/lib/api";
+import { apiGet, apiPatch, apiPost, apiPut, apiUpload, getToken } from "@/lib/api";
 import { localized, useI18n } from "@/lib/i18n";
 import {
   Contact, Deadline, DeadlineRule, Doc, Matter,
@@ -117,16 +117,50 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
 
   function Overview({ matter, onChanged }: { matter: Matter; onChanged: (m: Matter) => void }) {
     const [team, setTeam] = useState<TeamMember[]>([]);
+    const [restricted, setRestricted] = useState(matter.restricted);
+    const [memberIds, setMemberIds] = useState<Set<string>>(new Set());
+    const [accessSaved, setAccessSaved] = useState(false);
 
     useEffect(() => {
       apiGet<TeamMember[]>("/team").then(setTeam).catch(() => {});
-    }, []);
+      apiGet<{ restricted: boolean; members: { user_id: string }[] }>(
+        `/matters/${matter.id}/members`
+      )
+        .then((r) => {
+          setRestricted(r.restricted);
+          setMemberIds(new Set(r.members.map((m) => m.user_id)));
+        })
+        .catch(() => {});
+    }, [matter.id]);
 
     async function setResponsible(userId: string) {
       const updated = await apiPatch<Matter>(`/matters/${matter.id}`, {
         responsible_user_id: userId,
       });
       onChanged(updated);
+    }
+
+    async function saveAccess(nextRestricted: boolean, nextIds: Set<string>) {
+      setRestricted(nextRestricted);
+      setMemberIds(nextIds);
+      try {
+        await apiPut(`/matters/${matter.id}/members`, {
+          restricted: nextRestricted,
+          user_ids: [...nextIds],
+        });
+        setAccessSaved(true);
+        setTimeout(() => setAccessSaved(false), 2000);
+      } catch {
+        /* p.sh. pa të drejta — rikthe gjendjen nga serveri */
+        apiGet<{ restricted: boolean; members: { user_id: string }[] }>(
+          `/matters/${matter.id}/members`
+        )
+          .then((r) => {
+            setRestricted(r.restricted);
+            setMemberIds(new Set(r.members.map((m) => m.user_id)));
+          })
+          .catch(() => {});
+      }
     }
 
     const rows = [
@@ -160,6 +194,41 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             <span>{team[0]?.full_name || "—"}</span>
           )}
         </div>
+        {team.length > 1 && (
+          <div className="pt-3 border-t border-slate-100 space-y-2">
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={restricted}
+                onChange={(e) => saveAccess(e.target.checked, memberIds)}
+              />
+              <span className="font-medium">{t.restrictedMatter}</span>
+              {accessSaved && <span className="text-emerald-600 text-xs">✓ {t.saved}</span>}
+            </label>
+            <p className="text-xs text-slate-500">{t.restrictedHint}</p>
+            {restricted && (
+              <div className="flex flex-wrap gap-3 pt-1">
+                {team
+                  .filter((m) => m.is_active && m.id !== matter.responsible_user_id)
+                  .map((m) => (
+                    <label key={m.id} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={memberIds.has(m.id)}
+                        onChange={(e) => {
+                          const next = new Set(memberIds);
+                          if (e.target.checked) next.add(m.id);
+                          else next.delete(m.id);
+                          saveAccess(true, next);
+                        }}
+                      />
+                      {m.full_name}
+                    </label>
+                  ))}
+              </div>
+            )}
+          </div>
+        )}
         {matter.description && (
           <div className="pt-3 border-t border-slate-100 text-sm whitespace-pre-wrap">
             {matter.description}
@@ -245,6 +314,8 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
   const [proposals, setProposals] = useState<ExtractedDeadline[] | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [notice, setNotice] = useState("");
+  const [team, setTeam] = useState<TeamMember[]>([]);
+  const [me, setMe] = useState<{ id: string; role: string } | null>(null);
 
   const load = useCallback(() => {
     apiGet<Doc[]>(`/matters/${matterId}/documents`).then(setDocs).catch(() => {});
@@ -253,7 +324,82 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
 
   useEffect(() => {
     load();
+    apiGet<TeamMember[]>("/team").then(setTeam).catch(() => {});
+    apiGet<{ id: string; role: string }>("/auth/me").then(setMe).catch(() => {});
   }, [load]);
+
+  async function sendForReview(doc: Doc, reviewerId: string) {
+    if (!reviewerId) return;
+    setError("");
+    try {
+      await apiPost(`/documents/${doc.id}/request-review`, { reviewer_id: reviewerId });
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  async function decide(doc: Doc, decision: "approve" | "request_changes") {
+    setError("");
+    let note: string | null = null;
+    if (decision === "request_changes") {
+      note = window.prompt(t.reviewNotePrompt) || null;
+    }
+    try {
+      await apiPost(`/documents/${doc.id}/review`, { decision, note });
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  function reviewCell(d: Doc) {
+    const reviewerName = team.find((m) => m.id === d.reviewer_id)?.full_name || "";
+    if (d.approval_status === "approved")
+      return <span className="text-emerald-700">✓ {t.approvedLabel}</span>;
+    if (d.approval_status === "in_review") {
+      const canDecide = me && (me.id === d.reviewer_id || me.role === "admin");
+      return (
+        <span className="space-x-2">
+          <span className="text-amber-600">{t.inReviewLabel}{reviewerName ? ` · ${reviewerName}` : ""}</span>
+          {canDecide && (
+            <>
+              <button onClick={() => decide(d, "approve")} className="text-emerald-600 hover:underline">
+                {t.approve}
+              </button>
+              <button onClick={() => decide(d, "request_changes")} className="text-red-600 hover:underline">
+                {t.requestChanges}
+              </button>
+            </>
+          )}
+        </span>
+      );
+    }
+    const label =
+      d.approval_status === "changes_requested" ? (
+        <span className="text-red-600 block" title={d.approval_note || ""}>
+          {t.changesRequestedLabel}
+        </span>
+      ) : null;
+    if (team.filter((m) => m.is_active).length < 2) return label || <span>—</span>;
+    return (
+      <span>
+        {label}
+        <select
+          defaultValue=""
+          onChange={(e) => sendForReview(d, e.target.value)}
+          className="text-xs border border-slate-200 rounded px-1 py-0.5 text-indigo-600 max-w-36"
+        >
+          <option value="">{t.sendForReview}</option>
+          {team
+            .filter((m) => m.is_active && m.id !== me?.id)
+            .map((m) => (
+              <option key={m.id} value={m.id}>{m.full_name}</option>
+            ))}
+        </select>
+      </span>
+    );
+  }
 
   async function extract(doc: Doc) {
     setExtractingId(doc.id);
@@ -412,6 +558,7 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
               <th className="px-4 py-3">{t.name}</th>
               <th className="px-4 py-3">{t.version}</th>
               <th className="px-4 py-3">OCR</th>
+              <th className="px-4 py-3">{t.reviewLabel}</th>
               <th className="px-4 py-3">{t.signatures}</th>
               <th className="px-4 py-3">{t.uploaded}</th>
               <th className="px-4 py-3">{t.actions}</th>
@@ -427,6 +574,7 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
                   <td className="px-4 py-3 text-xs text-slate-500">
                     {d.has_text ? "✓" : d.ocr_status}
                   </td>
+                  <td className="px-4 py-3 text-xs">{reviewCell(d)}</td>
                   <td className="px-4 py-3 text-xs">
                     {sig ? (
                       sig.status === "signed" ? (

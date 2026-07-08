@@ -1,4 +1,5 @@
 import uuid
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from fastapi.responses import Response
@@ -9,7 +10,7 @@ from app.api.matters import get_owned_matter
 from app.database import get_db
 from app.deps import get_current_user
 from app.models import Document, User
-from app.schemas.documents import DocumentOut
+from app.schemas.documents import DocumentOut, ReviewDecisionIn, ReviewRequestIn
 from app.services import rag, storage
 from app.services.audit import log_action
 
@@ -135,6 +136,89 @@ async def download_document(
         media_type=doc.mime_type,
         headers={"Content-Disposition": f'attachment; filename="{doc.filename}"'},
     )
+
+
+async def _get_owned_document(
+    db: AsyncSession, user: User, document_id: uuid.UUID
+) -> Document:
+    doc = await db.get(Document, document_id)
+    if doc is None or doc.tenant_id != user.tenant_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Document not found")
+    if doc.matter_id:
+        await get_owned_matter(db, user, doc.matter_id)  # enforces restricted access
+    return doc
+
+
+@router.get("/documents/review-inbox", response_model=list[DocumentOut])
+async def review_inbox(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Documents waiting for the current user's approval."""
+    stmt = (
+        select(Document)
+        .where(
+            Document.tenant_id == user.tenant_id,
+            Document.reviewer_id == user.id,
+            Document.approval_status == "in_review",
+        )
+        .order_by(Document.created_at.desc())
+    )
+    return [_to_out(d) for d in (await db.execute(stmt)).scalars()]
+
+
+@router.post("/documents/{document_id}/request-review", response_model=DocumentOut)
+async def request_review(
+    document_id: uuid.UUID,
+    body: ReviewRequestIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Send a draft to a colleague (typically a partner) for internal approval."""
+    doc = await _get_owned_document(db, user, document_id)
+    reviewer = await db.get(User, body.reviewer_id)
+    if reviewer is None or reviewer.tenant_id != user.tenant_id or not reviewer.is_active:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Reviewer not found")
+    doc.approval_status = "in_review"
+    doc.reviewer_id = reviewer.id
+    doc.approval_note = None
+    doc.reviewed_at = None
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="document.review_request",
+        entity_type="document", entity_id=str(doc.id),
+        details={"reviewer": reviewer.full_name},
+    )
+    await db.commit()
+    await db.refresh(doc)
+    return _to_out(doc)
+
+
+@router.post("/documents/{document_id}/review", response_model=DocumentOut)
+async def review_document(
+    document_id: uuid.UUID,
+    body: ReviewDecisionIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """The assigned reviewer (or an admin) approves or requests changes."""
+    doc = await _get_owned_document(db, user, document_id)
+    if doc.approval_status != "in_review":
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Document is not awaiting review")
+    if user.id != doc.reviewer_id and user.role != "admin":
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Only the assigned reviewer can decide")
+    if body.decision not in ("approve", "request_changes"):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown decision")
+    doc.approval_status = "approved" if body.decision == "approve" else "changes_requested"
+    doc.approval_note = body.note
+    doc.reviewed_at = datetime.now(UTC)
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="document.review_decision",
+        entity_type="document", entity_id=str(doc.id),
+        details={"decision": body.decision},
+    )
+    await db.commit()
+    await db.refresh(doc)
+    return _to_out(doc)
 
 
 @router.get("/documents/{document_id}/text")

@@ -9,6 +9,7 @@ from fastapi.responses import Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.matters import restricted_visibility_filter
 from app.config import settings
 from app.database import get_db
 from app.deps import get_current_user
@@ -64,6 +65,7 @@ async def feed(
             .where(
                 Deadline.tenant_id == user.tenant_id,
                 Deadline.due_at >= horizon_past,
+                restricted_visibility_filter(user),
             )
             .order_by(Deadline.due_at)
             .limit(500)

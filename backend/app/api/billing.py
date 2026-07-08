@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 from app.api.matters import get_owned_matter
 from app.database import get_db
 from app.deps import get_current_user
-from app.models import Invoice, InvoiceItem, TimeEntry, User
+from app.models import Invoice, InvoiceItem, Tenant, TimeEntry, User
 from app.schemas.billing import InvoiceCreateIn, InvoiceOut, TimeEntryIn, TimeEntryOut
 from app.services.audit import log_action
 
@@ -97,6 +97,11 @@ async def create_invoice(
     if body.matter_id:
         await get_owned_matter(db, user, body.matter_id)
 
+    vat_rate = body.vat_rate
+    if vat_rate is None:
+        tenant = await db.get(Tenant, user.tenant_id)
+        vat_rate = tenant.default_vat_rate if tenant else 0
+
     invoice = Invoice(
         tenant_id=user.tenant_id,
         number=await _next_invoice_number(db, user.tenant_id),
@@ -105,6 +110,7 @@ async def create_invoice(
         currency=body.currency,
         due_on=body.due_on,
         notes=body.notes,
+        vat_rate=vat_rate,
     )
     db.add(invoice)
     await db.flush()

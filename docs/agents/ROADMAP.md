@@ -43,7 +43,13 @@ Everything in STATE.md "What exists and works".
 - [x] Multi-user + roles (admin/lawyer/staff) inside a tenant ✅ (2026-07-07):
       Settings → Team (add member, change role, deactivate); matter assignment
       via responsible lawyer select on the matter Overview.
-- [ ] Finer permissions (per-matter visibility, review steps, internal workflow).
+- [x] Finer permissions ✅ (2026-07-08): per-matter visibility (`restricted` +
+      matter members, enforced across list/deadlines/ICS/agenda) and document
+      approval workflow (draft → review by partner → approved/changes requested).
+- [x] Data migration importer ✅ (2026-07-08): CSV import for contacts and
+      matters in Settings, with downloadable templates.
+- [x] Fiscal invoices ✅ (2026-07-08): firm NUI/VAT/address in Settings,
+      default VAT 18% applied to invoices (vat_amount/total_with_vat shown).
 - [x] Firm-level reporting ✅ (2026-07-07): per-lawyer table on /reports (open
       matters, MTD billable hours vs target, utilization); shows when >1 member.
 

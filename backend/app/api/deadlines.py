@@ -5,10 +5,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.matters import get_owned_matter
+from app.api.matters import get_owned_matter, restricted_visibility_filter
 from app.database import get_db
 from app.deps import get_current_user
-from app.models import Deadline, DeadlineRule, Jurisdiction, User
+from app.models import Deadline, DeadlineRule, Jurisdiction, Matter, User
 from app.schemas.matters import (
     DeadlineFromRuleIn,
     DeadlineIn,
@@ -57,10 +57,12 @@ async def upcoming_deadlines(
     horizon = datetime.now(UTC) + timedelta(days=days)
     stmt = (
         select(Deadline)
+        .join(Matter, Matter.id == Deadline.matter_id)
         .where(
             Deadline.tenant_id == user.tenant_id,
             Deadline.status == "pending",
             Deadline.due_at <= horizon,
+            restricted_visibility_filter(user),
         )
         .order_by(Deadline.due_at)
     )

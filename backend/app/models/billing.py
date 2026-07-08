@@ -46,6 +46,8 @@ class Invoice(Base, TenantMixin, TimestampMixin):
     paid_on: Mapped[date | None] = mapped_column(Date)
     # Bank transfer reference / receipt number recorded when marked paid
     payment_reference: Mapped[str | None] = mapped_column(String(128))
+    # VAT percentage applied on top of the item subtotal (Kosovo standard: 18)
+    vat_rate: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     notes: Mapped[str | None] = mapped_column(Text)
 
     items: Mapped[list["InvoiceItem"]] = relationship(
@@ -55,6 +57,16 @@ class Invoice(Base, TenantMixin, TimestampMixin):
     @property
     def total(self) -> Decimal:
         return sum((i.amount for i in self.items), Decimal("0"))
+
+    @property
+    def vat_amount(self) -> Decimal:
+        return (self.total * Decimal(self.vat_rate or 0) / Decimal(100)).quantize(
+            Decimal("0.01")
+        )
+
+    @property
+    def total_with_vat(self) -> Decimal:
+        return self.total + self.vat_amount
 
 
 class InvoiceItem(Base):
