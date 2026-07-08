@@ -10,7 +10,7 @@ from app.database import get_db
 from app.deps import get_current_user
 from app.llm import list_providers
 from app.llm.base import ChatMessage
-from app.models import Conversation, Message, User
+from app.models import Conversation, Jurisdiction, Message, Tenant, User
 from app.schemas.assistant import (
     AskRequest,
     AskResponse,
@@ -73,6 +73,16 @@ async def ask(
     if body.matter_id:
         matter = await get_owned_matter(db, user, body.matter_id)
         jurisdiction_id = matter.jurisdiction_id
+    else:
+        # No matter given: still ground answers in the tenant's default
+        # jurisdiction corpus so Bora cites the actual laws.
+        tenant = await db.get(Tenant, user.tenant_id)
+        code = tenant.default_jurisdiction_code if tenant else "XK"
+        jurisdiction = (
+            await db.execute(select(Jurisdiction).where(Jurisdiction.code == code))
+        ).scalar_one_or_none()
+        if jurisdiction:
+            jurisdiction_id = jurisdiction.id
 
     if body.conversation_id:
         conversation = (

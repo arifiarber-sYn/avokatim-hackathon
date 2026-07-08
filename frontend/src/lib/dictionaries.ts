@@ -324,6 +324,7 @@ const sq = {
   importedCount: "U importuan",
   skippedCount: "U anashkaluan (ekzistojnë)",
   errorsCount: "Gabime",
+  certificate: "Certifikata",
   // General
   loading: "Duke u ngarkuar...",
   error: "Gabim",
@@ -627,6 +628,7 @@ const en: typeof sq = {
   importedCount: "Imported",
   skippedCount: "Skipped (already exist)",
   errorsCount: "Errors",
+  certificate: "Certificate",
   loading: "Loading...",
   error: "Error",
   add: "Add",
@@ -922,6 +924,7 @@ const zh: typeof sq = {
   importedCount: "已导入",
   skippedCount: "已跳过（已存在）",
   errorsCount: "错误",
+  certificate: "证书",
   loading: "加载中...",
   error: "错误",
   add: "添加",

@@ -265,4 +265,453 @@ Autorizuesi                                    Avokati/ja
 {{ client_name }}                              {{ lawyer_name }}
 """,
     },
+    {
+        "code": "civil.payment_order_objection",
+        "locale": "sq",
+        "practice_area": "civil",
+        "name": {
+            "sq": "Prapësim kundër urdhërpagesës",
+            "en": "Objection to payment order",
+            "zh": "支付令异议书",
+        },
+        "variables": [
+            {"name": "court_name", "label": {"sq": "Gjykata", "en": "Court", "zh": "法院"}},
+            {"name": "order_ref", "label": {"sq": "Numri i urdhërpagesës", "en": "Payment order no.", "zh": "支付令编号"}},
+            {"name": "order_date", "label": {"sq": "Data e pranimit të urdhërpagesës", "en": "Date order received", "zh": "收到日期"}},
+            {"name": "grounds", "label": {"sq": "Arsyet e prapësimit", "en": "Grounds", "zh": "异议理由"}},
+        ],
+        "body": """{{ court_name }}
+
+PRAPËSIM
+
+kundër Urdhërpagesës {{ order_ref }}, pranuar më {{ order_date }}
+
+Debitori: {{ client_name }}{% if client_address %}, {{ client_address }}{% endif %}
+i/e përfaqësuar nga {{ lawyer_name }}, avokat/e
+
+Në afatin ligjor, në pajtim me dispozitat e Ligjit Nr. 03/L-006 për Procedurën
+Kontestimore që rregullojnë procedurën e lëshimit të urdhërpagesës, paraqes
+prapësim kundër urdhërpagesës së cekur më lart, për këto arsye:
+
+{{ grounds }}
+
+PROPOZIMI
+
+I propozoj gjykatës që ta anulojë urdhërpagesën dhe çështja të vazhdojë
+sipas rregullave të procedurës kontestimore.
+
+{{ city }}, më {{ date }}
+
+Përfaqësuesi i debitorit
+{{ lawyer_name }}, avokat/e
+""",
+    },
+    {
+        "code": "labor.lawsuit",
+        "locale": "sq",
+        "practice_area": "labor",
+        "name": {
+            "sq": "Padi nga marrëdhënia e punës",
+            "en": "Employment lawsuit",
+            "zh": "劳动争议起诉状",
+        },
+        "variables": [
+            {"name": "court_name", "label": {"sq": "Gjykata", "en": "Court", "zh": "法院"}},
+            {"name": "employer_name", "label": {"sq": "Punëdhënësi (i padituri)", "en": "Employer", "zh": "用人单位"}},
+            {"name": "violation", "label": {"sq": "Shkelja e pretenduar", "en": "Alleged violation", "zh": "违法行为"}},
+            {"name": "facts", "label": {"sq": "Faktet", "en": "Facts", "zh": "事实"}},
+            {"name": "request", "label": {"sq": "Kërkesa (petitumi)", "en": "Relief sought", "zh": "诉讼请求"}},
+        ],
+        "body": """{{ court_name }}
+
+PADI
+nga marrëdhënia e punës
+
+Paditësi: {{ client_name }}{% if client_address %}, {{ client_address }}{% endif %}
+i/e përfaqësuar nga {{ lawyer_name }}, avokat/e
+
+I padituri: {{ employer_name }}
+
+Objekti: {{ violation }}
+
+I. BAZA FAKTIKE
+
+{{ facts }}
+
+II. BAZA JURIDIKE
+
+Padia bazohet në Ligjin Nr. 03/L-212 i Punës dhe paraqitet brenda afatit të
+paraparë me nenin 87 të tij, si dhe në pajtim me Ligjin Nr. 03/L-006 për
+Procedurën Kontestimore. Kontesti nga marrëdhënia e punës është procedurë
+me përparësi sipas nenit 475 të LPK-së.
+
+III. PETITUMI
+
+{{ request }}
+
+{{ city }}, më {{ date }}
+
+Përfaqësuesi i paditësit
+{{ lawyer_name }}, avokat/e
+""",
+    },
+    {
+        "code": "administrative.lawsuit",
+        "locale": "sq",
+        "practice_area": "administrative",
+        "name": {
+            "sq": "Padi në konflikt administrativ",
+            "en": "Administrative dispute lawsuit",
+            "zh": "行政诉讼起诉状",
+        },
+        "variables": [
+            {"name": "court_name", "label": {"sq": "Gjykata", "en": "Court", "zh": "法院"}},
+            {"name": "authority", "label": {"sq": "Organi publik (i padituri)", "en": "Public authority", "zh": "行政机关"}},
+            {"name": "act_ref", "label": {"sq": "Akti administrativ (numri/data)", "en": "Administrative act", "zh": "行政行为"}},
+            {"name": "grounds", "label": {"sq": "Arsyet e paligjshmërisë", "en": "Grounds of illegality", "zh": "违法理由"}},
+            {"name": "request", "label": {"sq": "Kërkesa", "en": "Relief sought", "zh": "请求"}},
+        ],
+        "body": """{{ court_name }}
+Departamenti për Çështje Administrative
+
+PADI
+për anulimin e aktit administrativ
+
+Paditësi: {{ client_name }}{% if client_address %}, {{ client_address }}{% endif %}
+i/e përfaqësuar nga {{ lawyer_name }}, avokat/e
+
+I padituri: {{ authority }}
+
+Akti i kontestuar: {{ act_ref }}
+
+I. ARSYET E PALIGJSHMËRISË
+
+{{ grounds }}
+
+II. BAZA JURIDIKE
+
+Padia paraqitet në pajtim me Ligjin Nr. 08/L-182 për Konfliktet Administrative,
+brenda afatit tridhjetëditor nga dita e dorëzimit të aktit administrativ.
+
+III. KËRKESA
+
+{{ request }}
+
+{{ city }}, më {{ date }}
+
+Përfaqësuesi i paditësit
+{{ lawyer_name }}, avokat/e
+""",
+    },
+    {
+        "code": "commercial.demand_letter",
+        "locale": "sq",
+        "practice_area": "commercial",
+        "name": {
+            "sq": "Vërejtje para padisë (kërkesë për pagesë)",
+            "en": "Demand letter",
+            "zh": "催告函",
+        },
+        "variables": [
+            {"name": "debtor_name", "label": {"sq": "Debitori", "en": "Debtor", "zh": "债务人"}},
+            {"name": "debt_amount", "label": {"sq": "Shuma e borxhit (EUR)", "en": "Debt amount", "zh": "欠款金额"}},
+            {"name": "debt_basis", "label": {"sq": "Baza e borxhit (kontrata/fatura)", "en": "Basis of debt", "zh": "债务依据"}},
+            {"name": "payment_deadline", "label": {"sq": "Afati i pagesës (ditë)", "en": "Payment deadline (days)", "zh": "付款期限"}},
+            {"name": "bank_details", "label": {"sq": "Llogaria bankare", "en": "Bank account", "zh": "银行账户"}},
+        ],
+        "body": """{{ debtor_name }}
+
+VËREJTJE PARA PADISË
+Kërkesë për pagesën e borxhit
+
+I/E nderuar,
+
+Në emër të klientit tonë {{ client_name }}, ju njoftojmë se ndaj jush
+evidentohet borxh i papaguar në shumë prej {{ debt_amount }} EUR, me bazë:
+
+{{ debt_basis }}
+
+Në pajtim me Ligjin Nr. 04/L-077 për Marrëdhëniet e Detyrimeve, ju ftojmë që
+brenda {{ payment_deadline }} ditësh nga pranimi i kësaj shkrese ta paguani
+shumën e cekur në llogarinë:
+
+{{ bank_details }}
+
+Në të kundërtën, do të detyrohemi ta iniciojmë procedurën gjyqësore
+(përfshirë propozimin për urdhërpagesë), me ç'rast do të kërkohen edhe
+kamatëvonesa ligjore dhe shpenzimet e procedurës.
+
+{{ city }}, më {{ date }}
+
+Me respekt,
+{{ lawyer_name }}, avokat/e
+""",
+    },
+    {
+        "code": "commercial.nda",
+        "locale": "sq",
+        "practice_area": "commercial",
+        "name": {
+            "sq": "Marrëveshje konfidencialiteti (NDA)",
+            "en": "Non-disclosure agreement",
+            "zh": "保密协议",
+        },
+        "variables": [
+            {"name": "party_two", "label": {"sq": "Pala e dytë", "en": "Second party", "zh": "另一方"}},
+            {"name": "purpose", "label": {"sq": "Qëllimi i shkëmbimit të informacionit", "en": "Purpose", "zh": "目的"}},
+            {"name": "duration_years", "label": {"sq": "Kohëzgjatja (vite)", "en": "Duration (years)", "zh": "期限（年）"}},
+            {"name": "penalty", "label": {"sq": "Dënimi kontraktual (EUR)", "en": "Contractual penalty", "zh": "违约金"}},
+        ],
+        "body": """MARRËVESHJE KONFIDENCIALITETI
+
+E lidhur më {{ date }} në {{ city }}, ndërmjet:
+
+1. {{ client_name }}{% if client_address %}, me seli në {{ client_address }}{% endif %} ("Pala e Parë"), dhe
+2. {{ party_two }} ("Pala e Dytë")
+
+Neni 1 — Qëllimi
+Palët synojnë të shkëmbejnë informacion konfidencial për qëllim të:
+{{ purpose }}
+
+Neni 2 — Informacioni konfidencial
+Informacion konfidencial konsiderohet çdo e dhënë afariste, teknike, financiare
+ose juridike e shpalosur nga njëra palë tek tjetra, në çfarëdo forme, përveç
+informacionit që është publikisht i njohur pa faj të palës pranuese.
+
+Neni 3 — Detyrimet
+Pala pranuese detyrohet ta ruajë fshehtësinë e informacionit, të mos ia
+shpalosë atë palëve të treta pa pëlqim paraprak me shkrim dhe ta përdorë
+vetëm për qëllimin e përcaktuar në nenin 1. Detyrimi vlen edhe për
+punonjësit dhe bashkëpunëtorët e palëve.
+
+Neni 4 — Kohëzgjatja
+Kjo marrëveshje vlen {{ duration_years }} vite nga data e nënshkrimit.
+Detyrimi i ruajtjes së fshehtësisë mbetet në fuqi edhe pas skadimit të saj.
+
+Neni 5 — Dënimi kontraktual
+Për çdo shkelje të kësaj marrëveshjeje, pala shkelëse i detyrohet palës
+tjetër dënim kontraktual prej {{ penalty }} EUR, pa e cenuar të drejtën për
+shpërblimin e dëmit real më të lartë, në pajtim me Ligjin Nr. 04/L-077 për
+Marrëdhëniet e Detyrimeve.
+
+Neni 6 — E drejta e zbatueshme dhe juridiksioni
+Për këtë marrëveshje vlen e drejta e Republikës së Kosovës. Kontestet i
+zgjidh gjykata kompetente në {{ city }}.
+
+Pala e Parë                                    Pala e Dytë
+{{ client_name }}                              {{ party_two }}
+""",
+    },
+    {
+        "code": "commercial.service_contract",
+        "locale": "sq",
+        "practice_area": "commercial",
+        "name": {
+            "sq": "Kontratë për ofrimin e shërbimeve",
+            "en": "Service agreement",
+            "zh": "服务合同",
+        },
+        "variables": [
+            {"name": "provider_name", "label": {"sq": "Ofruesi i shërbimit", "en": "Service provider", "zh": "服务提供方"}},
+            {"name": "services", "label": {"sq": "Përshkrimi i shërbimeve", "en": "Services", "zh": "服务内容"}},
+            {"name": "price", "label": {"sq": "Çmimi dhe mënyra e pagesës", "en": "Price and payment", "zh": "价格与支付"}},
+            {"name": "term", "label": {"sq": "Kohëzgjatja e kontratës", "en": "Term", "zh": "合同期限"}},
+            {"name": "notice_days", "label": {"sq": "Afati i njoftimit për shkëputje (ditë)", "en": "Termination notice (days)", "zh": "解约通知期"}},
+        ],
+        "body": """KONTRATË PËR OFRIMIN E SHËRBIMEVE
+
+E lidhur më {{ date }} në {{ city }}, ndërmjet:
+
+1. {{ client_name }}{% if client_address %}, me seli në {{ client_address }}{% endif %} ("Porositësi"), dhe
+2. {{ provider_name }} ("Ofruesi")
+
+Neni 1 — Objekti i kontratës
+Ofruesi merr përsipër t'i kryejë për Porositësin këto shërbime:
+{{ services }}
+
+Neni 2 — Çmimi dhe pagesa
+{{ price }}
+Pagesa kryhet në bazë të faturës së lëshuar nga Ofruesi, brenda afatit të
+cekur në faturë. Për vonesë zbatohet kamatëvonesa sipas Ligjit Nr. 04/L-077
+për Marrëdhëniet e Detyrimeve.
+
+Neni 3 — Kohëzgjatja
+{{ term }}
+
+Neni 4 — Shkëputja
+Secila palë mund ta shkëpusë kontratën me njoftim me shkrim
+{{ notice_days }} ditë përpara. Shkëputja nuk i prek detyrimet e krijuara
+deri në ditën e ndërprerjes.
+
+Neni 5 — Konfidencialiteti
+Palët e ruajnë fshehtësinë e informacionit afarist të njëra-tjetrës të
+mësuar gjatë zbatimit të kësaj kontrate.
+
+Neni 6 — E drejta e zbatueshme dhe kontestet
+Për këtë kontratë vlen e drejta e Republikës së Kosovës, në veçanti Ligji
+Nr. 04/L-077 për Marrëdhëniet e Detyrimeve. Kontestet i zgjidh gjykata
+kompetente në {{ city }}.
+
+Porositësi                                     Ofruesi
+{{ client_name }}                              {{ provider_name }}
+""",
+    },
+    {
+        "code": "labor.employment_contract",
+        "locale": "sq",
+        "practice_area": "labor",
+        "name": {
+            "sq": "Kontratë pune",
+            "en": "Employment contract",
+            "zh": "劳动合同",
+        },
+        "variables": [
+            {"name": "employee_name", "label": {"sq": "I punësuari", "en": "Employee", "zh": "员工"}},
+            {"name": "position", "label": {"sq": "Pozita / përshkrimi i punës", "en": "Position", "zh": "职位"}},
+            {"name": "salary", "label": {"sq": "Paga bruto (EUR)", "en": "Gross salary", "zh": "工资"}},
+            {"name": "start_date", "label": {"sq": "Data e fillimit të punës", "en": "Start date", "zh": "入职日期"}},
+            {"name": "contract_term", "label": {"sq": "Kohëzgjatja (e pacaktuar / e caktuar deri më)", "en": "Term", "zh": "期限"}},
+            {"name": "probation", "label": {"sq": "Puna provuese (muaj, max 6)", "en": "Probation (months)", "zh": "试用期"}},
+        ],
+        "body": """KONTRATË PUNE
+(në pajtim me nenin 10 dhe 11 të Ligjit Nr. 03/L-212 i Punës)
+
+E lidhur më {{ date }} në {{ city }}, ndërmjet:
+
+Punëdhënësi: {{ client_name }}{% if client_address %}, me seli në {{ client_address }}{% endif %}
+I punësuari: {{ employee_name }}
+
+Neni 1 — Pozita dhe detyrat e punës
+I punësuari themelon marrëdhënie pune në pozitën: {{ position }}
+
+Neni 2 — Kohëzgjatja
+Kontrata lidhet për: {{ contract_term }}
+Puna fillon më {{ start_date }}. Puna provuese: {{ probation }} muaj.
+
+Neni 3 — Paga
+Paga bazë bruto është {{ salary }} EUR në muaj, e pagueshme më së voni deri
+në fund të muajit pasues, në llogarinë bankare të të punësuarit.
+
+Neni 4 — Orari i punës
+Orari i plotë i punës është 40 orë në javë, në pajtim me nenin 20 të Ligjit
+të Punës. Puna jashtë orarit kompensohet sipas ligjit.
+
+Neni 5 — Pushimet
+I punësuari ka të drejtë në pushim vjetor të paguar prej së paku katër (4)
+javësh për vit kalendarik (neni 32 i Ligjit të Punës), pushim javor dhe
+pushime të tjera sipas ligjit dhe aktit të brendshëm të punëdhënësit.
+
+Neni 6 — Ndërprerja e marrëdhënies së punës
+Marrëdhënia e punës ndërpritet në mënyrat dhe me afatet e parapara me
+Ligjin Nr. 03/L-212 i Punës (nenet 67-78).
+
+Neni 7 — Dispozita përfundimtare
+Për çështjet e parregulluara me këtë kontratë zbatohet Ligji Nr. 03/L-212
+i Punës dhe aktet nënligjore në fuqi. Kontrata lidhet në dy ekzemplarë.
+
+Punëdhënësi                                    I punësuari
+{{ client_name }}                              {{ employee_name }}
+""",
+    },
+    {
+        "code": "general.legal_opinion",
+        "locale": "sq",
+        "practice_area": "other",
+        "name": {
+            "sq": "Opinion ligjor",
+            "en": "Legal opinion",
+            "zh": "法律意见书",
+        },
+        "variables": [
+            {"name": "recipient", "label": {"sq": "Drejtuar (klienti/organi)", "en": "Addressed to", "zh": "致"}},
+            {"name": "question", "label": {"sq": "Çështja juridike", "en": "Legal question", "zh": "法律问题"}},
+            {"name": "facts", "label": {"sq": "Gjendja faktike", "en": "Facts", "zh": "事实"}},
+            {"name": "analysis", "label": {"sq": "Analiza juridike", "en": "Legal analysis", "zh": "法律分析"}},
+            {"name": "conclusion", "label": {"sq": "Përfundimi dhe rekomandimi", "en": "Conclusion", "zh": "结论"}},
+        ],
+        "body": """OPINION LIGJOR
+
+Për: {{ recipient }}
+Nga: {{ lawyer_name }}, avokat/e
+Data: {{ date }}
+
+I. ÇËSHTJA JURIDIKE
+
+{{ question }}
+
+II. GJENDJA FAKTIKE
+
+{{ facts }}
+
+III. ANALIZA JURIDIKE
+
+{{ analysis }}
+
+IV. PËRFUNDIMI DHE REKOMANDIMI
+
+{{ conclusion }}
+
+Ky opinion bazohet në legjislacionin e Republikës së Kosovës në fuqi në
+datën e lëshimit dhe në gjendjen faktike të prezantuar nga klienti. Për
+çdo ndryshim të rrethanave, opinioni duhet të rishikohet.
+
+{{ lawyer_name }}, avokat/e
+{{ city }}, më {{ date }}
+""",
+    },
+    {
+        "code": "commercial.due_diligence_checklist",
+        "locale": "sq",
+        "practice_area": "commercial",
+        "name": {
+            "sq": "Listë kontrolli — Due diligence ligjor",
+            "en": "Legal due diligence checklist",
+            "zh": "法律尽职调查清单",
+        },
+        "variables": [
+            {"name": "target_company", "label": {"sq": "Shoqëria objekt (target)", "en": "Target company", "zh": "目标公司"}},
+            {"name": "transaction", "label": {"sq": "Transaksioni (blerje aksionesh/asetesh)", "en": "Transaction", "zh": "交易类型"}},
+        ],
+        "body": """DUE DILIGENCE LIGJOR — LISTË KONTROLLI
+
+Shoqëria objekt: {{ target_company }}
+Transaksioni: {{ transaction }}
+Përgatitur nga: {{ lawyer_name }}, avokat/e · {{ date }}
+
+I. STATUSI KORPORATIV (Ligji Nr. 06/L-016 për Shoqëritë Tregtare)
+[ ] Certifikata e regjistrimit në ARBK dhe informatat e biznesit
+[ ] Statuti dhe marrëveshja e shoqërisë (versionet aktuale)
+[ ] Struktura e pronësisë; librat e aksioneve/pjesëve
+[ ] Vendimet e asamblesë dhe të bordit (3 vitet e fundit)
+[ ] Prokurat dhe përfaqësuesit e autorizuar
+
+II. KONTRATAT MATERIALE (Ligji Nr. 04/L-077 — LMD)
+[ ] Kontratat me klientët dhe furnitorët kryesorë
+[ ] Kontratat e kredisë, garancitë, pengjet dhe hipotekat
+[ ] Kontratat e qirasë dhe të drejtat mbi paluajtshmëritë
+[ ] Klauzolat "change of control" në kontratat ekzistuese
+
+III. PUNËSIMI (Ligji Nr. 03/L-212 i Punës)
+[ ] Lista e punonjësve, kontratat e punës, pagat
+[ ] Kontratat e menaxhmentit dhe klauzolat e moskonkurrencës
+[ ] Kontestet e punës të hapura ose të pritshme
+
+IV. PASURIA DHE TË DREJTAT
+[ ] Certifikatat e pronësisë (kadastri), barrët dhe servitutet
+[ ] Pronësia intelektuale: marka, patenta, domene
+[ ] Licencat dhe lejet e veprimtarisë
+
+V. KONTESTET DHE PAJTUESHMËRIA
+[ ] Proceset gjyqësore aktive (si paditës/i paditur)
+[ ] Procedurat përmbarimore dhe tatimore
+[ ] Pajtueshmëria me Ligjin Nr. 06/L-082 për Mbrojtjen e të Dhënave Personale
+[ ] Detyrimet tatimore dhe kontributet (vërtetimi i ATK-së)
+
+VI. GJETJET DHE VLERËSIMI I RREZIKUT
+(Plotësohet pas shqyrtimit të dokumenteve)
+
+{{ city }}, më {{ date }}
+{{ lawyer_name }}, avokat/e
+""",
+    },
 ]

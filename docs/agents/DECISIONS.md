@@ -55,3 +55,23 @@
   persistent memory lives in-repo: STATE (snapshot), JOURNAL (log),
   DECISIONS (this file), ROADMAP (direction). Session protocol in AGENTS.md §2.
 - Consequences: every agent must follow the session protocol or the system decays.
+
+## D-007: E-signature legal basis and the path to qualified signatures (2026-07-08)
+
+- Context: BoraLaw's portal e-signature (typed name + SHA-256 + IP + timestamp)
+  is a *simple* electronic signature. Kosovo's governing law is
+  **Law No. 08/L-022 on Electronic Identification and Trust Services in
+  Electronic Transactions** (in force 2022; earlier docs wrongly cited
+  06/L-037). Art. 32 makes *qualified* e-signatures equivalent to handwritten;
+  simple ones remain admissible under the non-discrimination principle.
+- Decision: (1) ship a "Certificate of Completion" PDF (WeasyPrint,
+  `GET /matters/{id}/signatures/{sig_id}/certificate`) documenting the evidence
+  chain of the simple signature; (2) for qualified signatures, integrate later
+  with a Ministry of Economy-licensed QTSP — as of 2026 the recognized
+  providers are **Evrotrust Technologies JSC & IT Vision** (decisions
+  no. 6269/15.12.2023 and 5404/16.08.2024) and **rTrust (PBC)**, both
+  eIDAS-recognized in the EU. Integration would follow the same abstraction
+  pattern as `app/llm/` (provider interface, swappable).
+- Consequences: current signatures are legally usable evidence but not
+  handwritten-equivalent; contracts requiring written form still need wet ink
+  or a QTSP integration (planned, next phase; likely per-signature cost).

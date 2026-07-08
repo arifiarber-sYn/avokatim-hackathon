@@ -18,8 +18,10 @@ Everything in STATE.md "What exists and works".
 
 - [x] Backups ✅ (2026-07-07): `backup.sh` + daily systemd timer, AES-256
       encrypted, retention 14, restore-tested. Key must be copied off-machine.
-- [ ] Real legal corpus: load actual Kosovo laws from Gazeta Zyrtare and verify
-      RAG citation quality on real questions.
+- [x] Real legal corpus ✅ (2026-07-08): 9 laws (~4,000 article chunks) loaded
+      from Gazeta Zyrtare via `backend/scripts/import_gzk.py`; RAG citation
+      quality verified on real questions (LPK appeals, Labor Law leave).
+      More laws: extend the script's LAWS list and re-run.
 - [x] Verify OCR end-to-end on host ✅ (2026-07-07): tesseract 5.5.2 +
       sqi/eng/chi_sim installed; synthetic Albanian scanned image and image-only
       PDF both OCR correctly (diacritics ë/ç intact).
@@ -64,15 +66,20 @@ Priority before the law-firm pilot:
 
 Base competitiveness:
 - [x] E-signature flow in client portal ✅ (2026-07-07): typed-name signature
-      bound to document SHA-256 + IP + timestamp, audit-logged. Qualified
-      eIDAS/Kosovo e-signature law compliance still future work.
+      bound to document SHA-256 + IP + timestamp, audit-logged.
+      ✅ (2026-07-08) Certificate of Completion PDF per signed document.
+      Qualified signatures (Law 08/L-022 art. 32): integrate a licensed QTSP
+      (Evrotrust or rTrust) — researched, see DECISIONS D-007; next phase.
 - [x] Client portal v2 ✅ (2026-07-07): full portal UI at /portal — login,
       matters, two-way messages per matter, signature inbox.
 - [x] AI-drafted client status updates ✅ (2026-07-07): button on matter AI tab,
       send straight to portal messages or copy.
 
 Long-term differentiation:
-- [ ] Kosovo template library built with the pilot firm (our answer to
+- [~] Kosovo template library: 12 practice templates seeded (2026-07-08) —
+      lawsuits (civil/labor/administrative), objection, appeal, PoA, demand
+      letter, NDA, service + employment contracts, legal opinion, DD checklist.
+      Still to grow with the pilot firm's own precedents (our answer to
       Smokeball's 20k form library — nobody has this for XK).
 - [x] Local payment tracking ✅ (2026-07-07): paid_on + payment_reference on
       invoices, entered when marking paid. (Local processor integration later.)

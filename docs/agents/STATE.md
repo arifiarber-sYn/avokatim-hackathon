@@ -51,11 +51,26 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - **E-signature**: lawyer requests signature on a document (Documents tab);
   client signs in portal (typed name bound to document SHA-256, IP + timestamp,
   audit-logged). Status pending/signed/declined shown on both sides.
-- **Templates**: lawsuit/appeal/authorization documents auto-filled from matter data.
+  **Certificate of Completion PDF** (2026-07-08): "Certifikata" link next to a
+  signed status downloads a WeasyPrint PDF proof sheet
+  (`GET /matters/{id}/signatures/{sig_id}/certificate`) citing Law 08/L-022.
+  Qualified signatures = future QTSP integration (Evrotrust / rTrust — see D-007).
+- **Templates**: 12 seeded XK templates auto-filled from matter data: civil
+  lawsuit, appeal, power of attorney, payment-order objection, labor lawsuit,
+  administrative lawsuit, demand letter, NDA, service contract, employment
+  contract, legal opinion, due-diligence checklist (all in `seeds/kosovo.py`).
 - **Assistant "Bora"**: RAG over legal corpus + matter documents, with citations.
   Providers: DeepSeek (default) or local OpenAI-compatible (Ollama/vLLM), selectable per request.
   Also: **client-update drafting** (AI tab on matter → send to portal or copy).
+  Questions without a matter now ground in the tenant's default jurisdiction
+  corpus (so citations always work, not only inside a matter).
 - **Corpus**: upload laws via Settings → Legal base; auto-chunked by article ("Neni X").
+  **Real Kosovo corpus loaded** (2026-07-08): 9 laws / ~4,000 article chunks from
+  Gazeta Zyrtare — LPK 03/L-006, KPP 08/L-032, Criminal Code 06/L-074
+  (consolidated 2026), LMD 04/L-077, Labor Law 03/L-212, Administrative
+  Disputes 08/L-182, Business Organizations 06/L-016, Family Law 2004/32,
+  Data Protection 06/L-082. Re-runnable importer: `backend/scripts/import_gzk.py`
+  (skips laws already present; add new laws to its `LAWS` list).
 - **Billing**: time entries, invoices generated from unbilled hours.
 - **Client portal**: full UI at `/portal` — login, matters with hearings,
   two-way messages, e-signature inbox.

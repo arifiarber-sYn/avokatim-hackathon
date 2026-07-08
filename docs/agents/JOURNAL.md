@@ -10,6 +10,36 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-08 — Real legal corpus + XK template library + signature certificate (Cursor / Fable 5)
+
+- Done (corpus): `backend/scripts/import_gzk.py` — downloads real Kosovo laws
+  from Gazeta Zyrtare (ActDocumentDetail HTML; PDF fallback for laws GZK hosts
+  only as postback, e.g. 08/L-182 via the MD mirror) and posts them to
+  /corpus. Loaded 9 laws ≈ 4,000 article chunks: LPK, KPP, Criminal Code
+  (2026 consolidated), LMD, Labor, Administrative Disputes, Business
+  Organizations, Family, Data Protection. Removed the old test fragment.
+  Fixed /assistant/ask to ground in the tenant's default jurisdiction when no
+  matter is selected — citations were empty outside matters before.
+- Done (templates): expanded `XK_TEMPLATES` from 3 to 12 — payment-order
+  objection, labor lawsuit, administrative lawsuit (08/L-182), demand letter,
+  NDA, service contract, employment contract (03/L-212), legal opinion,
+  due-diligence checklist. Seeded idempotently at startup.
+- Done (e-signature): Certificate of Completion PDF
+  (`GET /matters/{id}/signatures/{sig_id}/certificate`, WeasyPrint, 400 until
+  signed) + "Certifikata" download link in Documents tab; i18n sq/en/zh.
+  Corrected the legal basis: Law 08/L-022 (not 06/L-037). Documented QTSP
+  research in DECISIONS D-007 (Evrotrust + rTrust are the licensed providers).
+  weasyprint added to requirements.txt.
+- Verified: 9 pytest pass; tsc + build clean; Bora answers real questions with
+  correct citations (LPK art. 176 appeal deadline; Labor Law art. 32 annual
+  leave — 6 law citations each); NDA renders; E2E certificate flow
+  (invite → sign in portal → 17 KB PDF, %PDF magic OK, 400 before signing);
+  synthetic data cleaned; health + dashboard + boraarifi.ai all 200.
+- Left open / next: ICL practice templates + real-file migration (after the
+  meeting); QTSP integration for qualified signatures (next phase, D-007);
+  LMDhP compliance docs; more laws can be added by extending
+  `import_gzk.py` LAWS.
+
 ## 2026-07-08 — ICL offer folder + firm-readiness features (Cursor / Fable 5)
 
 - Done (offer): researched ICL Law / Virtus Invesco (Mehmet Berisha), competitor

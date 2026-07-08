@@ -445,6 +445,20 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
     return sigs.find((s) => s.document_id === docId);
   }
 
+  async function downloadCertificate(sig: SigRequest) {
+    const res = await fetch(`/api/matters/${matterId}/signatures/${sig.id}/certificate`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `certifikata-${sig.id}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const confidenceLabel: Record<string, string> = {
     high: t.confidenceHigh,
     medium: t.confidenceMedium,
@@ -579,7 +593,13 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
                     {sig ? (
                       sig.status === "signed" ? (
                         <span className="text-emerald-700">
-                          ✓ {t.signedByOn} {sig.signer_name}
+                          ✓ {t.signedByOn} {sig.signer_name}{" "}
+                          <button
+                            onClick={() => downloadCertificate(sig)}
+                            className="text-indigo-600 hover:underline"
+                          >
+                            {t.certificate}
+                          </button>
                         </span>
                       ) : sig.status === "declined" ? (
                         <span className="text-red-600">{t.declinedLabel}</span>

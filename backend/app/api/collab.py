@@ -5,6 +5,7 @@ import uuid
 from datetime import UTC, date, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import Response
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,10 +19,12 @@ from app.models import (
     Document,
     MatterMessage,
     SignatureRequest,
+    Tenant,
     User,
 )
 from app.services.assistant import draft_client_update, extract_deadlines_from_text
 from app.services.audit import log_action
+from app.services.signature_certificate import build_certificate_pdf
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["collab"])
@@ -169,6 +172,44 @@ async def request_signature(
     await db.commit()
     await db.refresh(request)
     return request
+
+
+@router.get("/matters/{matter_id}/signatures/{signature_id}/certificate")
+async def signature_certificate(
+    matter_id: uuid.UUID,
+    signature_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """PDF proof sheet for a completed signature (name + SHA-256 + IP + time)."""
+    matter = await get_owned_matter(db, user, matter_id)
+    sig = await db.get(SignatureRequest, signature_id)
+    if sig is None or sig.matter_id != matter_id or sig.tenant_id != user.tenant_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Signature request not found")
+    if sig.status != "signed":
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Document is not signed yet")
+
+    document = await db.get(Document, sig.document_id)
+    contact = await db.get(Contact, sig.contact_id)
+    tenant = await db.get(Tenant, user.tenant_id)
+    requested_by = await db.get(User, sig.requested_by_id) if sig.requested_by_id else None
+
+    pdf = build_certificate_pdf(
+        sig=sig, document=document, matter=matter, contact=contact,
+        tenant=tenant, requested_by=requested_by,
+    )
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="signature.certificate",
+        entity_type="signature_request", entity_id=str(sig.id),
+    )
+    await db.commit()
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="certifikata-{sig.id}.pdf"'
+        },
+    )
 
 
 # ---------- AI: deadline extraction from a court document ----------
