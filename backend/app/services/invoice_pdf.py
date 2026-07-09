@@ -1,8 +1,12 @@
 """Invoice PDF: a professional fiscal invoice for Kosovo practice —
-firm identity (NUI/VAT), client, line items, VAT and bank details."""
+firm identity (NUI/VAT), client, line items, VAT and bank details.
+
+Labels are bilingual (Albanian / client language) when the client's
+communication language differs — Law 02/L-37 on the Use of Languages."""
 import html
 from datetime import date
 
+from app.i18n import bilabel, pick_locale, tr
 from app.models import Contact, Invoice, Matter, Tenant
 
 _PAGE = """<!DOCTYPE html>
@@ -49,34 +53,34 @@ _PAGE = """<!DOCTYPE html>
       <div class="firm-meta">{firm_meta}</div>
     </div>
     <div>
-      <h1>FATURË</h1>
-      <div class="inv-no">Nr. {number}</div>
+      <h1>{l_title}</h1>
+      <div class="inv-no">{l_no} {number}</div>
       <div style="text-align:right"><span class="status {status_class}">{status_label}</span></div>
     </div>
   </div>
 
   <div class="cols">
     <div class="box">
-      <h3>Faturuar për</h3>
+      <h3>{l_billed_to}</h3>
       <b>{client_name}</b><br>{client_meta}
     </div>
     <div class="box">
-      <h3>Detajet</h3>
-      Data e lëshimit: <b>{issued_on}</b><br>
-      Afati i pagesës: <b>{due_on}</b><br>
+      <h3>{l_details}</h3>
+      {l_issued}: <b>{issued_on}</b><br>
+      {l_due}: <b>{due_on}</b><br>
       {matter_line}
     </div>
   </div>
 
   <table class="items">
-    <tr><th>Përshkrimi</th><th class="num">Sasia</th><th class="num">Çmimi njësi</th><th class="num">Shuma</th></tr>
+    <tr><th>{l_desc}</th><th class="num">{l_qty}</th><th class="num">{l_unit_price}</th><th class="num">{l_amount}</th></tr>
     {item_rows}
   </table>
 
   <table class="totals">
-    <tr><td class="label">Nëntotali</td><td class="value">{subtotal} {currency}</td></tr>
-    <tr><td class="label">TVSH ({vat_rate}%)</td><td class="value">{vat_amount} {currency}</td></tr>
-    <tr class="grand"><td class="label">TOTALI PËR PAGESË</td><td class="value">{total} {currency}</td></tr>
+    <tr><td class="label">{l_subtotal}</td><td class="value">{subtotal} {currency}</td></tr>
+    <tr><td class="label">{l_vat} ({vat_rate}%)</td><td class="value">{vat_amount} {currency}</td></tr>
+    <tr class="grand"><td class="label">{l_total_due}</td><td class="value">{total} {currency}</td></tr>
   </table>
 
   {payment_html}
@@ -104,6 +108,9 @@ def build_invoice_pdf(
     def money(value) -> str:
         return f"{value:,.2f}".replace(",", " ")
 
+    # Client's language: bilingual labels (sq / client) when it differs
+    loc = pick_locale(contact.locale if contact else None, tenant.default_locale)
+
     firm_meta_parts = []
     if tenant.address:
         firm_meta_parts.append(tenant.address)
@@ -121,7 +128,9 @@ def build_invoice_pdf(
         if contact.address:
             client_meta_parts.append(esc(contact.address))
         if contact.national_id:
-            client_meta_parts.append(f"Nr. identifikues: {esc(contact.national_id)}")
+            client_meta_parts.append(
+                f"{bilabel(loc, 'inv_national_id')}: {esc(contact.national_id)}"
+            )
         if contact.email:
             client_meta_parts.append(esc(contact.email))
 
@@ -134,27 +143,38 @@ def build_invoice_pdf(
     ) or '<tr><td colspan="4">—</td></tr>'
 
     if invoice.status == "paid":
-        status_class, status_label = "paid", "E PAGUAR"
-        pay_line = f"Paguar më {invoice.paid_on:%d.%m.%Y}." if invoice.paid_on else "E paguar."
+        status_class, status_label = "paid", bilabel(loc, "inv_status_paid")
+        pay_line = (
+            tr(loc, "inv_paid_on", date=f"{invoice.paid_on:%d.%m.%Y}")
+            if invoice.paid_on
+            else tr(loc, "inv_paid")
+        )
         if invoice.payment_reference:
-            pay_line += f" Referenca: {esc(invoice.payment_reference)}."
-        payment_html = f'<div class="pay"><b>Pagesa.</b> {pay_line}</div>'
+            pay_line += " " + tr(loc, "inv_ref", ref=esc(invoice.payment_reference))
+        payment_html = f'<div class="pay"><b>{bilabel(loc, "inv_payment")}</b> {pay_line}</div>'
     else:
         status_class = "unpaid"
-        status_label = {"draft": "DRAFT", "sent": "E DËRGUAR", "void": "E ANULUAR"}.get(
-            invoice.status, invoice.status.upper()
-        )
+        status_key = {"draft": "inv_status_draft", "sent": "inv_status_sent",
+                      "void": "inv_status_void"}.get(invoice.status)
+        status_label = bilabel(loc, status_key) if status_key else invoice.status.upper()
         bank = esc(tenant.bank_details) if tenant.bank_details else None
+        pay_body = tr(loc, "inv_pay_body", number=f"<b>{esc(invoice.number)}</b>")
+        if loc != "sq":
+            pay_body = (
+                tr("sq", "inv_pay_body", number=f"<b>{esc(invoice.number)}</b>")
+                + "<br>" + pay_body
+            )
         payment_html = (
-            f'<div class="pay"><b>Udhëzime pagese.</b> Ju lutemi kryeni pagesën me transfer '
-            f'bankar duke shënuar numrin e faturës <b>{esc(invoice.number)}</b> si përshkrim.'
+            f'<div class="pay"><b>{bilabel(loc, "inv_pay_head")}</b> {pay_body}'
             + (f"<br>{bank}" if bank else "")
             + "</div>"
         )
 
     matter_line = ""
     if matter:
-        matter_line = f"Lënda: <b>{esc(matter.reference)}</b> — {esc(matter.title)}"
+        matter_line = (
+            f"{bilabel(loc, 'inv_matter')}: <b>{esc(matter.reference)}</b> — {esc(matter.title)}"
+        )
 
     notes_html = f'<div class="notes">{esc(invoice.notes)}</div>' if invoice.notes else ""
 
@@ -167,6 +187,19 @@ def build_invoice_pdf(
         firm_name=esc(tenant.name),
         firm_meta=html.escape("\n".join(firm_meta_parts)),
         number=esc(invoice.number),
+        l_title=bilabel(loc, "inv_title"),
+        l_no=bilabel(loc, "inv_no"),
+        l_billed_to=bilabel(loc, "inv_billed_to"),
+        l_details=bilabel(loc, "inv_details"),
+        l_issued=bilabel(loc, "inv_issued"),
+        l_due=bilabel(loc, "inv_due"),
+        l_desc=bilabel(loc, "inv_desc"),
+        l_qty=bilabel(loc, "inv_qty"),
+        l_unit_price=bilabel(loc, "inv_unit_price"),
+        l_amount=bilabel(loc, "inv_amount"),
+        l_subtotal=bilabel(loc, "inv_subtotal"),
+        l_vat=bilabel(loc, "inv_vat"),
+        l_total_due=bilabel(loc, "inv_total_due"),
         status_class=status_class,
         status_label=status_label,
         client_name=esc(contact.display_name if contact else None),

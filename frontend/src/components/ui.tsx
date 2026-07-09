@@ -105,7 +105,7 @@ export function Badge({ status, label }: { status: string; label?: string }) {
 export function LocaleSwitcher() {
   const { locale, setLocale } = useI18n();
   return (
-    <div className="flex gap-1">
+    <div className="flex flex-wrap gap-1">
       {LOCALES.map((l) => (
         <button
           key={l.code}

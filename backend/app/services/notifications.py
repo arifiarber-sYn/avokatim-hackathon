@@ -12,7 +12,8 @@ from sqlalchemy import select
 
 from app.config import settings
 from app.database import SessionLocal
-from app.models import Contact, Deadline, Matter, User
+from app.i18n import pick_locale, tr
+from app.models import Contact, Deadline, Matter, Tenant, User
 from app.services.push import push_enabled, send_push_to_user
 from app.services.sms import send_sms, sms_enabled
 
@@ -93,12 +94,17 @@ async def _check_deadline_reminders(redis: aioredis.Redis) -> None:
             user = await db.get(User, responsible_id)
             if user is None:
                 continue
-            subject = f"[BoraLaw] Afat pas {days_left} ditësh: {deadline.title}"
+            loc = pick_locale(user.locale)
+            subject = tr(loc, "reminder_subject", days=days_left, title=deadline.title)
             body = (
-                f"Lënda: {ref} — {title}\n"
-                f"Afati: {deadline.title}\n"
-                f"Skadon: {deadline.due_at:%d.%m.%Y %H:%M}\n"
-                + (f"Baza ligjore: {deadline.legal_basis}\n" if deadline.legal_basis else "")
+                f"{tr(loc, 'reminder_matter')}: {ref} — {title}\n"
+                f"{tr(loc, 'reminder_deadline')}: {deadline.title}\n"
+                f"{tr(loc, 'reminder_expires')}: {deadline.due_at:%d.%m.%Y %H:%M}\n"
+                + (
+                    f"{tr(loc, 'reminder_legal_basis')}: {deadline.legal_basis}\n"
+                    if deadline.legal_basis
+                    else ""
+                )
                 + f"\n{settings.public_base_url}/matters/{deadline.matter_id}\n"
             )
             if user.email:
@@ -116,12 +122,18 @@ async def _check_deadline_reminders(redis: aioredis.Redis) -> None:
                 if await redis.set(sms_key, "1", nx=True, ex=DEDUP_TTL_SECONDS):
                     client = await db.get(Contact, client_id)
                     if client is not None and client.phone:
+                        tenant = await db.get(Tenant, client.tenant_id)
+                        client_loc = pick_locale(
+                            client.locale, tenant.default_locale if tenant else None
+                        )
                         await send_sms(
                             client.phone,
-                            (
-                                f"Kujtesë nga avokati juaj: {deadline.title} "
-                                f"më {deadline.due_at:%d.%m.%Y %H:%M} (lënda {ref}). "
-                                f"Ju lutemi të jeni të pranishëm."
+                            tr(
+                                client_loc,
+                                "sms_hearing_reminder",
+                                title=deadline.title,
+                                when=f"{deadline.due_at:%d.%m.%Y %H:%M}",
+                                ref=ref,
                             ),
                         )
             logger.info("Reminder sent for deadline %s (%s days)", deadline.id, days_left)

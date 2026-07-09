@@ -33,6 +33,9 @@ class Contact(Base, TenantMixin, TimestampMixin):
     phone: Mapped[str | None] = mapped_column(String(64))
     address: Mapped[str | None] = mapped_column(String(500))
     notes: Mapped[str | None] = mapped_column(Text)
+    # Communication language (Law 02/L-37: sq/sr state-wide, tr/bs municipal).
+    # Null = tenant default. Emails, SMS and invoices follow this.
+    locale: Mapped[str | None] = mapped_column(String(8))
 
     # Client portal access (phase 3): set when the lawyer invites the client
     portal_password_hash: Mapped[str | None] = mapped_column(String(255))

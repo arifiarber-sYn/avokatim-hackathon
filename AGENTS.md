@@ -22,8 +22,12 @@ AI assistance → billing → client portal.
   Jurisdiction rules (deadlines, holidays, templates, legal corpus) are **data,
   not code** — never hardcode jurisdiction-specific logic.
 - **Tenancy**: multi-tenant from the foundation (solo lawyer now, firms later).
-- **Languages**: UI in Albanian (sq), English (en), Chinese (zh). Every new UI
-  string must be added to all three in `frontend/src/lib/dictionaries.ts`.
+- **Languages**: UI in Albanian (sq), Serbian (sr), Turkish (tr), Bosnian (bs),
+ English (en), Chinese (zh) — Kosovo's official languages (Law 02/L-37) plus
+ extras. Every new UI string must be added to **all six** in
+ `frontend/src/lib/dictionaries.ts`. Server-generated client communications
+ (emails, SMS, invoice PDF) are localized via `backend/app/i18n.py` using
+ `Contact.locale` → tenant default → sq.
 - **Privacy**: client documents are encrypted at rest and indexed with **local**
   embeddings — document text must never leave this machine for indexing.
 
@@ -95,7 +99,7 @@ cd frontend && npm run build && systemctl --user restart boralaw
 2. **Never delete or rewrite `data/`** — it contains encrypted client documents.
 3. **Migrations are append-only.** Never edit an applied Alembic revision; create a new one.
 4. **Jurisdiction logic is data.** New rules go in `backend/app/seeds/`, not in service code.
-5. **Every UI string in 3 languages** (sq/en/zh) in `dictionaries.ts`. Default locale is sq.
+5. **Every UI string in 6 languages** (sq/sr/tr/bs/en/zh) in `dictionaries.ts`. Default locale is sq. Backend client-facing strings go in `backend/app/i18n.py`, also in all 6.
 6. **LLM calls only through the abstraction** in `backend/app/llm/` — never call a
    provider API directly from services. This keeps the app LLM-agnostic.
 7. **Local embeddings only** for document/corpus indexing (sentence-transformers).

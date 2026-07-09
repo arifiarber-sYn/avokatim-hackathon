@@ -23,6 +23,7 @@ from app.models import (
     User,
 )
 from app.config import settings
+from app.i18n import pick_locale, tr
 from app.services.assistant import draft_client_update, extract_deadlines_from_text
 from app.services.audit import log_action
 from app.services.notifications import send_email
@@ -196,15 +197,20 @@ async def request_signature(
     await db.commit()
     await db.refresh(request)
     if contact.email:
+        tenant = await db.get(Tenant, user.tenant_id)
+        loc = pick_locale(contact.locale, tenant.default_locale if tenant else None)
         await send_email(
             contact.email,
-            "Dokument për nënshkrim elektronik",
+            tr(loc, "email_signature_subject"),
             (
-                f"E nderuar/i nderuar {contact.display_name},\n\n"
-                f"{user.full_name} ju ka dërguar dokumentin \"{document.filename}\" "
-                f"për nënshkrim elektronik."
-                + (f"\n\nShënim: {body.note}" if body.note else "")
-                + f"\n\nKyçuni në portalin tuaj për ta nënshkruar:\n"
+                tr(loc, "email_greeting", name=contact.display_name)
+                + "\n\n"
+                + tr(
+                    loc, "email_signature_body",
+                    lawyer=user.full_name, filename=document.filename,
+                )
+                + (f"\n\n{tr(loc, 'email_note', note=body.note)}" if body.note else "")
+                + f"\n\n{tr(loc, 'email_open_portal')}\n"
                 f"{settings.public_base_url}/portal\n"
             ),
         )

@@ -11,6 +11,7 @@ require a licensed trust-service provider — in Kosovo: Evrotrust or rTrust
 import html
 from datetime import UTC, datetime
 
+from app.i18n import pick_locale, tr
 from app.models import Contact, Document, Matter, SignatureRequest, Tenant, User
 
 _PAGE = """<!DOCTYPE html>
@@ -40,7 +41,7 @@ _PAGE = """<!DOCTYPE html>
   <div class="head">
     <div class="brand">Bora<span>Law</span></div>
     <h1>CERTIFIKATË E NËNSHKRIMIT ELEKTRONIK</h1>
-    <div class="muted">Certificate of Electronic Signature Completion</div>
+    <div class="muted">{subtitle}</div>
   </div>
 
   <p>Kjo certifikatë vërteton se dokumenti i identifikuar më poshtë është nënshkruar
@@ -102,7 +103,15 @@ def build_certificate_pdf(
     def fmt(dt: datetime | None) -> str:
         return dt.astimezone(UTC).strftime("%d.%m.%Y %H:%M:%S UTC") if dt else "—"
 
+    # Official record stays Albanian; the subtitle repeats the title in the
+    # signer's language (plus English) per Law 02/L-37.
+    loc = pick_locale(contact.locale, tenant.default_locale if tenant else None)
+    subtitle = "Certificate of Electronic Signature Completion"
+    if loc not in ("sq", "en"):
+        subtitle = f"{tr(loc, 'cert_subtitle')} · {subtitle}"
+
     page = _PAGE.format(
+        subtitle=html.escape(subtitle),
         filename=esc(document.filename),
         version=document.version,
         sha256=esc(sig.document_sha256),

@@ -16,6 +16,7 @@ from app.deps import get_current_user
 from app.models import Contact, Deadline, Matter, MatterMessage, SignatureRequest, Tenant, User
 from app.security import hash_password, verify_password
 from app.services.audit import log_action
+from app.i18n import pick_locale, tr
 from app.services.notifications import send_email
 
 router = APIRouter(prefix="/portal", tags=["portal"])
@@ -210,12 +211,14 @@ async def portal_send_message(
     await db.commit()
     lawyer = await db.get(User, matter.responsible_user_id)
     if lawyer and lawyer.email:
+        loc = pick_locale(lawyer.locale)
         await send_email(
             lawyer.email,
-            f"[{matter.reference}] Mesazh i ri nga klienti",
+            tr(loc, "email_new_message_subject", ref=matter.reference),
             (
-                f"{contact.display_name} ju shkroi për lëndën \"{matter.title}\":\n\n"
-                f"{message.body[:500]}\n\n"
+                tr(loc, "email_new_message_body",
+                   client=contact.display_name, title=matter.title)
+                + f"\n\n{message.body[:500]}\n\n"
                 f"{settings.public_base_url}/matters/{matter.id}\n"
             ),
         )
@@ -353,13 +356,14 @@ async def portal_sign(
     await db.commit()
     requester = await db.get(User, sig.requested_by_id) if sig.requested_by_id else None
     if requester and requester.email:
+        loc = pick_locale(requester.locale)
         await send_email(
             requester.email,
-            "Dokumenti u nënshkrua",
+            tr(loc, "email_signed_subject"),
             (
-                f"{contact.display_name} sapo nënshkroi dokumentin e kërkuar "
-                f"(kërkesa {sig.id}).\n\n"
-                f"{settings.public_base_url}/matters/{sig.matter_id}\n"
+                tr(loc, "email_signed_body",
+                   client=contact.display_name, request_id=sig.id)
+                + f"\n\n{settings.public_base_url}/matters/{sig.matter_id}\n"
             ),
         )
     return {"status": "signed", "signed_at": sig.signed_at.isoformat()}

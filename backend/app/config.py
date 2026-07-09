@@ -50,8 +50,10 @@ class Settings(BaseSettings):
     # OCR
     ocr_languages: str = "sqi+eng+chi_sim"
 
+    # Official languages of Kosovo (Law 02/L-37): sq + sr state-wide,
+    # tr + bs in several municipalities; en/zh are extras.
     default_locale: str = "sq"
-    supported_locales: list[str] = ["sq", "en", "zh"]
+    supported_locales: list[str] = ["sq", "sr", "tr", "bs", "en", "zh"]
 
     # Public base URL used in links (calendar feed, public intake form)
     public_base_url: str = "http://127.0.0.1:3000"

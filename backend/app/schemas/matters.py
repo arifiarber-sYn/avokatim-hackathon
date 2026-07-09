@@ -12,6 +12,8 @@ class ContactIn(BaseModel):
     phone: str | None = None
     address: str | None = None
     notes: str | None = None
+    # Client's communication language (sq/sr/tr/bs/en/zh); null = firm default
+    locale: str | None = None
 
 
 class ContactOut(ContactIn):

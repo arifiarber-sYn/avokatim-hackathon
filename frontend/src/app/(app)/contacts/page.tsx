@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiGet, apiPost } from "@/lib/api";
+import { LOCALES } from "@/lib/dictionaries";
 import { useI18n } from "@/lib/i18n";
 import { Contact } from "@/lib/types";
 import { Badge, Button, Card, Input, Label, Select, Spinner } from "@/components/ui";
@@ -17,6 +18,7 @@ export default function ContactsPage() {
     email: "",
     phone: "",
     address: "",
+    locale: "",
   });
 
   const load = useCallback(() => {
@@ -36,9 +38,10 @@ export default function ContactsPage() {
       email: form.email || null,
       phone: form.phone || null,
       address: form.address || null,
+      locale: form.locale || null,
     });
     setShowNew(false);
-    setForm({ kind: "person", display_name: "", email: "", phone: "", address: "" });
+    setForm({ kind: "person", display_name: "", email: "", phone: "", address: "", locale: "" });
     load();
   }
 
@@ -75,6 +78,16 @@ export default function ContactsPage() {
               <Label>{t.address}</Label>
               <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
             </div>
+            <div className="md:col-span-2">
+              <Label>{t.communicationLanguage}</Label>
+              <Select value={form.locale} onChange={(e) => setForm({ ...form, locale: e.target.value })}>
+                <option value="">{t.firmDefault}</option>
+                {LOCALES.map((l) => (
+                  <option key={l.code} value={l.code}>{l.label}</option>
+                ))}
+              </Select>
+              <p className="mt-1 text-xs text-slate-400">{t.communicationLanguageHint}</p>
+            </div>
             <div className="md:col-span-2 flex gap-2">
               <Button type="submit">{t.save}</Button>
               <Button type="button" variant="secondary" onClick={() => setShowNew(false)}>{t.cancel}</Button>
@@ -110,6 +123,7 @@ export default function ContactsPage() {
                     <th className="px-4 py-3">{t.name}</th>
                     <th className="px-4 py-3">{t.email}</th>
                     <th className="px-4 py-3">{t.phone}</th>
+                    <th className="px-4 py-3">{t.communicationLanguage}</th>
                     <th className="px-4 py-3">{t.portalAccess}</th>
                   </tr>
                 </thead>
@@ -119,6 +133,9 @@ export default function ContactsPage() {
                       <td className="px-4 py-3 font-medium">{c.display_name}</td>
                       <td className="px-4 py-3 text-slate-600">{c.email || "—"}</td>
                       <td className="px-4 py-3 text-slate-600">{c.phone || "—"}</td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {LOCALES.find((l) => l.code === c.locale)?.label || "—"}
+                      </td>
                       <td className="px-4 py-3">
                         {c.portal_enabled ? <Badge status="open" label="✓" /> : "—"}
                       </td>

@@ -7,6 +7,7 @@ export interface Contact {
   phone: string | null;
   address: string | null;
   notes: string | null;
+  locale: string | null;
   portal_enabled: boolean;
 }
 

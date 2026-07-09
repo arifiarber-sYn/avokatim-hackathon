@@ -12,21 +12,21 @@ rules are data, not code.
 JURISDICTIONS = [
     {
         "code": "XK",
-        "name": {"sq": "Kosova", "en": "Kosovo", "zh": "科索沃"},
+        "name": {"sq": "Kosova", "en": "Kosovo", "zh": "科索沃", "sr": "Kosovo", "tr": "Kosova", "bs": "Kosovo"},
     },
     {
         "code": "GB",
-        "name": {"sq": "Anglia dhe Uellsi", "en": "England and Wales", "zh": "英格兰和威尔士"},
+        "name": {"sq": "Anglia dhe Uellsi", "en": "England and Wales", "zh": "英格兰和威尔士", "sr": "Engleska i Vels", "tr": "İngiltere ve Galler", "bs": "Engleska i Vels"},
         "is_active": False,
     },
     {
         "code": "CN",
-        "name": {"sq": "Kina", "en": "China", "zh": "中国"},
+        "name": {"sq": "Kina", "en": "China", "zh": "中国", "sr": "Kina", "tr": "Çin", "bs": "Kina"},
         "is_active": False,
     },
     {
         "code": "INTL",
-        "name": {"sq": "Ndërkombëtar", "en": "International", "zh": "国际"},
+        "name": {"sq": "Ndërkombëtar", "en": "International", "zh": "国际", "sr": "Međunarodno", "tr": "Uluslararası", "bs": "Međunarodno"},
         "is_active": False,
     },
 ]
@@ -37,7 +37,7 @@ XK_DEADLINE_RULES = [
         "name": {
             "sq": "Ankesë kundër aktgjykimit",
             "en": "Appeal against judgment",
-            "zh": "对判决提出上诉",
+            "zh": "对判决提出上诉", "sr": "Žalba protiv presude", "tr": "Karara karşı istinaf", "bs": "Žalba protiv presude",
         },
         "legal_basis": "LPK neni 176",
         "practice_area": "civil",
@@ -49,7 +49,7 @@ XK_DEADLINE_RULES = [
         "name": {
             "sq": "Ankesë kundër aktvendimit",
             "en": "Appeal against ruling",
-            "zh": "对裁定提出上诉",
+            "zh": "对裁定提出上诉", "sr": "Žalba protiv rešenja", "tr": "Ara karara karşı itiraz", "bs": "Žalba protiv rješenja",
         },
         "legal_basis": "LPK neni 209",
         "practice_area": "civil",
@@ -61,7 +61,7 @@ XK_DEADLINE_RULES = [
         "name": {
             "sq": "Përgjigje në padi",
             "en": "Answer to the claim",
-            "zh": "对起诉状的答辩",
+            "zh": "对起诉状的答辩", "sr": "Odgovor na tužbu", "tr": "Davaya cevap", "bs": "Odgovor na tužbu",
         },
         "legal_basis": "LPK neni 395",
         "practice_area": "civil",
@@ -70,7 +70,7 @@ XK_DEADLINE_RULES = [
     },
     {
         "code": "civil.revision",
-        "name": {"sq": "Revizion", "en": "Revision", "zh": "再审申请"},
+        "name": {"sq": "Revizion", "en": "Revision", "zh": "再审申请", "sr": "Revizija", "tr": "Revizyon (temyiz)", "bs": "Revizija"},
         "legal_basis": "LPK neni 211",
         "practice_area": "civil",
         "trigger_event": "second_instance_served",
@@ -81,7 +81,7 @@ XK_DEADLINE_RULES = [
         "name": {
             "sq": "Ankesë kundër aktgjykimit penal",
             "en": "Appeal against criminal judgment",
-            "zh": "对刑事判决提出上诉",
+            "zh": "对刑事判决提出上诉", "sr": "Žalba protiv krivične presude", "tr": "Ceza hükmüne karşı istinaf", "bs": "Žalba protiv krivične presude",
         },
         "legal_basis": "KPPRK neni 380",
         "practice_area": "criminal",
@@ -93,7 +93,7 @@ XK_DEADLINE_RULES = [
         "name": {
             "sq": "Kundërshtim i aktakuzës",
             "en": "Objection to indictment",
-            "zh": "对起诉书提出异议",
+            "zh": "对起诉书提出异议", "sr": "Prigovor na optužnicu", "tr": "İddianameye itiraz", "bs": "Prigovor na optužnicu",
         },
         "legal_basis": "KPPRK neni 249",
         "practice_area": "criminal",
@@ -105,7 +105,7 @@ XK_DEADLINE_RULES = [
         "name": {
             "sq": "Padi në konflikt administrativ",
             "en": "Administrative dispute lawsuit",
-            "zh": "行政诉讼起诉",
+            "zh": "行政诉讼起诉", "sr": "Tužba u upravnom sporu", "tr": "İdari dava", "bs": "Tužba u upravnom sporu",
         },
         "legal_basis": "LKA / Ligji Nr. 03/L-202 neni 27",
         "practice_area": "administrative",
@@ -117,7 +117,7 @@ XK_DEADLINE_RULES = [
         "name": {
             "sq": "Ankesë administrative",
             "en": "Administrative appeal",
-            "zh": "行政复议申请",
+            "zh": "行政复议申请", "sr": "Upravna žalba", "tr": "İdari itiraz", "bs": "Upravna žalba",
         },
         "legal_basis": "LKA neni 130",
         "practice_area": "administrative",
@@ -129,7 +129,7 @@ XK_DEADLINE_RULES = [
         "name": {
             "sq": "Kërkesë për mbrojtjen e të drejtave nga marrëdhënia e punës",
             "en": "Labor rights protection claim",
-            "zh": "劳动权利保护请求",
+            "zh": "劳动权利保护请求", "sr": "Zahtev za zaštitu prava iz radnog odnosa", "tr": "İş ilişkisinden doğan hakların korunması talebi", "bs": "Zahtjev za zaštitu prava iz radnog odnosa",
         },
         "legal_basis": "Ligji i Punës Nr. 03/L-212 neni 79",
         "practice_area": "labor",
@@ -141,13 +141,13 @@ XK_DEADLINE_RULES = [
 # Kosovo public holidays (fixed-date ones; movable religious holidays are
 # entered per-year by the lawyer or a future update).
 XK_HOLIDAYS_FIXED = [
-    ("01-01", {"sq": "Viti i Ri", "en": "New Year", "zh": "新年"}),
-    ("01-02", {"sq": "Viti i Ri (dita e dytë)", "en": "New Year (day 2)", "zh": "新年第二天"}),
-    ("02-17", {"sq": "Dita e Pavarësisë", "en": "Independence Day", "zh": "独立日"}),
-    ("04-09", {"sq": "Dita e Kushtetutës", "en": "Constitution Day", "zh": "宪法日"}),
-    ("05-01", {"sq": "Dita e Punës", "en": "Labour Day", "zh": "劳动节"}),
-    ("05-09", {"sq": "Dita e Evropës", "en": "Europe Day", "zh": "欧洲日"}),
-    ("12-25", {"sq": "Krishtlindjet", "en": "Christmas", "zh": "圣诞节"}),
+    ("01-01", {"sq": "Viti i Ri", "en": "New Year", "zh": "新年", "sr": "Nova godina", "tr": "Yılbaşı", "bs": "Nova godina"}),
+    ("01-02", {"sq": "Viti i Ri (dita e dytë)", "en": "New Year (day 2)", "zh": "新年第二天", "sr": "Nova godina (drugi dan)", "tr": "Yılbaşı (ikinci gün)", "bs": "Nova godina (drugi dan)"}),
+    ("02-17", {"sq": "Dita e Pavarësisë", "en": "Independence Day", "zh": "独立日", "sr": "Dan nezavisnosti", "tr": "Bağımsızlık Günü", "bs": "Dan nezavisnosti"}),
+    ("04-09", {"sq": "Dita e Kushtetutës", "en": "Constitution Day", "zh": "宪法日", "sr": "Dan ustava", "tr": "Anayasa Günü", "bs": "Dan ustava"}),
+    ("05-01", {"sq": "Dita e Punës", "en": "Labour Day", "zh": "劳动节", "sr": "Praznik rada", "tr": "İşçi Bayramı", "bs": "Praznik rada"}),
+    ("05-09", {"sq": "Dita e Evropës", "en": "Europe Day", "zh": "欧洲日", "sr": "Dan Evrope", "tr": "Avrupa Günü", "bs": "Dan Evrope"}),
+    ("12-25", {"sq": "Krishtlindjet", "en": "Christmas", "zh": "圣诞节", "sr": "Božić", "tr": "Noel", "bs": "Božić"}),
 ]
 
 XK_TEMPLATES = [
@@ -207,7 +207,7 @@ Përfaqësuesi i paditësit
         "code": "civil.appeal",
         "locale": "sq",
         "practice_area": "civil",
-        "name": {"sq": "Ankesë kundër aktgjykimit", "en": "Appeal", "zh": "上诉状"},
+        "name": {"sq": "Ankesë kundër aktgjykimit", "en": "Appeal", "zh": "上诉状", "sr": "Žalba protiv presude", "tr": "Karara karşı istinaf", "bs": "Žalba protiv presude"},
         "variables": [
             {"name": "court_name", "label": {"sq": "Gjykata e Apelit", "en": "Appeal court", "zh": "上诉法院"}},
             {"name": "first_court", "label": {"sq": "Gjykata e shkallës së parë", "en": "First instance court", "zh": "一审法院"}},
@@ -362,7 +362,7 @@ Përfaqësuesi i paditësit
         "name": {
             "sq": "Padi në konflikt administrativ",
             "en": "Administrative dispute lawsuit",
-            "zh": "行政诉讼起诉状",
+            "zh": "行政诉讼起诉状", "sr": "Tužba u upravnom sporu", "tr": "İdari dava", "bs": "Tužba u upravnom sporu",
         },
         "variables": [
             {"name": "court_name", "label": {"sq": "Gjykata", "en": "Court", "zh": "法院"}},
@@ -714,6 +714,168 @@ VI. GJETJET DHE VLERËSIMI I RREZIKUT
 {{ lawyer_name }}, avokat/e
 """,
     },
+    # ------------------------------------------------------------------
+    # Serbian versions of client-facing templates (Law 02/L-37: Serbian is
+    # an official language state-wide). AI-translated legal text — each is
+    # marked "requires lawyer review" and must be verified by the lawyer
+    # before first use.
+    # ------------------------------------------------------------------
+    {
+        "code": "general.power_of_attorney",
+        "locale": "sr",
+        "practice_area": "other",
+        "name": {
+            "sq": "Autorizim (prokurë) — serbisht [kërkon rishikim nga avokati]",
+            "sr": "Punomoćje [zahteva proveru advokata]",
+            "en": "Power of attorney — Serbian [requires lawyer review]",
+            "zh": "授权委托书 — 塞尔维亚语[需律师审核]",
+        },
+        "variables": [
+            {"name": "scope", "label": {
+                "sq": "Fushëveprimi i autorizimit", "sr": "Obim punomoćja",
+                "en": "Scope", "zh": "授权范围"}},
+        ],
+        "body": """PUNOMOĆJE
+
+Ja, {{ client_name }}{% if client_address %}, sa adresom {{ client_address }}{% endif %},
+ovlašćujem advokata/advokaticu {{ lawyer_name }} da me zastupa u:
+
+{{ scope }}
+
+Punomoćje obuhvata preduzimanje svih potrebnih procesnih radnji za zaštitu
+mojih interesa, u skladu sa važećim zakonom.
+
+{{ city }}, dana {{ date }}
+
+Vlastodavac                                    Advokat/ica
+{{ client_name }}                              {{ lawyer_name }}
+""",
+    },
+    {
+        "code": "commercial.nda",
+        "locale": "sr",
+        "practice_area": "commercial",
+        "name": {
+            "sq": "Marrëveshje konfidencialiteti (NDA) — serbisht [kërkon rishikim nga avokati]",
+            "sr": "Ugovor o poverljivosti (NDA) [zahteva proveru advokata]",
+            "en": "Non-disclosure agreement — Serbian [requires lawyer review]",
+            "zh": "保密协议 — 塞尔维亚语[需律师审核]",
+        },
+        "variables": [
+            {"name": "party_two", "label": {
+                "sq": "Pala e dytë", "sr": "Druga strana",
+                "en": "Second party", "zh": "另一方"}},
+            {"name": "purpose", "label": {
+                "sq": "Qëllimi i shkëmbimit të informacionit", "sr": "Svrha razmene informacija",
+                "en": "Purpose", "zh": "目的"}},
+            {"name": "duration_years", "label": {
+                "sq": "Kohëzgjatja (vite)", "sr": "Trajanje (godine)",
+                "en": "Duration (years)", "zh": "期限（年）"}},
+            {"name": "penalty", "label": {
+                "sq": "Dënimi kontraktual (EUR)", "sr": "Ugovorna kazna (EUR)",
+                "en": "Contractual penalty", "zh": "违约金"}},
+        ],
+        "body": """UGOVOR O POVERLJIVOSTI
+
+Zaključen dana {{ date }} u {{ city }}, između:
+
+1. {{ client_name }}{% if client_address %}, sa sedištem u {{ client_address }}{% endif %} ("Prva strana"), i
+2. {{ party_two }} ("Druga strana")
+
+Član 1 — Svrha
+Strane nameravaju da razmene poverljive informacije u svrhu:
+{{ purpose }}
+
+Član 2 — Poverljive informacije
+Poverljivom informacijom smatra se svaki poslovni, tehnički, finansijski ili
+pravni podatak koji jedna strana otkrije drugoj, u bilo kom obliku, osim
+informacija koje su javno poznate bez krivice strane primaoca.
+
+Član 3 — Obaveze
+Strana primalac se obavezuje da čuva tajnost informacija, da ih ne otkriva
+trećim licima bez prethodne pisane saglasnosti i da ih koristi isključivo za
+svrhu utvrđenu u članu 1. Obaveza važi i za zaposlene i saradnike strana.
+
+Član 4 — Trajanje
+Ovaj ugovor važi {{ duration_years }} godina od dana potpisivanja. Obaveza
+čuvanja tajnosti ostaje na snazi i nakon njegovog isteka.
+
+Član 5 — Ugovorna kazna
+Za svaku povredu ovog ugovora, strana koja ga je prekršila duguje drugoj
+strani ugovornu kaznu od {{ penalty }} EUR, ne dirajući pravo na naknadu veće
+stvarne štete, u skladu sa Zakonom br. 04/L-077 o obligacionim odnosima.
+
+Član 6 — Merodavno pravo i nadležnost
+Na ovaj ugovor primenjuje se pravo Republike Kosovo. Sporove rešava nadležni
+sud u {{ city }}.
+
+Prva strana                                    Druga strana
+{{ client_name }}                              {{ party_two }}
+""",
+    },
+    {
+        "code": "commercial.service_contract",
+        "locale": "sr",
+        "practice_area": "commercial",
+        "name": {
+            "sq": "Kontratë për ofrimin e shërbimeve — serbisht [kërkon rishikim nga avokati]",
+            "sr": "Ugovor o pružanju usluga [zahteva proveru advokata]",
+            "en": "Service agreement — Serbian [requires lawyer review]",
+            "zh": "服务合同 — 塞尔维亚语[需律师审核]",
+        },
+        "variables": [
+            {"name": "provider_name", "label": {
+                "sq": "Ofruesi i shërbimit", "sr": "Pružalac usluge",
+                "en": "Service provider", "zh": "服务提供方"}},
+            {"name": "services", "label": {
+                "sq": "Përshkrimi i shërbimeve", "sr": "Opis usluga",
+                "en": "Services", "zh": "服务内容"}},
+            {"name": "price", "label": {
+                "sq": "Çmimi dhe mënyra e pagesës", "sr": "Cena i način plaćanja",
+                "en": "Price and payment", "zh": "价格与支付"}},
+            {"name": "term", "label": {
+                "sq": "Kohëzgjatja e kontratës", "sr": "Trajanje ugovora",
+                "en": "Term", "zh": "合同期限"}},
+            {"name": "notice_days", "label": {
+                "sq": "Afati i njoftimit për shkëputje (ditë)", "sr": "Otkazni rok (dana)",
+                "en": "Termination notice (days)", "zh": "解约通知期"}},
+        ],
+        "body": """UGOVOR O PRUŽANJU USLUGA
+
+Zaključen dana {{ date }} u {{ city }}, između:
+
+1. {{ client_name }}{% if client_address %}, sa sedištem u {{ client_address }}{% endif %} ("Naručilac"), i
+2. {{ provider_name }} ("Pružalac")
+
+Član 1 — Predmet ugovora
+Pružalac se obavezuje da za Naručioca izvrši sledeće usluge:
+{{ services }}
+
+Član 2 — Cena i plaćanje
+{{ price }}
+Plaćanje se vrši na osnovu fakture koju izdaje Pružalac, u roku navedenom na
+fakturi. Za kašnjenje se primenjuje zatezna kamata prema Zakonu br. 04/L-077
+o obligacionim odnosima.
+
+Član 3 — Trajanje
+{{ term }}
+
+Član 4 — Raskid
+Svaka strana može raskinuti ugovor pisanim obaveštenjem {{ notice_days }}
+dana unapred. Raskid ne dira obaveze nastale do dana prestanka.
+
+Član 5 — Poverljivost
+Strane čuvaju tajnost poslovnih informacija druge strane saznatih tokom
+izvršenja ovog ugovora.
+
+Član 6 — Merodavno pravo i sporovi
+Na ovaj ugovor primenjuje se pravo Republike Kosovo, posebno Zakon br.
+04/L-077 o obligacionim odnosima. Sporove rešava nadležni sud u {{ city }}.
+
+Naručilac                                      Pružalac
+{{ client_name }}                              {{ provider_name }}
+""",
+    },
 ]
 
 # ---------------------------------------------------------------------------
@@ -733,7 +895,7 @@ XK_FEE_TARIFF = [
         "name": {
             "sq": "Mbrojtja penale — Departamenti i përgjithshëm (seancë/veprim)",
             "en": "Criminal defense — General Department (per session/action)",
-            "zh": "刑事辩护 — 普通部门（每次庭审/行动）",
+            "zh": "刑事辩护 — 普通部门（每次庭审/行动）", "sr": "Krivična odbrana — Opšte odeljenje (ročište/radnja)", "tr": "Ceza savunması — Genel Daire (duruşma/işlem)", "bs": "Krivična odbrana — Opće odjeljenje (ročište/radnja)",
         },
         "practice_area": "criminal",
         "amount": "120.00",
@@ -747,7 +909,7 @@ XK_FEE_TARIFF = [
         "name": {
             "sq": "Mbrojtja penale — krime të rënda, dënim deri 10 vjet (seancë/veprim)",
             "en": "Criminal defense — serious crimes, up to 10 years (per session/action)",
-            "zh": "刑事辩护 — 重罪，十年以下（每次庭审/行动）",
+            "zh": "刑事辩护 — 重罪，十年以下（每次庭审/行动）", "sr": "Krivična odbrana — teška krivična dela, kazna do 10 godina (ročište/radnja)", "tr": "Ceza savunması — ağır suçlar, 10 yıla kadar (duruşma/işlem)", "bs": "Krivična odbrana — teška krivična djela, kazna do 10 godina (ročište/radnja)",
         },
         "practice_area": "criminal",
         "amount": "150.00",
@@ -761,7 +923,7 @@ XK_FEE_TARIFF = [
         "name": {
             "sq": "Mbrojtja penale — dënim 10+ vjet / neni 22 KPPK (seancë/veprim)",
             "en": "Criminal defense — 10+ years / art. 22 CCPK (per session/action)",
-            "zh": "刑事辩护 — 十年以上/《刑诉法》第22条（每次庭审/行动）",
+            "zh": "刑事辩护 — 十年以上/《刑诉法》第22条（每次庭审/行动）", "sr": "Krivična odbrana — kazna 10+ godina / član 22 ZKPK (ročište/radnja)", "tr": "Ceza savunması — 10+ yıl / ZKPK m. 22 (duruşma/işlem)", "bs": "Krivična odbrana — kazna 10+ godina / član 22 ZKPK (ročište/radnja)",
         },
         "practice_area": "criminal",
         "amount": "200.00",
@@ -776,7 +938,7 @@ XK_FEE_TARIFF = [
         "name": {
             "sq": "Parashtresë penale — Departamenti i përgjithshëm",
             "en": "Criminal submission — General Department",
-            "zh": "刑事书状 — 普通部门",
+            "zh": "刑事书状 — 普通部门", "sr": "Krivični podnesak — Opšte odeljenje", "tr": "Ceza dilekçesi — Genel Daire", "bs": "Krivični podnesak — Opće odjeljenje",
         },
         "practice_area": "criminal",
         "amount": "120.00",
@@ -790,7 +952,7 @@ XK_FEE_TARIFF = [
         "name": {
             "sq": "Parashtresë penale — krime të rënda, dënim deri 10 vjet",
             "en": "Criminal submission — serious crimes, up to 10 years",
-            "zh": "刑事书状 — 重罪，十年以下",
+            "zh": "刑事书状 — 重罪，十年以下", "sr": "Krivični podnesak — teška krivična dela, kazna do 10 godina", "tr": "Ceza dilekçesi — ağır suçlar, 10 yıla kadar", "bs": "Krivični podnesak — teška krivična djela, kazna do 10 godina",
         },
         "practice_area": "criminal",
         "amount": "150.00",
@@ -804,7 +966,7 @@ XK_FEE_TARIFF = [
         "name": {
             "sq": "Parashtresë penale — dënim 10+ vjet / neni 22 KPPK",
             "en": "Criminal submission — 10+ years / art. 22 CCPK",
-            "zh": "刑事书状 — 十年以上/《刑诉法》第22条",
+            "zh": "刑事书状 — 十年以上/《刑诉法》第22条", "sr": "Krivični podnesak — kazna 10+ godina / član 22 ZKPK", "tr": "Ceza dilekçesi — 10+ yıl / ZKPK m. 22", "bs": "Krivični podnesak — kazna 10+ godina / član 22 ZKPK",
         },
         "practice_area": "criminal",
         "amount": "200.00",
@@ -819,7 +981,7 @@ XK_FEE_TARIFF = [
         "name": {
             "sq": "Padi/parashtresë — kontest i vlerës së vogël",
             "en": "Claim/submission — small-value dispute",
-            "zh": "起诉状/书状 — 小额纠纷",
+            "zh": "起诉状/书状 — 小额纠纷", "sr": "Tužba/podnesak — spor male vrednosti", "tr": "Dava/dilekçe — küçük değerli uyuşmazlık", "bs": "Tužba/podnesak — spor male vrijednosti",
         },
         "practice_area": "civil",
         "amount": "60.00",
@@ -833,7 +995,7 @@ XK_FEE_TARIFF = [
         "name": {
             "sq": "Padi/parashtresë — vlera deri 10.000 €",
             "en": "Claim/submission — value up to €10,000",
-            "zh": "起诉状/书状 — 标的额一万欧元以下",
+            "zh": "起诉状/书状 — 标的额一万欧元以下", "sr": "Tužba/podnesak — vrednost do 10.000 €", "tr": "Dava/dilekçe — 10.000 €'ya kadar değer", "bs": "Tužba/podnesak — vrijednost do 10.000 €",
         },
         "practice_area": "civil",
         "amount": "80.00",
@@ -847,7 +1009,7 @@ XK_FEE_TARIFF = [
         "name": {
             "sq": "Padi/parashtresë — vlera mbi 10.000 €",
             "en": "Claim/submission — value over €10,000",
-            "zh": "起诉状/书状 — 标的额一万欧元以上",
+            "zh": "起诉状/书状 — 标的额一万欧元以上", "sr": "Tužba/podnesak — vrednost preko 10.000 €", "tr": "Dava/dilekçe — 10.000 € üzeri değer", "bs": "Tužba/podnesak — vrijednost preko 10.000 €",
         },
         "practice_area": "civil",
         "amount": "160.00",
@@ -861,7 +1023,7 @@ XK_FEE_TARIFF = [
         "name": {
             "sq": "Propozim për përmbarim — vlera e vogël",
             "en": "Enforcement proposal — small value",
-            "zh": "执行申请 — 小额",
+            "zh": "执行申请 — 小额", "sr": "Predlog za izvršenje — mala vrednost", "tr": "İcra talebi — küçük değer", "bs": "Prijedlog za izvršenje — mala vrijednost",
         },
         "practice_area": "civil",
         "amount": "60.00",
@@ -875,7 +1037,7 @@ XK_FEE_TARIFF = [
         "name": {
             "sq": "Propozim për përmbarim — vlera deri 10.000 €",
             "en": "Enforcement proposal — value up to €10,000",
-            "zh": "执行申请 — 标的额一万欧元以下",
+            "zh": "执行申请 — 标的额一万欧元以下", "sr": "Predlog za izvršenje — vrednost do 10.000 €", "tr": "İcra talebi — 10.000 €'ya kadar değer", "bs": "Prijedlog za izvršenje — vrijednost do 10.000 €",
         },
         "practice_area": "civil",
         "amount": "80.00",
@@ -889,7 +1051,7 @@ XK_FEE_TARIFF = [
         "name": {
             "sq": "Propozim për përmbarim — vlera mbi 10.000 €",
             "en": "Enforcement proposal — value over €10,000",
-            "zh": "执行申请 — 标的额一万欧元以上",
+            "zh": "执行申请 — 标的额一万欧元以上", "sr": "Predlog za izvršenje — vrednost preko 10.000 €", "tr": "İcra talebi — 10.000 € üzeri değer", "bs": "Prijedlog za izvršenje — vrijednost preko 10.000 €",
         },
         "practice_area": "civil",
         "amount": "160.00",
@@ -904,7 +1066,7 @@ XK_FEE_TARIFF = [
         "name": {
             "sq": "Përfaqësim në seancë — kontest i vlerës së vogël",
             "en": "Hearing representation — small-value dispute",
-            "zh": "庭审代理 — 小额纠纷",
+            "zh": "庭审代理 — 小额纠纷", "sr": "Zastupanje na ročištu — spor male vrednosti", "tr": "Duruşmada temsil — küçük değerli uyuşmazlık", "bs": "Zastupanje na ročištu — spor male vrijednosti",
         },
         "practice_area": "civil",
         "amount": "60.00",
@@ -918,7 +1080,7 @@ XK_FEE_TARIFF = [
         "name": {
             "sq": "Përfaqësim në seancë — vlera deri 10.000 €",
             "en": "Hearing representation — value up to €10,000",
-            "zh": "庭审代理 — 标的额一万欧元以下",
+            "zh": "庭审代理 — 标的额一万欧元以下", "sr": "Zastupanje na ročištu — vrednost do 10.000 €", "tr": "Duruşmada temsil — 10.000 €'ya kadar değer", "bs": "Zastupanje na ročištu — vrijednost do 10.000 €",
         },
         "practice_area": "civil",
         "amount": "80.00",
@@ -932,7 +1094,7 @@ XK_FEE_TARIFF = [
         "name": {
             "sq": "Përfaqësim në seancë — vlera mbi 10.000 €",
             "en": "Hearing representation — value over €10,000",
-            "zh": "庭审代理 — 标的额一万欧元以上",
+            "zh": "庭审代理 — 标的额一万欧元以上", "sr": "Zastupanje na ročištu — vrednost preko 10.000 €", "tr": "Duruşmada temsil — 10.000 € üzeri değer", "bs": "Zastupanje na ročištu — vrijednost preko 10.000 €",
         },
         "practice_area": "civil",
         "amount": "160.00",
@@ -947,7 +1109,7 @@ XK_FEE_TARIFF = [
         "name": {
             "sq": "Procedurë kundërvajtëse / disiplinore (për veprim)",
             "en": "Misdemeanor / disciplinary proceedings (per action)",
-            "zh": "违章/纪律程序（每次行动）",
+            "zh": "违章/纪律程序（每次行动）", "sr": "Prekršajni / disciplinski postupak (po radnji)", "tr": "Kabahat / disiplin işlemleri (işlem başına)", "bs": "Prekršajni / disciplinski postupak (po radnji)",
         },
         "practice_area": "other",
         "amount": "60.00",
@@ -961,7 +1123,7 @@ XK_FEE_TARIFF = [
         "name": {
             "sq": "Përpilim kontrate / ujdie / testamenti",
             "en": "Drafting a contract / settlement / will",
-            "zh": "起草合同/和解协议/遗嘱",
+            "zh": "起草合同/和解协议/遗嘱", "sr": "Sastavljanje ugovora / poravnanja / testamenta", "tr": "Sözleşme / sulh / vasiyetname düzenleme", "bs": "Sastavljanje ugovora / poravnanja / testamenta",
         },
         "practice_area": "other",
         "amount": "80.00",

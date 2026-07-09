@@ -38,6 +38,7 @@ from app.schemas.billing import (
 )
 from app.services.audit import log_action
 from app.services.invoice_pdf import build_invoice_pdf
+from app.i18n import pick_locale, tr
 from app.services.notifications import send_email
 from app.services.payments import create_payment_link, payments_enabled, verify_webhook_signature
 
@@ -462,22 +463,33 @@ async def send_invoice(
         invoice.issued_on = date.today()
     pdf = await _invoice_pdf_bytes(db, user, invoice)
     tenant = await db.get(Tenant, user.tenant_id)
+    loc = pick_locale(contact.locale, tenant.default_locale)
+    body = (
+        tr(loc, "email_greeting", name=contact.display_name)
+        + "\n\n"
+        + tr(
+            loc, "email_invoice_attached",
+            number=invoice.number,
+            total=f"{invoice.total_with_vat:.2f}",
+            currency=invoice.currency,
+        )
+        + (
+            tr(loc, "email_invoice_due", due=f"{invoice.due_on:%d.%m.%Y}")
+            if invoice.due_on
+            else ""
+        )
+        + ".\n"
+        + (
+            "\n" + tr(loc, "email_invoice_paylink", link=invoice.payment_link) + "\n"
+            if invoice.payment_link
+            else ""
+        )
+        + f"\n{tr(loc, 'email_signoff')}\n{user.full_name}\n{tenant.name}\n"
+    )
     sent = await send_email(
         contact.email,
-        f"Fatura {invoice.number} — {tenant.name}",
-        (
-            f"E nderuar/i nderuar {contact.display_name},\n\n"
-            f"Në bashkëngjitje gjeni faturën {invoice.number} me vlerë "
-            f"{invoice.total_with_vat:.2f} {invoice.currency}"
-            + (f", me afat pagese deri më {invoice.due_on:%d.%m.%Y}" if invoice.due_on else "")
-            + ".\n"
-            + (
-                f"\nMund të paguani online me kartelë: {invoice.payment_link}\n"
-                if invoice.payment_link
-                else ""
-            )
-            + f"\nMe respekt,\n{user.full_name}\n{tenant.name}\n"
-        ),
+        tr(loc, "email_invoice_subject", number=invoice.number, firm=tenant.name),
+        body,
         attachments=[(f"fatura-{invoice.number}.pdf", pdf, "application/pdf")],
     )
     if not sent:
