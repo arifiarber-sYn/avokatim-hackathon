@@ -10,6 +10,35 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-09 — Critical pre-client audit: full E2E simulation + 12-competitor comparison (Cursor / Fable 5)
+
+- Done: wrote `backend/scripts/full_simulation.py` — a reusable 40-step E2E
+  simulation played from both sides (firm admin + portal client): signup →
+  firm profile → team invite → public intake → conflict check → intake→matter
+  → parties → deadline engine → PDF upload + text extraction + AI deadline
+  extraction → doc review workflow → template render → Bora ask (7 citations)
+  → time entries → invoice with VAT → payment → portal invite/login/messages →
+  e-signature + certificate PDF → reports → ICS feed → gap probes. Result:
+  39/40 PASS against the live stack (test tenant cleaned up after).
+- Done: competitor research (subagent, web): PracticePanther, Rocket Matter,
+  CosmoLex, Actionstep, Filevine, LEAP, Amberlo, Kleos, Lawmatics + regional
+  (Legalistik, LEXA, Pametni Advokat, Juristi.al). Key finding: no practice
+  management software exists today in Albanian or localized for Kosovo law.
+- Done: audit canvas `auditimi-kritik-para-klienteve.canvas.tsx` (simulation
+  results, P0 demo blockers, 2026 table-stakes checklist, lawyer vs company
+  perspectives, 12-competitor matrix, price anchor chart, action plan).
+- Findings (P0 demo blockers): no invoice PDF; portal is silent (no email
+  notification to client on message/signature request); client cannot see
+  matter documents in portal; rendered template is clipboard-only (not saved
+  as a matter document, court/authority not prefilled from matter).
+- Findings (2026 table-stakes gaps): no email-to-matter integration, no tasks/
+  workflow, no matter expenses/disbursements, no global search, no trust/client
+  funds ledger, no document preview, no audit log UI, no tenant data export,
+  no flat-fee billing, no SMS channel.
+- Left open / next: implement P0 (~1 week) before any client demo; then P1
+  (tasks, expenses, search, preview, audit UI, export, flat-fee), then P2
+  (email integration, client funds ledger, .docx templates, KCA fee tariff).
+
 ## 2026-07-09 — Multi-company SaaS + mobile responsive/PWA (Cursor / Fable 5)
 
 - Done (Mobile, rrjedha B): app shell with hidden-md sidebar + mobile top bar,
