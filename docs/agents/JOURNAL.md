@@ -10,6 +10,18 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-09 — Fix: Bora "NetworkError" on long answers (Cursor / Fable 5)
+
+- Bug: asking Bora on `/assistant` sometimes showed "NetworkError when
+  attempting to fetch resource". Cause: the Next.js `/api` rewrite proxy has a
+  **30s default timeout** (`proxy-request.ts`); DeepSeek with thinking mode can
+  exceed it — the backend kept working and logged 200, but the browser
+  connection was already dropped.
+- Fix: `experimental.proxyTimeout: 300_000` in `frontend/next.config.ts`
+  (headroom over the backend's 180s LLM timeout). Rebuilt + restarted.
+- Verified: end-to-end ask through the :3000 proxy → answer with 6 citations
+  in ~28s; health OK.
+
 ## 2026-07-09 — P2 differentiators: trust ledger, OAK tariff, .docx, email-in, SMS, Stripe, legal docs (Cursor / Fable 5)
 
 - Done: **client funds ledger (trust)** — `TrustTransaction` model, API
