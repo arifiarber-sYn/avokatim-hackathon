@@ -127,18 +127,16 @@ async def build_matter_context(db: AsyncSession, matter_id: uuid.UUID) -> str:
     return "\n".join(parts)
 
 
-async def ask_bora(
+async def _build_ask_messages(
     db: AsyncSession,
     *,
     question: str,
     matter_id: uuid.UUID | None,
     jurisdiction_id: uuid.UUID | None,
-    provider_name: str | None = None,
     history: list[ChatMessage] | None = None,
     retrieval_query: str | None = None,
-) -> tuple[str, list[dict]]:
-    """RAG-grounded chat. Returns (answer, citations). retrieval_query lets
-    callers search with case facts instead of a generic instruction prompt."""
+) -> tuple[list[ChatMessage], list[dict]]:
+    """Shared RAG prompt assembly for ask_bora and ask_bora_stream."""
     context_blocks: list[str] = []
     citations: list[dict] = []
     search_text = retrieval_query or question
@@ -172,10 +170,54 @@ async def ask_bora(
     if history:
         messages.extend(history[-8:])
     messages.append(ChatMessage(role="user", content=user_content))
+    return messages, citations
 
+
+async def ask_bora(
+    db: AsyncSession,
+    *,
+    question: str,
+    matter_id: uuid.UUID | None,
+    jurisdiction_id: uuid.UUID | None,
+    provider_name: str | None = None,
+    history: list[ChatMessage] | None = None,
+    retrieval_query: str | None = None,
+) -> tuple[str, list[dict]]:
+    """RAG-grounded chat. Returns (answer, citations). retrieval_query lets
+    callers search with case facts instead of a generic instruction prompt."""
+    messages, citations = await _build_ask_messages(
+        db,
+        question=question,
+        matter_id=matter_id,
+        jurisdiction_id=jurisdiction_id,
+        history=history,
+        retrieval_query=retrieval_query,
+    )
     provider = get_provider(provider_name)
     result = await provider.chat(messages)
     return result.content, citations
+
+
+async def ask_bora_stream(
+    db: AsyncSession,
+    *,
+    question: str,
+    matter_id: uuid.UUID | None,
+    jurisdiction_id: uuid.UUID | None,
+    provider_name: str | None = None,
+    history: list[ChatMessage] | None = None,
+):
+    """Streaming variant: returns (citations, chunk_iterator). Chunks are
+    ("thinking"|"delta", text) — thinking tokens are shown live but not saved."""
+    messages, citations = await _build_ask_messages(
+        db,
+        question=question,
+        matter_id=matter_id,
+        jurisdiction_id=jurisdiction_id,
+        history=history,
+    )
+    provider = get_provider(provider_name)
+    return citations, provider.chat_stream(messages)
 
 
 EXTRACT_DEADLINES_PROMPT = """Analizo këtë dokument gjyqësor dhe nxirr TË GJITHA datat

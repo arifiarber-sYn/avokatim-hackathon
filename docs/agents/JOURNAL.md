@@ -10,6 +10,31 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-09 — Assistant answers now stream (SSE) — NetworkError fixed for good (Cursor / Fable 5)
+
+- Bug persisted: even with `proxyTimeout: 300_000`, a user ask dropped
+  mid-flight (browser-side), and Cloudflare tunnel (boraarifi.ai) kills
+  idle connections at ~100s anyway. Root problem: one silent HTTP request
+  hanging 60–180s while DeepSeek thinks is fragile everywhere.
+- Fix (industry standard): **streaming end-to-end**.
+  - `LLMProvider.chat_stream()` in `app/llm/base.py` (default: one chunk),
+    real SSE streaming in `deepseek.py` and `local.py` (`stream: true`,
+    yields `("thinking"|"delta", text)`; thinking tokens keep data flowing
+    during reasoning so no idle timeout can trigger).
+  - `ask_bora_stream()` in services (shared RAG prompt assembly factored
+    into `_build_ask_messages`).
+  - `POST /api/assistant/ask-stream` (SSE: meta / thinking / delta / done /
+    error events; persists messages + audit on completion; uses its own DB
+    session, not the request-scoped one). Old `/ask` kept for compatibility.
+  - Frontend: `apiStream()` helper in `lib/api.ts`; assistant page renders
+    the answer progressively as it streams in.
+- Verified: exact user question through the :3000 proxy → HTTP 200, first
+  bytes at 8s, 1383 thinking + 2138 delta events over 88s, final answer
+  5097 chars with 6 citations (KPRK arts. 267–272); pytest 13 passed;
+  build OK; service restarted.
+- Note: matter AI tab (summarize/hearing-prep) still non-streaming — those
+  are shorter, but candidates for the same treatment if timeouts appear.
+
 ## 2026-07-09 — Fix: Bora "NetworkError" on long answers (Cursor / Fable 5)
 
 - Bug: asking Bora on `/assistant` sometimes showed "NetworkError when

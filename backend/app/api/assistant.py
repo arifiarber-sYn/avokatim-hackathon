@@ -1,12 +1,15 @@
+import json
+import logging
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.api.matters import get_owned_matter
-from app.database import get_db
+from app.database import SessionLocal, get_db
 from app.deps import get_current_user
 from app.llm import list_providers
 from app.llm.base import ChatMessage
@@ -19,8 +22,10 @@ from app.schemas.assistant import (
     MessageOut,
     SummarizeResponse,
 )
-from app.services.assistant import ask_bora, hearing_prep
+from app.services.assistant import ask_bora, ask_bora_stream, hearing_prep
 from app.services.audit import log_action
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/assistant", tags=["assistant"])
 
@@ -63,12 +68,10 @@ async def conversation_messages(
     return (await db.execute(stmt)).scalars().all()
 
 
-@router.post("/ask", response_model=AskResponse)
-async def ask(
-    body: AskRequest,
-    user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
+async def _prepare_ask(
+    db: AsyncSession, user: User, body: AskRequest
+) -> tuple[Conversation, list[ChatMessage], uuid.UUID | None]:
+    """Resolve jurisdiction + conversation + history for an /ask request."""
     jurisdiction_id = None
     if body.matter_id:
         matter = await get_owned_matter(db, user, body.matter_id)
@@ -111,18 +114,17 @@ async def ask(
         await db.flush()
         history = []
 
-    try:
-        answer, citations = await ask_bora(
-            db,
-            question=body.question,
-            matter_id=body.matter_id or conversation.matter_id,
-            jurisdiction_id=jurisdiction_id,
-            provider_name=body.provider,
-            history=history,
-        )
-    except RuntimeError as exc:
-        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc))
+    return conversation, history, jurisdiction_id
 
+
+async def _save_exchange(
+    db: AsyncSession,
+    user: User,
+    body: AskRequest,
+    conversation: Conversation,
+    answer: str,
+    citations: list[dict],
+) -> Message:
     db.add(Message(conversation_id=conversation.id, role="user", content=body.question))
     reply = Message(
         conversation_id=conversation.id, role="assistant", content=answer, citations=citations
@@ -135,7 +137,91 @@ async def ask(
     )
     await db.commit()
     await db.refresh(reply)
+    return reply
+
+
+@router.post("/ask", response_model=AskResponse)
+async def ask(
+    body: AskRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    conversation, history, jurisdiction_id = await _prepare_ask(db, user, body)
+
+    try:
+        answer, citations = await ask_bora(
+            db,
+            question=body.question,
+            matter_id=body.matter_id or conversation.matter_id,
+            jurisdiction_id=jurisdiction_id,
+            provider_name=body.provider,
+            history=history,
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc))
+
+    reply = await _save_exchange(db, user, body, conversation, answer, citations)
     return AskResponse(conversation_id=conversation.id, message=reply)
+
+
+def _sse(event: dict) -> str:
+    return f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+
+
+@router.post("/ask-stream")
+async def ask_stream(body: AskRequest, user: User = Depends(get_current_user)):
+    """Streaming variant of /ask (Server-Sent Events). Keeps data flowing so
+    no proxy/browser/tunnel idle timeout can kill long answers, and the
+    lawyer sees the answer as it is written."""
+
+    async def event_stream():
+        # Own session: the request-scoped one may be torn down while the
+        # response body is still streaming.
+        async with SessionLocal() as db:
+            try:
+                conversation, history, jurisdiction_id = await _prepare_ask(db, user, body)
+            except HTTPException as exc:
+                yield _sse({"type": "error", "detail": exc.detail})
+                return
+
+            yield _sse({"type": "meta", "conversation_id": str(conversation.id)})
+
+            parts: list[str] = []
+            try:
+                citations, chunks = await ask_bora_stream(
+                    db,
+                    question=body.question,
+                    matter_id=body.matter_id or conversation.matter_id,
+                    jurisdiction_id=jurisdiction_id,
+                    provider_name=body.provider,
+                    history=history,
+                )
+                async for kind, text in chunks:
+                    if kind == "thinking":
+                        yield _sse({"type": "thinking", "text": text})
+                    else:
+                        parts.append(text)
+                        yield _sse({"type": "delta", "text": text})
+            except Exception as exc:
+                logger.exception("ask-stream failed")
+                await db.rollback()
+                yield _sse({"type": "error", "detail": str(exc)})
+                return
+
+            reply = await _save_exchange(db, user, body, conversation, "".join(parts), citations)
+            yield _sse(
+                {
+                    "type": "done",
+                    "conversation_id": str(conversation.id),
+                    "message": MessageOut.model_validate(reply).model_dump(mode="json"),
+                }
+            )
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @router.post("/matters/{matter_id}/summarize", response_model=SummarizeResponse)

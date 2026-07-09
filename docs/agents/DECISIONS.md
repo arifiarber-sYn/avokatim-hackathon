@@ -131,3 +131,21 @@
   restarting; the Stripe webhook additionally needs the public URL routed to
   `/api/stripe/webhook`. Simulation checks assert the "off" behavior so the
   suite passes with or without credentials.
+
+## D-010: Assistant answers stream via SSE (2026-07-09)
+
+- Context: DeepSeek with thinking mode takes 60–180s. A single hanging HTTP
+  request was killed by the Next.js proxy default 30s timeout, occasionally by
+  the browser, and will always be killed by Cloudflare's ~100s idle limit on
+  boraarifi.ai. Raising `proxyTimeout` was not enough.
+- Decision: stream the answer end-to-end with Server-Sent Events.
+  `chat_stream()` on the LLM abstraction (providers yield
+  `("thinking"|"delta", text)`), `POST /api/assistant/ask-stream` streams
+  meta/thinking/delta/done/error events and persists the exchange at the end,
+  and the UI renders the text progressively. Thinking tokens are forwarded as
+  keep-alive traffic (shown as an indicator, never persisted).
+- Consequences: no idle timeout can drop a long answer anywhere in the chain
+  (uvicorn → Next proxy → browser/Cloudflare); the lawyer sees the answer as
+  it is written (better perceived latency). The non-streaming `/ask` endpoint
+  remains for scripts/tests. Streaming endpoints must create their own DB
+  session — the request-scoped dependency may close before the body finishes.

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { apiGet, apiPost } from "@/lib/api";
+import { apiGet, apiStream } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { Conversation, Matter, Message } from "@/lib/types";
 import { Button, Card, ErrorNote, Select, Textarea } from "@/components/ui";
@@ -57,23 +57,49 @@ export default function AssistantPage() {
       { id: "tmp", role: "user", content: q, citations: [], created_at: new Date().toISOString() },
     ]);
     try {
-      const result = await apiPost<{ conversation_id: string; message: Message }>(
-        "/assistant/ask",
+      let streamed = "";
+      let newConversationId: string | null = null;
+      let finalMessage: Message | null = null;
+      let errorDetail: string | null = null;
+      await apiStream(
+        "/assistant/ask-stream",
         {
           question: q,
           matter_id: matterId || null,
           conversation_id: conversationId,
           provider,
+        },
+        (ev) => {
+          if (ev.type === "meta") {
+            newConversationId = ev.conversation_id as string;
+          } else if (ev.type === "delta") {
+            streamed += ev.text as string;
+            const text = streamed;
+            setMessages((prev) => [
+              ...prev.filter((m) => m.id !== "streaming"),
+              { id: "streaming", role: "assistant", content: text, citations: [], created_at: new Date().toISOString() },
+            ]);
+          } else if (ev.type === "done") {
+            finalMessage = ev.message as unknown as Message;
+          } else if (ev.type === "error") {
+            errorDetail = (ev.detail as string) || null;
+          }
         }
       );
-      setConversationId(result.conversation_id);
-      setMessages((prev) => [...prev.filter((m) => m.id !== "tmp"), 
+      if (errorDetail) throw new Error(errorDetail);
+      if (!finalMessage) throw new Error(t.error);
+      // TS cannot see assignments made inside the stream callback
+      const reply = finalMessage as Message;
+      if (newConversationId) setConversationId(newConversationId);
+      setMessages((prev) => [
+        ...prev.filter((m) => m.id !== "tmp" && m.id !== "streaming"),
         { id: "user-" + Date.now(), role: "user", content: q, citations: [], created_at: new Date().toISOString() },
-        result.message]);
+        reply,
+      ]);
       apiGet<Conversation[]>("/assistant/conversations").then(setConversations).catch(() => {});
     } catch (err) {
       setError(err instanceof Error ? err.message : t.error);
-      setMessages((prev) => prev.filter((m) => m.id !== "tmp"));
+      setMessages((prev) => prev.filter((m) => m.id !== "tmp" && m.id !== "streaming"));
       setQuestion(q);
     } finally {
       setBusy(false);
@@ -184,7 +210,9 @@ export default function AssistantPage() {
               </div>
             </div>
           ))}
-          {busy && <p className="text-sm text-slate-400 animate-pulse">{t.thinking}</p>}
+          {busy && !messages.some((m) => m.id === "streaming") && (
+            <p className="text-sm text-slate-400 animate-pulse">{t.thinking}</p>
+          )}
           <div ref={bottomRef} />
         </div>
 

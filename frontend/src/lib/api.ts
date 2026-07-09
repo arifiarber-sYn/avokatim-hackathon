@@ -58,6 +58,48 @@ export const apiDelete = (path: string) => api(path, { method: "DELETE" });
 export const apiUpload = <T = unknown>(path: string, form: FormData) =>
   api<T>(path, { method: "POST", body: form });
 
+/** POST to a Server-Sent-Events endpoint and invoke onEvent per parsed event.
+    Used by the assistant so long answers stream in without any timeout. */
+export async function apiStream(
+  path: string,
+  body: unknown,
+  onEvent: (event: Record<string, unknown>) => void
+): Promise<void> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const token = getToken();
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+  if (!res.ok || !res.body) {
+    let detail = res.statusText;
+    try {
+      const data = await res.json();
+      detail = typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail);
+    } catch {}
+    throw new ApiError(res.status, detail);
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const events = buffer.split("\n\n");
+    buffer = events.pop() || "";
+    for (const raw of events) {
+      const line = raw.split("\n").find((l) => l.startsWith("data:"));
+      if (!line) continue;
+      try {
+        onEvent(JSON.parse(line.slice(5).trim()));
+      } catch {}
+    }
+  }
+}
+
 /** Download an authenticated file endpoint and trigger a save dialog. */
 export async function apiDownload(
   path: string,

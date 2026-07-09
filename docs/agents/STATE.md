@@ -99,6 +99,9 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   contract, legal opinion, due-diligence checklist (all in `seeds/kosovo.py`).
 - **Assistant "Bora"**: RAG over legal corpus + matter documents, with citations.
   Providers: DeepSeek (default) or local OpenAI-compatible (Ollama/vLLM), selectable per request.
+  **Answers stream (SSE)** via `/api/assistant/ask-stream` — the UI renders text
+  progressively and no proxy/browser/Cloudflare idle timeout can drop long
+  thinking-mode answers (see D-010). Non-streaming `/ask` kept for scripts.
   Also: **client-update drafting** (AI tab on matter → send to portal or copy).
   Questions without a matter now ground in the tenant's default jurisdiction
   corpus (so citations always work, not only inside a matter).
