@@ -322,6 +322,21 @@ async def seed() -> None:
             })
         print("✓ 6 orë pune + 3 shpenzime")
 
+        # ---------- client funds ledger (trust) ----------
+        for mid, kind, amount, desc, ref, days_ago in [
+            (m_borxhi, "deposit", "1500.00", "Avans nga klienti për procedurën përmbarimore",
+             "NLB-DEP-2026-118", 10),
+            (m_borxhi, "withdrawal", "104.00", "Pagesa e taksës gjyqësore nga avansi", None, 6),
+            (m_prona, "deposit", "500.00", "Avans për ekspertizën e gjeodezisë", None, 14),
+            (m_prona, "withdrawal", "180.00", "Pagesa e ekspertit nga avansi", None, 12),
+        ]:
+            await c.post(f"{BASE}/trust/transactions", headers=h, json={
+                "matter_id": mid, "kind": kind, "amount": amount, "description": desc,
+                "reference": ref,
+                "occurred_on": (today - timedelta(days=days_ago)).isoformat(),
+            })
+        print("✓ 4 transaksione të mjeteve të klientit (trust)")
+
         # ---------- invoices: one paid, one draft ----------
         r = await c.post(f"{BASE}/invoices", headers=h, json={
             "matter_id": m_kontesti, "include_unbilled_time": True,

@@ -51,9 +51,12 @@ bëhet dokument PDF i lëndës, i kërkueshëm.
 ### 6. Faturimi (3 min)
 Te Faturimi: orët e punës, **shpenzimet** (taksa gjyqësore, përmbaruesi), krijoni
 faturë me një klik — orët + shpenzimet + artikull flat-fee, **TVSH 18%** vetë.
+Për artikuj manualë: zgjidhni nga **tarifa e Odës së Avokatëve** — çmimi mbushet vetë.
 Klikoni **"Shkarko PDF"** — faturë fiskale me NUI, TVSH dhe IBAN.
 Butoni **"Dërgoja klientit"** e nis me email dhe e kalon në "E dërguar".
-> "Nga puna te paraja pa Excel dhe pa Word."
+Tab-i **"Mjetet e klientit"**: avansi i klientit mbahet si ledger i veçantë —
+depozita/tërheqje për lëndë, bilanci s'shkon kurrë në minus.
+> "Nga puna te paraja pa Excel dhe pa Word — dhe paratë e klientit gjithmonë të ndara."
 
 ### 7. Portali i klientit — NË TELEFON (3 min)
 Hapni `/portal` në telefonin tuaj si klienti. Tregoni: lënda + seancat e ardhshme,
@@ -81,11 +84,13 @@ Settings si admin: **Regjistri i veprimeve** (kush bëri çka, kur) dhe
 
 | Pyetja | Përgjigjja |
 |---|---|
-| "A lidhet me email-in tim (Gmail/Outlook)?" | Në zhvillim — faza tjetër. Sot: njoftimet email dalin vetë nga sistemi. |
-| "A pranon pagesa me kartelë?" | Në plan me kërkesë — sot fatura PDF me IBAN + shënimi i pagesës me referencë. |
-| "Tarifat e Odës së Avokatëve?" | Në backlog — sot tarifa orare + flat-fee për artikull. |
-| "SMS për klientët?" | Sot email + push në telefon (PWA); SMS me kërkesë. |
+| "A lidhet me email-in tim (Gmail/Outlook)?" | Po — çdo lëndë ka **adresën e vet email**: përcillni mesazhin aty dhe arkivohet vetë me bashkëngjitje (aktivizohet me IMAP në .env). |
+| "A pranon pagesa me kartelë?" | Po — butoni **"Krijo link pagese"** (Stripe): klienti paguan online dhe fatura shënohet e paguar vetvetiu (aktivizohet me çelësin në .env). |
+| "Tarifat e Odës së Avokatëve?" | Po — tarifa e OAK e ngarkuar si të dhëna: zgjidhni zërin te fatura dhe çmimi mbushet vetë. |
+| "SMS për klientët?" | Po — kujtesat e seancave u shkojnë klientëve me SMS (aktivizohet me Twilio në .env); email + push gjithmonë. |
+| "A punon me Word (.docx)?" | Po — çdo shkresë shkarkohet si **.docx i stiluar** për përfundim në Word. |
 | "A i marr të dhënat po u largova?" | Po — eksporti ZIP me një klik (CSV + të gjitha dokumentet). |
+| "Kontrata e përpunimit të të dhënave / SLA?" | Të gatshme në `docs/legal/` (LMDhP sipas Ligjit 06/L-082 + SLA me 99.5%). |
 | "Ku ruhen të dhënat?" | Në serverin tuaj/tonë në lokal, të enkriptuara; asgjë s'indeksohet në cloud. |
 
 ## Pas takimit

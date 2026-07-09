@@ -3,6 +3,7 @@ from app.models.tenancy import Tenant, User
 from app.models.jurisdiction import (
     DeadlineRule,
     DocumentTemplate,
+    FeeTariffItem,
     Holiday,
     Jurisdiction,
     LegalCorpusChunk,
@@ -18,7 +19,7 @@ from app.models.matters import (
     MatterParty,
 )
 from app.models.documents import Document, DocumentChunk
-from app.models.billing import Expense, Invoice, InvoiceItem, TimeEntry
+from app.models.billing import Expense, Invoice, InvoiceItem, TimeEntry, TrustTransaction
 from app.models.assistant import Conversation, Message
 from app.models.audit import AuditLog
 from app.models.collab import MatterMessage, PushSubscription, SignatureRequest
@@ -47,6 +48,8 @@ __all__ = [
     "Expense",
     "Invoice",
     "InvoiceItem",
+    "TrustTransaction",
+    "FeeTariffItem",
     "Task",
     "Conversation",
     "Message",

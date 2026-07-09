@@ -434,6 +434,28 @@ const sq = {
   dataExportHint:
     "Shkarko një ZIP me të gjitha të dhënat e zyrës (CSV + dokumentet). Të dhënat janë tuajat — gjithmonë.",
   exportDownload: "Shkarko eksportin",
+  // Trust ledger (client funds)
+  trustLabel: "Mjetet e klientit",
+  trustHint:
+    "Paratë e klientit të mbajtura në besim — depozitat dhe tërheqjet për çdo lëndë. Bilanci s'mund të shkojë kurrë në minus.",
+  trustDeposit: "Depozitë",
+  trustWithdrawal: "Tërheqje",
+  trustBalance: "Bilanci",
+  trustBalances: "Bilancet sipas lëndëve",
+  trustKind: "Lloji",
+  trustReferenceHint: "Referenca bankare (opsionale)",
+  addTransaction: "Shto transaksion",
+  // Fee tariff
+  tariffPicker: "Shto nga tarifa e avokatëve…",
+  // Templates .docx
+  downloadDocx: "Shkarko .docx",
+  // Card payments
+  createPaymentLink: "Krijo link pagese",
+  paymentLinkLabel: "Link pagese me kartelë",
+  // Email-to-matter
+  matterEmailLabel: "Email i lëndës",
+  matterEmailHint:
+    "Përcillni email-at në këtë adresë dhe ata arkivohen vetvetiu në lëndë, bashkë me bashkëngjitjet.",
   // General
   loading: "Duke u ngarkuar...",
   error: "Gabim",
@@ -840,6 +862,23 @@ const en: typeof sq = {
   dataExportHint:
     "Download a ZIP with all your firm's data (CSVs + documents). Your data is always yours.",
   exportDownload: "Download export",
+  trustLabel: "Client funds",
+  trustHint:
+    "Client money held in trust — deposits and withdrawals per matter. The balance can never go negative.",
+  trustDeposit: "Deposit",
+  trustWithdrawal: "Withdrawal",
+  trustBalance: "Balance",
+  trustBalances: "Balances by matter",
+  trustKind: "Type",
+  trustReferenceHint: "Bank reference (optional)",
+  addTransaction: "Add transaction",
+  tariffPicker: "Add from the bar fee tariff…",
+  downloadDocx: "Download .docx",
+  createPaymentLink: "Create payment link",
+  paymentLinkLabel: "Card payment link",
+  matterEmailLabel: "Matter email",
+  matterEmailHint:
+    "Forward emails to this address and they are filed into the matter automatically, attachments included.",
   loading: "Loading...",
   error: "Error",
   add: "Add",
@@ -1237,6 +1276,21 @@ const zh: typeof sq = {
   dataExport: "数据导出",
   dataExportHint: "下载包含律所全部数据的 ZIP（CSV + 文档）。您的数据永远属于您。",
   exportDownload: "下载导出",
+  trustLabel: "客户资金",
+  trustHint: "受托保管的客户资金 — 按案件记录存入与支出。余额绝不允许为负。",
+  trustDeposit: "存入",
+  trustWithdrawal: "支出",
+  trustBalance: "余额",
+  trustBalances: "各案件余额",
+  trustKind: "类型",
+  trustReferenceHint: "银行参考号（可选）",
+  addTransaction: "添加交易",
+  tariffPicker: "从律师协会收费标准添加…",
+  downloadDocx: "下载 .docx",
+  createPaymentLink: "创建支付链接",
+  paymentLinkLabel: "银行卡支付链接",
+  matterEmailLabel: "案件邮箱",
+  matterEmailHint: "将邮件转发到此地址，即可自动归档到案件中（包括附件）。",
   loading: "加载中...",
   error: "错误",
   add: "添加",

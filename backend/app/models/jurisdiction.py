@@ -3,8 +3,10 @@ legal corpus are DATA per jurisdiction, never hard-coded logic."""
 import uuid
 from datetime import date
 
+from decimal import Decimal
+
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Boolean, Date, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -84,6 +86,30 @@ class DocumentTemplate(Base, TimestampMixin):
     body: Mapped[str] = mapped_column(Text)  # Jinja2 source
     # Declared variables for the UI form: [{"name": "court_name", "label": {...}}]
     variables: Mapped[list] = mapped_column(JSONB, default=list)
+
+
+class FeeTariffItem(Base, TimestampMixin):
+    """Bar association fee tariff entries (e.g. Tarifa e OAK). Amounts are
+    DATA per jurisdiction: seeded, and editable when the tariff changes."""
+
+    __tablename__ = "fee_tariff_items"
+    __table_args__ = (UniqueConstraint("jurisdiction_id", "code"),)
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    jurisdiction_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("jurisdictions.id", ondelete="CASCADE"), index=True
+    )
+    code: Mapped[str] = mapped_column(String(64))  # e.g. civil.hearing.upto_10k
+    # Tariff number in the source document, e.g. "Nr. tarifor 7"
+    tariff_no: Mapped[str | None] = mapped_column(String(32))
+    name: Mapped[dict] = mapped_column(JSONB, default=dict)  # localized
+    practice_area: Mapped[str | None] = mapped_column(String(32))
+    # Base fee. The 30%/hour and 30% lump-sum surcharges of the OAK tariff
+    # are separate rows so the lawyer picks exactly what applies.
+    amount: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    unit: Mapped[str | None] = mapped_column(String(64))  # e.g. seancë, parashtresë
+    legal_basis: Mapped[str | None] = mapped_column(String(255))
+    notes: Mapped[str | None] = mapped_column(Text)
 
 
 class LegalCorpusDoc(Base, TimestampMixin):

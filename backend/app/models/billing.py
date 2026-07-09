@@ -52,6 +52,37 @@ class Expense(Base, TenantMixin, TimestampMixin):
     )
 
 
+TRUST_TRANSACTION_KINDS = ["deposit", "withdrawal"]
+
+
+class TrustTransaction(Base, TenantMixin, TimestampMixin):
+    """Client funds ledger (mjetet e klientit held in trust). Deposits are
+    client money received in advance; withdrawals are fees/expenses taken out.
+    The ledger can never go negative — enforced at the API layer."""
+
+    __tablename__ = "trust_transactions"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    matter_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("matters.id", ondelete="CASCADE"), index=True
+    )
+    contact_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("contacts.id", ondelete="SET NULL"), index=True
+    )
+    created_by_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL")
+    )
+    kind: Mapped[str] = mapped_column(String(16))  # deposit | withdrawal
+    occurred_on: Mapped[date] = mapped_column(Date)
+    amount: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    description: Mapped[str] = mapped_column(Text)
+    # Bank statement / receipt reference for reconciliation
+    reference: Mapped[str | None] = mapped_column(String(128))
+    invoice_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("invoices.id", ondelete="SET NULL")
+    )
+
+
 class Invoice(Base, TenantMixin, TimestampMixin):
     __tablename__ = "invoices"
 
@@ -74,6 +105,9 @@ class Invoice(Base, TenantMixin, TimestampMixin):
     # VAT percentage applied on top of the item subtotal (Kosovo standard: 18)
     vat_rate: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     notes: Mapped[str | None] = mapped_column(Text)
+    # Online card payment (Stripe Checkout). Empty when not requested/configured.
+    payment_link: Mapped[str | None] = mapped_column(String(1000))
+    stripe_session_id: Mapped[str | None] = mapped_column(String(255), index=True)
 
     items: Mapped[list["InvoiceItem"]] = relationship(
         back_populates="invoice", cascade="all, delete-orphan"

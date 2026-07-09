@@ -101,3 +101,33 @@
 - Consequences: new auth surface (signup/verify/reset/invite/change-password)
   is covered by `scripts/saas_check.py`; isolation by `scripts/isolation_check.py`.
   Run both against the live backend after touching auth/tenancy.
+
+## D-009: Optional integrations via raw APIs, config-gated, graceful degradation (2026-07-09)
+
+- Context: the P2 differentiators (email-to-matter, SMS, card payments) need
+  third-party services, but the product must run fully without them.
+- Decisions:
+  1. **No vendor SDKs**: Stripe (Checkout + webhook HMAC verification) and the
+     SMS provider (Twilio-compatible REST) are called through httpx directly.
+     Fewer dependencies, and the SMS base URL is configurable so any
+     Twilio-compatible gateway works.
+  2. **Config-gated features**: every integration is off until its .env keys
+     are set (`imap_host`, `sms_account_sid`, `stripe_secret_key`), and each
+     endpoint degrades cleanly (404 for the matter email address, 400 for
+     payment links). The UI hides or reports accordingly — no broken buttons.
+  3. **Email-to-matter uses plus addressing** on a single mailbox
+     (`user+<matter token>@domain`) with a random per-matter `email_token`,
+     instead of OAuth mailbox integrations per user. Works with any IMAP
+     provider, zero OAuth complexity; token (not matter reference) prevents
+     guessing. Full Gmail/Outlook OAuth sync remains a future option.
+  4. **Trust ledger is append-style and non-negative**: withdrawals beyond the
+     matter balance are rejected at the API; deleting a deposit that would
+     make the balance negative is rejected too — client funds protection over
+     convenience.
+  5. **Bar fee tariffs are jurisdiction data** (`fee_tariff_items` table,
+     seeded from the OAK tariff), consistent with D-002 (jurisdiction rules
+     are data, not code).
+- Consequences: activating an integration = adding keys to `backend/.env` and
+  restarting; the Stripe webhook additionally needs the public URL routed to
+  `/api/stripe/webhook`. Simulation checks assert the "off" behavior so the
+  suite passes with or without credentials.

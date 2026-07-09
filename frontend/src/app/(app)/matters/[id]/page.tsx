@@ -122,8 +122,14 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
     const [restricted, setRestricted] = useState(matter.restricted);
     const [memberIds, setMemberIds] = useState<Set<string>>(new Set());
     const [accessSaved, setAccessSaved] = useState(false);
+    const [inboundEmail, setInboundEmail] = useState<string | null>(null);
+    const [emailCopied, setEmailCopied] = useState(false);
 
     useEffect(() => {
+      // 404 when IMAP ingestion is not configured — then simply hide the row
+      apiGet<{ address: string }>(`/matters/${matter.id}/email-address`)
+        .then((r) => setInboundEmail(r.address))
+        .catch(() => {});
       apiGet<TeamMember[]>("/team").then(setTeam).catch(() => {});
       apiGet<{ restricted: boolean; members: { user_id: string }[] }>(
         `/matters/${matter.id}/members`
@@ -180,6 +186,26 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             <span>{value || "—"}</span>
           </div>
         ))}
+        {inboundEmail && (
+          <div className="flex text-sm items-center">
+            <span className="w-48 text-slate-500 shrink-0">{t.matterEmailLabel}</span>
+            <span className="flex items-center gap-2 flex-wrap">
+              <code className="text-xs bg-slate-100 rounded px-1.5 py-0.5">{inboundEmail}</code>
+              <button
+                type="button"
+                className="text-xs text-indigo-600 hover:underline"
+                onClick={() => {
+                  navigator.clipboard.writeText(inboundEmail);
+                  setEmailCopied(true);
+                  setTimeout(() => setEmailCopied(false), 1500);
+                }}
+              >
+                {emailCopied ? t.copied : t.copyLink}
+              </button>
+              <span className="text-xs text-slate-400">{t.matterEmailHint}</span>
+            </span>
+          </div>
+        )}
         <div className="flex text-sm items-center">
           <span className="w-48 text-slate-500 shrink-0">{t.responsibleLawyer}</span>
           {team.length > 1 ? (

@@ -39,6 +39,45 @@ class ExpenseOut(ExpenseIn):
     model_config = {"from_attributes": True}
 
 
+class TrustTransactionIn(BaseModel):
+    matter_id: uuid.UUID
+    kind: str = Field(pattern="^(deposit|withdrawal)$")
+    occurred_on: date
+    amount: Decimal = Field(gt=0)
+    description: str
+    reference: str | None = None
+
+
+class TrustTransactionOut(TrustTransactionIn):
+    id: uuid.UUID
+    contact_id: uuid.UUID | None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class TrustBalanceOut(BaseModel):
+    matter_id: uuid.UUID
+    matter_reference: str
+    matter_title: str
+    client_name: str | None
+    balance: Decimal
+
+
+class FeeTariffItemOut(BaseModel):
+    id: uuid.UUID
+    code: str
+    tariff_no: str | None
+    name: dict
+    practice_area: str | None
+    amount: Decimal
+    unit: str | None
+    legal_basis: str | None
+    notes: str | None
+
+    model_config = {"from_attributes": True}
+
+
 class InvoiceItemIn(BaseModel):
     description: str
     quantity: Decimal = Decimal("1")
@@ -78,6 +117,7 @@ class InvoiceOut(BaseModel):
     due_on: date | None
     paid_on: date | None
     payment_reference: str | None
+    payment_link: str | None = None
     vat_rate: int = 0
     vat_amount: Decimal = Decimal("0")
     total_with_vat: Decimal = Decimal("0")

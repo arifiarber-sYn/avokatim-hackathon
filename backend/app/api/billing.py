@@ -2,29 +2,48 @@ import uuid
 from datetime import date
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.api.matters import get_owned_matter
 from app.database import get_db
 from app.deps import get_current_user
-from app.models import Contact, Expense, Invoice, InvoiceItem, Matter, Tenant, TimeEntry, User
+from app.models import (
+    Contact,
+    Expense,
+    FeeTariffItem,
+    Invoice,
+    InvoiceItem,
+    Jurisdiction,
+    Matter,
+    Tenant,
+    TimeEntry,
+    TrustTransaction,
+    User,
+)
 from app.schemas.billing import (
     ExpenseIn,
     ExpenseOut,
+    FeeTariffItemOut,
     InvoiceCreateIn,
     InvoiceOut,
     TimeEntryIn,
     TimeEntryOut,
+    TrustBalanceOut,
+    TrustTransactionIn,
+    TrustTransactionOut,
 )
 from app.services.audit import log_action
 from app.services.invoice_pdf import build_invoice_pdf
 from app.services.notifications import send_email
+from app.services.payments import create_payment_link, payments_enabled, verify_webhook_signature
 
 router = APIRouter(tags=["billing"])
+# Unauthenticated endpoints (Stripe webhook) — mounted separately in main.py
+public_router = APIRouter(tags=["billing"])
 
 
 @router.get("/time-entries", response_model=list[TimeEntryOut])
@@ -112,6 +131,152 @@ async def delete_expense(
         entity_type="expense", entity_id=str(expense_id),
     )
     await db.commit()
+
+
+# ---------- Client funds ledger (trust accounting) ----------
+
+async def _trust_balance(db: AsyncSession, tenant_id: uuid.UUID, matter_id: uuid.UUID) -> Decimal:
+    total = (
+        await db.execute(
+            select(
+                func.coalesce(
+                    func.sum(
+                        case(
+                            (TrustTransaction.kind == "deposit", TrustTransaction.amount),
+                            else_=-TrustTransaction.amount,
+                        )
+                    ),
+                    0,
+                )
+            ).where(
+                TrustTransaction.tenant_id == tenant_id,
+                TrustTransaction.matter_id == matter_id,
+            )
+        )
+    ).scalar_one()
+    return Decimal(total)
+
+
+@router.get("/trust/transactions", response_model=list[TrustTransactionOut])
+async def list_trust_transactions(
+    matter_id: uuid.UUID | None = None,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = select(TrustTransaction).where(TrustTransaction.tenant_id == user.tenant_id)
+    if matter_id:
+        stmt = stmt.where(TrustTransaction.matter_id == matter_id)
+    stmt = stmt.order_by(TrustTransaction.occurred_on.desc(), TrustTransaction.created_at.desc())
+    return (await db.execute(stmt.limit(500))).scalars().all()
+
+
+@router.get("/trust/balances", response_model=list[TrustBalanceOut])
+async def trust_balances(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Current client-funds balance per matter (only matters with activity)."""
+    signed = func.sum(
+        case(
+            (TrustTransaction.kind == "deposit", TrustTransaction.amount),
+            else_=-TrustTransaction.amount,
+        )
+    ).label("balance")
+    rows = (
+        await db.execute(
+            select(Matter.id, Matter.reference, Matter.title, Contact.display_name, signed)
+            .join(TrustTransaction, TrustTransaction.matter_id == Matter.id)
+            .outerjoin(Contact, Contact.id == Matter.client_id)
+            .where(TrustTransaction.tenant_id == user.tenant_id)
+            .group_by(Matter.id, Matter.reference, Matter.title, Contact.display_name)
+            .order_by(Matter.reference)
+        )
+    ).all()
+    return [
+        TrustBalanceOut(
+            matter_id=mid, matter_reference=ref, matter_title=title,
+            client_name=client, balance=balance,
+        )
+        for mid, ref, title, client, balance in rows
+    ]
+
+
+@router.post("/trust/transactions", response_model=TrustTransactionOut, status_code=201)
+async def create_trust_transaction(
+    body: TrustTransactionIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    matter = await get_owned_matter(db, user, body.matter_id)
+    if body.kind == "withdrawal":
+        balance = await _trust_balance(db, user.tenant_id, body.matter_id)
+        if body.amount > balance:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                f"Insufficient client funds: balance is {balance:.2f}",
+            )
+    txn = TrustTransaction(
+        tenant_id=user.tenant_id,
+        created_by_id=user.id,
+        contact_id=matter.client_id,
+        **body.model_dump(),
+    )
+    db.add(txn)
+    await db.flush()
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="trust.transaction",
+        entity_type="trust_transaction", entity_id=str(txn.id),
+        details={"kind": body.kind, "amount": str(body.amount), "matter": matter.reference},
+    )
+    await db.commit()
+    await db.refresh(txn)
+    return txn
+
+
+@router.delete("/trust/transactions/{transaction_id}", status_code=204)
+async def delete_trust_transaction(
+    transaction_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    txn = await db.get(TrustTransaction, transaction_id)
+    if txn is None or txn.tenant_id != user.tenant_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Transaction not found")
+    # Deleting a deposit must not push the matter balance negative
+    if txn.kind == "deposit":
+        balance = await _trust_balance(db, user.tenant_id, txn.matter_id)
+        if balance - txn.amount < 0:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, "Deleting this deposit would make the balance negative"
+            )
+    await db.delete(txn)
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="trust.transaction.delete",
+        entity_type="trust_transaction", entity_id=str(transaction_id),
+    )
+    await db.commit()
+
+
+# ---------- Bar association fee tariff ----------
+
+@router.get("/fee-tariff", response_model=list[FeeTariffItemOut])
+async def list_fee_tariff(
+    jurisdiction_code: str = "XK",
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    jurisdiction = (
+        await db.execute(select(Jurisdiction).where(Jurisdiction.code == jurisdiction_code))
+    ).scalar_one_or_none()
+    if jurisdiction is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Jurisdiction not found")
+    return (
+        await db.execute(
+            select(FeeTariffItem)
+            .where(FeeTariffItem.jurisdiction_id == jurisdiction.id)
+            .order_by(FeeTariffItem.code)
+        )
+    ).scalars().all()
 
 
 async def _next_invoice_number(db: AsyncSession, tenant_id: uuid.UUID) -> str:
@@ -305,7 +470,13 @@ async def send_invoice(
             f"Në bashkëngjitje gjeni faturën {invoice.number} me vlerë "
             f"{invoice.total_with_vat:.2f} {invoice.currency}"
             + (f", me afat pagese deri më {invoice.due_on:%d.%m.%Y}" if invoice.due_on else "")
-            + f".\n\nMe respekt,\n{user.full_name}\n{tenant.name}\n"
+            + ".\n"
+            + (
+                f"\nMund të paguani online me kartelë: {invoice.payment_link}\n"
+                if invoice.payment_link
+                else ""
+            )
+            + f"\nMe respekt,\n{user.full_name}\n{tenant.name}\n"
         ),
         attachments=[(f"fatura-{invoice.number}.pdf", pdf, "application/pdf")],
     )
@@ -319,6 +490,73 @@ async def send_invoice(
     )
     await db.commit()
     return await _load_invoice(db, user, invoice_id)
+
+
+@router.post("/invoices/{invoice_id}/payment-link", response_model=InvoiceOut)
+async def create_invoice_payment_link(
+    invoice_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Create a card-payment link (Stripe Checkout) for the invoice. The link
+    is stored on the invoice and included in the email sent to the client."""
+    if not payments_enabled():
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "Card payments are not configured (Stripe)"
+        )
+    invoice = await _load_invoice(db, user, invoice_id)
+    if invoice.status in ("paid", "void"):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invoice is already settled")
+    contact = await db.get(Contact, invoice.contact_id) if invoice.contact_id else None
+    tenant = await db.get(Tenant, user.tenant_id)
+    amount_cents = int(invoice.total_with_vat * 100)
+    if amount_cents <= 0:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invoice total must be positive")
+    try:
+        url, session_id = await create_payment_link(
+            invoice_id=str(invoice.id),
+            invoice_number=invoice.number,
+            amount_cents=amount_cents,
+            currency=invoice.currency,
+            description=f"Fatura {invoice.number} — {tenant.name}",
+            customer_email=contact.email if contact else None,
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(exc))
+    invoice.payment_link = url
+    invoice.stripe_session_id = session_id
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="invoice.payment_link",
+        entity_type="invoice", entity_id=str(invoice.id), details={"session": session_id},
+    )
+    await db.commit()
+    return await _load_invoice(db, user, invoice_id)
+
+
+@public_router.post("/stripe/webhook", include_in_schema=False)
+async def stripe_webhook(request: Request, db: AsyncSession = Depends(get_db)):
+    """Stripe calls this when a checkout completes; marks the invoice paid."""
+    payload = await request.body()
+    signature = request.headers.get("stripe-signature", "")
+    event = verify_webhook_signature(payload, signature)
+    if event is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid signature")
+    if event.get("type") == "checkout.session.completed":
+        session = event["data"]["object"]
+        invoice_id = (session.get("metadata") or {}).get("invoice_id")
+        if invoice_id:
+            invoice = await db.get(Invoice, uuid.UUID(invoice_id))
+            if invoice is not None and invoice.status != "paid":
+                invoice.status = "paid"
+                invoice.paid_on = date.today()
+                invoice.payment_reference = f"Stripe {session.get('payment_intent', '')}"[:128]
+                await log_action(
+                    db, tenant_id=invoice.tenant_id, user_id=None, action="invoice.paid_online",
+                    entity_type="invoice", entity_id=str(invoice.id),
+                    details={"session": session.get("id")},
+                )
+                await db.commit()
+    return {"received": True}
 
 
 @router.patch("/invoices/{invoice_id}/status", response_model=InvoiceOut)

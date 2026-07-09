@@ -3,7 +3,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiDelete, apiDownload, apiGet, apiPost, getToken } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
-import { Expense, Invoice, Matter, TimeEntry } from "@/lib/types";
+import {
+  Expense,
+  FeeTariffItem,
+  Invoice,
+  Matter,
+  TimeEntry,
+  TrustBalance,
+  TrustTransaction,
+} from "@/lib/types";
 import { Badge, Button, Card, ErrorNote, Input, Label, Select, Spinner } from "@/components/ui";
 
 const EXPENSE_CATEGORIES = [
@@ -12,18 +20,25 @@ const EXPENSE_CATEGORIES = [
 
 export default function BillingPage() {
   const { t } = useI18n();
-  const [tab, setTab] = useState<"time" | "expenses" | "invoices">("time");
+  const [tab, setTab] = useState<"time" | "expenses" | "invoices" | "trust">("time");
   const [matters, setMatters] = useState<Matter[]>([]);
 
   useEffect(() => {
     apiGet<Matter[]>("/matters").then(setMatters).catch(() => {});
   }, []);
 
+  const tabLabel: Record<typeof tab, string> = {
+    time: t.timeEntries,
+    expenses: t.expensesLabel,
+    invoices: t.invoices,
+    trust: t.trustLabel,
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t.billing}</h1>
       <div className="flex gap-1 border-b border-slate-200 overflow-x-auto whitespace-nowrap">
-        {(["time", "expenses", "invoices"] as const).map((key) => (
+        {(["time", "expenses", "invoices", "trust"] as const).map((key) => (
           <button
             key={key}
             onClick={() => setTab(key)}
@@ -33,13 +48,14 @@ export default function BillingPage() {
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
-            {key === "time" ? t.timeEntries : key === "expenses" ? t.expensesLabel : t.invoices}
+            {tabLabel[key]}
           </button>
         ))}
       </div>
       {tab === "time" && <TimeTab matters={matters} />}
       {tab === "expenses" && <ExpensesTab matters={matters} />}
       {tab === "invoices" && <InvoicesTab matters={matters} />}
+      {tab === "trust" && <TrustTab matters={matters} />}
     </div>
   );
 }
@@ -294,13 +310,14 @@ interface ManualItem {
 }
 
 function InvoicesTab({ matters }: { matters: Matter[] }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [invoices, setInvoices] = useState<Invoice[] | null>(null);
   const [matterId, setMatterId] = useState("");
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<ManualItem[]>([]);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
+  const [tariff, setTariff] = useState<FeeTariffItem[]>([]);
 
   const load = useCallback(() => {
     apiGet<Invoice[]>("/invoices").then(setInvoices).catch(() => {});
@@ -308,7 +325,22 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
 
   useEffect(() => {
     load();
+    apiGet<FeeTariffItem[]>("/fee-tariff").then(setTariff).catch(() => {});
   }, [load]);
+
+  function addTariffItem(id: string) {
+    const item = tariff.find((x) => x.id === id);
+    if (!item) return;
+    const name = item.name[locale] || item.name.sq || item.code;
+    setItems((prev) => [
+      ...prev,
+      {
+        description: item.tariff_no ? `${name} (${item.tariff_no})` : name,
+        quantity: "1",
+        unit_price: item.amount,
+      },
+    ]);
+  }
 
   async function create(e: React.FormEvent) {
     e.preventDefault();
@@ -363,6 +395,22 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
       setError(err instanceof Error ? err.message : t.error);
     } finally {
       setSendingId(null);
+    }
+  }
+
+  const [linkingId, setLinkingId] = useState<string | null>(null);
+
+  async function createLink(inv: Invoice) {
+    setLinkingId(inv.id);
+    setNotice("");
+    setError("");
+    try {
+      await apiPost(`/invoices/${inv.id}/payment-link`);
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setLinkingId(null);
     }
   }
 
@@ -444,6 +492,22 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
             >
               + {t.addItem}
             </button>
+            {tariff.length > 0 && (
+              <select
+                value=""
+                onChange={(e) => {
+                  if (e.target.value) addTariffItem(e.target.value);
+                }}
+                className="text-xs text-indigo-600 border border-slate-200 rounded-md px-2 py-1 bg-white max-w-72"
+              >
+                <option value="">{t.tariffPicker}</option>
+                {tariff.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {(item.name[locale] || item.name.sq || item.code)} — {Number(item.amount).toFixed(0)} €
+                  </option>
+                ))}
+              </select>
+            )}
             {matterId && (
               <p className="text-xs text-slate-500">
                 ✓ {t.includeUnbilled} · ✓ {t.includeExpenses}
@@ -502,6 +566,15 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
                       {sendingId === inv.id ? t.loading : t.sendToClient}
                     </Button>
                   )}
+                  {inv.status !== "paid" && inv.status !== "void" && !inv.payment_link && (
+                    <Button
+                      variant="secondary"
+                      onClick={() => createLink(inv)}
+                      disabled={linkingId === inv.id}
+                    >
+                      {linkingId === inv.id ? t.loading : t.createPaymentLink}
+                    </Button>
+                  )}
                   {inv.status === "draft" && (
                     <Button variant="secondary" onClick={() => setStatus(inv.id, "sent")}>{t.markSent}</Button>
                   )}
@@ -510,6 +583,26 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
                   )}
                 </div>
               </div>
+              {inv.payment_link && inv.status !== "paid" && (
+                <p className="mt-2 text-xs text-slate-600">
+                  {t.paymentLinkLabel}:{" "}
+                  <a
+                    href={inv.payment_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-indigo-600 hover:underline break-all"
+                  >
+                    {inv.payment_link.slice(0, 60)}…
+                  </a>{" "}
+                  <button
+                    type="button"
+                    className="text-indigo-600 hover:underline"
+                    onClick={() => navigator.clipboard.writeText(inv.payment_link!)}
+                  >
+                    ({t.copyLink})
+                  </button>
+                </p>
+              )}
               {payingId === inv.id && (
                 <form
                   className="mt-3 pt-3 border-t border-slate-100 flex gap-2 items-end flex-wrap"
@@ -548,6 +641,189 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
             </Card>
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+function TrustTab({ matters }: { matters: Matter[] }) {
+  const { t } = useI18n();
+  const [balances, setBalances] = useState<TrustBalance[] | null>(null);
+  const [transactions, setTransactions] = useState<TrustTransaction[] | null>(null);
+  const [error, setError] = useState("");
+  const [form, setForm] = useState({
+    matter_id: "",
+    kind: "deposit",
+    occurred_on: new Date().toISOString().slice(0, 10),
+    amount: "",
+    description: "",
+    reference: "",
+  });
+
+  const load = useCallback(() => {
+    apiGet<TrustBalance[]>("/trust/balances").then(setBalances).catch(() => {});
+    apiGet<TrustTransaction[]>("/trust/transactions").then(setTransactions).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  async function add(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    try {
+      await apiPost("/trust/transactions", {
+        matter_id: form.matter_id,
+        kind: form.kind,
+        occurred_on: form.occurred_on,
+        amount: form.amount,
+        description: form.description,
+        reference: form.reference || null,
+      });
+      setForm({ ...form, amount: "", description: "", reference: "" });
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  async function remove(id: string) {
+    setError("");
+    try {
+      await apiDelete(`/trust/transactions/${id}`);
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  const matterRef = (id: string) => matters.find((m) => m.id === id)?.reference || "";
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-slate-500">{t.trustHint}</p>
+
+      {balances !== null && balances.length > 0 && (
+        <Card className="p-4">
+          <h2 className="text-sm font-semibold mb-3">{t.trustBalances}</h2>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {balances.map((b) => (
+              <div
+                key={b.matter_id}
+                className="rounded-lg border border-slate-200 px-3 py-2 flex justify-between items-center"
+              >
+                <div>
+                  <p className="font-mono text-xs text-slate-500">{b.matter_reference}</p>
+                  <p className="text-xs text-slate-600 truncate max-w-44">
+                    {b.client_name || b.matter_title}
+                  </p>
+                </div>
+                <span
+                  className={`font-semibold text-sm ${
+                    Number(b.balance) > 0 ? "text-emerald-700" : "text-slate-500"
+                  }`}
+                >
+                  {Number(b.balance).toFixed(2)} €
+                </span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      <Card className="p-4">
+        <form onSubmit={add} className="flex gap-3 items-end flex-wrap">
+          <div className="flex-1 min-w-56">
+            <Label>{t.matters}</Label>
+            <Select value={form.matter_id} onChange={(e) => setForm({ ...form, matter_id: e.target.value })} required>
+              <option value="">—</option>
+              {matters.map((m) => (
+                <option key={m.id} value={m.id}>{m.reference} — {m.title}</option>
+              ))}
+            </Select>
+          </div>
+          <div className="w-32">
+            <Label>{t.trustKind}</Label>
+            <Select value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })}>
+              <option value="deposit">{t.trustDeposit}</option>
+              <option value="withdrawal">{t.trustWithdrawal}</option>
+            </Select>
+          </div>
+          <div>
+            <Label>{t.date}</Label>
+            <Input type="date" value={form.occurred_on} onChange={(e) => setForm({ ...form, occurred_on: e.target.value })} required />
+          </div>
+          <div className="w-28">
+            <Label>{t.amount} (€)</Label>
+            <Input type="number" step="0.01" min="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required />
+          </div>
+          <div className="flex-[2] min-w-48">
+            <Label>{t.description}</Label>
+            <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
+          </div>
+          <div className="w-40">
+            <Label>{t.paymentReference}</Label>
+            <Input value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} placeholder={t.trustReferenceHint} />
+          </div>
+          <Button type="submit">{t.addTransaction}</Button>
+        </form>
+        <div className="mt-2"><ErrorNote message={error} /></div>
+      </Card>
+
+      {transactions === null ? (
+        <Spinner />
+      ) : (
+        <Card>
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[640px]">
+            <thead>
+              <tr className="text-left text-xs text-slate-500 border-b border-slate-200">
+                <th className="px-4 py-3">{t.date}</th>
+                <th className="px-4 py-3">{t.matters}</th>
+                <th className="px-4 py-3">{t.trustKind}</th>
+                <th className="px-4 py-3">{t.description}</th>
+                <th className="px-4 py-3 text-right">{t.amount}</th>
+                <th className="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {transactions.map((txn) => (
+                <tr key={txn.id} className="border-b border-slate-100">
+                  <td className="px-4 py-3 text-slate-500">
+                    {new Date(txn.occurred_on).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3 font-mono text-xs">{matterRef(txn.matter_id)}</td>
+                  <td className="px-4 py-3">
+                    <Badge
+                      status={txn.kind === "deposit" ? "paid" : "sent"}
+                      label={txn.kind === "deposit" ? t.trustDeposit : t.trustWithdrawal}
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    {txn.description}
+                    {txn.reference && (
+                      <span className="text-xs text-slate-400"> · {txn.reference}</span>
+                    )}
+                  </td>
+                  <td
+                    className={`px-4 py-3 text-right font-medium ${
+                      txn.kind === "deposit" ? "text-emerald-700" : "text-slate-700"
+                    }`}
+                  >
+                    {txn.kind === "deposit" ? "+" : "−"}{Number(txn.amount).toFixed(2)} €
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <button onClick={() => remove(txn.id)} className="text-xs text-red-500 hover:underline">
+                      ✕
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          </div>
+        </Card>
       )}
     </div>
   );

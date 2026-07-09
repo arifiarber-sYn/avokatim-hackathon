@@ -10,6 +10,52 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-09 — P2 differentiators: trust ledger, OAK tariff, .docx, email-in, SMS, Stripe, legal docs (Cursor / Fable 5)
+
+- Done: **client funds ledger (trust)** — `TrustTransaction` model, API
+  (`/trust/transactions` CRUD + `/trust/balances`), withdrawal beyond the
+  balance is rejected (400), new "Mjetet e klientit" tab in Billing with
+  per-matter balances + transaction table; included in tenant export
+  (`mjetet_e_klientit.csv`).
+- Done: **Kosovo Bar Association fee tariff as data** — `FeeTariffItem` model,
+  17 seeded rows from the OAK tariff in force since 01.01.2015 (criminal
+  120/150/200 €, civil submissions/hearings 60/80/160 € by value, enforcement,
+  misdemeanor, contracts; surcharges documented in `notes`), `GET /fee-tariff`,
+  picker in the invoice form that prefills description + price.
+- Done: **.docx rendering** — `app/services/docx_render.py` (python-docx; A4,
+  2.5 cm margins, Times New Roman 12pt, 1.5 spacing, bold centered title,
+  ALL-CAPS lines as headings), `POST /templates/render-docx`, "Shkarko .docx"
+  button on the templates page (`apiDownload` now supports POST bodies).
+- Done: **email-to-matter** — `app/services/email_ingest.py` IMAP poller
+  (lifespan task, disabled without `imap_host`); each matter gets a lazy
+  `email_token` → alias `user+token@domain` (plus addressing), shown with a
+  copy button in matter Overview (`GET /matters/{id}/email-address`, 404 when
+  unconfigured). Inbound mail becomes a matter note; attachments become
+  encrypted matter documents (category "email"); Redis dedup by Message-ID.
+- Done: **SMS channel** — `app/services/sms.py` (Twilio-compatible REST via
+  httpx, disabled without `sms_account_sid`); hearing reminders now also SMS
+  the matter's client (separate Redis dedup key).
+- Done: **card payments** — `app/services/payments.py` (Stripe Checkout via
+  raw HTTPS, no SDK), `POST /invoices/{id}/payment-link` stores
+  `payment_link`/`stripe_session_id`, link included in the invoice email,
+  "Krijo link pagese" button + link display in UI; unauthenticated
+  `POST /api/stripe/webhook` (HMAC signature verification + replay guard)
+  marks the invoice paid on `checkout.session.completed`.
+- Done: **legal docs** — `docs/legal/marreveshja-e-perpunimit-te-te-dhenave.md`
+  (LMDhP model per Law 06/L-082) and `docs/legal/sla.md` (99.5%, P1–P4
+  response times, RPO/RTO, credits) in Albanian.
+- Migration `f9dabb704d14`: trust_transactions, fee_tariff_items,
+  invoices.payment_link/stripe_session_id, matters.email_token. New settings
+  in `config.py`: imap_*, sms_*, stripe_* (all optional; features degrade
+  gracefully when unset). requirements: + python-docx.
+- Verified: full_simulation extended to steps 16–19 → **66 PASS / 0 FAIL /
+  0 GAP**; pytest 13 passed; frontend builds; health OK; demo tenant reseeded
+  with 4 trust transactions; demo scenario updated (objection answers now
+  "Po" for email/cards/tariff/SMS/.docx/DPA-SLA).
+- Left open / next: Stripe/IMAP/Twilio need real credentials in `backend/.env`
+  to activate (graceful 400/404/off otherwise); Stripe webhook needs the
+  public URL routed to `/api/stripe/webhook`.
+
 ## 2026-07-09 — Demo readiness: all P0 blockers + 2026 table-stakes + demo package (Cursor / Fable 5)
 
 - Done (P0): invoice PDF service (`app/services/invoice_pdf.py`, WeasyPrint,

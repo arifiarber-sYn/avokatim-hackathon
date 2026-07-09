@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { apiGet, apiPost } from "@/lib/api";
+import { apiDownload, apiGet, apiPost } from "@/lib/api";
 import { localized, useI18n } from "@/lib/i18n";
 import { Doc, Matter, Template } from "@/lib/types";
 import { Button, Card, ErrorNote, Input, Label, Select, Spinner, Textarea } from "@/components/ui";
@@ -143,6 +143,23 @@ export default function TemplatesPage() {
                   }}
                 >
                   {copied ? t.copied : t.copyText}
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    const name = selected ? localized(selected.name, locale) : "dokument";
+                    apiDownload(`/templates/render-docx`, `${name}.docx`, {
+                      method: "POST",
+                      body: {
+                        template_id: templateId,
+                        matter_id: matterId || null,
+                        variables: values,
+                        content: output,
+                      },
+                    });
+                  }}
+                >
+                  {t.downloadDocx}
                 </Button>
               </div>
               {savedDoc && (

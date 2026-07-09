@@ -65,6 +65,27 @@ class Settings(BaseSettings):
     smtp_starttls: bool = True
     reminder_check_minutes: int = 60
 
+    # Email-to-matter ingestion (IMAP). Empty imap_host = disabled.
+    # Each matter gets an alias imap_user-local-part+<token>@domain (plus
+    # addressing); the poller files incoming mail into the matter.
+    imap_host: str = ""
+    imap_port: int = 993
+    imap_user: str = ""
+    imap_password: str = ""
+    imap_folder: str = "INBOX"
+    imap_poll_minutes: int = 5
+
+    # SMS (Twilio-compatible API). Empty account SID = disabled.
+    # Used for hearing reminders sent to the matter's client.
+    sms_account_sid: str = ""
+    sms_auth_token: str = ""
+    sms_from: str = ""
+    sms_api_base: str = "https://api.twilio.com"
+
+    # Card payments (Stripe Checkout). Empty secret key = disabled.
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+
     # Web Push (PWA notifications). Generated once; empty = push disabled.
     vapid_public_key: str = ""
     vapid_private_key: str = ""

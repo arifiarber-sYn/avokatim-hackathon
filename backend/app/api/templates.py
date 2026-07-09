@@ -3,6 +3,7 @@ import uuid
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import Response
 from jinja2 import BaseLoader, Environment, Undefined
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,6 +22,7 @@ from app.schemas.documents import (
 )
 from app.services import rag, storage
 from app.services.audit import log_action
+from app.services.docx_render import build_docx
 
 router = APIRouter(prefix="/templates", tags=["templates"])
 
@@ -136,6 +138,49 @@ async def render_template(
     await db.commit()
     name = template.name.get("sq") or template.code
     return RenderTemplateOut(content=content, filename=f"{name}.txt")
+
+
+@router.post("/render-docx")
+async def render_docx(
+    body: RenderToMatterIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Render (or take the lawyer's edited text) as a styled Word document —
+    for lawyers who finish their drafting in Word."""
+    template = await db.get(DocumentTemplate, body.template_id)
+    if template is None or (
+        template.tenant_id is not None and template.tenant_id != user.tenant_id
+    ):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Template not found")
+
+    if body.content:
+        content = body.content
+    else:
+        variables: dict = {}
+        if body.matter_id:
+            matter = await get_owned_matter(db, user, body.matter_id)
+            variables.update(await _matter_variables(db, user, matter))
+        else:
+            variables.update(
+                {"lawyer_name": user.full_name, "date": date.today().strftime("%d.%m.%Y")}
+            )
+        variables.update({k: v for k, v in body.variables.items() if v})
+        content, _ = _render(template, variables)
+
+    name = template.name.get("sq") or template.code
+    docx_bytes = build_docx(content, title=name)
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="template.render_docx",
+        entity_type="template", entity_id=str(template.id), details={"code": template.code},
+    )
+    await db.commit()
+    filename = f"{name}.docx"
+    return Response(
+        content=docx_bytes,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 _DOC_PAGE = """<!DOCTYPE html>

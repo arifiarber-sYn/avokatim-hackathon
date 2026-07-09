@@ -59,9 +59,17 @@ export const apiUpload = <T = unknown>(path: string, form: FormData) =>
   api<T>(path, { method: "POST", body: form });
 
 /** Download an authenticated file endpoint and trigger a save dialog. */
-export async function apiDownload(path: string, filename: string): Promise<boolean> {
+export async function apiDownload(
+  path: string,
+  filename: string,
+  init?: { method?: string; body?: unknown }
+): Promise<boolean> {
+  const headers: Record<string, string> = { Authorization: `Bearer ${getToken()}` };
+  if (init?.body !== undefined) headers["Content-Type"] = "application/json";
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { Authorization: `Bearer ${getToken()}` },
+    method: init?.method || "GET",
+    headers,
+    body: init?.body === undefined ? undefined : JSON.stringify(init.body),
   });
   if (!res.ok) return false;
   const blob = await res.blob();

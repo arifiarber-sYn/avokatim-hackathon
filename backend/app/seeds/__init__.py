@@ -4,8 +4,14 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import DeadlineRule, DocumentTemplate, Holiday, Jurisdiction
-from app.seeds.kosovo import JURISDICTIONS, XK_DEADLINE_RULES, XK_HOLIDAYS_FIXED, XK_TEMPLATES
+from app.models import DeadlineRule, DocumentTemplate, FeeTariffItem, Holiday, Jurisdiction
+from app.seeds.kosovo import (
+    JURISDICTIONS,
+    XK_DEADLINE_RULES,
+    XK_FEE_TARIFF,
+    XK_HOLIDAYS_FIXED,
+    XK_TEMPLATES,
+)
 
 
 async def seed_jurisdictions(db: AsyncSession) -> None:
@@ -59,5 +65,17 @@ async def seed_jurisdictions(db: AsyncSession) -> None:
     for tpl in XK_TEMPLATES:
         if (tpl["code"], tpl["locale"]) not in existing_templates:
             db.add(DocumentTemplate(jurisdiction_id=xk.id, tenant_id=None, **tpl))
+
+    existing_tariff = {
+        t.code
+        for t in (
+            await db.execute(
+                select(FeeTariffItem).where(FeeTariffItem.jurisdiction_id == xk.id)
+            )
+        ).scalars()
+    }
+    for item in XK_FEE_TARIFF:
+        if item["code"] not in existing_tariff:
+            db.add(FeeTariffItem(jurisdiction_id=xk.id, **item))
 
     await db.commit()

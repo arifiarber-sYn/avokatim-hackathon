@@ -715,3 +715,258 @@ VI. GJETJET DHE VLERËSIMI I RREZIKUT
 """,
     },
 ]
+
+# ---------------------------------------------------------------------------
+# Fee tariff of the Kosovo Bar Association (Tarifa e OAK), in force since
+# 1 January 2015 (approved by the OAK Assembly on 20.12.2014). Base amounts;
+# the tariff's surcharges (+30%/started hour in sessions, +30% lump sum,
+# +50% enforcement clause, +50% per extra party up to 300%) are in `notes`
+# so the lawyer applies what fits. Amounts are DATA — editable when the
+# tariff changes.
+# ---------------------------------------------------------------------------
+
+XK_FEE_TARIFF = [
+    # Nr. tarifor 1-2: criminal defense / representation, per session or action
+    {
+        "code": "criminal.session.general",
+        "tariff_no": "Nr. tarifor 1-2",
+        "name": {
+            "sq": "Mbrojtja penale — Departamenti i përgjithshëm (seancë/veprim)",
+            "en": "Criminal defense — General Department (per session/action)",
+            "zh": "刑事辩护 — 普通部门（每次庭审/行动）",
+        },
+        "practice_area": "criminal",
+        "amount": "120.00",
+        "unit": "seancë",
+        "legal_basis": "Tarifa e OAK, nr. tarifor 1 dhe 2",
+        "notes": "Shtesë 30% për çdo orë të filluar; paushalli 30%.",
+    },
+    {
+        "code": "criminal.session.serious_upto10y",
+        "tariff_no": "Nr. tarifor 1-2",
+        "name": {
+            "sq": "Mbrojtja penale — krime të rënda, dënim deri 10 vjet (seancë/veprim)",
+            "en": "Criminal defense — serious crimes, up to 10 years (per session/action)",
+            "zh": "刑事辩护 — 重罪，十年以下（每次庭审/行动）",
+        },
+        "practice_area": "criminal",
+        "amount": "150.00",
+        "unit": "seancë",
+        "legal_basis": "Tarifa e OAK, nr. tarifor 1 dhe 2",
+        "notes": "Shtesë 30% për çdo orë të filluar; paushalli 30%.",
+    },
+    {
+        "code": "criminal.session.over10y",
+        "tariff_no": "Nr. tarifor 1-2",
+        "name": {
+            "sq": "Mbrojtja penale — dënim 10+ vjet / neni 22 KPPK (seancë/veprim)",
+            "en": "Criminal defense — 10+ years / art. 22 CCPK (per session/action)",
+            "zh": "刑事辩护 — 十年以上/《刑诉法》第22条（每次庭审/行动）",
+        },
+        "practice_area": "criminal",
+        "amount": "200.00",
+        "unit": "seancë",
+        "legal_basis": "Tarifa e OAK, nr. tarifor 1 dhe 2",
+        "notes": "Shtesë 30% për çdo orë të filluar; paushalli 30%.",
+    },
+    # Nr. tarifor 3-5: criminal submissions
+    {
+        "code": "criminal.submission.general",
+        "tariff_no": "Nr. tarifor 3-5",
+        "name": {
+            "sq": "Parashtresë penale — Departamenti i përgjithshëm",
+            "en": "Criminal submission — General Department",
+            "zh": "刑事书状 — 普通部门",
+        },
+        "practice_area": "criminal",
+        "amount": "120.00",
+        "unit": "parashtresë",
+        "legal_basis": "Tarifa e OAK, nr. tarifor 3, 4 dhe 5",
+        "notes": "Kallëzim penal, ankesë për paraburgim etj.; paushalli 30%.",
+    },
+    {
+        "code": "criminal.submission.serious_upto10y",
+        "tariff_no": "Nr. tarifor 3-5",
+        "name": {
+            "sq": "Parashtresë penale — krime të rënda, dënim deri 10 vjet",
+            "en": "Criminal submission — serious crimes, up to 10 years",
+            "zh": "刑事书状 — 重罪，十年以下",
+        },
+        "practice_area": "criminal",
+        "amount": "150.00",
+        "unit": "parashtresë",
+        "legal_basis": "Tarifa e OAK, nr. tarifor 3, 4 dhe 5",
+        "notes": "Paushalli 30%.",
+    },
+    {
+        "code": "criminal.submission.over10y",
+        "tariff_no": "Nr. tarifor 3-5",
+        "name": {
+            "sq": "Parashtresë penale — dënim 10+ vjet / neni 22 KPPK",
+            "en": "Criminal submission — 10+ years / art. 22 CCPK",
+            "zh": "刑事书状 — 十年以上/《刑诉法》第22条",
+        },
+        "practice_area": "criminal",
+        "amount": "200.00",
+        "unit": "parashtresë",
+        "legal_basis": "Tarifa e OAK, nr. tarifor 3, 4 dhe 5",
+        "notes": "Paushalli 30%.",
+    },
+    # Nr. tarifor 6: civil submissions (claims etc.) by case value
+    {
+        "code": "civil.claim.small",
+        "tariff_no": "Nr. tarifor 6",
+        "name": {
+            "sq": "Padi/parashtresë — kontest i vlerës së vogël",
+            "en": "Claim/submission — small-value dispute",
+            "zh": "起诉状/书状 — 小额纠纷",
+        },
+        "practice_area": "civil",
+        "amount": "60.00",
+        "unit": "parashtresë",
+        "legal_basis": "Tarifa e OAK, nr. tarifor 6",
+        "notes": "Paushalli 30%.",
+    },
+    {
+        "code": "civil.claim.upto_10k",
+        "tariff_no": "Nr. tarifor 6",
+        "name": {
+            "sq": "Padi/parashtresë — vlera deri 10.000 €",
+            "en": "Claim/submission — value up to €10,000",
+            "zh": "起诉状/书状 — 标的额一万欧元以下",
+        },
+        "practice_area": "civil",
+        "amount": "80.00",
+        "unit": "parashtresë",
+        "legal_basis": "Tarifa e OAK, nr. tarifor 6",
+        "notes": "Paushalli 30%.",
+    },
+    {
+        "code": "civil.claim.over_10k",
+        "tariff_no": "Nr. tarifor 6",
+        "name": {
+            "sq": "Padi/parashtresë — vlera mbi 10.000 €",
+            "en": "Claim/submission — value over €10,000",
+            "zh": "起诉状/书状 — 标的额一万欧元以上",
+        },
+        "practice_area": "civil",
+        "amount": "160.00",
+        "unit": "parashtresë",
+        "legal_basis": "Tarifa e OAK, nr. tarifor 6",
+        "notes": "Paushalli 30%.",
+    },
+    {
+        "code": "civil.enforcement.small",
+        "tariff_no": "Nr. tarifor 6",
+        "name": {
+            "sq": "Propozim për përmbarim — vlera e vogël",
+            "en": "Enforcement proposal — small value",
+            "zh": "执行申请 — 小额",
+        },
+        "practice_area": "civil",
+        "amount": "60.00",
+        "unit": "parashtresë",
+        "legal_basis": "Tarifa e OAK, nr. tarifor 6",
+        "notes": "Klauzola për përmbarim me titull përmbarimor +50%; paushalli 30%.",
+    },
+    {
+        "code": "civil.enforcement.upto_10k",
+        "tariff_no": "Nr. tarifor 6",
+        "name": {
+            "sq": "Propozim për përmbarim — vlera deri 10.000 €",
+            "en": "Enforcement proposal — value up to €10,000",
+            "zh": "执行申请 — 标的额一万欧元以下",
+        },
+        "practice_area": "civil",
+        "amount": "80.00",
+        "unit": "parashtresë",
+        "legal_basis": "Tarifa e OAK, nr. tarifor 6",
+        "notes": "Klauzola për përmbarim me titull përmbarimor +50%; paushalli 30%.",
+    },
+    {
+        "code": "civil.enforcement.over_10k",
+        "tariff_no": "Nr. tarifor 6",
+        "name": {
+            "sq": "Propozim për përmbarim — vlera mbi 10.000 €",
+            "en": "Enforcement proposal — value over €10,000",
+            "zh": "执行申请 — 标的额一万欧元以上",
+        },
+        "practice_area": "civil",
+        "amount": "160.00",
+        "unit": "parashtresë",
+        "legal_basis": "Tarifa e OAK, nr. tarifor 6",
+        "notes": "Klauzola për përmbarim me titull përmbarimor +50%; paushalli 30%.",
+    },
+    # Nr. tarifor 7: civil hearings by case value
+    {
+        "code": "civil.hearing.small",
+        "tariff_no": "Nr. tarifor 7",
+        "name": {
+            "sq": "Përfaqësim në seancë — kontest i vlerës së vogël",
+            "en": "Hearing representation — small-value dispute",
+            "zh": "庭审代理 — 小额纠纷",
+        },
+        "practice_area": "civil",
+        "amount": "60.00",
+        "unit": "seancë",
+        "legal_basis": "Tarifa e OAK, nr. tarifor 7",
+        "notes": "Shtesë 30% për orë; paushalli 30%; seanca e shtyrë 50%.",
+    },
+    {
+        "code": "civil.hearing.upto_10k",
+        "tariff_no": "Nr. tarifor 7",
+        "name": {
+            "sq": "Përfaqësim në seancë — vlera deri 10.000 €",
+            "en": "Hearing representation — value up to €10,000",
+            "zh": "庭审代理 — 标的额一万欧元以下",
+        },
+        "practice_area": "civil",
+        "amount": "80.00",
+        "unit": "seancë",
+        "legal_basis": "Tarifa e OAK, nr. tarifor 7",
+        "notes": "Shtesë 30% për orë; paushalli 30%; seanca e shtyrë 50%.",
+    },
+    {
+        "code": "civil.hearing.over_10k",
+        "tariff_no": "Nr. tarifor 7",
+        "name": {
+            "sq": "Përfaqësim në seancë — vlera mbi 10.000 €",
+            "en": "Hearing representation — value over €10,000",
+            "zh": "庭审代理 — 标的额一万欧元以上",
+        },
+        "practice_area": "civil",
+        "amount": "160.00",
+        "unit": "seancë",
+        "legal_basis": "Tarifa e OAK, nr. tarifor 7",
+        "notes": "Shtesë 30% për orë; paushalli 30%; seanca e shtyrë 50%.",
+    },
+    # Other rewards
+    {
+        "code": "other.misdemeanor",
+        "tariff_no": "Shpërblimet tjera, pika 4",
+        "name": {
+            "sq": "Procedurë kundërvajtëse / disiplinore (për veprim)",
+            "en": "Misdemeanor / disciplinary proceedings (per action)",
+            "zh": "违章/纪律程序（每次行动）",
+        },
+        "practice_area": "other",
+        "amount": "60.00",
+        "unit": "veprim",
+        "legal_basis": "Tarifa e OAK, shpërblimet tjera pika 4",
+        "notes": "Llogaritet analogjikisht me bazën tarifore 60 €.",
+    },
+    {
+        "code": "other.contract_drafting",
+        "tariff_no": "Nr. tarifor 11",
+        "name": {
+            "sq": "Përpilim kontrate / ujdie / testamenti",
+            "en": "Drafting a contract / settlement / will",
+            "zh": "起草合同/和解协议/遗嘱",
+        },
+        "practice_area": "other",
+        "amount": "80.00",
+        "unit": "dokument",
+        "legal_basis": "Tarifa e OAK, nr. tarifor 11",
+        "notes": "Sipas nr. tarifor 6, ose deri në 1% të vlerës së tregut të pasurisë.",
+    },
+]

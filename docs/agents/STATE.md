@@ -5,7 +5,7 @@
 
 **Last updated:** 2026-07-09
 
-## Status: demo-ready — P0 blockers + 2026 table-stakes closed, demo package in place
+## Status: demo-ready — P0/P1/P2 closed (incl. trust ledger, OAK tariff, .docx, email-in, SMS, card payments); zero known feature gaps
 
 All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
@@ -139,11 +139,40 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - **Audit log UI + export** (2026-07-09, admin only): Settings → Regjistri i
   veprimeve (filterable viewer over `GET /audit-log`) and Settings → Eksporti
   (`GET /export/tenant` → ZIP of Albanian-named CSVs + decrypted documents).
+- **Trust ledger — client funds** (2026-07-09): `TrustTransaction` model;
+  `/trust/transactions` (deposit/withdrawal, delete) + `/trust/balances`;
+  withdrawals beyond the balance rejected (400) — the ledger can never go
+  negative; "Mjetet e klientit" tab in Billing (balance cards + table);
+  included in the tenant export ZIP.
+- **OAK fee tariff as data** (2026-07-09): `FeeTariffItem` model, 17 rows
+  seeded from the Kosovo Bar tariff (in force 01.01.2015) in
+  `seeds/kosovo.py::XK_FEE_TARIFF`; `GET /fee-tariff?jurisdiction_code=XK`;
+  invoice-form picker prefills description + price. Amounts are editable data.
+- **.docx export** (2026-07-09): `POST /templates/render-docx` via
+  `app/services/docx_render.py` (python-docx; court-filing layout); "Shkarko
+  .docx" button next to the PDF/save actions on the templates page.
+- **Email-to-matter** (2026-07-09): IMAP poller (`app/services/email_ingest.py`,
+  lifespan task; off without `imap_host` in .env). Matter alias =
+  `imapuser+<email_token>@domain` (`GET /matters/{id}/email-address`, lazy
+  token, shown with copy button in matter Overview; hidden when unconfigured).
+  Inbound mail → matter note + attachments as encrypted documents
+  (category "email"); Message-ID dedup in Redis.
+- **SMS reminders** (2026-07-09): `app/services/sms.py` (Twilio-compatible
+  REST; off without `sms_account_sid`). Hearing reminders additionally SMS
+  the matter's client at the same day-offsets.
+- **Card payments** (2026-07-09): `app/services/payments.py` — Stripe Checkout
+  session via raw API (no SDK; off without `stripe_secret_key`).
+  `POST /invoices/{id}/payment-link` → stores `payment_link` on the invoice,
+  UI button + link, included in the invoice email. Public
+  `POST /api/stripe/webhook` (HMAC verify + 5-min replay window) marks the
+  invoice paid automatically. Webhook URL must be routed publicly to activate.
+- **Legal paperwork for buyers** (2026-07-09): `docs/legal/` — LMDhP/DPA
+  model per Law 06/L-082 and SLA (99.5%, P1–P4, RPO/RTO, credits), Albanian.
 - **Demo package** (2026-07-09): `backend/scripts/seed_demo.py` creates/resets
-  tenant "Zyra Demo" (8 matters, deadlines, docs, tasks, expenses, invoices,
-  portal client with pending signature; logins in the script header);
-  demo runbook `docs/pitch/skenari-demo.md`. `full_simulation.py` now covers
-  all of the above: **56 PASS / 0 FAIL**.
+  tenant "Zyra Demo" (8 matters, deadlines, docs, tasks, expenses, trust
+  transactions, invoices, portal client with pending signature; logins in the
+  script header); demo runbook `docs/pitch/skenari-demo.md`.
+  `full_simulation.py` covers everything: **66 PASS / 0 FAIL / 0 GAP**.
 - **Client portal**: full UI at `/portal` — login, matters with hearings,
   two-way messages, e-signature inbox. Shows the **firm's own name + logo**
   (from portal login response) instead of "BoraLaw"; the public intake form
@@ -183,6 +212,11 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   `boralaw-redis` (6380), `boralaw-caddy` (host network, HTTPS 8443).
 - Backend: uvicorn on 127.0.0.1:8000, venv at `backend/.venv`. Frontend: Next.js on :3000.
 - Secrets in `backend/.env` (git-ignored): DeepSeek key, doc encryption key, DB password.
+- **Optional integrations, off until configured in `backend/.env`** (all degrade
+  gracefully): email-in `IMAP_HOST/USER/PASSWORD` (+folder/poll), SMS
+  `SMS_ACCOUNT_SID/AUTH_TOKEN/FROM` (Twilio-compatible), card payments
+  `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` (route the public URL to
+  `/api/stripe/webhook`).
 - Optional extras installed in venv: `requirements-ai.txt` (local embeddings, OCR).
 - System tesseract 5.5.2 installed (2026-07-07) with sqi/eng/chi_sim langpacks;
   OCR verified end-to-end on synthetic Albanian scanned image and image-only PDF.

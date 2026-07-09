@@ -23,6 +23,7 @@ from app.models import (
     Matter,
     Task,
     TimeEntry,
+    TrustTransaction,
     User,
 )
 from app.services import storage
@@ -108,6 +109,7 @@ async def export_tenant(
         )
     ).scalars().all()
     tasks = await rows(Task)
+    trust_transactions = await rows(TrustTransaction)
     documents = await rows(Document)
 
     contact_names = {c.id: c.display_name for c in contacts}
@@ -158,6 +160,12 @@ async def export_tenant(
             ["titulli", "lenda", "statusi", "prioriteti", "afati"],
             [[t.title, matter_refs.get(t.matter_id, ""), t.status, t.priority,
               t.due_date.isoformat() if t.due_date else ""] for t in tasks],
+        ))
+        zf.writestr("mjetet_e_klientit.csv", _csv(
+            ["lenda", "klienti", "lloji", "data", "shuma", "pershkrimi", "referenca"],
+            [[matter_refs.get(t.matter_id, ""), contact_names.get(t.contact_id, ""),
+              t.kind, t.occurred_on.isoformat(), str(t.amount), t.description,
+              t.reference or ""] for t in trust_transactions],
         ))
         if include_documents:
             for d in documents:

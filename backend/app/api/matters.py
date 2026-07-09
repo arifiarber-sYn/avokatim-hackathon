@@ -151,6 +151,23 @@ async def create_matter(
     return await get_owned_matter(db, user, matter.id)
 
 
+@router.get("/{matter_id}/email-address")
+async def matter_email_address(
+    matter_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """The matter's inbound email alias. Mail sent (or forwarded) there is
+    filed automatically into the matter. 404 when IMAP is not configured."""
+    from app.services.email_ingest import ensure_email_token, imap_enabled, matter_inbound_address
+
+    if not imap_enabled():
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Email ingestion is not configured")
+    matter = await get_owned_matter(db, user, matter_id)
+    token = await ensure_email_token(db, matter)
+    return {"address": matter_inbound_address(token)}
+
+
 @router.get("/{matter_id}", response_model=MatterOut)
 async def get_matter(
     matter_id: uuid.UUID,

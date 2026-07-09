@@ -12,8 +12,9 @@ from sqlalchemy import select
 
 from app.config import settings
 from app.database import SessionLocal
-from app.models import Deadline, Matter, User
+from app.models import Contact, Deadline, Matter, User
 from app.services.push import push_enabled, send_push_to_user
+from app.services.sms import send_sms, sms_enabled
 
 logger = logging.getLogger(__name__)
 
@@ -69,13 +70,19 @@ async def _check_deadline_reminders(redis: aioredis.Redis) -> None:
     async with SessionLocal() as db:
         rows = (
             await db.execute(
-                select(Deadline, Matter.reference, Matter.title, Matter.responsible_user_id)
+                select(
+                    Deadline,
+                    Matter.reference,
+                    Matter.title,
+                    Matter.responsible_user_id,
+                    Matter.client_id,
+                )
                 .join(Matter, Matter.id == Deadline.matter_id)
                 .where(Deadline.status == "pending", Deadline.due_at >= now)
             )
         ).all()
 
-        for deadline, ref, title, responsible_id in rows:
+        for deadline, ref, title, responsible_id, client_id in rows:
             days_left = (deadline.due_at - now).days
             offsets = deadline.remind_days_before or []
             if days_left not in offsets:
@@ -103,13 +110,27 @@ async def _check_deadline_reminders(redis: aioredis.Redis) -> None:
                 body=f"{ref} — {deadline.title} · {deadline.due_at:%d.%m.%Y}",
                 url=f"/matters/{deadline.matter_id}",
             )
+            # Hearings: also SMS the client, so they show up in court
+            if deadline.kind == "hearing" and sms_enabled() and client_id is not None:
+                sms_key = f"reminder-sms:{deadline.id}:{days_left}"
+                if await redis.set(sms_key, "1", nx=True, ex=DEDUP_TTL_SECONDS):
+                    client = await db.get(Contact, client_id)
+                    if client is not None and client.phone:
+                        await send_sms(
+                            client.phone,
+                            (
+                                f"Kujtesë nga avokati juaj: {deadline.title} "
+                                f"më {deadline.due_at:%d.%m.%Y %H:%M} (lënda {ref}). "
+                                f"Ju lutemi të jeni të pranishëm."
+                            ),
+                        )
             logger.info("Reminder sent for deadline %s (%s days)", deadline.id, days_left)
 
 
 async def reminder_loop() -> None:
     """Background task started from the app lifespan."""
-    if not smtp_enabled() and not push_enabled():
-        logger.info("Neither SMTP nor Web Push configured — deadline reminders disabled")
+    if not smtp_enabled() and not push_enabled() and not sms_enabled():
+        logger.info("Neither SMTP, Web Push nor SMS configured — deadline reminders disabled")
         return
     redis = aioredis.from_url(settings.redis_url)
     logger.info("Deadline reminder loop started (every %s min)", settings.reminder_check_minutes)

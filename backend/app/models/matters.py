@@ -69,6 +69,9 @@ class Matter(Base, TenantMixin, TimestampMixin):
     restricted: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     # Free-form structured facts the AI can use when drafting (claim value, etc.)
     extra: Mapped[dict] = mapped_column(JSONB, default=dict)
+    # Token for the matter's inbound email alias (imap_user+token@domain);
+    # generated lazily the first time the lawyer asks for the address.
+    email_token: Mapped[str | None] = mapped_column(String(32), unique=True, index=True)
 
     client: Mapped[Contact | None] = relationship(foreign_keys=[client_id])
     parties: Mapped[list["MatterParty"]] = relationship(

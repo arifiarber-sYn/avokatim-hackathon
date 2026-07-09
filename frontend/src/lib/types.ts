@@ -136,6 +136,38 @@ export interface Expense {
   invoice_id: string | null;
 }
 
+export interface TrustTransaction {
+  id: string;
+  matter_id: string;
+  contact_id: string | null;
+  kind: string;
+  occurred_on: string;
+  amount: string;
+  description: string;
+  reference: string | null;
+  created_at: string;
+}
+
+export interface TrustBalance {
+  matter_id: string;
+  matter_reference: string;
+  matter_title: string;
+  client_name: string | null;
+  balance: string;
+}
+
+export interface FeeTariffItem {
+  id: string;
+  code: string;
+  tariff_no: string | null;
+  name: Record<string, string>;
+  practice_area: string | null;
+  amount: string;
+  unit: string | null;
+  legal_basis: string | null;
+  notes: string | null;
+}
+
 export interface Invoice {
   id: string;
   number: string;
@@ -147,6 +179,7 @@ export interface Invoice {
   due_on: string | null;
   paid_on: string | null;
   payment_reference: string | null;
+  payment_link?: string | null;
   vat_rate: number;
   vat_amount: string;
   total_with_vat: string;
