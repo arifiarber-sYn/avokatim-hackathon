@@ -31,6 +31,10 @@ class Document(Base, TenantMixin, TimestampMixin):
     encrypted: Mapped[bool] = mapped_column(Boolean, default=False)
 
     category: Mapped[str | None] = mapped_column(String(64))  # lawsuit | evidence | judgment...
+    # When true, the client sees and can download this document in the portal
+    visible_to_client: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="false"
+    )
     uploaded_by_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id")
     )

@@ -24,12 +24,22 @@ def smtp_enabled() -> bool:
     return bool(settings.smtp_host)
 
 
-def _send_email_sync(to: str, subject: str, body: str) -> None:
+def _send_email_sync(
+    to: str,
+    subject: str,
+    body: str,
+    attachments: list[tuple[str, bytes, str]] | None = None,
+) -> None:
     msg = EmailMessage()
     msg["From"] = settings.smtp_from
     msg["To"] = to
     msg["Subject"] = subject
     msg.set_content(body)
+    for filename, content, mime in attachments or []:
+        maintype, _, subtype = mime.partition("/")
+        msg.add_attachment(
+            content, maintype=maintype, subtype=subtype or "octet-stream", filename=filename
+        )
     with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=30) as server:
         if settings.smtp_starttls:
             server.starttls()
@@ -38,11 +48,16 @@ def _send_email_sync(to: str, subject: str, body: str) -> None:
         server.send_message(msg)
 
 
-async def send_email(to: str, subject: str, body: str) -> bool:
+async def send_email(
+    to: str,
+    subject: str,
+    body: str,
+    attachments: list[tuple[str, bytes, str]] | None = None,
+) -> bool:
     if not smtp_enabled():
         return False
     try:
-        await asyncio.to_thread(_send_email_sync, to, subject, body)
+        await asyncio.to_thread(_send_email_sync, to, subject, body, attachments)
         return True
     except Exception as exc:
         logger.warning("Email to %s failed: %s", to, exc)

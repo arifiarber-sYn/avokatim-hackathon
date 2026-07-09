@@ -25,6 +25,8 @@ class Tenant(Base, TimestampMixin):
     fiscal_number: Mapped[str | None] = mapped_column(String(32))
     vat_number: Mapped[str | None] = mapped_column(String(32))
     address: Mapped[str | None] = mapped_column(String(500))
+    # Bank account details (bank name + IBAN) printed on invoices
+    bank_details: Mapped[str | None] = mapped_column(String(500))
     # Default VAT percentage applied to new invoices (Kosovo standard: 18)
     default_vat_rate: Mapped[int] = mapped_column(Integer, default=18, server_default="18")
 

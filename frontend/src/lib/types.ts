@@ -59,6 +59,7 @@ export interface Doc {
   category: string | null;
   ocr_status: string;
   has_text: boolean;
+  visible_to_client: boolean;
   approval_status: string;
   reviewer_id: string | null;
   approval_note: string | null;
@@ -112,10 +113,34 @@ export interface TimeEntry {
   invoice_id: string | null;
 }
 
+export interface Task {
+  id: string;
+  matter_id: string | null;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  due_date: string | null;
+  assignee_id: string | null;
+  created_at: string;
+}
+
+export interface Expense {
+  id: string;
+  matter_id: string;
+  incurred_on: string;
+  description: string;
+  category: string;
+  amount: string;
+  billable: boolean;
+  invoice_id: string | null;
+}
+
 export interface Invoice {
   id: string;
   number: string;
   matter_id: string | null;
+  contact_id?: string | null;
   status: string;
   currency: string;
   issued_on: string | null;

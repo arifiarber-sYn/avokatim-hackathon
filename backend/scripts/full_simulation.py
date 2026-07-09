@@ -199,18 +199,18 @@ async def main() -> None:
         r = await c.post(f"{BASE}/templates/render", headers=h, json={
             "template_id": tpl["id"], "matter_id": mid,
         })
-        if r.status_code == 400 and "court_name" in r.text:
-            # FRICTION: matter opened from intake has no court set; render hard-fails
-            rec("FRIKSION", "shablloni kërkon 'court_name' — lënda nga intake s'e ka; "
-                "duhet placeholder në vend të gabimit 400", "")
-            r = await c.post(f"{BASE}/templates/render", headers=h, json={
-                "template_id": tpl["id"], "matter_id": mid,
-                "variables": {"court_name": "Gjykata Themelore në Prishtinë",
-                              "court_city": "Prishtinë", "claim_amount": "48.000 EUR"},
-            })
-        check("shablloni mbushet me të dhënat e lëndës",
+        check("shablloni mbushet me të dhënat e lëndës (pa 400 për variabla që mungojnë)",
               r.status_code == 200 and len(r.json().get("content", "")) > 200,
               r.text[:150] if r.status_code != 200 else "")
+        check("variablat që mungojnë dalin si vend bosh ______",
+              r.status_code == 200 and "__________" in r.json().get("content", ""))
+
+        r = await c.post(f"{BASE}/templates/render-to-matter", headers=h, json={
+            "template_id": tpl["id"], "matter_id": mid,
+            "variables": {"claim_amount": "48.000 EUR"},
+        })
+        check("shkresa ruhet si dokument PDF i lëndës", r.status_code == 201,
+              r.text[:150] if r.status_code != 201 else r.json().get("filename", ""))
 
         # ============ Bora AI with citations ============
         print("\n=== 7. ZYRA: pyetje ligjore për Borën ===")
@@ -319,38 +319,84 @@ async def main() -> None:
         r = await c.get(ics_url)
         check("ICS feed me afatet", r.status_code == 200 and b"VEVENT" in r.content)
 
-        # ============ GAP PROBES: what a buyer will ask for ============
-        print("\n=== 12. PROVA E MUNGESAVE (gap probes) ===")
+        # ============ the 2026-standard features ============
+        print("\n=== 12. FATURA PDF, SHPENZIMET, FLAT-FEE ===")
         r = await c.get(f"{BASE}/invoices/{inv['id']}/pdf", headers=h)
-        gap("Fatura si PDF (për t'ia dërguar klientit)", r.status_code == 200, f"({r.status_code})")
+        check("fatura shkarkohet si PDF fiskal",
+              r.status_code == 200 and r.content[:4] == b"%PDF", f"{len(r.content)} bytes")
 
-        r = await c.get(f"{BASE}/portal/invoices", headers=ph)
-        gap("Klienti i sheh faturat në portal", r.status_code == 200, f"({r.status_code})")
+        r = await c.post(f"{BASE}/expenses", headers=h, json={
+            "matter_id": mid, "description": "Taksa gjyqësore për propozimin",
+            "category": "court_fee", "amount": "104.00",
+            "incurred_on": date.today().isoformat(),
+        })
+        check("shpenzimi i lëndës regjistrohet", r.status_code == 201,
+              r.text[:120] if r.status_code != 201 else "")
 
-        r = await c.get(f"{BASE}/matters/{mid}/expenses", headers=h)
-        gap("Shpenzimet e lëndës (taksa gjyqësore, përmbaruesi...)", r.status_code == 200, f"({r.status_code})")
+        r = await c.post(f"{BASE}/invoices", headers=h, json={
+            "matter_id": mid, "include_unbilled_expenses": True,
+            "items": [{"description": "Përfaqësimi në procedurë (flat fee)",
+                       "quantity": "1", "unit_price": "500.00"}],
+        })
+        inv2 = r.json()
+        check("fatura me shpenzime + artikull flat-fee",
+              r.status_code == 201 and float(inv2.get("total", 0)) == 604.0,
+              f"total {inv2.get('total')}")
 
-        r = await c.get(f"{BASE}/tasks", headers=h)
-        gap("Detyrat (tasks) me përgjegjës dhe afat", r.status_code == 200, f"({r.status_code})")
+        print("\n=== 13. DETYRAT, KËRKIMI, PARAPAMJA ===")
+        r = await c.post(f"{BASE}/tasks", headers=h, json={
+            "matter_id": mid, "title": "Përgatit propozimin për përmbarim",
+            "due_date": date.today().isoformat(), "priority": "high",
+        })
+        check("detyra krijohet me përgjegjës dhe afat", r.status_code == 201,
+              r.text[:120] if r.status_code != 201 else "")
+        task_id = r.json().get("id")
+        r = await c.patch(f"{BASE}/tasks/{task_id}", headers=h, json={"status": "done"})
+        check("detyra shënohet e kryer", r.status_code == 200
+              and r.json().get("completed_at") is not None)
+        r = await c.get(f"{BASE}/tasks?mine=true&open_only=true", headers=h)
+        check("'Detyrat e mia' filtrohen", r.status_code == 200)
 
         r = await c.get(f"{BASE}/search?q=Ferro", headers=h)
-        gap("Kërkimi global (lëndë+dokumente+kontakte)", r.status_code == 200, f"({r.status_code})")
+        sr = r.json() if r.status_code == 200 else {}
+        check("kërkimi global gjen lëndën, kontaktin, dokumentin",
+              r.status_code == 200 and len(sr.get("matters", [])) >= 1
+              and len(sr.get("contacts", [])) >= 1,
+              f"lëndë:{len(sr.get('matters', []))} kontakte:{len(sr.get('contacts', []))} "
+              f"dok:{len(sr.get('documents', []))}")
 
-        r = await c.get(f"{BASE}/export/tenant", headers=h)
-        gap("Eksporti i plotë i të dhënave të zyrës", r.status_code == 200, f"({r.status_code})")
+        r = await c.get(f"{BASE}/documents/{doc_id}/preview", headers=h)
+        check("parapamja inline e dokumentit",
+              r.status_code == 200 and "inline" in r.headers.get("content-disposition", ""))
 
+        print("\n=== 14. DOKUMENTET NË PORTAL ===")
+        r = await c.get(f"{BASE}/portal/matters/{mid}/documents", headers=ph)
+        check("para ndarjes klienti s'sheh asgjë", r.status_code == 200 and len(r.json()) == 0)
+        r = await c.post(f"{BASE}/documents/{doc_id}/visibility", headers=h,
+                         json={"visible": True})
+        check("avokati e ndan dokumentin me klientin", r.status_code == 200)
+        r = await c.get(f"{BASE}/portal/matters/{mid}/documents", headers=ph)
+        check("klienti e sheh dokumentin në portal",
+              r.status_code == 200 and len(r.json()) == 1)
+        r = await c.get(f"{BASE}/portal/documents/{doc_id}/download", headers=ph)
+        check("klienti e shkarkon dokumentin",
+              r.status_code == 200 and r.content[:4] == b"%PDF")
+
+        print("\n=== 15. AUDIT LOG + EKSPORTI ===")
         r = await c.get(f"{BASE}/audit-log", headers=h)
-        gap("Audit log i dukshëm në UI (ekziston vetëm në DB)", r.status_code == 200, f"({r.status_code})")
+        check("audit log i lexueshëm nga admini",
+              r.status_code == 200 and len(r.json()) > 10, f"{len(r.json())} veprime")
+        r = await c.get(f"{BASE}/export/tenant", headers=h)
+        check("eksporti ZIP i të gjitha të dhënave",
+              r.status_code == 200 and r.content[:2] == b"PK", f"{len(r.content)} bytes")
 
-        r = await c.get(f"{BASE}/matters/{mid}/documents/{doc_id}/preview", headers=h)
-        gap("Parapamja e dokumentit në shfletues", r.status_code == 200, f"({r.status_code})")
-
-        # trust accounting / retainer probe (model doesn't exist)
+        # ============ remaining true gaps (post-first-clients backlog) ============
+        print("\n=== 16. MUNGESAT E MBETURA (backlog) ===")
         gap("Llogaria e mjeteve të klientit / retainer (trust accounting)", False, "(pa model)")
         gap("Email-i i integruar (Gmail/Outlook → lëndë)", False, "(pa modul)")
-        gap("Shabllone .docx me stilim (vetëm tekst i thjeshtë sot)", False, "(render tekst)")
-        gap("Faturim flat-fee / me këste (vetëm orë sot)", False, "(vetëm time entries)")
+        gap("Shabllone .docx me stilim (sot tekst → PDF)", False, "(render tekst)")
         gap("SMS njoftime (vetëm email + push sot)", False, "(pa kanal SMS)")
+        gap("Pagesa me kartelë (Stripe/bankat lokale)", False, "(me kërkesë)")
 
     # ============ cleanup ============
     from sqlalchemy import text as sqltext

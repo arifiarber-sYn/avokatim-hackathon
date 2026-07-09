@@ -5,7 +5,7 @@
 
 **Last updated:** 2026-07-09
 
-## Status: MVP + firm-readiness + multi-company SaaS + mobile responsive
+## Status: demo-ready — P0 blockers + 2026 table-stakes closed, demo package in place
 
 All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
@@ -109,7 +109,41 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   Disputes 08/L-182, Business Organizations 06/L-016, Family Law 2004/32,
   Data Protection 06/L-082. Re-runnable importer: `backend/scripts/import_gzk.py`
   (skips laws already present; add new laws to its `LAWS` list).
-- **Billing**: time entries, invoices generated from unbilled hours.
+- **Billing**: time entries, **matter expenses/disbursements** (categories:
+  court fee, bailiff, expert, travel, notary, translation; billing tab), invoices
+  generated from unbilled hours **and unbilled expenses** plus **manual flat-fee
+  items** in the invoice form. **Invoice PDF** (2026-07-09):
+  `GET /invoices/{id}/pdf` — WeasyPrint fiscal invoice with firm logo, NUI/VAT,
+  VAT breakdown and bank details (`Tenant.bank_details`, Settings → Firm
+  profile); `POST /invoices/{id}/send` emails the PDF to the client
+  (attachment support added to `send_email`) and sets status→sent.
+- **Tasks** (2026-07-09): `Task` model (matter optional, assignee, due date,
+  priority, status) + CRUD `/tasks`; Detyrat tab in matter, "Detyrat e mia"
+  card on dashboard.
+- **Global search** (2026-07-09): `GET /search?q=` over matters, contacts,
+  documents (filename + extracted text) and invoices, respecting restricted
+  visibility; grouped-results search box above the content on every page.
+- **Document preview** (2026-07-09): `GET /documents/{id}/preview` (inline
+  disposition) + modal in the matter Documents tab (PDF iframe / image).
+- **Portal documents** (2026-07-09): `Document.visible_to_client` +
+  per-document toggle in the Documents tab ("Në portal" column);
+  portal endpoints `GET /portal/matters/{id}/documents` + download
+  (audit-logged); documents section in the portal matter view.
+- **Portal email notifications** (2026-07-09): client gets an email when the
+  lawyer sends a message or requests a signature; the responsible lawyer gets
+  an email when the client writes or signs.
+- **Templates → matter** (2026-07-09): missing variables render as `__________`
+  placeholders (no more 400); `authority`/`court_case_number` prefilled from
+  the matter; output is editable in the UI; `POST /templates/render-to-matter`
+  saves it as a searchable matter PDF document (category=draft).
+- **Audit log UI + export** (2026-07-09, admin only): Settings → Regjistri i
+  veprimeve (filterable viewer over `GET /audit-log`) and Settings → Eksporti
+  (`GET /export/tenant` → ZIP of Albanian-named CSVs + decrypted documents).
+- **Demo package** (2026-07-09): `backend/scripts/seed_demo.py` creates/resets
+  tenant "Zyra Demo" (8 matters, deadlines, docs, tasks, expenses, invoices,
+  portal client with pending signature; logins in the script header);
+  demo runbook `docs/pitch/skenari-demo.md`. `full_simulation.py` now covers
+  all of the above: **56 PASS / 0 FAIL**.
 - **Client portal**: full UI at `/portal` — login, matters with hearings,
   two-way messages, e-signature inbox. Shows the **firm's own name + logo**
   (from portal login response) instead of "BoraLaw"; the public intake form

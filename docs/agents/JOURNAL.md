@@ -10,6 +10,45 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-09 — Demo readiness: all P0 blockers + 2026 table-stakes + demo package (Cursor / Fable 5)
+
+- Done (P0): invoice PDF service (`app/services/invoice_pdf.py`, WeasyPrint,
+  fiscal identity + new `Tenant.bank_details` field) with `GET /invoices/{id}/pdf`
+  and `POST /invoices/{id}/send` (emails the PDF via extended `send_email` with
+  attachments, sets status→sent); portal email notifications both ways (lawyer
+  message → client, signature request → client, client message/signature →
+  responsible lawyer); client documents in portal (`Document.visible_to_client`
+  + `POST /documents/{id}/visibility` toggle + portal list/download endpoints +
+  portal UI section); templates now render missing variables as `__________`
+  placeholders (custom Jinja Undefined, no more 400), prefill `authority`/
+  `court_case_number` from the matter, and `POST /templates/render-to-matter`
+  saves the (editable) rendered text as a searchable matter PDF document.
+- Done (P1): `Task` model + CRUD API + Detyrat tab in matter + "Detyrat e mia"
+  dashboard card; `Expense` model + API + billing tab + auto-include in invoice
+  (`include_unbilled_expenses`); global search `GET /search?q=` (matters,
+  contacts, documents incl. text, invoices; respects restricted visibility) +
+  search box above content on all pages; inline document preview endpoint +
+  modal (PDF iframe / image); admin audit-log viewer + full tenant export
+  (`GET /export/tenant` → ZIP of CSVs + decrypted documents) in Settings;
+  manual flat-fee invoice items in the invoice form. All strings in sq/en/zh.
+- Done (P3): `backend/scripts/seed_demo.py` — resettable "Zyra Demo" tenant
+  (8 matters across stages, rule-based deadlines + hearings, 4 PDF docs, tasks,
+  time+expenses, paid+draft invoices, portal client with messages and pending
+  signature; logins demo@boralaw.app / klienti.demo@boralaw.app); demo script
+  `docs/pitch/skenari-demo.md` (20-min flow + objection answers); extended
+  `full_simulation.py` with steps 12–16 covering all new features.
+- Migration `17000f590312`: tenants.bank_details, documents.visible_to_client,
+  tasks, expenses.
+- Verified: full_simulation → **56 PASS / 0 FAIL** (remaining GAPs are the
+  post-first-clients backlog: trust ledger, email integration, .docx, SMS,
+  card payments); pytest 13 passed; frontend builds; health OK; demo tenant
+  seeded and login verified.
+- Fixed along the way: `template.variables` is a list of dicts (500 in
+  render-to-matter); tenant export lazy-loaded invoice items in async context
+  (added selectinload).
+- Left open / next: P2 differentiators (email-to-matter, client funds ledger,
+  .docx templates, KCA fee tariff, SMS, card payments) — after first clients.
+
 ## 2026-07-09 — Critical pre-client audit: full E2E simulation + 12-competitor comparison (Cursor / Fable 5)
 
 - Done: wrote `backend/scripts/full_simulation.py` — a reusable 40-step E2E

@@ -54,5 +54,22 @@ export const apiPatch = <T = unknown>(path: string, body?: unknown) =>
   api<T>(path, { method: "PATCH", body: body === undefined ? undefined : JSON.stringify(body) });
 export const apiPut = <T = unknown>(path: string, body?: unknown) =>
   api<T>(path, { method: "PUT", body: JSON.stringify(body) });
+export const apiDelete = (path: string) => api(path, { method: "DELETE" });
 export const apiUpload = <T = unknown>(path: string, form: FormData) =>
   api<T>(path, { method: "POST", body: form });
+
+/** Download an authenticated file endpoint and trigger a save dialog. */
+export async function apiDownload(path: string, filename: string): Promise<boolean> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+  if (!res.ok) return false;
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  return true;
+}

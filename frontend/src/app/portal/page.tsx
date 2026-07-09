@@ -61,6 +61,15 @@ interface PortalSig {
   signed_at: string | null;
 }
 
+interface PortalDoc {
+  id: string;
+  filename: string;
+  mime_type: string;
+  size_bytes: number;
+  category: string | null;
+  created_at: string;
+}
+
 export default function PortalPage() {
   const { t } = useI18n();
   const [authed, setAuthed] = useState<boolean | null>(null);
@@ -212,6 +221,7 @@ function PortalHome({ clientName }: { clientName: string }) {
         <h2 className="font-bold text-lg">
           {openMatter.title} <span className="text-sm font-mono text-slate-400">{openMatter.reference}</span>
         </h2>
+        <PortalDocuments matterId={openMatter.id} />
         <PortalMessages matterId={openMatter.id} />
       </div>
     );
@@ -335,6 +345,53 @@ function SignCard({ sig, onDone }: { sig: PortalSig; onDone: () => void }) {
           </div>
         </form>
       )}
+    </Card>
+  );
+}
+
+function PortalDocuments({ matterId }: { matterId: string }) {
+  const { t } = useI18n();
+  const [docs, setDocs] = useState<PortalDoc[]>([]);
+
+  useEffect(() => {
+    portalApi<PortalDoc[]>(`/matters/${matterId}/documents`).then(setDocs).catch(() => {});
+  }, [matterId]);
+
+  async function download(doc: PortalDoc) {
+    const res = await fetch(`${API}/documents/${doc.id}/download`, {
+      headers: { Authorization: `Bearer ${portalToken()}` },
+    });
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = doc.filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  if (docs.length === 0) return null;
+
+  return (
+    <Card className="p-4 space-y-1">
+      <h3 className="font-semibold text-sm text-slate-600 mb-2">📄 {t.documents}</h3>
+      {docs.map((d) => (
+        <div key={d.id} className="flex items-center justify-between gap-3 py-1.5 text-sm">
+          <div className="min-w-0">
+            <p className="truncate">{d.filename}</p>
+            <p className="text-xs text-slate-400">
+              {new Date(d.created_at).toLocaleDateString()} · {(d.size_bytes / 1024).toFixed(0)} KB
+            </p>
+          </div>
+          <button
+            onClick={() => download(d)}
+            className="shrink-0 text-xs text-indigo-600 hover:underline"
+          >
+            {t.download}
+          </button>
+        </div>
+      ))}
     </Card>
   );
 }

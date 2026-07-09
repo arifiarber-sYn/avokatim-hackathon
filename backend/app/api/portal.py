@@ -16,6 +16,7 @@ from app.deps import get_current_user
 from app.models import Contact, Deadline, Matter, MatterMessage, SignatureRequest, Tenant, User
 from app.security import hash_password, verify_password
 from app.services.audit import log_action
+from app.services.notifications import send_email
 
 router = APIRouter(prefix="/portal", tags=["portal"])
 portal_bearer = HTTPBearer(auto_error=False)
@@ -207,7 +208,83 @@ async def portal_send_message(
     )
     db.add(message)
     await db.commit()
+    lawyer = await db.get(User, matter.responsible_user_id)
+    if lawyer and lawyer.email:
+        await send_email(
+            lawyer.email,
+            f"[{matter.reference}] Mesazh i ri nga klienti",
+            (
+                f"{contact.display_name} ju shkroi për lëndën \"{matter.title}\":\n\n"
+                f"{message.body[:500]}\n\n"
+                f"{settings.public_base_url}/matters/{matter.id}\n"
+            ),
+        )
     return {"id": str(message.id)}
+
+
+# ---------- Documents (client side) ----------
+
+@router.get("/matters/{matter_id}/documents")
+async def portal_documents(
+    matter_id: uuid.UUID,
+    contact: Contact = Depends(_portal_contact),
+    db: AsyncSession = Depends(get_db),
+):
+    """Documents the lawyer marked as visible to the client."""
+    from app.models import Document
+
+    await _owned_portal_matter(db, contact, matter_id)
+    rows = (
+        await db.execute(
+            select(Document)
+            .where(
+                Document.matter_id == matter_id,
+                Document.is_latest.is_(True),
+                Document.visible_to_client.is_(True),
+            )
+            .order_by(Document.created_at.desc())
+        )
+    ).scalars().all()
+    return [
+        {
+            "id": str(d.id),
+            "filename": d.filename,
+            "mime_type": d.mime_type,
+            "size_bytes": d.size_bytes,
+            "category": d.category,
+            "created_at": d.created_at.isoformat(),
+        }
+        for d in rows
+    ]
+
+
+@router.get("/documents/{document_id}/download")
+async def portal_download_document(
+    document_id: uuid.UUID,
+    contact: Contact = Depends(_portal_contact),
+    db: AsyncSession = Depends(get_db),
+):
+    from fastapi.responses import Response
+
+    from app.models import Document
+    from app.services import storage
+
+    doc = await db.get(Document, document_id)
+    if doc is None or not doc.visible_to_client or doc.matter_id is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Document not found")
+    await _owned_portal_matter(db, contact, doc.matter_id)
+    content = storage.load_file(doc.storage_path, doc.encrypted)
+    await log_action(
+        db, tenant_id=doc.tenant_id, user_id=None, action="portal.document_download",
+        entity_type="document", entity_id=str(doc.id),
+        details={"contact": contact.display_name},
+    )
+    await db.commit()
+    return Response(
+        content=content,
+        media_type=doc.mime_type,
+        headers={"Content-Disposition": f'attachment; filename="{doc.filename}"'},
+    )
 
 
 # ---------- Signature requests (client side) ----------
@@ -274,6 +351,17 @@ async def portal_sign(
                  "sha256": sig.document_sha256},
     )
     await db.commit()
+    requester = await db.get(User, sig.requested_by_id) if sig.requested_by_id else None
+    if requester and requester.email:
+        await send_email(
+            requester.email,
+            "Dokumenti u nënshkrua",
+            (
+                f"{contact.display_name} sapo nënshkroi dokumentin e kërkuar "
+                f"(kërkesa {sig.id}).\n\n"
+                f"{settings.public_base_url}/matters/{sig.matter_id}\n"
+            ),
+        )
     return {"status": "signed", "signed_at": sig.signed_at.isoformat()}
 
 

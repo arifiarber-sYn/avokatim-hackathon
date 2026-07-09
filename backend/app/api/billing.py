@@ -3,6 +3,7 @@ from datetime import date
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import Response
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -10,9 +11,18 @@ from sqlalchemy.orm import selectinload
 from app.api.matters import get_owned_matter
 from app.database import get_db
 from app.deps import get_current_user
-from app.models import Invoice, InvoiceItem, Tenant, TimeEntry, User
-from app.schemas.billing import InvoiceCreateIn, InvoiceOut, TimeEntryIn, TimeEntryOut
+from app.models import Contact, Expense, Invoice, InvoiceItem, Matter, Tenant, TimeEntry, User
+from app.schemas.billing import (
+    ExpenseIn,
+    ExpenseOut,
+    InvoiceCreateIn,
+    InvoiceOut,
+    TimeEntryIn,
+    TimeEntryOut,
+)
 from app.services.audit import log_action
+from app.services.invoice_pdf import build_invoice_pdf
+from app.services.notifications import send_email
 
 router = APIRouter(tags=["billing"])
 
@@ -45,6 +55,63 @@ async def create_time_entry(
     await db.commit()
     await db.refresh(entry)
     return entry
+
+
+# ---------- Expenses (matter disbursements) ----------
+
+@router.get("/expenses", response_model=list[ExpenseOut])
+async def list_expenses(
+    matter_id: uuid.UUID | None = None,
+    unbilled_only: bool = False,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = select(Expense).where(Expense.tenant_id == user.tenant_id)
+    if matter_id:
+        stmt = stmt.where(Expense.matter_id == matter_id)
+    if unbilled_only:
+        stmt = stmt.where(Expense.invoice_id.is_(None), Expense.billable.is_(True))
+    stmt = stmt.order_by(Expense.incurred_on.desc()).limit(500)
+    return (await db.execute(stmt)).scalars().all()
+
+
+@router.post("/expenses", response_model=ExpenseOut, status_code=201)
+async def create_expense(
+    body: ExpenseIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await get_owned_matter(db, user, body.matter_id)
+    expense = Expense(tenant_id=user.tenant_id, user_id=user.id, **body.model_dump())
+    db.add(expense)
+    await db.flush()
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="expense.create",
+        entity_type="expense", entity_id=str(expense.id),
+        details={"amount": str(body.amount), "category": body.category},
+    )
+    await db.commit()
+    await db.refresh(expense)
+    return expense
+
+
+@router.delete("/expenses/{expense_id}", status_code=204)
+async def delete_expense(
+    expense_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    expense = await db.get(Expense, expense_id)
+    if expense is None or expense.tenant_id != user.tenant_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Expense not found")
+    if expense.invoice_id is not None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Expense is already invoiced")
+    await db.delete(expense)
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="expense.delete",
+        entity_type="expense", entity_id=str(expense_id),
+    )
+    await db.commit()
 
 
 async def _next_invoice_number(db: AsyncSession, tenant_id: uuid.UUID) -> str:
@@ -94,8 +161,11 @@ async def create_invoice(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    contact_id = body.contact_id
     if body.matter_id:
-        await get_owned_matter(db, user, body.matter_id)
+        matter = await get_owned_matter(db, user, body.matter_id)
+        if contact_id is None:
+            contact_id = matter.client_id  # bill the matter's client by default
 
     vat_rate = body.vat_rate
     if vat_rate is None:
@@ -106,7 +176,7 @@ async def create_invoice(
         tenant_id=user.tenant_id,
         number=await _next_invoice_number(db, user.tenant_id),
         matter_id=body.matter_id,
-        contact_id=body.contact_id,
+        contact_id=contact_id,
         currency=body.currency,
         due_on=body.due_on,
         notes=body.notes,
@@ -142,6 +212,28 @@ async def create_invoice(
             )
             entry.invoice_id = invoice.id
 
+    if body.include_unbilled_expenses and body.matter_id:
+        expenses = (
+            await db.execute(
+                select(Expense).where(
+                    Expense.tenant_id == user.tenant_id,
+                    Expense.matter_id == body.matter_id,
+                    Expense.invoice_id.is_(None),
+                    Expense.billable.is_(True),
+                )
+            )
+        ).scalars().all()
+        for expense in expenses:
+            db.add(
+                InvoiceItem(
+                    invoice_id=invoice.id,
+                    description=f"Shpenzim {expense.incurred_on:%d.%m.%Y} — {expense.description}",
+                    quantity=Decimal("1"),
+                    unit_price=expense.amount,
+                )
+            )
+            expense.invoice_id = invoice.id
+
     await log_action(
         db, tenant_id=user.tenant_id, user_id=user.id, action="invoice.create",
         entity_type="invoice", entity_id=str(invoice.id), details={"number": invoice.number},
@@ -156,6 +248,76 @@ async def get_invoice(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    return await _load_invoice(db, user, invoice_id)
+
+
+async def _invoice_pdf_bytes(db: AsyncSession, user: User, invoice: Invoice) -> bytes:
+    tenant = await db.get(Tenant, user.tenant_id)
+    contact = await db.get(Contact, invoice.contact_id) if invoice.contact_id else None
+    matter = await db.get(Matter, invoice.matter_id) if invoice.matter_id else None
+    return build_invoice_pdf(invoice=invoice, tenant=tenant, contact=contact, matter=matter)
+
+
+@router.get("/invoices/{invoice_id}/pdf")
+async def invoice_pdf(
+    invoice_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """The fiscal invoice as a PDF — for printing or sending to the client."""
+    invoice = await _load_invoice(db, user, invoice_id)
+    pdf = await _invoice_pdf_bytes(db, user, invoice)
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="invoice.pdf",
+        entity_type="invoice", entity_id=str(invoice.id),
+    )
+    await db.commit()
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="fatura-{invoice.number}.pdf"'},
+    )
+
+
+@router.post("/invoices/{invoice_id}/send", response_model=InvoiceOut)
+async def send_invoice(
+    invoice_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Email the invoice PDF to the client and mark it as sent."""
+    invoice = await _load_invoice(db, user, invoice_id)
+    if invoice.status == "void":
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invoice is void")
+    contact = await db.get(Contact, invoice.contact_id) if invoice.contact_id else None
+    if contact is None or not contact.email:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Client has no email address")
+
+    if invoice.issued_on is None:
+        invoice.issued_on = date.today()
+    pdf = await _invoice_pdf_bytes(db, user, invoice)
+    tenant = await db.get(Tenant, user.tenant_id)
+    sent = await send_email(
+        contact.email,
+        f"Fatura {invoice.number} — {tenant.name}",
+        (
+            f"E nderuar/i nderuar {contact.display_name},\n\n"
+            f"Në bashkëngjitje gjeni faturën {invoice.number} me vlerë "
+            f"{invoice.total_with_vat:.2f} {invoice.currency}"
+            + (f", me afat pagese deri më {invoice.due_on:%d.%m.%Y}" if invoice.due_on else "")
+            + f".\n\nMe respekt,\n{user.full_name}\n{tenant.name}\n"
+        ),
+        attachments=[(f"fatura-{invoice.number}.pdf", pdf, "application/pdf")],
+    )
+    if not sent:
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Email could not be sent (SMTP)")
+    if invoice.status == "draft":
+        invoice.status = "sent"
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="invoice.send",
+        entity_type="invoice", entity_id=str(invoice.id), details={"to": contact.email},
+    )
+    await db.commit()
     return await _load_invoice(db, user, invoice_id)
 
 

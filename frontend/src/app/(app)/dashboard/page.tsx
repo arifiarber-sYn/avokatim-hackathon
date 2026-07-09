@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { apiGet } from "@/lib/api";
+import { useCallback, useEffect, useState } from "react";
+import { apiGet, apiPatch } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
+import { Task } from "@/lib/types";
 import { Badge, Card, Spinner } from "@/components/ui";
 
 interface AgendaItem {
@@ -88,18 +89,29 @@ export default function DashboardPage() {
   const { t, locale } = useI18n();
   const [data, setData] = useState<Dashboard | null>(null);
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [welcome, setWelcome] = useState(false);
+
+  const loadTasks = useCallback(() => {
+    apiGet<Task[]>("/tasks?mine=true&open_only=true").then(setTasks).catch(() => {});
+  }, []);
 
   useEffect(() => {
     apiGet<Dashboard>("/reports/dashboard").then(setData).catch(() => {});
     apiGet<Deadline[]>("/deadlines/upcoming?days=30").then(setDeadlines).catch(() => {});
+    loadTasks();
     if (
       new URLSearchParams(window.location.search).get("welcome") &&
       !localStorage.getItem("boralaw_welcome_done")
     ) {
       setWelcome(true);
     }
-  }, []);
+  }, [loadTasks]);
+
+  async function completeTask(task: Task) {
+    await apiPatch(`/tasks/${task.id}`, { status: "done" });
+    loadTasks();
+  }
 
   if (!data) return <Spinner />;
 
@@ -233,6 +245,51 @@ export default function DashboardPage() {
           </div>
         )}
       </Card>
+
+      {tasks.length > 0 && (
+        <Card className="p-5">
+          <h2 className="font-semibold mb-3">
+            {t.myTasks}
+            <span className="ml-2 text-sm font-normal text-slate-400">{tasks.length}</span>
+          </h2>
+          <div className="divide-y divide-slate-100">
+            {tasks.slice(0, 8).map((task) => {
+              const overdue = task.due_date && new Date(task.due_date) < new Date();
+              return (
+                <div key={task.id} className="flex items-center gap-3 py-2 text-sm">
+                  <input
+                    type="checkbox"
+                    className="cursor-pointer"
+                    checked={false}
+                    onChange={() => completeTask(task)}
+                  />
+                  {task.matter_id ? (
+                    <Link
+                      href={`/matters/${task.matter_id}`}
+                      className="flex-1 min-w-0 truncate font-medium hover:text-indigo-700"
+                    >
+                      {task.title}
+                    </Link>
+                  ) : (
+                    <span className="flex-1 min-w-0 truncate font-medium">{task.title}</span>
+                  )}
+                  {(task.priority === "high" || task.priority === "urgent") && (
+                    <Badge
+                      status="overdue"
+                      label={task.priority === "urgent" ? t.priorityUrgent : t.priorityHigh}
+                    />
+                  )}
+                  {task.due_date && (
+                    <span className={`text-xs tabular-nums ${overdue ? "text-red-600 font-semibold" : "text-slate-500"}`}>
+                      {new Date(task.due_date).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {stats.map((s) => (

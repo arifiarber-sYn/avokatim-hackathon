@@ -7,6 +7,7 @@ import { apiGet, apiPost, getToken, setToken } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { LocaleSwitcher } from "@/components/ui";
 import { QuickTimer } from "@/components/quick-timer";
+import { GlobalSearch } from "@/components/global-search";
 
 interface Me {
   full_name: string;
@@ -180,6 +181,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </nav>
 
       <main className="flex-1 min-w-0 p-4 pt-18 pb-20 md:p-6 md:pt-6 md:pb-6 lg:p-8 overflow-auto">
+        <div className="mb-4">
+          <GlobalSearch />
+        </div>
         {trialDaysLeft !== null && (
           <div className="mb-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm px-4 py-2">
             {t.trialBanner.replace("{days}", String(trialDaysLeft))}

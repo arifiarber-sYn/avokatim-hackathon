@@ -17,6 +17,7 @@ class FirmOut(BaseModel):
     fiscal_number: str | None
     vat_number: str | None
     address: str | None
+    bank_details: str | None = None
     default_vat_rate: int
     logo: str | None = None
     require_2fa: bool = False
@@ -29,6 +30,8 @@ class FirmUpdate(BaseModel):
     fiscal_number: str | None = None
     vat_number: str | None = None
     address: str | None = None
+    # Bank name + IBAN printed in the payment instructions on invoices
+    bank_details: str | None = Field(None, max_length=500)
     default_vat_rate: int | None = Field(None, ge=0, le=30)
     # Small logo as a data URL (~max 200 KB) shown on portal + public intake
     logo: str | None = Field(None, max_length=280_000)

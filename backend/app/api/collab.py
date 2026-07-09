@@ -22,9 +22,24 @@ from app.models import (
     Tenant,
     User,
 )
+from app.config import settings
 from app.services.assistant import draft_client_update, extract_deadlines_from_text
 from app.services.audit import log_action
+from app.services.notifications import send_email
 from app.services.signature_certificate import build_certificate_pdf
+
+
+async def _notify_client(db, matter, subject: str, body: str) -> None:
+    """Email the matter's client contact, if they have portal access and an email."""
+    if matter.client_id is None:
+        return
+    contact = await db.get(Contact, matter.client_id)
+    if contact is None or not contact.email or not contact.portal_enabled:
+        return
+    portal_url = f"{settings.public_base_url}/portal"
+    await send_email(
+        contact.email, subject, f"{body}\n\nHapni portalin tuaj: {portal_url}\n"
+    )
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["collab"])
@@ -78,7 +93,7 @@ async def send_message(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    await get_owned_matter(db, user, matter_id)
+    matter = await get_owned_matter(db, user, matter_id)
     if not body.body.strip():
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Empty message")
     message = MatterMessage(
@@ -90,6 +105,15 @@ async def send_message(
     db.add(message)
     await db.commit()
     await db.refresh(message)
+    await _notify_client(
+        db,
+        matter,
+        f"[{matter.reference}] Mesazh i ri nga avokati juaj",
+        (
+            f"Keni një mesazh të ri për lëndën \"{matter.title}\" nga {user.full_name}:\n\n"
+            f"{message.body[:500]}"
+        ),
+    )
     return message
 
 
@@ -171,6 +195,19 @@ async def request_signature(
     )
     await db.commit()
     await db.refresh(request)
+    if contact.email:
+        await send_email(
+            contact.email,
+            "Dokument për nënshkrim elektronik",
+            (
+                f"E nderuar/i nderuar {contact.display_name},\n\n"
+                f"{user.full_name} ju ka dërguar dokumentin \"{document.filename}\" "
+                f"për nënshkrim elektronik."
+                + (f"\n\nShënim: {body.note}" if body.note else "")
+                + f"\n\nKyçuni në portalin tuaj për ta nënshkruar:\n"
+                f"{settings.public_base_url}/portal\n"
+            ),
+        )
     return request
 
 

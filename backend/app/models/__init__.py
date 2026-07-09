@@ -18,10 +18,11 @@ from app.models.matters import (
     MatterParty,
 )
 from app.models.documents import Document, DocumentChunk
-from app.models.billing import Invoice, InvoiceItem, TimeEntry
+from app.models.billing import Expense, Invoice, InvoiceItem, TimeEntry
 from app.models.assistant import Conversation, Message
 from app.models.audit import AuditLog
 from app.models.collab import MatterMessage, PushSubscription, SignatureRequest
+from app.models.tasks import Task
 
 __all__ = [
     "Base",
@@ -43,8 +44,10 @@ __all__ = [
     "Document",
     "DocumentChunk",
     "TimeEntry",
+    "Expense",
     "Invoice",
     "InvoiceItem",
+    "Task",
     "Conversation",
     "Message",
     "AuditLog",

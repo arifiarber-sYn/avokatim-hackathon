@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from fastapi.responses import Response
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -147,6 +148,45 @@ async def _get_owned_document(
     if doc.matter_id:
         await get_owned_matter(db, user, doc.matter_id)  # enforces restricted access
     return doc
+
+
+@router.get("/documents/{document_id}/preview")
+async def preview_document(
+    document_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Serve the file inline so the browser can render it (PDF viewer, images)."""
+    doc = await _get_owned_document(db, user, document_id)
+    content = storage.load_file(doc.storage_path, doc.encrypted)
+    return Response(
+        content=content,
+        media_type=doc.mime_type,
+        headers={"Content-Disposition": f'inline; filename="{doc.filename}"'},
+    )
+
+
+class VisibilityIn(BaseModel):
+    visible: bool
+
+
+@router.post("/documents/{document_id}/visibility", response_model=DocumentOut)
+async def set_document_visibility(
+    document_id: uuid.UUID,
+    body: VisibilityIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Share/unshare a document with the client in the portal."""
+    doc = await _get_owned_document(db, user, document_id)
+    doc.visible_to_client = body.visible
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="document.visibility",
+        entity_type="document", entity_id=str(doc.id), details={"visible": body.visible},
+    )
+    await db.commit()
+    await db.refresh(doc)
+    return _to_out(doc)
 
 
 @router.get("/documents/review-inbox", response_model=list[DocumentOut])

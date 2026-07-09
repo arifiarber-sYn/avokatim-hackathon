@@ -16,6 +16,7 @@ class DocumentOut(BaseModel):
     category: str | None
     ocr_status: str
     has_text: bool = False
+    visible_to_client: bool = False
     approval_status: str = "none"
     reviewer_id: uuid.UUID | None = None
     approval_note: str | None = None
@@ -49,6 +50,11 @@ class RenderTemplateIn(BaseModel):
     template_id: uuid.UUID
     matter_id: uuid.UUID | None = None
     variables: dict = {}
+
+
+class RenderToMatterIn(RenderTemplateIn):
+    # Edited text from the preview; if omitted the template is re-rendered
+    content: str | None = None
 
 
 class RenderTemplateOut(BaseModel):

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { apiGet, apiPatch, apiPost, apiUpload } from "@/lib/api";
+import { apiDownload, apiGet, apiPatch, apiPost, apiUpload } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { Contact } from "@/lib/types";
 import { Button, Card, ErrorNote, Input, Label, Select, Textarea } from "@/components/ui";
@@ -20,6 +20,12 @@ interface CorpusDoc {
 
 export default function SettingsPage() {
   const { t } = useI18n();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    apiGet<{ role: string }>("/auth/me").then((me) => setIsAdmin(me.role === "admin")).catch(() => {});
+  }, []);
+
   return (
     <div className="space-y-8 max-w-3xl">
       <h1 className="text-2xl font-bold">{t.settings}</h1>
@@ -33,7 +39,113 @@ export default function SettingsPage() {
       <TwoFASection />
       <CorpusSection />
       <PortalSection />
+      {isAdmin && <AuditLogSection />}
+      {isAdmin && <ExportSection />}
     </div>
+  );
+}
+
+interface AuditEntry {
+  id: string;
+  at: string;
+  user: string | null;
+  action: string;
+  entity_type: string | null;
+  entity_id: string | null;
+  details: Record<string, unknown>;
+}
+
+function AuditLogSection() {
+  const { t } = useI18n();
+  const [entries, setEntries] = useState<AuditEntry[] | null>(null);
+  const [filter, setFilter] = useState("");
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const q = filter ? `?action=${encodeURIComponent(filter)}` : "";
+    apiGet<AuditEntry[]>(`/audit-log${q}`).then(setEntries).catch(() => {});
+  }, [open, filter]);
+
+  return (
+    <Card className="p-5 space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="font-semibold">{t.auditLogLabel}</h2>
+          <p className="text-xs text-slate-500 mt-0.5">{t.auditLogHint}</p>
+        </div>
+        <Button variant="secondary" onClick={() => setOpen(!open)}>
+          {open ? t.close : t.show}
+        </Button>
+      </div>
+      {open && (
+        <>
+          <div className="w-64">
+            <Label>{t.actionLabel}</Label>
+            <Input
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="p.sh. matter, invoice, document"
+            />
+          </div>
+          <div className="overflow-x-auto max-h-96 overflow-y-auto border border-slate-100 rounded-lg">
+            <table className="w-full text-xs min-w-[560px]">
+              <thead className="sticky top-0 bg-slate-50">
+                <tr className="text-left text-slate-500 border-b border-slate-200">
+                  <th className="px-3 py-2">{t.date}</th>
+                  <th className="px-3 py-2">{t.name}</th>
+                  <th className="px-3 py-2">{t.actionLabel}</th>
+                  <th className="px-3 py-2">{t.description}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(entries || []).map((e) => (
+                  <tr key={e.id} className="border-b border-slate-50">
+                    <td className="px-3 py-1.5 text-slate-500 whitespace-nowrap">
+                      {new Date(e.at).toLocaleString()}
+                    </td>
+                    <td className="px-3 py-1.5">{e.user || "—"}</td>
+                    <td className="px-3 py-1.5 font-mono">{e.action}</td>
+                    <td className="px-3 py-1.5 text-slate-500 max-w-64 truncate">
+                      {Object.entries(e.details || {})
+                        .map(([k, v]) => `${k}: ${String(v)}`)
+                        .join(" · ")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+    </Card>
+  );
+}
+
+function ExportSection() {
+  const { t } = useI18n();
+  const [busy, setBusy] = useState(false);
+
+  async function download() {
+    setBusy(true);
+    try {
+      await apiDownload(
+        "/export/tenant",
+        `boralaw-eksporti-${new Date().toISOString().slice(0, 10)}.zip`
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Card className="p-5 space-y-3">
+      <h2 className="font-semibold">{t.dataExport}</h2>
+      <p className="text-sm text-slate-500">{t.dataExportHint}</p>
+      <Button onClick={download} disabled={busy}>
+        {busy ? t.loading : t.exportDownload}
+      </Button>
+    </Card>
   );
 }
 
@@ -44,6 +156,7 @@ function FirmSection() {
     fiscal_number: "",
     vat_number: "",
     address: "",
+    bank_details: "",
     default_vat_rate: "18",
   });
   const [logo, setLogo] = useState<string | null>(null);
@@ -57,6 +170,7 @@ function FirmSection() {
       fiscal_number: string | null;
       vat_number: string | null;
       address: string | null;
+      bank_details: string | null;
       default_vat_rate: number;
       logo: string | null;
       require_2fa: boolean;
@@ -67,6 +181,7 @@ function FirmSection() {
           fiscal_number: r.fiscal_number || "",
           vat_number: r.vat_number || "",
           address: r.address || "",
+          bank_details: r.bank_details || "",
           default_vat_rate: String(r.default_vat_rate ?? 18),
         });
         setLogo(r.logo || null);
@@ -85,6 +200,7 @@ function FirmSection() {
         fiscal_number: form.fiscal_number || null,
         vat_number: form.vat_number || null,
         address: form.address || null,
+        bank_details: form.bank_details || null,
         default_vat_rate: Number(form.default_vat_rate),
         logo,
         require_2fa: require2fa,
@@ -137,6 +253,15 @@ function FirmSection() {
         <div className="sm:col-span-2">
           <Label>{t.address}</Label>
           <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+        </div>
+        <div className="sm:col-span-2">
+          <Label>{t.bankDetails}</Label>
+          <Input
+            value={form.bank_details}
+            onChange={(e) => setForm({ ...form, bank_details: e.target.value })}
+            placeholder="Banka Ekonomike · XK05 1234 5678 9012 3456"
+          />
+          <p className="text-xs text-slate-400 mt-1">{t.bankDetailsHint}</p>
         </div>
         <div>
           <Label>{t.defaultVatRate}</Label>

@@ -22,6 +22,23 @@ class TimeEntryOut(TimeEntryIn):
     model_config = {"from_attributes": True}
 
 
+class ExpenseIn(BaseModel):
+    matter_id: uuid.UUID
+    incurred_on: date
+    description: str
+    category: str = "other"
+    amount: Decimal = Field(gt=0)
+    billable: bool = True
+
+
+class ExpenseOut(ExpenseIn):
+    id: uuid.UUID
+    invoice_id: uuid.UUID | None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
 class InvoiceItemIn(BaseModel):
     description: str
     quantity: Decimal = Decimal("1")
@@ -44,6 +61,8 @@ class InvoiceCreateIn(BaseModel):
     items: list[InvoiceItemIn] = []
     # Pull all unbilled billable time entries of the matter into the invoice
     include_unbilled_time: bool = False
+    # Pull all unbilled billable expenses of the matter into the invoice
+    include_unbilled_expenses: bool = False
     # None = use the tenant's default VAT rate; 0 = VAT-free invoice
     vat_rate: int | None = Field(None, ge=0, le=30)
 

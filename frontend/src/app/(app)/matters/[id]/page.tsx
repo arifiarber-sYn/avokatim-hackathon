@@ -1,10 +1,10 @@
 "use client";
 
 import { use, useCallback, useEffect, useState } from "react";
-import { apiGet, apiPatch, apiPost, apiPut, apiUpload, getToken } from "@/lib/api";
+import { apiDelete, apiGet, apiPatch, apiPost, apiPut, apiUpload, getToken } from "@/lib/api";
 import { localized, useI18n } from "@/lib/i18n";
 import {
-  Contact, Deadline, DeadlineRule, Doc, Matter,
+  Contact, Deadline, DeadlineRule, Doc, Matter, Task,
 } from "@/lib/types";
 import {
   Badge, Button, Card, ErrorNote, Input, Label, Select, Spinner, Textarea,
@@ -61,7 +61,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   const { id } = use(params);
   const { t, locale } = useI18n();
   const [matter, setMatter] = useState<Matter | null>(null);
-  const [tab, setTab] = useState<"overview" | "parties" | "documents" | "deadlines" | "messages" | "notes" | "ai">("overview");
+  const [tab, setTab] = useState<"overview" | "parties" | "documents" | "deadlines" | "tasks" | "messages" | "notes" | "ai">("overview");
 
   useEffect(() => {
     apiGet<Matter>(`/matters/${id}`).then(setMatter).catch(() => {});
@@ -74,6 +74,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
     ["parties", t.parties],
     ["documents", t.documents],
     ["deadlines", t.deadlines],
+    ["tasks", t.tasksLabel],
     ["messages", t.messages],
     ["notes", t.notes],
     ["ai", t.assistant],
@@ -109,6 +110,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
       {tab === "parties" && <Parties matterId={id} />}
       {tab === "documents" && <Documents matterId={id} clientId={matter.client?.id || null} />}
       {tab === "deadlines" && <Deadlines matterId={id} practiceArea={matter.practice_area} />}
+      {tab === "tasks" && <Tasks matterId={id} />}
       {tab === "messages" && <Messages matterId={id} />}
       {tab === "notes" && <Notes matterId={id} />}
       {tab === "ai" && <MatterAI matterId={id} />}
@@ -316,6 +318,7 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
   const [notice, setNotice] = useState("");
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [me, setMe] = useState<{ id: string; role: string } | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<{ doc: Doc; url: string } | null>(null);
 
   const load = useCallback(() => {
     apiGet<Doc[]>(`/matters/${matterId}/documents`).then(setDocs).catch(() => {});
@@ -496,6 +499,35 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
     URL.revokeObjectURL(url);
   }
 
+  const canPreview = (d: Doc) =>
+    d.mime_type === "application/pdf" || d.mime_type.startsWith("image/");
+
+  async function preview(doc: Doc) {
+    const res = await fetch(`/api/documents/${doc.id}/preview`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    if (!res.ok) return;
+    const blob = await res.blob();
+    setPreviewDoc({ doc, url: URL.createObjectURL(blob) });
+  }
+
+  function closePreview() {
+    if (previewDoc) URL.revokeObjectURL(previewDoc.url);
+    setPreviewDoc(null);
+  }
+
+  async function toggleVisibility(doc: Doc) {
+    setError("");
+    try {
+      await apiPost(`/documents/${doc.id}/visibility`, {
+        visible: !doc.visible_to_client,
+      });
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
@@ -575,6 +607,7 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
               <th className="px-4 py-3">OCR</th>
               <th className="px-4 py-3">{t.reviewLabel}</th>
               <th className="px-4 py-3">{t.signatures}</th>
+              <th className="px-4 py-3" title={t.visibleToClient}>{t.sharedWithClient}</th>
               <th className="px-4 py-3">{t.uploaded}</th>
               <th className="px-4 py-3">{t.actions}</th>
             </tr>
@@ -618,10 +651,24 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
                       "—"
                     )}
                   </td>
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      className="cursor-pointer"
+                      title={t.visibleToClient}
+                      checked={d.visible_to_client}
+                      onChange={() => toggleVisibility(d)}
+                    />
+                  </td>
                   <td className="px-4 py-3 text-slate-500">
                     {new Date(d.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3 space-x-3 whitespace-nowrap">
+                    {canPreview(d) && (
+                      <button onClick={() => preview(d)} className="text-indigo-600 hover:underline text-xs">
+                        {t.previewLabel}
+                      </button>
+                    )}
                     <button onClick={() => download(d)} className="text-indigo-600 hover:underline text-xs">
                       {t.download}
                     </button>
@@ -641,6 +688,174 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
           </tbody>
         </table>
         </div>
+      </Card>
+
+      {previewDoc && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+          onClick={closePreview}
+        >
+          <div
+            className="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-200">
+              <p className="text-sm font-medium truncate">{previewDoc.doc.filename}</p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => download(previewDoc.doc)}
+                  className="text-xs text-indigo-600 hover:underline"
+                >
+                  {t.download}
+                </button>
+                <button onClick={closePreview} className="text-slate-400 hover:text-slate-700 text-lg leading-none">
+                  ✕
+                </button>
+              </div>
+            </div>
+            {previewDoc.doc.mime_type.startsWith("image/") ? (
+              <div className="flex-1 overflow-auto flex items-center justify-center bg-slate-50">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={previewDoc.url} alt={previewDoc.doc.filename} className="max-w-full max-h-full" />
+              </div>
+            ) : (
+              <iframe src={previewDoc.url} className="flex-1 w-full" title={previewDoc.doc.filename} />
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Tasks({ matterId }: { matterId: string }) {
+  const { t } = useI18n();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [team, setTeam] = useState<TeamMember[]>([]);
+  const [form, setForm] = useState({ title: "", due_date: "", priority: "normal", assignee_id: "" });
+  const [error, setError] = useState("");
+
+  const priorityLabel: Record<string, string> = {
+    low: t.priorityLow, normal: t.priorityNormal, high: t.priorityHigh, urgent: t.priorityUrgent,
+  };
+  const statusLabel: Record<string, string> = {
+    open: t.taskOpen, in_progress: t.taskInProgress, done: t.taskDone, cancelled: t.taskCancelled,
+  };
+
+  const load = useCallback(() => {
+    apiGet<Task[]>(`/tasks?matter_id=${matterId}`).then(setTasks).catch(() => {});
+  }, [matterId]);
+
+  useEffect(() => {
+    load();
+    apiGet<TeamMember[]>("/team").then(setTeam).catch(() => {});
+  }, [load]);
+
+  async function add(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    try {
+      await apiPost("/tasks", {
+        matter_id: matterId,
+        title: form.title,
+        due_date: form.due_date || null,
+        priority: form.priority,
+        assignee_id: form.assignee_id || null,
+      });
+      setForm({ ...form, title: "", due_date: "" });
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  async function setStatus(task: Task, status: string) {
+    await apiPatch(`/tasks/${task.id}`, { status });
+    load();
+  }
+
+  async function remove(task: Task) {
+    await apiDelete(`/tasks/${task.id}`);
+    load();
+  }
+
+  return (
+    <div className="space-y-4">
+      <Card className="p-4">
+        <form onSubmit={add} className="flex gap-3 items-end flex-wrap">
+          <div className="flex-[2] min-w-56">
+            <Label>{t.title}</Label>
+            <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+          </div>
+          <div>
+            <Label>{t.dueDate}</Label>
+            <Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
+          </div>
+          <div className="w-32">
+            <Label>{t.priority}</Label>
+            <Select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}>
+              {(["low", "normal", "high", "urgent"] as const).map((p) => (
+                <option key={p} value={p}>{priorityLabel[p]}</option>
+              ))}
+            </Select>
+          </div>
+          {team.filter((m) => m.is_active).length > 1 && (
+            <div className="w-44">
+              <Label>{t.assignee}</Label>
+              <Select value={form.assignee_id} onChange={(e) => setForm({ ...form, assignee_id: e.target.value })}>
+                <option value="">—</option>
+                {team.filter((m) => m.is_active).map((m) => (
+                  <option key={m.id} value={m.id}>{m.full_name}</option>
+                ))}
+              </Select>
+            </div>
+          )}
+          <Button type="submit">{t.addTask}</Button>
+        </form>
+        <div className="mt-2"><ErrorNote message={error} /></div>
+      </Card>
+
+      <Card>
+        {tasks.length === 0 ? (
+          <p className="text-sm text-slate-400 text-center py-6">{t.noTasks}</p>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {tasks.map((task) => {
+              const overdue =
+                task.due_date && task.status !== "done" && new Date(task.due_date) < new Date();
+              const assigneeName = team.find((m) => m.id === task.assignee_id)?.full_name;
+              return (
+                <div key={task.id} className="flex items-center gap-3 px-4 py-3 text-sm">
+                  <input
+                    type="checkbox"
+                    className="cursor-pointer"
+                    checked={task.status === "done"}
+                    onChange={() => setStatus(task, task.status === "done" ? "open" : "done")}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className={`font-medium ${task.status === "done" ? "line-through text-slate-400" : ""}`}>
+                      {task.title}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {task.due_date && (
+                        <span className={overdue ? "text-red-600 font-semibold" : ""}>
+                          {new Date(task.due_date).toLocaleDateString()}
+                        </span>
+                      )}
+                      {task.due_date && assigneeName && " · "}
+                      {assigneeName}
+                    </p>
+                  </div>
+                  {(task.priority === "high" || task.priority === "urgent") && task.status !== "done" && (
+                    <Badge status="overdue" label={priorityLabel[task.priority]} />
+                  )}
+                  <Badge status={task.status === "done" ? "paid" : "open"} label={statusLabel[task.status] || task.status} />
+                  <button onClick={() => remove(task)} className="text-xs text-red-400 hover:text-red-600">✕</button>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </Card>
     </div>
   );

@@ -1,7 +1,9 @@
+import html
+import uuid
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from jinja2 import BaseLoader, Environment, StrictUndefined, UndefinedError
+from jinja2 import BaseLoader, Environment, Undefined
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -9,15 +11,30 @@ from sqlalchemy.orm import selectinload
 from app.api.matters import get_owned_matter
 from app.database import get_db
 from app.deps import get_current_user
-from app.models import DocumentTemplate, Jurisdiction, Matter, MatterParty, User
-from app.schemas.documents import RenderTemplateIn, RenderTemplateOut, TemplateOut
+from app.models import Document, DocumentTemplate, Jurisdiction, Matter, MatterParty, User
+from app.schemas.documents import (
+    DocumentOut,
+    RenderTemplateIn,
+    RenderTemplateOut,
+    RenderToMatterIn,
+    TemplateOut,
+)
+from app.services import rag, storage
 from app.services.audit import log_action
 
 router = APIRouter(prefix="/templates", tags=["templates"])
 
-# Sandboxed-ish: autoescape off (plain text legal docs), StrictUndefined so a
-# missing variable is an error the lawyer sees, not silent blank output.
-_env = Environment(loader=BaseLoader(), undefined=StrictUndefined)
+
+class _PlaceholderUndefined(Undefined):
+    """A missing variable renders as a fill-in blank instead of failing —
+    the lawyer completes it by hand, like on a paper form."""
+
+    def __str__(self) -> str:  # noqa: D105
+        return "__________"
+
+
+# Sandboxed-ish: autoescape off (plain text legal docs).
+_env = Environment(loader=BaseLoader(), undefined=_PlaceholderUndefined)
 
 
 @router.get("", response_model=list[TemplateOut])
@@ -69,7 +86,22 @@ async def _matter_variables(db: AsyncSession, user: User, matter: Matter) -> dic
         variables["opposing_name"] = ", ".join(p.contact.display_name for p in parties)
     if matter.court_name:
         variables["court_name"] = matter.court_name
+        # Administrative templates address an "authority"; default to the court
+        variables.setdefault("authority", matter.court_name)
+    if matter.court_case_number:
+        variables["court_case_number"] = matter.court_case_number
     return variables
+
+
+def _render(template: DocumentTemplate, variables: dict) -> tuple[str, list[str]]:
+    """Render with placeholders for missing variables; report which were missing."""
+    # template.variables is a list of {"name": ..., "label": {...}} dicts
+    declared = [
+        v.get("name") if isinstance(v, dict) else v for v in (template.variables or [])
+    ]
+    missing = [v for v in declared if v and not variables.get(v)]
+    content = _env.from_string(template.body).render(**variables)
+    return content, missing
 
 
 @router.post("/render", response_model=RenderTemplateOut)
@@ -92,14 +124,9 @@ async def render_template(
         variables.update(
             {"lawyer_name": user.full_name, "date": date.today().strftime("%d.%m.%Y")}
         )
-    variables.update(body.variables)
+    variables.update({k: v for k, v in body.variables.items() if v})
 
-    try:
-        content = _env.from_string(template.body).render(**variables)
-    except UndefinedError as exc:
-        raise HTTPException(
-            status.HTTP_400_BAD_REQUEST, f"Missing template variable: {exc.message}"
-        )
+    content, _missing = _render(template, variables)
 
     await log_action(
         db, tenant_id=user.tenant_id, user_id=user.id, action="template.render",
@@ -109,3 +136,75 @@ async def render_template(
     await db.commit()
     name = template.name.get("sq") or template.code
     return RenderTemplateOut(content=content, filename=f"{name}.txt")
+
+
+_DOC_PAGE = """<!DOCTYPE html>
+<html lang="sq"><head><meta charset="utf-8">
+<style>
+  @page {{ size: A4; margin: 2.5cm; }}
+  body {{ font-family: "DejaVu Serif", serif; font-size: 12px;
+         line-height: 1.65; color: #111; white-space: pre-wrap; }}
+</style></head><body>{content}</body></html>"""
+
+
+@router.post("/render-to-matter", response_model=DocumentOut, status_code=201)
+async def render_to_matter(
+    body: RenderToMatterIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Render (or take the lawyer's edited text) and file it into the matter
+    as a PDF document — versioned, searchable and shareable like any upload."""
+    from weasyprint import HTML
+
+    template = await db.get(DocumentTemplate, body.template_id)
+    if template is None or (
+        template.tenant_id is not None and template.tenant_id != user.tenant_id
+    ):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Template not found")
+    if body.matter_id is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "matter_id is required")
+    matter = await get_owned_matter(db, user, body.matter_id)
+
+    if body.content:
+        content = body.content
+    else:
+        variables = await _matter_variables(db, user, matter)
+        variables.update({k: v for k, v in body.variables.items() if v})
+        content, _ = _render(template, variables)
+
+    pdf = HTML(string=_DOC_PAGE.format(content=html.escape(content))).write_pdf()
+    rel_path, sha, encrypted = storage.save_file(pdf, user.tenant_id)
+
+    name = template.name.get("sq") or template.code
+    filename = f"{name} - {matter.reference}.pdf"
+    doc = Document(
+        tenant_id=user.tenant_id,
+        matter_id=matter.id,
+        family_id=uuid.uuid4(),
+        version=1,
+        is_latest=True,
+        filename=filename,
+        mime_type="application/pdf",
+        size_bytes=len(pdf),
+        sha256=sha,
+        storage_path=rel_path,
+        encrypted=encrypted,
+        category="draft",
+        uploaded_by_id=user.id,
+        text_content=content,
+        ocr_status="none",
+    )
+    db.add(doc)
+    await db.flush()
+    await rag.index_document_chunks(db, doc)
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="template.render_to_matter",
+        entity_type="document", entity_id=str(doc.id),
+        details={"code": template.code, "matter": matter.reference},
+    )
+    await db.commit()
+    await db.refresh(doc)
+    out = DocumentOut.model_validate(doc)
+    out.has_text = True
+    return out

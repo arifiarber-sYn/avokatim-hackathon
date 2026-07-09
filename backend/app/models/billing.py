@@ -27,6 +27,31 @@ class TimeEntry(Base, TenantMixin, TimestampMixin):
     )
 
 
+EXPENSE_CATEGORIES = ["court_fee", "bailiff", "expert", "travel", "notary", "translation", "other"]
+
+
+class Expense(Base, TenantMixin, TimestampMixin):
+    """A matter disbursement (court fee, bailiff, expert...) billable to the client."""
+
+    __tablename__ = "expenses"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    matter_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("matters.id", ondelete="CASCADE"), index=True
+    )
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL")
+    )
+    incurred_on: Mapped[date] = mapped_column(Date)
+    description: Mapped[str] = mapped_column(Text)
+    category: Mapped[str] = mapped_column(String(32), default="other")
+    amount: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    billable: Mapped[bool] = mapped_column(Boolean, default=True)
+    invoice_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("invoices.id", ondelete="SET NULL"), index=True
+    )
+
+
 class Invoice(Base, TenantMixin, TimestampMixin):
     __tablename__ = "invoices"
 
