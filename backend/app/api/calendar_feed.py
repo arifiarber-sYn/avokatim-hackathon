@@ -20,9 +20,18 @@ router = APIRouter(tags=["calendar"])
 FEED_SCOPE = "calendar_feed"
 
 
+FEED_VALID_DAYS = 180
+
+
 def _feed_token(user_id: uuid.UUID) -> str:
+    now = datetime.now(UTC)
     return pyjwt.encode(
-        {"scope": FEED_SCOPE, "sub": str(user_id)},
+        {
+            "scope": FEED_SCOPE,
+            "sub": str(user_id),
+            "iat": now,
+            "exp": now + timedelta(days=FEED_VALID_DAYS),
+        },
         settings.secret_key,
         algorithm="HS256",
     )
@@ -46,7 +55,10 @@ async def feed(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        payload = pyjwt.decode(token, settings.secret_key, algorithms=["HS256"])
+        payload = pyjwt.decode(
+            token, settings.secret_key, algorithms=["HS256"],
+            options={"require": ["exp"]},
+        )
         if payload.get("scope") != FEED_SCOPE:
             raise ValueError("wrong scope")
         user_id = uuid.UUID(payload["sub"])

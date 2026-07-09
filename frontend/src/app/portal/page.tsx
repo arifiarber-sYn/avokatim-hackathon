@@ -6,6 +6,8 @@ import { Button, Card, ErrorNote, Input, Label, LocaleSwitcher, Spinner } from "
 
 const TOKEN_KEY = "boralaw_portal_token";
 const NAME_KEY = "boralaw_portal_name";
+const FIRM_NAME_KEY = "boralaw_portal_firm";
+const FIRM_LOGO_KEY = "boralaw_portal_firm_logo";
 const API = "/api/portal";
 
 function portalToken(): string | null {
@@ -63,10 +65,14 @@ export default function PortalPage() {
   const { t } = useI18n();
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [clientName, setClientName] = useState("");
+  const [firmName, setFirmName] = useState("");
+  const [firmLogo, setFirmLogo] = useState("");
 
   useEffect(() => {
     setAuthed(!!portalToken());
     setClientName(localStorage.getItem(NAME_KEY) || "");
+    setFirmName(localStorage.getItem(FIRM_NAME_KEY) || "");
+    setFirmLogo(localStorage.getItem(FIRM_LOGO_KEY) || "");
   }, []);
 
   if (authed === null) return <Spinner />;
@@ -75,9 +81,15 @@ export default function PortalPage() {
     <div className="min-h-screen bg-slate-50">
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold text-indigo-700">BoraLaw</h1>
-            <p className="text-xs text-slate-500">{t.portalTitle}</p>
+          <div className="flex items-center gap-2 min-w-0">
+            {firmLogo && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={firmLogo} alt="" className="h-8 w-8 rounded object-contain shrink-0" />
+            )}
+            <div className="min-w-0">
+              <h1 className="text-lg font-bold text-indigo-700 truncate">{firmName || "BoraLaw"}</h1>
+              <p className="text-xs text-slate-500 truncate">{t.portalTitle}</p>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <LocaleSwitcher />
@@ -96,13 +108,15 @@ export default function PortalPage() {
           </div>
         </div>
       </header>
-      <main className="max-w-3xl mx-auto px-4 py-8">
+      <main className="max-w-3xl mx-auto px-4 py-5 sm:py-8">
         {authed ? (
           <PortalHome clientName={clientName} />
         ) : (
           <PortalLogin
             onLogin={(name) => {
               setClientName(name);
+              setFirmName(localStorage.getItem(FIRM_NAME_KEY) || "");
+              setFirmLogo(localStorage.getItem(FIRM_LOGO_KEY) || "");
               setAuthed(true);
             }}
           />
@@ -133,6 +147,8 @@ function PortalLogin({ onLogin }: { onLogin: (name: string) => void }) {
       const data = await res.json();
       localStorage.setItem(TOKEN_KEY, data.access_token);
       localStorage.setItem(NAME_KEY, data.client_name);
+      localStorage.setItem(FIRM_NAME_KEY, data.firm_name || "");
+      localStorage.setItem(FIRM_LOGO_KEY, data.firm_logo || "");
       onLogin(data.client_name);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.error);
@@ -287,12 +303,16 @@ function SignCard({ sig, onDone }: { sig: PortalSig; onDone: () => void }) {
 
   return (
     <Card className="p-4 border-amber-200 bg-amber-50/40 space-y-3">
-      <div className="flex justify-between items-center gap-3">
-        <div>
-          <p className="font-medium text-sm">{sig.document_name}</p>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+        <div className="min-w-0">
+          <p className="font-medium text-sm break-words">{sig.document_name}</p>
           {sig.note && <p className="text-xs text-slate-500 mt-0.5">{sig.note}</p>}
         </div>
-        {!open && <Button onClick={() => setOpen(true)}>{t.signDocument}</Button>}
+        {!open && (
+          <Button className="shrink-0 self-start sm:self-auto" onClick={() => setOpen(true)}>
+            {t.signDocument}
+          </Button>
+        )}
       </div>
       {open && (
         <form onSubmit={sign} className="space-y-3 pt-2 border-t border-amber-100">

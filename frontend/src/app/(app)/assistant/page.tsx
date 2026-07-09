@@ -81,8 +81,8 @@ export default function AssistantPage() {
   }
 
   return (
-    <div className="flex gap-6 h-[calc(100vh-6rem)]">
-      <div className="w-64 shrink-0 space-y-3 overflow-auto">
+    <div className="flex gap-6 h-[calc(100vh-9rem)] md:h-[calc(100vh-6rem)]">
+      <div className="hidden md:block w-64 shrink-0 space-y-3 overflow-auto">
         <Button
           className="w-full"
           variant="secondary"
@@ -107,6 +107,28 @@ export default function AssistantPage() {
       </div>
 
       <Card className="flex-1 flex flex-col min-w-0">
+        {/* Mobile: conversation picker replaces the sidebar list */}
+        <div className="md:hidden flex gap-2 p-3 border-b border-slate-100">
+          <div className="flex-1 min-w-0">
+            <Select
+              value={conversationId || ""}
+              onChange={(e) => {
+                if (e.target.value) setConversationId(e.target.value);
+                else {
+                  setConversationId(null);
+                  setMessages([]);
+                }
+              }}
+            >
+              <option value="">{t.newConversation}</option>
+              {conversations.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.title || "…"}
+                </option>
+              ))}
+            </Select>
+          </div>
+        </div>
         <div className="flex gap-3 p-4 border-b border-slate-100 flex-wrap">
           <div className="flex-1 min-w-48">
             <Select value={matterId} onChange={(e) => setMatterId(e.target.value)}>
@@ -118,7 +140,7 @@ export default function AssistantPage() {
               ))}
             </Select>
           </div>
-          <div className="w-56">
+          <div className="w-full sm:w-56">
             <Select value={provider} onChange={(e) => setProvider(e.target.value)}>
               {providers.map((p) => (
                 <option key={p.name} value={p.name} disabled={!p.configured}>

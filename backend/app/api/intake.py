@@ -167,7 +167,7 @@ async def public_intake_info(token: str, db: AsyncSession = Depends(get_db)):
     ).scalar_one_or_none()
     if tenant is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Not found")
-    return {"practice_name": tenant.name}
+    return {"practice_name": tenant.name, "logo": tenant.logo}
 
 
 @public_router.post("/intake/{token}", status_code=201)

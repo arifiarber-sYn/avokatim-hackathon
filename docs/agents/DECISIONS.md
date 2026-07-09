@@ -75,3 +75,29 @@
 - Consequences: current signatures are legally usable evidence but not
   handwritten-equivalent; contracts requiring written form still need wet ink
   or a QTSP integration (planned, next phase; likely per-signature cost).
+
+## D-008: SaaS architecture — stateless purpose tokens, manual billing, one responsive web app (2026-07-09)
+
+- Context: converting the single-practice install into multi-company SaaS
+  (benchmark: Clio/Smokeball/MyCase 2026) and making the same app usable on
+  phones.
+- Decisions:
+  1. **Email flows use stateless signed JWTs** ("purpose tokens": verify_email
+     / reset_password / invite) instead of a DB token table. Single-use for
+     reset/invite is enforced by embedding a fragment of the current password
+     hash (`fp` claim) — changing the password invalidates the token. Simpler,
+     no migration, no cleanup job; trade-off: no server-side revocation list.
+  2. **Billing is manual**: the superadmin panel records plan/seats/trial and
+     payment notes; no card processor yet. Suspension/trial-expiry enforced in
+     `get_current_user` (403), superadmin exempt.
+  3. **One responsive web app** for desktop + mobile (Tailwind breakpoints +
+     PWA), not a separate mobile design/native app. Bottom-nav + drawer shell
+     in `(app)/layout.tsx`. Native apps remain a possible later layer.
+  4. **Legal corpus is a shared read-only asset**: only the platform
+     superadmin writes to it; tenants consume it. Per-tenant private corpus
+     (a `tenant_id` column on corpus docs) is noted as a future extension.
+  5. Email uniqueness stays **global** (one email = one account, like Clio);
+     multi-firm membership per email is a future extension.
+- Consequences: new auth surface (signup/verify/reset/invite/change-password)
+  is covered by `scripts/saas_check.py`; isolation by `scripts/isolation_check.py`.
+  Run both against the live backend after touching auth/tenancy.

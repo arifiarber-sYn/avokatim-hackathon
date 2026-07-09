@@ -105,7 +105,8 @@ function TimeTab({ matters }: { matters: Matter[] }) {
         <Spinner />
       ) : (
         <Card>
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[560px]">
             <thead>
               <tr className="text-left text-xs text-slate-500 border-b border-slate-200">
                 <th className="px-4 py-3">{t.date}</th>
@@ -129,6 +130,7 @@ function TimeTab({ matters }: { matters: Matter[] }) {
               ))}
             </tbody>
           </table>
+          </div>
         </Card>
       )}
     </div>

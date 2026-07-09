@@ -227,7 +227,5 @@ async def document_text(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    doc = await db.get(Document, document_id)
-    if doc is None or doc.tenant_id != user.tenant_id:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Document not found")
+    doc = await _get_owned_document(db, user, document_id)
     return {"text": doc.text_content or "", "ocr_status": doc.ocr_status}

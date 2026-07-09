@@ -3,18 +3,56 @@
 > Update this file whenever the state changes (new module, dependency, behavior,
 > known issue). Keep it a snapshot, not a history — history lives in JOURNAL.md.
 
-**Last updated:** 2026-07-08
+**Last updated:** 2026-07-09
 
-## Status: MVP built and running + competitive-gap + firm-readiness features
+## Status: MVP + firm-readiness + multi-company SaaS + mobile responsive
 
 All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
 ## What exists and works
 
-- **Auth**: registration (first run creates the lawyer account), JWT login, 2FA (TOTP).
+- **Auth**: public self-service signup (`POST /auth/signup` → new tenant on a
+  30-day trial + admin user; page `/regjistrohu`), JWT login, 2FA (TOTP),
+  email verification (signed purpose tokens, page `/verifiko-email`, banner +
+  resend in app), password reset (`/harrova-fjalekalimin` → `/rivendos?token=`,
+  single-use via password-hash fingerprint), change password (Settings →
+  Profile). Login rate limiting via Redis (5 fails/15 min per email+IP → 429).
+  `get_current_user` validates the JWT tenant claim, blocks suspended tenants,
+  expired trials, and enforces the per-tenant `require_2fa` policy (members
+  without TOTP can only reach `/api/auth` until they enable it).
+- **Multi-company SaaS** (2026-07-09): Tenant carries `plan`
+  (trial/solo/firm), `status` (active/suspended), `seats_limit`,
+  `trial_ends_at`, `billing_notes`, `require_2fa`, `logo`. Seat limits enforced
+  on team invite/reactivation (402). Trial banner + verify-email banner in the
+  app shell. **Platform panel** (`/platform`, superadmin only — flag
+  `users.is_superadmin`, never settable via API): list tenants with
+  seats/matters/status, suspend/activate, change plan/seats, extend trial,
+  billing notes. Billing itself is manual (D-008). The founder user is
+  superadmin; founder tenant is plan=firm/25 seats.
+- **Tenant isolation** (2026-07-09): corpus writes superadmin-only (shared
+  read-only knowledge base), `document_text` goes through restricted-matter
+  checks, portal login is tenant-aware (same client email may exist at several
+  firms; password picks the account), ICS feed tokens now expire (180 d).
+  E2E suites: `backend/scripts/isolation_check.py` (2 throwaway tenants,
+  cross-tenant 404s incl. ICS + corpus) and `backend/scripts/saas_check.py`
+  (signup/verify/reset/rate-limit/invites/seats/platform/suspend) — run both
+  against the live backend after auth/tenancy changes.
+- **Mobile responsive + PWA** (2026-07-09): app shell with `hidden md:flex`
+  sidebar, mobile top bar + hamburger drawer + bottom nav (Paneli, Lëndët,
+  Kalendari, Bora, Më shumë); matters/contacts render as card lists on phones,
+  other tables scroll horizontally; matter tabs scroll; assistant collapses to
+  one panel with a conversation dropdown; dashboard charts stack. Manifest has
+  maskable icon (`icon-512-maskable.png`), scope/orientation; `sw.js` precaches
+  the shell, cache-first for static assets, network-first for navigations —
+  API responses intentionally never cached. SW registered from the app layout.
 - **Team**: multi-user per tenant with roles (admin/lawyer/staff), managed in
   Settings → Team; matter assignment via `responsible_user_id` (editable in
   matter Overview when >1 member). Adding a member flips tenant kind to "firm".
+  **Invites by email** (2026-07-09): admin-only `POST /team/invite`
+  (name/email/role) — the invitee sets their own password at `/ftesa?token=`
+  (7-day signed token; the old add-with-password endpoint is gone). Pending
+  invites show a badge + resend. New-tenant onboarding checklist appears on
+  the dashboard after signup (`?welcome=1`).
 - **Intake**: new case registration, automatic conflict-of-interest check, AI
   classification, source tracking. **Public intake form** at `/apliko/{token}`
   (tenant token from Settings; submissions arrive with source=web).
@@ -73,7 +111,9 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   (skips laws already present; add new laws to its `LAWS` list).
 - **Billing**: time entries, invoices generated from unbilled hours.
 - **Client portal**: full UI at `/portal` — login, matters with hearings,
-  two-way messages, e-signature inbox.
+  two-way messages, e-signature inbox. Shows the **firm's own name + logo**
+  (from portal login response) instead of "BoraLaw"; the public intake form
+  does the same (logo uploaded in Settings → Firm profile, data-URL ≤200 KB).
 - **Reminders**: background loop (hourly) notifies the responsible lawyer at
   each deadline's `remind_days_before` offsets; deduped via Redis. Two channels:
   **Web Push** (active — VAPID keys in `backend/.env`, per-device opt-in in

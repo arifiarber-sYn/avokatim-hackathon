@@ -40,6 +40,35 @@ def decode_token(token: str) -> dict:
     return jwt.decode(token, settings.secret_key, algorithms=[ALGORITHM])
 
 
+def create_purpose_token(
+    purpose: str, user_id: uuid.UUID, *, minutes: int, fingerprint: str = ""
+) -> str:
+    """Single-purpose signed token (email verification, password reset, team
+    invite). `fingerprint` binds the token to mutable state — e.g. a fragment
+    of the password hash — so it self-invalidates once that state changes."""
+    now = datetime.now(UTC)
+    payload = {
+        "purpose": purpose,
+        "sub": str(user_id),
+        "fp": fingerprint,
+        "iat": now,
+        "exp": now + timedelta(minutes=minutes),
+    }
+    return jwt.encode(payload, settings.secret_key, algorithm=ALGORITHM)
+
+
+def decode_purpose_token(token: str, purpose: str) -> dict:
+    """Raises jwt.PyJWTError on invalid/expired; ValueError on wrong purpose."""
+    payload = jwt.decode(token, settings.secret_key, algorithms=[ALGORITHM])
+    if payload.get("purpose") != purpose:
+        raise ValueError("Wrong token purpose")
+    return payload
+
+
+def password_fingerprint(password_hash: str) -> str:
+    return password_hash[-16:]
+
+
 def new_totp_secret() -> str:
     return pyotp.random_base32()
 

@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.deps import get_current_user
-from app.models import Contact, Deadline, Matter, MatterMessage, SignatureRequest, User
+from app.models import Contact, Deadline, Matter, MatterMessage, SignatureRequest, Tenant, User
 from app.security import hash_password, verify_password
 from app.services.audit import log_action
 
@@ -55,18 +55,23 @@ async def invite_client(
 
 @router.post("/login")
 async def portal_login(body: PortalLoginIn, db: AsyncSession = Depends(get_db)):
-    contact = (
+    # The same email can be a client of several firms (tenants); the password
+    # decides which portal account this login belongs to.
+    candidates = (
         await db.execute(
             select(Contact).where(
                 Contact.email == body.email.lower(), Contact.portal_enabled.is_(True)
             )
         )
-    ).scalar_one_or_none()
-    if (
-        contact is None
-        or not contact.portal_password_hash
-        or not verify_password(body.password, contact.portal_password_hash)
-    ):
+    ).scalars().all()
+    contact = next(
+        (
+            c for c in candidates
+            if c.portal_password_hash and verify_password(body.password, c.portal_password_hash)
+        ),
+        None,
+    )
+    if contact is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
     now = datetime.now(UTC)
     token = pyjwt.encode(
@@ -74,7 +79,13 @@ async def portal_login(body: PortalLoginIn, db: AsyncSession = Depends(get_db)):
         settings.secret_key,
         algorithm="HS256",
     )
-    return {"access_token": token, "client_name": contact.display_name}
+    tenant = await db.get(Tenant, contact.tenant_id)
+    return {
+        "access_token": token,
+        "client_name": contact.display_name,
+        "firm_name": tenant.name if tenant else "BoraLaw",
+        "firm_logo": tenant.logo if tenant else None,
+    }
 
 
 async def _portal_contact(

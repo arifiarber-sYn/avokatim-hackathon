@@ -9,7 +9,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.deps import get_current_user
+from app.deps import get_current_user, require_superadmin
 from app.models import Jurisdiction, LegalCorpusChunk, LegalCorpusDoc, User
 from app.services import rag
 from app.services.audit import log_action
@@ -99,7 +99,7 @@ async def list_corpus(
 @router.post("", response_model=CorpusDocOut, status_code=status.HTTP_201_CREATED)
 async def add_corpus_doc(
     body: CorpusDocIn,
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_superadmin),
     db: AsyncSession = Depends(get_db),
 ):
     jurisdiction = (
@@ -148,7 +148,7 @@ async def add_corpus_doc(
 @router.delete("/{doc_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_corpus_doc(
     doc_id: uuid.UUID,
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_superadmin),
     db: AsyncSession = Depends(get_db),
 ):
     doc = await db.get(LegalCorpusDoc, doc_id)

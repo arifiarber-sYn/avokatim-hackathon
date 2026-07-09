@@ -88,10 +88,17 @@ export default function DashboardPage() {
   const { t, locale } = useI18n();
   const [data, setData] = useState<Dashboard | null>(null);
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
+  const [welcome, setWelcome] = useState(false);
 
   useEffect(() => {
     apiGet<Dashboard>("/reports/dashboard").then(setData).catch(() => {});
     apiGet<Deadline[]>("/deadlines/upcoming?days=30").then(setDeadlines).catch(() => {});
+    if (
+      new URLSearchParams(window.location.search).get("welcome") &&
+      !localStorage.getItem("boralaw_welcome_done")
+    ) {
+      setWelcome(true);
+    }
   }, []);
 
   if (!data) return <Spinner />;
@@ -137,6 +144,48 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t.dashboard}</h1>
+
+      {welcome && (
+        <Card className="p-5 border-indigo-300 bg-indigo-50/50">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="font-semibold">{t.welcomeTitle}</h2>
+              <p className="text-sm text-slate-600 mt-1">{t.welcomeSubtitle}</p>
+            </div>
+            <button
+              onClick={() => {
+                localStorage.setItem("boralaw_welcome_done", "1");
+                setWelcome(false);
+              }}
+              className="text-slate-400 hover:text-slate-600 text-lg leading-none"
+            >
+              ✕
+            </button>
+          </div>
+          <ol className="mt-3 space-y-2 text-sm list-decimal list-inside">
+            <li>
+              <Link href="/settings" className="text-indigo-700 hover:underline">
+                {t.welcomeStepTeam}
+              </Link>
+            </li>
+            <li>
+              <Link href="/settings" className="text-indigo-700 hover:underline">
+                {t.welcomeStepImport}
+              </Link>
+            </li>
+            <li>
+              <Link href="/settings" className="text-indigo-700 hover:underline">
+                {t.welcomeStepLogo}
+              </Link>
+            </li>
+            <li>
+              <Link href="/matters" className="text-indigo-700 hover:underline">
+                {t.welcomeStepMatter}
+              </Link>
+            </li>
+          </ol>
+        </Card>
+      )}
 
       <Card className="p-5 border-indigo-200">
         <h2 className="font-semibold mb-3">
@@ -203,7 +252,7 @@ export default function DashboardPage() {
       <div className="grid lg:grid-cols-3 gap-4">
         <Card className="p-5 lg:col-span-2">
           <h2 className="font-semibold mb-4">{t.monthlyTrend}</h2>
-          <div className="flex gap-8">
+          <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
             <MiniBarChart
               title={t.workedHours}
               points={data.monthly_trend.map((p) => ({

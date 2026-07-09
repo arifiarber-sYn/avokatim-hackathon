@@ -10,6 +10,41 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-09 — Multi-company SaaS + mobile responsive/PWA (Cursor / Fable 5)
+
+- Done (Mobile, rrjedha B): app shell with hidden-md sidebar + mobile top bar,
+  hamburger drawer and bottom nav (`(app)/layout.tsx`); matters + contacts as
+  card lists on phones, remaining tables in `overflow-x-auto`; matter tabs
+  scroll horizontally; assistant collapses to one panel (conversation dropdown);
+  dashboard charts stack; settings grids responsive; portal sign cards stack.
+  PWA: maskable 512 icon, manifest scope/orientation, `sw.js` app-shell
+  precache + cache-first statics + network-first navigations (API never
+  cached), SW registered globally from the app layout.
+- Done (SaaS, rrjedha A): migration `92f04aa14500` — Tenant gains
+  plan/status/seats_limit/trial_ends_at/billing_notes/require_2fa/logo, User
+  gains is_superadmin/email_verified_at (founder made superadmin, founder
+  tenant plan=firm/25 seats). Public signup (30-day trial) + email
+  verification + password reset + change password, all via stateless signed
+  purpose tokens (D-008). Redis login rate limiting (5/15min → 429). JWT
+  tenant-claim validation, suspended/trial-expired blocking and per-tenant
+  require_2fa policy in `get_current_user`. Team invites by email
+  (admin-only, invitee sets password at `/ftesa`; plaintext-password add
+  endpoint removed), seat-limit enforcement (402). Superadmin platform panel
+  (`/api/platform` + `/platform` page): tenant list with stats,
+  suspend/activate, plan/seats/trial/notes. Isolation: corpus writes
+  superadmin-only, `document_text` restricted-matter aware, portal login
+  tenant-aware, ICS tokens expire (180 d). Tenant branding (logo + name) on
+  portal and public intake. New pages: /regjistrohu, /verifiko-email,
+  /harrova-fjalekalimin, /rivendos, /ftesa, /platform; trial + verify-email
+  banners; onboarding checklist on dashboard. All strings in sq/en/zh.
+- Verified: pytest 13 pass (new purpose-token tests); `tsc` + build clean;
+  `scripts/isolation_check.py` 12/12 PASS; `scripts/saas_check.py` 27/27 PASS
+  (signup→verify→reset→rate-limit→invite→seats→platform→suspend);
+  health OK on localhost and https://www.boraarifi.ai.
+- Left open: card payments (manual billing for now), per-tenant private
+  corpus, multi-firm membership per email, Lighthouse PWA audit on a real
+  phone (owner can test install on Android/iOS via boraarifi.ai).
+
 ## 2026-07-08 — Real legal corpus + XK template library + signature certificate (Cursor / Fable 5)
 
 - Done (corpus): `backend/scripts/import_gzk.py` — downloads real Kosovo laws

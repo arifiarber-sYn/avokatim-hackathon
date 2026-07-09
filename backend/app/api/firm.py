@@ -18,6 +18,8 @@ class FirmOut(BaseModel):
     vat_number: str | None
     address: str | None
     default_vat_rate: int
+    logo: str | None = None
+    require_2fa: bool = False
 
     model_config = {"from_attributes": True}
 
@@ -28,6 +30,9 @@ class FirmUpdate(BaseModel):
     vat_number: str | None = None
     address: str | None = None
     default_vat_rate: int | None = Field(None, ge=0, le=30)
+    # Small logo as a data URL (~max 200 KB) shown on portal + public intake
+    logo: str | None = Field(None, max_length=280_000)
+    require_2fa: bool | None = None
 
 
 @router.get("", response_model=FirmOut)

@@ -201,7 +201,8 @@ export default function ReportsPage() {
           {data.profitability_by_area.length === 0 ? (
             <p className="text-sm text-slate-400">{t.noDataYet}</p>
           ) : (
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[480px]">
               <thead>
                 <tr className="text-left text-xs text-slate-500 border-b border-slate-100">
                   <th className="pb-2 font-medium">{t.practiceArea}</th>
@@ -232,6 +233,7 @@ export default function ReportsPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </Card>
       </div>
@@ -239,7 +241,8 @@ export default function ReportsPage() {
       {data.by_lawyer.length > 0 && (
         <Card className="p-5">
           <h2 className="font-semibold mb-4">{t.byLawyer}</h2>
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[560px]">
             <thead>
               <tr className="text-left text-xs text-slate-500 border-b border-slate-100">
                 <th className="pb-2 font-medium">{t.name}</th>
@@ -283,6 +286,7 @@ export default function ReportsPage() {
               })}
             </tbody>
           </table>
+          </div>
         </Card>
       )}
     </div>

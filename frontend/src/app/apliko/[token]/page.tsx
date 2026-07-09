@@ -8,6 +8,7 @@ export default function PublicIntakePage({ params }: { params: Promise<{ token: 
   const { token } = use(params);
   const { t } = useI18n();
   const [practiceName, setPracticeName] = useState<string | null>(null);
+  const [logo, setLogo] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [form, setForm] = useState({ client_name: "", client_email: "", client_phone: "", summary: "" });
   const [sent, setSent] = useState(false);
@@ -20,7 +21,10 @@ export default function PublicIntakePage({ params }: { params: Promise<{ token: 
         if (!res.ok) throw new Error();
         return res.json();
       })
-      .then((data) => setPracticeName(data.practice_name))
+      .then((data) => {
+        setPracticeName(data.practice_name);
+        setLogo(data.logo || null);
+      })
       .catch(() => setNotFound(true));
   }, [token]);
 
@@ -52,7 +56,13 @@ export default function PublicIntakePage({ params }: { params: Promise<{ token: 
     <div className="min-h-screen bg-slate-50">
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-lg font-bold text-indigo-700">{practiceName || "BoraLaw"}</h1>
+          <div className="flex items-center gap-2 min-w-0">
+            {logo && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={logo} alt="" className="h-8 w-8 rounded object-contain" />
+            )}
+            <h1 className="text-lg font-bold text-indigo-700 truncate">{practiceName || "BoraLaw"}</h1>
+          </div>
           <LocaleSwitcher />
         </div>
       </header>

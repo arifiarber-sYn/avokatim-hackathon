@@ -89,12 +89,12 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
         <p className="text-sm text-slate-500 font-mono mt-1">{matter.reference}</p>
       </div>
 
-      <div className="flex gap-1 border-b border-slate-200">
+      <div className="flex gap-1 border-b border-slate-200 overflow-x-auto whitespace-nowrap -mx-4 px-4 md:mx-0 md:px-0">
         {tabs.map(([key, label]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            className={`shrink-0 px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
               tab === key
                 ? "border-indigo-600 text-indigo-700"
                 : "border-transparent text-slate-500 hover:text-slate-800"
@@ -566,7 +566,8 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
       )}
 
       <Card>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[760px]">
           <thead>
             <tr className="text-left text-xs text-slate-500 border-b border-slate-200">
               <th className="px-4 py-3">{t.name}</th>
@@ -639,6 +640,7 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
             })}
           </tbody>
         </table>
+        </div>
       </Card>
     </div>
   );

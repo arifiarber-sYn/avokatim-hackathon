@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiGet, apiPost, setToken } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
@@ -147,6 +148,22 @@ export default function LoginPage() {
             {mode === "setup" ? t.createAccount : mode === "2fa" ? t.verify : t.login}
           </Button>
         </form>
+
+        {mode === "login" && (
+          <div className="mt-6 space-y-2 text-center text-sm">
+            <p>
+              <Link href="/harrova-fjalekalimin" className="text-slate-500 hover:text-indigo-600 hover:underline">
+                {t.forgotPasswordTitle}
+              </Link>
+            </p>
+            <p className="text-slate-500">
+              {t.noAccountYet}{" "}
+              <Link href="/regjistrohu" className="text-indigo-600 hover:underline">
+                {t.startTrial}
+              </Link>
+            </p>
+          </div>
+        )}
       </Card>
     </div>
   );

@@ -1,34 +1,109 @@
+import logging
 import uuid
+from datetime import UTC, datetime, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+import jwt as pyjwt
+import redis.asyncio as aioredis
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.database import get_db
 from app.deps import bearer, get_current_user
 from app.models import Tenant, User
 from app.schemas.auth import (
-    ProfileUpdateRequest,
+    AcceptInviteRequest,
+    ChangePasswordRequest,
+    ForgotPasswordRequest,
     LoginRequest,
+    ProfileUpdateRequest,
     RegisterRequest,
+    ResetPasswordRequest,
+    SignupRequest,
     TokenResponse,
     TwoFASetupResponse,
     TwoFAVerifyRequest,
     UserOut,
+    VerifyEmailRequest,
 )
 from app.security import (
     create_access_token,
+    create_purpose_token,
+    decode_purpose_token,
     decode_token,
     hash_password,
     new_totp_secret,
+    password_fingerprint,
     totp_uri,
     verify_password,
     verify_totp,
 )
 from app.services.audit import log_action
+from app.services.notifications import send_email
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+TRIAL_DAYS = 30
+LOGIN_MAX_ATTEMPTS = 5
+LOGIN_WINDOW_SECONDS = 15 * 60
+
+
+async def _check_login_rate_limit(email: str, ip: str | None) -> None:
+    """Sliding lockout: max LOGIN_MAX_ATTEMPTS failed tries per email+IP window."""
+    try:
+        r = aioredis.from_url(settings.redis_url)
+        key = f"boralaw:login_fail:{email}:{ip or 'noip'}"
+        count = await r.get(key)
+        await r.aclose()
+        if count is not None and int(count) >= LOGIN_MAX_ATTEMPTS:
+            raise HTTPException(
+                status.HTTP_429_TOO_MANY_REQUESTS,
+                "Too many failed attempts — try again in 15 minutes",
+            )
+    except HTTPException:
+        raise
+    except Exception:  # Redis down must never lock everyone out
+        logger.warning("Login rate-limit check unavailable")
+
+
+async def _record_login_failure(email: str, ip: str | None) -> None:
+    try:
+        r = aioredis.from_url(settings.redis_url)
+        key = f"boralaw:login_fail:{email}:{ip or 'noip'}"
+        pipe = r.pipeline()
+        pipe.incr(key)
+        pipe.expire(key, LOGIN_WINDOW_SECONDS)
+        await pipe.execute()
+        await r.aclose()
+    except Exception:
+        pass
+
+
+def _user_out(user: User, tenant: Tenant | None) -> UserOut:
+    out = UserOut.model_validate(user)
+    out.email_verified = user.email_verified_at is not None
+    if tenant is not None:
+        out.tenant_plan = tenant.plan
+        out.tenant_status = tenant.status
+        out.tenant_trial_ends_at = (
+            tenant.trial_ends_at.isoformat() if tenant.trial_ends_at else None
+        )
+        out.tenant_require_2fa = tenant.require_2fa
+    return out
+
+
+async def _send_verification_email(user_id: uuid.UUID, email: str, locale: str) -> None:
+    token = create_purpose_token("verify_email", user_id, minutes=60 * 24 * 3)
+    url = f"{settings.public_base_url}/verifiko-email?token={token}"
+    await send_email(
+        email,
+        "BoraLaw — Konfirmo email-in / Confirm your email",
+        "Përshëndetje,\n\nKonfirmo adresën tënde të email-it duke hapur këtë link:\n"
+        f"{url}\n\nLinku vlen 3 ditë.\n\n— BoraLaw",
+    )
 
 
 @router.get("/setup-needed")
@@ -67,19 +142,196 @@ async def register(body: RegisterRequest, request: Request, db: AsyncSession = D
     return TokenResponse(access_token=create_access_token(user.id, tenant.id))
 
 
-@router.post("/login", response_model=TokenResponse)
-async def login(body: LoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
+@router.post("/signup", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+async def signup(
+    body: SignupRequest,
+    request: Request,
+    background: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    """Public self-service signup: new law practice on a 30-day trial."""
+    taken = (
+        await db.execute(select(User).where(User.email == body.email.lower()))
+    ).scalar_one_or_none()
+    if taken is not None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Email already registered")
+
+    tenant = Tenant(
+        name=body.practice_name,
+        kind="solo",
+        default_locale=body.locale,
+        plan="trial",
+        status="active",
+        seats_limit=3,
+        trial_ends_at=datetime.now(UTC) + timedelta(days=TRIAL_DAYS),
+    )
+    db.add(tenant)
+    await db.flush()
+    user = User(
+        tenant_id=tenant.id,
+        email=body.email.lower(),
+        full_name=body.full_name,
+        password_hash=hash_password(body.password),
+        role="admin",
+        locale=body.locale,
+    )
+    db.add(user)
+    await db.flush()
+    await log_action(
+        db, tenant_id=tenant.id, user_id=user.id, action="auth.signup",
+        ip_address=request.client.host if request.client else None,
+    )
+    await db.commit()
+    background.add_task(_send_verification_email, user.id, user.email, body.locale)
+    return TokenResponse(access_token=create_access_token(user.id, tenant.id))
+
+
+@router.post("/verify-email")
+async def verify_email(body: VerifyEmailRequest, db: AsyncSession = Depends(get_db)):
+    try:
+        payload = decode_purpose_token(body.token, "verify_email")
+    except (pyjwt.PyJWTError, ValueError):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired link")
+    user = await db.get(User, uuid.UUID(payload["sub"]))
+    if user is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired link")
+    if user.email_verified_at is None:
+        user.email_verified_at = datetime.now(UTC)
+        await log_action(
+            db, tenant_id=user.tenant_id, user_id=user.id, action="auth.email_verified"
+        )
+        await db.commit()
+    return {"verified": True}
+
+
+@router.post("/resend-verification")
+async def resend_verification(
+    background: BackgroundTasks, user: User = Depends(get_current_user)
+):
+    if user.email_verified_at is not None:
+        return {"sent": False, "already_verified": True}
+    background.add_task(_send_verification_email, user.id, user.email, user.locale)
+    return {"sent": True}
+
+
+@router.post("/forgot-password")
+async def forgot_password(
+    body: ForgotPasswordRequest,
+    background: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    """Always returns 200 to avoid disclosing which emails exist."""
     user = (
         await db.execute(select(User).where(User.email == body.email.lower()))
     ).scalar_one_or_none()
+    if user is not None and user.is_active:
+        token = create_purpose_token(
+            "reset_password", user.id, minutes=60,
+            fingerprint=password_fingerprint(user.password_hash),
+        )
+        url = f"{settings.public_base_url}/rivendos?token={token}"
+
+        async def _send() -> None:
+            await send_email(
+                user.email,
+                "BoraLaw — Rivendos fjalëkalimin / Reset your password",
+                "Përshëndetje,\n\nPër të rivendosur fjalëkalimin hape këtë link "
+                f"(vlen 1 orë):\n{url}\n\nNëse nuk e kërkove ti, injoroje këtë email.\n\n— BoraLaw",
+            )
+
+        background.add_task(_send)
+    return {"sent": True}
+
+
+@router.post("/reset-password")
+async def reset_password(body: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+    try:
+        payload = decode_purpose_token(body.token, "reset_password")
+    except (pyjwt.PyJWTError, ValueError):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired link")
+    user = await db.get(User, uuid.UUID(payload["sub"]))
+    if user is None or payload.get("fp") != password_fingerprint(user.password_hash):
+        # Fingerprint mismatch = token already used or password since changed
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired link")
+    user.password_hash = hash_password(body.password)
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="auth.password_reset"
+    )
+    await db.commit()
+    return {"reset": True}
+
+
+@router.post("/change-password")
+async def change_password(
+    body: ChangePasswordRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if not verify_password(body.current_password, user.password_hash):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Current password is wrong")
+    user.password_hash = hash_password(body.new_password)
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="auth.password_changed"
+    )
+    await db.commit()
+    return {"changed": True}
+
+
+@router.post("/accept-invite", response_model=TokenResponse)
+async def accept_invite(body: AcceptInviteRequest, db: AsyncSession = Depends(get_db)):
+    """A team member invited by email sets their own password here."""
+    try:
+        payload = decode_purpose_token(body.token, "invite")
+    except (pyjwt.PyJWTError, ValueError):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired invite")
+    user = await db.get(User, uuid.UUID(payload["sub"]))
+    if user is None or payload.get("fp") != password_fingerprint(user.password_hash):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired invite")
+    tenant = await db.get(Tenant, user.tenant_id)
+    seats_used = (
+        await db.execute(
+            select(func.count(User.id)).where(
+                User.tenant_id == user.tenant_id, User.is_active.is_(True)
+            )
+        )
+    ).scalar_one()
+    if tenant is not None and seats_used >= tenant.seats_limit:
+        raise HTTPException(
+            status.HTTP_402_PAYMENT_REQUIRED, "Seat limit reached — ask your admin to upgrade"
+        )
+    user.password_hash = hash_password(body.password)
+    user.is_active = True
+    user.email_verified_at = datetime.now(UTC)
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="auth.invite_accepted"
+    )
+    await db.commit()
+    return TokenResponse(access_token=create_access_token(user.id, user.tenant_id))
+
+
+@router.post("/login", response_model=TokenResponse)
+async def login(body: LoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    ip = request.client.host if request.client else None
+    email = body.email.lower()
+    await _check_login_rate_limit(email, ip)
+
+    user = (
+        await db.execute(select(User).where(User.email == email))
+    ).scalar_one_or_none()
     if user is None or not verify_password(body.password, user.password_hash):
+        await _record_login_failure(email, ip)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
     if not user.is_active:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Account disabled")
+    tenant = await db.get(Tenant, user.tenant_id)
+    if tenant is not None and tenant.status == "suspended" and not user.is_superadmin:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, "Tenant suspended — contact the platform operator"
+        )
 
     await log_action(
         db, tenant_id=user.tenant_id, user_id=user.id, action="auth.login",
-        ip_address=request.client.host if request.client else None,
+        ip_address=ip,
     )
     await db.commit()
 
@@ -135,8 +387,9 @@ async def enable_2fa(
 
 
 @router.get("/me", response_model=UserOut)
-async def me(user: User = Depends(get_current_user)):
-    return user
+async def me(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    tenant = await db.get(Tenant, user.tenant_id)
+    return _user_out(user, tenant)
 
 
 @router.patch("/me", response_model=UserOut)

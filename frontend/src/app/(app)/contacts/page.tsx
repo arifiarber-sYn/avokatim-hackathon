@@ -88,30 +88,47 @@ export default function ContactsPage() {
       {contacts === null ? (
         <Spinner />
       ) : (
-        <Card>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs text-slate-500 border-b border-slate-200">
-                <th className="px-4 py-3">{t.name}</th>
-                <th className="px-4 py-3">{t.email}</th>
-                <th className="px-4 py-3">{t.phone}</th>
-                <th className="px-4 py-3">{t.portalAccess}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {contacts.map((c) => (
-                <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50">
-                  <td className="px-4 py-3 font-medium">{c.display_name}</td>
-                  <td className="px-4 py-3 text-slate-600">{c.email || "—"}</td>
-                  <td className="px-4 py-3 text-slate-600">{c.phone || "—"}</td>
-                  <td className="px-4 py-3">
-                    {c.portal_enabled ? <Badge status="open" label="✓" /> : "—"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
+        <>
+          <div className="md:hidden space-y-2">
+            {contacts.map((c) => (
+              <div key={c.id} className="bg-white rounded-xl border border-slate-200 p-4">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-medium text-sm">{c.display_name}</p>
+                  {c.portal_enabled && <Badge status="open" label="✓" />}
+                </div>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  {c.email || "—"}{c.phone ? ` · ${c.phone}` : ""}
+                </p>
+              </div>
+            ))}
+          </div>
+          <Card className="hidden md:block">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-slate-500 border-b border-slate-200">
+                    <th className="px-4 py-3">{t.name}</th>
+                    <th className="px-4 py-3">{t.email}</th>
+                    <th className="px-4 py-3">{t.phone}</th>
+                    <th className="px-4 py-3">{t.portalAccess}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {contacts.map((c) => (
+                    <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50">
+                      <td className="px-4 py-3 font-medium">{c.display_name}</td>
+                      <td className="px-4 py-3 text-slate-600">{c.email || "—"}</td>
+                      <td className="px-4 py-3 text-slate-600">{c.phone || "—"}</td>
+                      <td className="px-4 py-3">
+                        {c.portal_enabled ? <Badge status="open" label="✓" /> : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </>
       )}
     </div>
   );

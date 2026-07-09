@@ -46,6 +46,8 @@ function FirmSection() {
     address: "",
     default_vat_rate: "18",
   });
+  const [logo, setLogo] = useState<string | null>(null);
+  const [require2fa, setRequire2fa] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
 
@@ -56,16 +58,20 @@ function FirmSection() {
       vat_number: string | null;
       address: string | null;
       default_vat_rate: number;
+      logo: string | null;
+      require_2fa: boolean;
     }>("/firm")
-      .then((r) =>
+      .then((r) => {
         setForm({
           name: r.name || "",
           fiscal_number: r.fiscal_number || "",
           vat_number: r.vat_number || "",
           address: r.address || "",
           default_vat_rate: String(r.default_vat_rate ?? 18),
-        })
-      )
+        });
+        setLogo(r.logo || null);
+        setRequire2fa(r.require_2fa || false);
+      })
       .catch(() => {});
   }, []);
 
@@ -80,6 +86,8 @@ function FirmSection() {
         vat_number: form.vat_number || null,
         address: form.address || null,
         default_vat_rate: Number(form.default_vat_rate),
+        logo,
+        require_2fa: require2fa,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
@@ -88,14 +96,26 @@ function FirmSection() {
     }
   }
 
+  function onLogoFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 200 * 1024) {
+      setError(t.logoTooLarge);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setLogo(reader.result as string);
+    reader.readAsDataURL(file);
+  }
+
   return (
     <Card className="p-5 space-y-4">
       <div>
         <h2 className="font-semibold">{t.firmProfile}</h2>
         <p className="text-xs text-slate-500 mt-0.5">{t.firmProfileHint}</p>
       </div>
-      <form onSubmit={save} className="grid grid-cols-2 gap-3">
-        <div className="col-span-2">
+      <form onSubmit={save} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="sm:col-span-2">
           <Label>{t.firmName}</Label>
           <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         </div>
@@ -114,7 +134,7 @@ function FirmSection() {
             onChange={(e) => setForm({ ...form, vat_number: e.target.value })}
           />
         </div>
-        <div className="col-span-2">
+        <div className="sm:col-span-2">
           <Label>{t.address}</Label>
           <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
         </div>
@@ -128,7 +148,35 @@ function FirmSection() {
             onChange={(e) => setForm({ ...form, default_vat_rate: e.target.value })}
           />
         </div>
-        <div className="col-span-2 flex items-center gap-3">
+        <div className="sm:col-span-2 space-y-1">
+          <Label>{t.firmLogo}</Label>
+          <div className="flex items-center gap-3">
+            {logo && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={logo} alt="logo" className="h-10 w-10 rounded object-contain border border-slate-200 bg-white" />
+            )}
+            <input type="file" accept="image/*" onChange={onLogoFile} className="text-xs" />
+            {logo && (
+              <button type="button" onClick={() => setLogo(null)} className="text-xs text-red-600 hover:underline">
+                {t.remove}
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-slate-400">{t.firmLogoHint}</p>
+        </div>
+        <div className="sm:col-span-2 flex items-center gap-2">
+          <input
+            id="require2fa"
+            type="checkbox"
+            checked={require2fa}
+            onChange={(e) => setRequire2fa(e.target.checked)}
+            className="h-4 w-4"
+          />
+          <label htmlFor="require2fa" className="text-sm">
+            {t.require2faPolicy}
+          </label>
+        </div>
+        <div className="sm:col-span-2 flex items-center gap-3">
           <Button type="submit">{t.save}</Button>
           {saved && <span className="text-sm text-emerald-700">✓ {t.saved}</span>}
           <ErrorNote message={error} />
@@ -189,7 +237,7 @@ function ImportSection() {
         <h2 className="font-semibold">{t.dataImport}</h2>
         <p className="text-xs text-slate-500 mt-0.5">{t.dataImportHint}</p>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {(["contacts", "matters"] as const).map((kind) => (
           <div key={kind} className="border border-slate-200 rounded-lg p-4 space-y-2">
             <p className="text-sm font-medium">
@@ -327,13 +375,15 @@ interface TeamMember {
   full_name: string;
   role: string;
   is_active: boolean;
+  invite_pending?: boolean;
 }
 
 function TeamSection() {
   const { t } = useI18n();
   const [members, setMembers] = useState<TeamMember[]>([]);
-  const [form, setForm] = useState({ full_name: "", email: "", password: "", role: "lawyer" });
+  const [form, setForm] = useState({ full_name: "", email: "", role: "lawyer" });
   const [error, setError] = useState("");
+  const [invited, setInvited] = useState(false);
 
   const roleLabels: Record<string, string> = {
     admin: t.roleAdmin,
@@ -352,10 +402,23 @@ function TeamSection() {
   async function add(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setInvited(false);
     try {
-      await apiPost("/team", form);
-      setForm({ full_name: "", email: "", password: "", role: "lawyer" });
+      await apiPost("/team/invite", form);
+      setForm({ full_name: "", email: "", role: "lawyer" });
+      setInvited(true);
+      setTimeout(() => setInvited(false), 4000);
       load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  async function resendInvite(m: TeamMember) {
+    try {
+      await apiPost(`/team/${m.id}/resend-invite`, {});
+      setInvited(true);
+      setTimeout(() => setInvited(false), 4000);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.error);
     }
@@ -388,6 +451,11 @@ function TeamSection() {
             <div className="min-w-0">
               <p className={`font-medium truncate ${m.is_active ? "" : "text-slate-400 line-through"}`}>
                 {m.full_name}
+                {m.invite_pending && (
+                  <span className="ml-2 text-[10px] uppercase tracking-wide text-amber-600 bg-amber-50 rounded px-1.5 py-0.5 no-underline inline-block">
+                    {t.invitePending}
+                  </span>
+                )}
               </p>
               <p className="text-xs text-slate-500 truncate">{m.email}</p>
             </div>
@@ -401,12 +469,21 @@ function TeamSection() {
                   <option key={value} value={value}>{label}</option>
                 ))}
               </Select>
-              <button
-                onClick={() => toggleActive(m)}
-                className={`text-xs hover:underline ${m.is_active ? "text-red-600" : "text-emerald-600"}`}
-              >
-                {m.is_active ? t.deactivate : t.activate}
-              </button>
+              {m.invite_pending ? (
+                <button
+                  onClick={() => resendInvite(m)}
+                  className="text-xs text-indigo-600 hover:underline"
+                >
+                  {t.resendInvite}
+                </button>
+              ) : (
+                <button
+                  onClick={() => toggleActive(m)}
+                  className={`text-xs hover:underline ${m.is_active ? "text-red-600" : "text-emerald-600"}`}
+                >
+                  {m.is_active ? t.deactivate : t.activate}
+                </button>
+              )}
             </div>
           </div>
         ))}
@@ -421,10 +498,6 @@ function TeamSection() {
           <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
         </div>
         <div>
-          <Label>{t.password}</Label>
-          <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={10} />
-        </div>
-        <div>
           <Label>{t.roleLabel}</Label>
           <Select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
             {Object.entries(roleLabels).map(([value, label]) => (
@@ -433,7 +506,8 @@ function TeamSection() {
           </Select>
         </div>
         <div className="md:col-span-2 flex items-center gap-3">
-          <Button type="submit">{t.addMember}</Button>
+          <Button type="submit">{t.sendInvite}</Button>
+          {invited && <span className="text-sm text-emerald-700">✓ {t.inviteSent}</span>}
           <ErrorNote message={error} />
         </div>
       </form>
@@ -527,7 +601,65 @@ function ProfileSection() {
         <Button type="submit">{t.save}</Button>
         {message && <span className="text-sm">{message}</span>}
       </form>
+      <ChangePasswordForm />
     </Card>
+  );
+}
+
+function ChangePasswordForm() {
+  const { t } = useI18n();
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  async function change(e: React.FormEvent) {
+    e.preventDefault();
+    setMessage("");
+    setError("");
+    try {
+      await apiPost("/auth/change-password", {
+        current_password: current,
+        new_password: next,
+      });
+      setCurrent("");
+      setNext("");
+      setMessage("✓ " + t.passwordChanged);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  return (
+    <form onSubmit={change} className="pt-3 border-t border-slate-100 space-y-3">
+      <p className="text-sm font-medium">{t.changePassword}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <Label>{t.currentPassword}</Label>
+          <Input
+            type="password"
+            value={current}
+            onChange={(e) => setCurrent(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <Label>{t.newPassword}</Label>
+          <Input
+            type="password"
+            value={next}
+            onChange={(e) => setNext(e.target.value)}
+            required
+            minLength={10}
+          />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <Button type="submit" variant="secondary">{t.changePassword}</Button>
+        {message && <span className="text-sm text-emerald-700">{message}</span>}
+        <ErrorNote message={error} />
+      </div>
+    </form>
   );
 }
 

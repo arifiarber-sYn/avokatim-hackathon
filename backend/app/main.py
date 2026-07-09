@@ -19,6 +19,7 @@ from app.api import (
     imports,
     intake,
     matters,
+    platform,
     portal,
     push,
     reports,
@@ -73,6 +74,7 @@ app.include_router(intake.public_router, prefix=api_prefix)
 app.include_router(push.router, prefix=api_prefix)
 app.include_router(firm.router, prefix=api_prefix)
 app.include_router(imports.router, prefix=api_prefix)
+app.include_router(platform.router, prefix=api_prefix)
 
 
 @app.get("/api/health")

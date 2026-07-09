@@ -116,38 +116,62 @@ export default function MattersPage() {
       {matters === null ? (
         <Spinner />
       ) : (
-        <Card>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs text-slate-500 border-b border-slate-200">
-                <th className="px-4 py-3">{t.reference}</th>
-                <th className="px-4 py-3">{t.title}</th>
-                <th className="px-4 py-3">{t.client}</th>
-                <th className="px-4 py-3">{t.practiceArea}</th>
-                <th className="px-4 py-3">{t.status}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {matters.map((m) => (
-                <tr key={m.id} className="border-b border-slate-100 hover:bg-slate-50">
-                  <td className="px-4 py-3 font-mono text-xs">
-                    <Link href={`/matters/${m.id}`} className="text-indigo-600 hover:underline">
-                      {m.reference}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Link href={`/matters/${m.id}`} className="hover:underline">{m.title}</Link>
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">{m.client?.display_name || "—"}</td>
-                  <td className="px-4 py-3 text-slate-600">{areaLabel(m.practice_area)}</td>
-                  <td className="px-4 py-3">
-                    <Badge status={m.status} label={(t as Record<string, string>)[m.status]} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
+        <>
+          {/* Mobile: card list */}
+          <div className="md:hidden space-y-2">
+            {matters.map((m) => (
+              <Link
+                key={m.id}
+                href={`/matters/${m.id}`}
+                className="block bg-white rounded-xl border border-slate-200 p-4 active:bg-slate-50"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-xs text-indigo-600">{m.reference}</span>
+                  <Badge status={m.status} label={(t as Record<string, string>)[m.status]} />
+                </div>
+                <p className="mt-1 font-medium text-sm">{m.title}</p>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  {m.client?.display_name || "—"} · {areaLabel(m.practice_area)}
+                </p>
+              </Link>
+            ))}
+          </div>
+          {/* Desktop: table */}
+          <Card className="hidden md:block">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-slate-500 border-b border-slate-200">
+                    <th className="px-4 py-3">{t.reference}</th>
+                    <th className="px-4 py-3">{t.title}</th>
+                    <th className="px-4 py-3">{t.client}</th>
+                    <th className="px-4 py-3">{t.practiceArea}</th>
+                    <th className="px-4 py-3">{t.status}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {matters.map((m) => (
+                    <tr key={m.id} className="border-b border-slate-100 hover:bg-slate-50">
+                      <td className="px-4 py-3 font-mono text-xs">
+                        <Link href={`/matters/${m.id}`} className="text-indigo-600 hover:underline">
+                          {m.reference}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Link href={`/matters/${m.id}`} className="hover:underline">{m.title}</Link>
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">{m.client?.display_name || "—"}</td>
+                      <td className="px-4 py-3 text-slate-600">{areaLabel(m.practice_area)}</td>
+                      <td className="px-4 py-3">
+                        <Badge status={m.status} label={(t as Record<string, string>)[m.status]} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </>
       )}
     </div>
   );

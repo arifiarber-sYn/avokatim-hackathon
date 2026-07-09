@@ -42,6 +42,13 @@ class UserOut(BaseModel):
     totp_enabled: bool
     tenant_id: uuid.UUID
     billable_hours_target_monthly: int
+    is_superadmin: bool = False
+    email_verified: bool = False
+    # Tenant subscription summary (drives the trial banner in the UI)
+    tenant_plan: str | None = None
+    tenant_status: str | None = None
+    tenant_trial_ends_at: str | None = None
+    tenant_require_2fa: bool = False
 
     model_config = {"from_attributes": True}
 
@@ -49,3 +56,36 @@ class UserOut(BaseModel):
 class ProfileUpdateRequest(BaseModel):
     full_name: str | None = Field(default=None, min_length=2, max_length=200)
     billable_hours_target_monthly: int | None = Field(default=None, ge=1, le=744)
+
+
+class SignupRequest(BaseModel):
+    """Public self-service signup: creates a new tenant on a 30-day trial."""
+
+    practice_name: str = Field(min_length=2, max_length=200)
+    full_name: str = Field(min_length=2, max_length=200)
+    email: EmailStr
+    password: str = Field(min_length=10)
+    locale: str = "sq"
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    password: str = Field(min_length=10)
+
+
+class VerifyEmailRequest(BaseModel):
+    token: str
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=10)
+
+
+class AcceptInviteRequest(BaseModel):
+    token: str
+    password: str = Field(min_length=10)

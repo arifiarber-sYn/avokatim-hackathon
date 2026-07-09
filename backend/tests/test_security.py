@@ -2,9 +2,12 @@ import pytest
 
 from app.security import (
     create_access_token,
+    create_purpose_token,
+    decode_purpose_token,
     decode_token,
     hash_password,
     new_totp_secret,
+    password_fingerprint,
     verify_password,
     verify_totp,
 )
@@ -41,3 +44,37 @@ def test_totp():
     code = pyotp.TOTP(secret).now()
     assert verify_totp(secret, code)
     assert not verify_totp(secret, "000000")
+
+
+def test_purpose_token_roundtrip():
+    import uuid
+
+    uid = uuid.uuid4()
+    token = create_purpose_token("reset_password", uid, minutes=30, fingerprint="abcd")
+    payload = decode_purpose_token(token, "reset_password")
+    assert payload["sub"] == str(uid)
+    assert payload["fp"] == "abcd"
+
+
+def test_purpose_token_wrong_purpose_rejected():
+    import uuid
+
+    token = create_purpose_token("verify_email", uuid.uuid4(), minutes=30)
+    with pytest.raises(ValueError):
+        decode_purpose_token(token, "reset_password")
+
+
+def test_purpose_token_expired_rejected():
+    import uuid
+
+    import jwt
+
+    token = create_purpose_token("invite", uuid.uuid4(), minutes=-1)
+    with pytest.raises(jwt.PyJWTError):
+        decode_purpose_token(token, "invite")
+
+
+def test_password_fingerprint_changes_with_hash():
+    h1 = hash_password("password-one-long")
+    h2 = hash_password("password-two-long")
+    assert password_fingerprint(h1) != password_fingerprint(h2)
