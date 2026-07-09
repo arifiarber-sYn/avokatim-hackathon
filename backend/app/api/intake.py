@@ -1,7 +1,7 @@
 import logging
 import secrets
 import uuid
-from datetime import date
+from datetime import UTC, date, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
@@ -157,6 +157,8 @@ class PublicIntakeIn(BaseModel):
     client_email: str | None = Field(default=None, max_length=255)
     client_phone: str | None = Field(default=None, max_length=64)
     summary: str = Field(min_length=10, max_length=8000)
+    # Privacy-policy checkbox (Law 06/L-082) — must be true on the public form
+    accept_privacy: bool = False
 
 
 @public_router.get("/intake/{token}")
@@ -183,6 +185,10 @@ async def public_intake_submit(
     ).scalar_one_or_none()
     if tenant is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Not found")
+    if not body.accept_privacy:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "Privacy policy must be accepted"
+        )
 
     conflict = await check_conflicts(db, tenant.id, [body.client_name])
     intake = IntakeRequest(
@@ -194,6 +200,7 @@ async def public_intake_submit(
         source="web",
         status="conflict" if conflict["has_conflicts"] else "new",
         conflict_result=conflict,
+        tos_accepted_at=datetime.now(UTC),
     )
     db.add(intake)
     await db.flush()

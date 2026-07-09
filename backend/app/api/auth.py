@@ -155,6 +155,10 @@ async def signup(
     ).scalar_one_or_none()
     if taken is not None:
         raise HTTPException(status.HTTP_409_CONFLICT, "Email already registered")
+    if not body.accept_tos:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "Terms of service must be accepted"
+        )
 
     tenant = Tenant(
         name=body.practice_name,
@@ -164,6 +168,7 @@ async def signup(
         status="active",
         seats_limit=3,
         trial_ends_at=datetime.now(UTC) + timedelta(days=TRIAL_DAYS),
+        tos_accepted_at=datetime.now(UTC),
     )
     db.add(tenant)
     await db.flush()

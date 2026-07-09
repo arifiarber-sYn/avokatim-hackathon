@@ -66,6 +66,8 @@ class SignupRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=10)
     locale: str = "sq"
+    # ToS/Privacy checkbox (Law 06/L-082) — must be true
+    accept_tos: bool = False
 
 
 class ForgotPasswordRequest(BaseModel):

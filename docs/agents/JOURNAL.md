@@ -10,6 +10,50 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-09 — Full Kosovo-law compliance: 6 languages, data protection (06/L-082), AML (05/L-096) (Cursor / Fable 5)
+
+- Done — **Phase 1, languages (Law 02/L-37)**: `Locale` extended to
+  sq/sr/tr/bs/en/zh; ~490 keys × 3 new languages in `dictionaries.ts`;
+  6-language `LocaleSwitcher`. New backend catalog `app/i18n.py`
+  (`tr`/`pick_locale`/`bilabel`) — reminder emails, SMS, invoice email,
+  **bilingual invoice PDF** (sq + client language), signature email and
+  certificate follow `Contact.locale` (new column + contact UI; fallback
+  contact → tenant default → sq; portal login returns it and the portal
+  auto-switches). Seeds: sr/tr/bs names merged into deadline rules, holidays,
+  OAK tariff (`_merge_name` keeps user edits); 3 Serbian templates seeded
+  marked "kërkon rishikim nga avokati". AGENTS.md §5 now demands 6 languages.
+- Done — **Phase 2, data protection (Law 06/L-082)**: public `/kushtet` +
+  `/privatesia` pages in 6 languages (`lib/legal.ts`; Albanian originals in
+  `docs/legal/`); required checkboxes at signup / public intake / portal
+  first-login (all recorded with timestamp; portal via ConsentRecord with
+  IP). `ConsentRecord` model + API + consent card on contact detail;
+  SMS only with recorded consent. Erasure endpoint (anonymization, blocked
+  on open matters), data-subject export ZIP, retention review
+  (`Tenant.retention_years`, list in Settings — flags only, lawyer decides).
+  `Tenant.allow_external_ai` gates the assistant to the local provider;
+  UI warning/lock note (art. 49 transfers). New docs: breach procedure
+  (72h → AIP), RoPA, DPA Annex A (DeepSeek/Stripe/SMTP/Twilio/Cloudflare).
+  `backup.sh` retention 14→30 to match the SLA.
+- Done — **Phase 3, AML (Law 05/L-096)**: KYC fields on Contact
+  (document, verification date, risk level, PEP, beneficial owner) + form
+  in the new contact-detail view; `TrustTransaction.source_of_funds` +
+  audit flag + UI warning ≥ 10,000 €; 10 NjIF-K indicators × 6 languages as
+  seed data; per-matter AML checklist (AML tab; scope auto-suggested from
+  trust ledger; state in `Matter.extra`); `SuspicionReport` model + API +
+  PDF export for NjIF-K + mark-submitted; compliance-officer picker in
+  Settings; internal AML policy model `docs/legal/politika-aml.md`.
+- Fixed en route: `Tenant.users` relationship became ambiguous after
+  `compliance_officer_id` (second FK path) — explicit `foreign_keys`;
+  contact export 500 (lazy `Invoice.items` in async) — `selectinload`.
+- Verified: pytest 19 passed (new `test_i18n.py`); `npm run build` OK;
+  migration `50226da4a670` at head; **full_simulation.py extended with
+  sections 20–23 (languages, consents/privacy, external-AI gate, AML):
+  89 PASS / 0 FAIL**; health OK; public pages 200.
+- Left open / next: Serbian legal templates need lawyer review before use;
+  qualified e-signature (QTSP) remains future work; AIP authorization for
+  DeepSeek transfers is an organizational (not technical) step — documented
+  in DPA Annex A.
+
 ## 2026-07-09 — Assistant answers now stream (SSE) — NetworkError fixed for good (Cursor / Fable 5)
 
 - Bug persisted: even with `proxyTimeout: 300_000`, a user ask dropped

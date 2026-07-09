@@ -4,7 +4,7 @@
 # Output: ~/BoraLawBackups/boralaw-YYYYmmdd-HHMMSS.tar.gz.enc
 # Key:    ~/.config/boralaw/backup.key (generated on first run — BACK IT UP
 #         SEPARATELY, e.g. on a USB stick; without it backups are unreadable)
-# Retention: last 14 backups are kept.
+# Retention: last 30 backups are kept (matches the SLA).
 #
 # RESTORE (example):
 #   openssl enc -d -aes-256-cbc -pbkdf2 -pass file:$HOME/.config/boralaw/backup.key \
@@ -46,7 +46,7 @@ OUT="$BACKUP_DIR/boralaw-$STAMP.tar.gz.enc"
 tar czf - -C "$WORK_DIR" . | openssl enc -aes-256-cbc -pbkdf2 -salt \
     -pass "file:$KEY_FILE" -out "$OUT"
 
-# 5. Retention: keep the newest 14
-ls -1t "$BACKUP_DIR"/boralaw-*.tar.gz.enc 2>/dev/null | tail -n +15 | xargs -r rm -f
+# 5. Retention: keep the newest 30 (aligned with the SLA's 30-day promise)
+ls -1t "$BACKUP_DIR"/boralaw-*.tar.gz.enc 2>/dev/null | tail -n +31 | xargs -r rm -f
 
 echo "Backup OK: $OUT ($(du -h "$OUT" | cut -f1))"

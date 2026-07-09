@@ -46,6 +46,8 @@ class TrustTransactionIn(BaseModel):
     amount: Decimal = Field(gt=0)
     description: str
     reference: str | None = None
+    # AML (Law 05/L-096): declared source of funds for deposits
+    source_of_funds: str | None = None
 
 
 class TrustTransactionOut(TrustTransactionIn):

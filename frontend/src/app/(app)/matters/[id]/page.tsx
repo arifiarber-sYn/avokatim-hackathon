@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useCallback, useEffect, useState } from "react";
-import { apiDelete, apiGet, apiPatch, apiPost, apiPut, apiUpload, getToken } from "@/lib/api";
+import { apiDelete, apiDownload, apiGet, apiPatch, apiPost, apiPut, apiUpload, getToken } from "@/lib/api";
 import { localized, useI18n } from "@/lib/i18n";
 import {
   Contact, Deadline, DeadlineRule, Doc, Matter, Task,
@@ -61,7 +61,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   const { id } = use(params);
   const { t, locale } = useI18n();
   const [matter, setMatter] = useState<Matter | null>(null);
-  const [tab, setTab] = useState<"overview" | "parties" | "documents" | "deadlines" | "tasks" | "messages" | "notes" | "ai">("overview");
+  const [tab, setTab] = useState<"overview" | "parties" | "documents" | "deadlines" | "tasks" | "messages" | "notes" | "ai" | "aml">("overview");
 
   useEffect(() => {
     apiGet<Matter>(`/matters/${id}`).then(setMatter).catch(() => {});
@@ -78,6 +78,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
     ["messages", t.messages],
     ["notes", t.notes],
     ["ai", t.assistant],
+    ["aml", "AML"],
   ] as const;
 
   return (
@@ -114,6 +115,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
       {tab === "messages" && <Messages matterId={id} />}
       {tab === "notes" && <Notes matterId={id} />}
       {tab === "ai" && <MatterAI matterId={id} />}
+      {tab === "aml" && <AmlTab matterId={id} clientId={matter.client?.id || null} />}
     </div>
   );
 
@@ -1205,6 +1207,224 @@ function MatterAI({ matterId }: { matterId: string }) {
           )}
         </Card>
       )}
+    </div>
+  );
+}
+
+// ---------- AML (Law 05/L-096): per-matter checklist + suspicion reports ----------
+
+interface AmlIndicator {
+  code: string;
+  category: string;
+  text: Record<string, string>;
+}
+
+interface AmlReport {
+  id: string;
+  matter_id: string | null;
+  indicators: string[];
+  description: string;
+  status: string;
+  submitted_at: string | null;
+  created_at: string;
+}
+
+function AmlTab({ matterId, clientId }: { matterId: string; clientId: string | null }) {
+  const { t, locale } = useI18n();
+  const [indicators, setIndicators] = useState<AmlIndicator[]>([]);
+  const [scopeHint, setScopeHint] = useState<Record<string, string>>({});
+  const [inScope, setInScope] = useState(false);
+  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [notes, setNotes] = useState("");
+  const [loaded, setLoaded] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+  const [reports, setReports] = useState<AmlReport[]>([]);
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [reportDesc, setReportDesc] = useState("");
+
+  const loadReports = useCallback(() => {
+    apiGet<AmlReport[]>("/aml/reports")
+      .then((all) => setReports(all.filter((r) => r.matter_id === matterId)))
+      .catch(() => {});
+  }, [matterId]);
+
+  useEffect(() => {
+    apiGet<{ indicators: AmlIndicator[]; scope_hint: Record<string, string> }>("/aml/indicators")
+      .then((r) => {
+        setIndicators(r.indicators);
+        setScopeHint(r.scope_hint);
+      })
+      .catch(() => {});
+    apiGet<{ in_scope: boolean; checked: Record<string, boolean>; notes: string | null }>(
+      `/aml/matters/${matterId}/checklist`
+    )
+      .then((r) => {
+        setInScope(r.in_scope);
+        setChecked(r.checked || {});
+        setNotes(r.notes || "");
+        setLoaded(true);
+      })
+      .catch(() => setLoaded(true));
+    loadReports();
+  }, [matterId, loadReports]);
+
+  async function save() {
+    setError("");
+    setSaved(false);
+    try {
+      await apiPut(`/aml/matters/${matterId}/checklist`, {
+        in_scope: inScope,
+        checked,
+        notes: notes || null,
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  async function createReport(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    try {
+      await apiPost("/aml/reports", {
+        matter_id: matterId,
+        contact_id: clientId,
+        indicators: Object.keys(checked).filter((k) => checked[k]),
+        description: reportDesc,
+      });
+      setReportDesc("");
+      setShowReportForm(false);
+      loadReports();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  async function submitReport(id: string) {
+    await apiPost(`/aml/reports/${id}/submit`);
+    loadReports();
+  }
+
+  if (!loaded) return <Spinner />;
+
+  const flaggedCount = Object.values(checked).filter(Boolean).length;
+
+  return (
+    <div className="space-y-4">
+      <Card className="p-5 space-y-4">
+        <div>
+          <h2 className="font-semibold">{t.amlChecklist}</h2>
+          <p className="text-xs text-slate-500 mt-1">{scopeHint[locale] || scopeHint.sq}</p>
+        </div>
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="checkbox"
+            checked={inScope}
+            onChange={(e) => setInScope(e.target.checked)}
+            className="accent-indigo-600"
+          />
+          {t.amlInScope}
+        </label>
+        {inScope && (
+          <>
+            <div className="space-y-2 pt-2 border-t border-slate-100">
+              <p className="text-sm font-medium">{t.amlIndicators}</p>
+              {indicators.map((ind) => (
+                <label key={ind.code} className="flex items-start gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={!!checked[ind.code]}
+                    onChange={(e) => setChecked({ ...checked, [ind.code]: e.target.checked })}
+                    className="mt-0.5 accent-amber-600"
+                  />
+                  <span className={checked[ind.code] ? "text-amber-800" : "text-slate-600"}>
+                    {ind.text[locale] || ind.text.sq}
+                  </span>
+                </label>
+              ))}
+            </div>
+            <div>
+              <Label>{t.notes}</Label>
+              <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
+            </div>
+          </>
+        )}
+        <div className="flex items-center gap-3">
+          <Button onClick={save}>{t.save}</Button>
+          {saved && <span className="text-sm text-emerald-600">✓ {t.saved}</span>}
+          <ErrorNote message={error} />
+        </div>
+      </Card>
+
+      <Card className="p-5 space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="font-semibold">{t.suspicionReports}</h2>
+            <p className="text-xs text-slate-500 mt-1">{t.amlNotifyOfficerOnly}</p>
+          </div>
+          <Button variant="secondary" onClick={() => setShowReportForm(!showReportForm)}>
+            {t.newSuspicionReport}
+          </Button>
+        </div>
+        {showReportForm && (
+          <form onSubmit={createReport} className="space-y-3 pt-2 border-t border-slate-100">
+            {flaggedCount > 0 && (
+              <p className="text-xs text-slate-500">
+                {t.amlIndicators}: {flaggedCount}
+              </p>
+            )}
+            <div>
+              <Label>{t.description}</Label>
+              <Textarea
+                rows={4}
+                value={reportDesc}
+                onChange={(e) => setReportDesc(e.target.value)}
+                required
+                minLength={10}
+              />
+            </div>
+            <Button type="submit">{t.save}</Button>
+          </form>
+        )}
+        {reports.length > 0 && (
+          <div className="divide-y divide-slate-100">
+            {reports.map((r) => (
+              <div key={r.id} className="py-2.5 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm truncate">{r.description}</p>
+                  <p className="text-xs text-slate-400">
+                    {new Date(r.created_at).toLocaleDateString()} ·{" "}
+                    {r.status === "submitted"
+                      ? `${t.submittedOn} ${r.submitted_at ? new Date(r.submitted_at).toLocaleDateString() : ""}`
+                      : t.draftStatus}
+                  </p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() =>
+                      apiDownload(`/aml/reports/${r.id}/pdf`, `raport-dyshimi-${r.id.slice(0, 8)}.pdf`)
+                    }
+                    className="text-xs text-indigo-600 hover:underline"
+                  >
+                    PDF
+                  </button>
+                  {r.status !== "submitted" && (
+                    <button
+                      onClick={() => submitReport(r.id)}
+                      className="text-xs text-emerald-600 hover:underline"
+                    >
+                      {t.markSubmitted}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
     </div>
   );
 }

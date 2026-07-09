@@ -19,6 +19,7 @@ export default function AssistantPage() {
   const [matters, setMatters] = useState<Matter[]>([]);
   const [matterId, setMatterId] = useState("");
   const [providers, setProviders] = useState<Provider[]>([]);
+  const [externalAllowed, setExternalAllowed] = useState(true);
   const [provider, setProvider] = useState("deepseek");
   const [question, setQuestion] = useState("");
   const [busy, setBusy] = useState(false);
@@ -28,7 +29,13 @@ export default function AssistantPage() {
   useEffect(() => {
     apiGet<Conversation[]>("/assistant/conversations").then(setConversations).catch(() => {});
     apiGet<Matter[]>("/matters").then(setMatters).catch(() => {});
-    apiGet<Provider[]>("/assistant/providers").then(setProviders).catch(() => {});
+    apiGet<{ providers: Provider[]; external_ai_allowed: boolean }>("/assistant/providers")
+      .then((r) => {
+        setProviders(r.providers);
+        setExternalAllowed(r.external_ai_allowed);
+        if (!r.external_ai_allowed) setProvider("local");
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -167,15 +174,33 @@ export default function AssistantPage() {
             </Select>
           </div>
           <div className="w-full sm:w-56">
-            <Select value={provider} onChange={(e) => setProvider(e.target.value)}>
+            <Select
+              value={provider}
+              onChange={(e) => setProvider(e.target.value)}
+              disabled={!externalAllowed}
+            >
               {providers.map((p) => (
-                <option key={p.name} value={p.name} disabled={!p.configured}>
+                <option
+                  key={p.name}
+                  value={p.name}
+                  disabled={!p.configured || (p.name !== "local" && !externalAllowed)}
+                >
                   {p.name === "deepseek" ? t.providerExternal : t.providerLocal}
                   {!p.configured ? " (—)" : ""}
                 </option>
               ))}
             </Select>
           </div>
+          {/* International-transfer transparency (Law 06/L-082 art. 49) */}
+          {!externalAllowed ? (
+            <p className="w-full text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+              🔒 {t.externalAiOff}
+            </p>
+          ) : provider !== "local" ? (
+            <p className="w-full text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+              ⚠ {t.externalAiNotice}
+            </p>
+          ) : null}
         </div>
 
         <div className="flex-1 overflow-auto p-4 space-y-4">

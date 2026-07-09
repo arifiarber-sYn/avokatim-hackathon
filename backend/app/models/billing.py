@@ -81,6 +81,9 @@ class TrustTransaction(Base, TenantMixin, TimestampMixin):
     invoice_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("invoices.id", ondelete="SET NULL")
     )
+    # AML (Law 05/L-096): declared source of funds for deposits; deposits of
+    # >= 10,000 EUR trigger a warning in the UI
+    source_of_funds: Mapped[str | None] = mapped_column(String(255))
 
 
 class Invoice(Base, TenantMixin, TimestampMixin):

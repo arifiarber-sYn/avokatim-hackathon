@@ -23,6 +23,8 @@ from app.models.billing import Expense, Invoice, InvoiceItem, TimeEntry, TrustTr
 from app.models.assistant import Conversation, Message
 from app.models.audit import AuditLog
 from app.models.collab import MatterMessage, PushSubscription, SignatureRequest
+from app.models.privacy import ConsentRecord
+from app.models.aml import SuspicionReport
 from app.models.tasks import Task
 
 __all__ = [
@@ -57,4 +59,6 @@ __all__ = [
     "MatterMessage",
     "PushSubscription",
     "SignatureRequest",
+    "ConsentRecord",
+    "SuspicionReport",
 ]

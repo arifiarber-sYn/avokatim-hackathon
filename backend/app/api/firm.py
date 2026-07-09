@@ -1,4 +1,6 @@
 """Firm profile: name and fiscal identity printed on invoices (Kosovo NUI/VAT)."""
+import uuid
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,6 +23,11 @@ class FirmOut(BaseModel):
     default_vat_rate: int
     logo: str | None = None
     require_2fa: bool = False
+    # Data protection (Law 06/L-082)
+    retention_years: int = 10
+    allow_external_ai: bool = True
+    # AML (Law 05/L-096)
+    compliance_officer_id: uuid.UUID | None = None
 
     model_config = {"from_attributes": True}
 
@@ -36,6 +43,9 @@ class FirmUpdate(BaseModel):
     # Small logo as a data URL (~max 200 KB) shown on portal + public intake
     logo: str | None = Field(None, max_length=280_000)
     require_2fa: bool | None = None
+    retention_years: int | None = Field(None, ge=1, le=100)
+    allow_external_ai: bool | None = None
+    compliance_officer_id: uuid.UUID | None = None
 
 
 @router.get("", response_model=FirmOut)

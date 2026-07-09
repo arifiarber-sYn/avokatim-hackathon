@@ -8,6 +8,7 @@ const TOKEN_KEY = "boralaw_portal_token";
 const NAME_KEY = "boralaw_portal_name";
 const FIRM_NAME_KEY = "boralaw_portal_firm";
 const FIRM_LOGO_KEY = "boralaw_portal_firm_logo";
+const TERMS_KEY = "boralaw_portal_terms";
 const API = "/api/portal";
 
 function portalToken(): string | null {
@@ -73,12 +74,14 @@ interface PortalDoc {
 export default function PortalPage() {
   const { t } = useI18n();
   const [authed, setAuthed] = useState<boolean | null>(null);
+  const [termsOk, setTermsOk] = useState(true);
   const [clientName, setClientName] = useState("");
   const [firmName, setFirmName] = useState("");
   const [firmLogo, setFirmLogo] = useState("");
 
   useEffect(() => {
     setAuthed(!!portalToken());
+    setTermsOk(localStorage.getItem(TERMS_KEY) !== "pending");
     setClientName(localStorage.getItem(NAME_KEY) || "");
     setFirmName(localStorage.getItem(FIRM_NAME_KEY) || "");
     setFirmLogo(localStorage.getItem(FIRM_LOGO_KEY) || "");
@@ -118,14 +121,17 @@ export default function PortalPage() {
         </div>
       </header>
       <main className="max-w-3xl mx-auto px-4 py-5 sm:py-8">
-        {authed ? (
+        {authed && !termsOk ? (
+          <PortalAcceptTerms onAccepted={() => setTermsOk(true)} />
+        ) : authed ? (
           <PortalHome clientName={clientName} />
         ) : (
           <PortalLogin
-            onLogin={(name) => {
+            onLogin={(name, accepted) => {
               setClientName(name);
               setFirmName(localStorage.getItem(FIRM_NAME_KEY) || "");
               setFirmLogo(localStorage.getItem(FIRM_LOGO_KEY) || "");
+              setTermsOk(accepted);
               setAuthed(true);
             }}
           />
@@ -135,8 +141,8 @@ export default function PortalPage() {
   );
 }
 
-function PortalLogin({ onLogin }: { onLogin: (name: string) => void }) {
-  const { t } = useI18n();
+function PortalLogin({ onLogin }: { onLogin: (name: string, termsAccepted: boolean) => void }) {
+  const { t, setLocale } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -158,7 +164,10 @@ function PortalLogin({ onLogin }: { onLogin: (name: string) => void }) {
       localStorage.setItem(NAME_KEY, data.client_name);
       localStorage.setItem(FIRM_NAME_KEY, data.firm_name || "");
       localStorage.setItem(FIRM_LOGO_KEY, data.firm_logo || "");
-      onLogin(data.client_name);
+      localStorage.setItem(TERMS_KEY, data.terms_accepted ? "ok" : "pending");
+      // Switch the portal UI to the client's preferred communication language
+      if (data.locale) setLocale(data.locale);
+      onLogin(data.client_name, !!data.terms_accepted);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.error);
     } finally {
@@ -187,6 +196,59 @@ function PortalLogin({ onLogin }: { onLogin: (name: string) => void }) {
             {busy ? t.loading : t.login}
           </Button>
         </form>
+      </Card>
+    </div>
+  );
+}
+
+function PortalAcceptTerms({ onAccepted }: { onAccepted: () => void }) {
+  const { t } = useI18n();
+  const [checked, setChecked] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function accept() {
+    setBusy(true);
+    setError("");
+    try {
+      await portalApi("/accept-terms", { method: "POST", body: JSON.stringify({}) });
+      localStorage.setItem(TERMS_KEY, "ok");
+      onAccepted();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="max-w-md mx-auto mt-12">
+      <Card className="p-6 space-y-4">
+        <div>
+          <h2 className="font-bold text-lg">{t.portalAcceptTermsTitle}</h2>
+          <p className="text-sm text-slate-500 mt-1">{t.portalAcceptTermsBody}</p>
+        </div>
+        <div className="flex gap-4 text-sm">
+          <a href="/kushtet" target="_blank" className="text-indigo-600 hover:underline">
+            {t.termsOfService}
+          </a>
+          <a href="/privatesia" target="_blank" className="text-indigo-600 hover:underline">
+            {t.privacyPolicy}
+          </a>
+        </div>
+        <label className="flex items-start gap-2 text-sm text-slate-600 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={(e) => setChecked(e.target.checked)}
+            className="mt-0.5 accent-indigo-600"
+          />
+          <span>{t.acceptTosLabel}</span>
+        </label>
+        <ErrorNote message={error} />
+        <Button onClick={accept} disabled={!checked || busy} className="w-full">
+          {busy ? t.loading : t.acceptAndContinue}
+        </Button>
       </Card>
     </div>
   );

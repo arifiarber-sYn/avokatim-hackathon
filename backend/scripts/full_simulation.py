@@ -61,7 +61,14 @@ async def main() -> None:
             "practice_name": f"Zyra Sim {SUFFIX}", "full_name": "Av. Driton Sim",
             "email": f"driton.sim.{SUFFIX}@gmail.com", "password": PW_FIRM,
         })
-        check("signup i zyrës (trial 30d)", r.status_code == 201)
+        check("signup pa pranim të kushteve REFUZOHET (Ligji 06/L-082)",
+              r.status_code == 400)
+        r = await c.post(f"{BASE}/auth/signup", json={
+            "practice_name": f"Zyra Sim {SUFFIX}", "full_name": "Av. Driton Sim",
+            "email": f"driton.sim.{SUFFIX}@gmail.com", "password": PW_FIRM,
+            "accept_tos": True,
+        })
+        check("signup i zyrës (trial 30d, kushtet e pranuara)", r.status_code == 201)
         h = {"Authorization": f"Bearer {r.json()['access_token']}"}
 
         r = await c.patch(f"{BASE}/firm", headers=h, json={
@@ -96,8 +103,9 @@ async def main() -> None:
             "summary": "Blerësi nuk e ka paguar faturën prej 48.000 EUR për mallin e "
                        "dorëzuar më 15.03.2026 sipas kontratës së furnizimit. Duam të "
                        "iniciojmë procedurë përmbarimore ose padi për borxhin.",
+            "accept_privacy": True,
         })
-        check("kompania dërgon kërkesën online", r.status_code == 201)
+        check("kompania dërgon kërkesën online (privatësia e pranuar)", r.status_code == 201)
 
         # ============ FIRM: intake -> conflict -> matter ============
         print("\n=== 3. ZYRA: intake, konflikti, hapja e lëndës ===")
@@ -446,6 +454,112 @@ async def main() -> None:
         from app.services.sms import sms_enabled
         check("kanali SMS i implementuar (aktivizohet me .env)", True,
               "aktiv" if sms_enabled() else "(Twilio i pakonfiguruar)")
+
+        # ============ Kosovo compliance: languages, privacy, AML ============
+        print("\n=== 20. GJUHËT ZYRTARE (Ligji 02/L-37) ===")
+        r = await c.put(f"{BASE}/contacts/{client_id}", headers=h, json={
+            "kind": "company", "display_name": f"NTP Ferro Sim {SUFFIX} SH.P.K.",
+            "email": f"kontakt.ferro.{SUFFIX}@gmail.com", "phone": "+383 44 111 222",
+            "locale": "sr",
+        })
+        check("gjuha e komunikimit të klientit ruhet (sr)",
+              r.status_code == 200 and r.json().get("locale") == "sr")
+        r = await c.post(f"{BASE}/portal/login", json={
+            "email": f"kontakt.ferro.{SUFFIX}@gmail.com", "password": PW_CLIENT,
+        })
+        check("portali kthen gjuhën e klientit + statusin e kushteve",
+              r.status_code == 200 and r.json().get("locale") == "sr"
+              and r.json().get("terms_accepted") is False)
+        r = await c.get(f"{BASE}/invoices/{inv['id']}/pdf", headers=h)
+        check("fatura PDF gjenerohet dygjuhësh (sq + sr)",
+              r.status_code == 200 and r.content[:4] == b"%PDF", f"{len(r.content)} bytes")
+
+        print("\n=== 21. PËLQIMET DHE PRIVATËSIA (Ligji 06/L-082) ===")
+        r = await c.post(f"{BASE}/portal/accept-terms", headers=ph)
+        check("klienti pranon kushtet në portal", r.status_code == 200)
+        r = await c.get(f"{BASE}/contacts/{client_id}/consents", headers=h)
+        kinds = [x["kind"] for x in r.json()] if r.status_code == 200 else []
+        check("pëlqimi portal_tos u regjistrua me datë/IP",
+              r.status_code == 200 and "portal_tos" in kinds)
+        r = await c.post(f"{BASE}/contacts/{client_id}/consents", headers=h,
+                         json={"kind": "sms", "granted": True})
+        check("avokati regjistron pëlqimin SMS", r.status_code == 200)
+        r = await c.post(f"{BASE}/contacts/{client_id}/consents", headers=h,
+                         json={"kind": "sms", "granted": False})
+        check("pëlqimi SMS revokohet", r.status_code == 200
+              and not any(x["kind"] == "sms" and x["revoked_at"] is None
+                          for x in r.json()))
+        r = await c.get(f"{BASE}/contacts/{client_id}/export", headers=h)
+        check("eksporti ZIP për subjektin e të dhënave",
+              r.status_code == 200 and r.content[:2] == b"PK", f"{len(r.content)} bytes")
+        r = await c.get(f"{BASE}/privacy/retention-review", headers=h)
+        check("lista e retention-it për shqyrtim", r.status_code == 200,
+              f"{len(r.json().get('matters', []))} lëndë të skaduara")
+        # erasure on a scrap contact (the client has open matters — must refuse)
+        r = await c.post(f"{BASE}/contacts/{client_id}/erasure", headers=h)
+        check("fshirja REFUZOHET sa ka lëndë të hapura", r.status_code == 400)
+        r = await c.post(f"{BASE}/contacts", headers=h,
+                         json={"display_name": f"Person Skrap {SUFFIX}", "kind": "person",
+                               "email": f"skrap.{SUFFIX}@gmail.com"})
+        scrap_id = r.json()["id"]
+        r = await c.post(f"{BASE}/contacts/{scrap_id}/erasure", headers=h)
+        anon = (await c.get(f"{BASE}/contacts/{scrap_id}", headers=h)).json()
+        check("kontakti anonimizohet (e drejta e fshirjes)",
+              r.status_code == 200 and anon.get("anonymized_at") is not None
+              and anon.get("email") is None)
+
+        print("\n=== 22. AI E JASHTME (transferimet ndërkombëtare) ===")
+        r = await c.patch(f"{BASE}/firm", headers=h, json={"allow_external_ai": False})
+        check("AI e jashtme çaktivizohet nga zyra", r.status_code == 200)
+        r = await c.get(f"{BASE}/assistant/providers", headers=h)
+        check("asistentja raporton se AI e jashtme është e ndaluar",
+              r.status_code == 200 and r.json().get("external_ai_allowed") is False)
+        r = await c.patch(f"{BASE}/firm", headers=h, json={"allow_external_ai": True})
+        check("AI e jashtme riaktivizohet", r.status_code == 200)
+
+        print("\n=== 23. AML/KYC (Ligji 05/L-096) ===")
+        r = await c.put(f"{BASE}/contacts/{client_id}", headers=h, json={
+            "kind": "company", "display_name": f"NTP Ferro Sim {SUFFIX} SH.P.K.",
+            "email": f"kontakt.ferro.{SUFFIX}@gmail.com", "locale": "sr",
+            "id_doc_type": "id_card", "id_doc_number": "1234567890",
+            "id_verified_on": date.today().isoformat(),
+            "risk_level": "standard", "is_pep": False,
+            "beneficial_owner": "Fadil Ferro (100%)",
+        })
+        check("KYC te kontakti (dokumenti, rreziku, pronari përfitues)",
+              r.status_code == 200 and r.json().get("id_doc_type") == "id_card")
+        r = await c.post(f"{BASE}/trust/transactions", headers=h, json={
+            "matter_id": mid, "kind": "deposit", "occurred_on": date.today().isoformat(),
+            "amount": "12000.00", "description": "Depozitë e madhe për blerje prone",
+            "source_of_funds": "Shitja e banesës — kontrata nr. 456/2026",
+        })
+        check("depozita ≥10k me burim fondesh regjistrohet e shënjuar",
+              r.status_code == 201)
+        r = await c.get(f"{BASE}/aml/indicators", headers=h)
+        inds = r.json().get("indicators", []) if r.status_code == 200 else []
+        check("indikatorët e NjIF-K si të dhëna (6 gjuhë)",
+              len(inds) >= 8 and all("sr" in i["text"] for i in inds), f"{len(inds)} indikatorë")
+        r = await c.get(f"{BASE}/aml/matters/{mid}/checklist", headers=h)
+        check("checklist AML sugjeron fushëveprimin (ka trust ledger)",
+              r.status_code == 200 and r.json().get("suggested_in_scope") is True)
+        r = await c.put(f"{BASE}/aml/matters/{mid}/checklist", headers=h, json={
+            "in_scope": True, "checked": {"aml.cash_large": True},
+            "notes": "Depozita 12.000 € — burimi i dokumentuar.",
+        })
+        check("checklist AML ruhet te lënda", r.status_code == 200)
+        r = await c.post(f"{BASE}/aml/reports", headers=h, json={
+            "matter_id": mid, "contact_id": client_id,
+            "indicators": ["aml.cash_large"],
+            "description": "Depozitë e pazakontë 12.000 € cash; burimi kërkon verifikim shtesë.",
+        })
+        check("raporti i brendshëm i dyshimit krijohet", r.status_code == 201)
+        rep_id = r.json()["id"]
+        r = await c.get(f"{BASE}/aml/reports/{rep_id}/pdf", headers=h)
+        check("raporti i dyshimit eksportohet PDF për NjIF-K",
+              r.status_code == 200 and r.content[:4] == b"%PDF", f"{len(r.content)} bytes")
+        r = await c.post(f"{BASE}/aml/reports/{rep_id}/submit", headers=h)
+        check("raporti shënohet i dërguar", r.status_code == 200
+              and r.json().get("status") == "submitted")
 
     # ============ cleanup ============
     from sqlalchemy import text as sqltext

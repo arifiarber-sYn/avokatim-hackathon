@@ -47,7 +47,28 @@ class Tenant(Base, TimestampMixin):
     # Small logo (data URL) shown in the client portal and public intake form
     logo: Mapped[str | None] = mapped_column(Text)
 
-    users: Mapped[list["User"]] = relationship(back_populates="tenant")
+    # --- Data protection (Law 06/L-082) ---
+    # When the signup checkbox for ToS/Privacy was ticked
+    tos_accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Years to keep matter files after closing before flagging for review
+    retention_years: Mapped[int] = mapped_column(Integer, default=10, server_default="10")
+    # Whether the external AI provider (DeepSeek) may be used; when False the
+    # assistant is forced to the local provider (fully compliant route)
+    allow_external_ai: Mapped[bool] = mapped_column(
+        Boolean, default=True, server_default="true"
+    )
+
+    # --- AML (Law 05/L-096) ---
+    # Designated compliance officer (obligatory for reporting entities)
+    compliance_officer_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL")
+    )
+
+    # compliance_officer_id adds a second FK path tenants<->users, so the
+    # membership relationship must name its FK column explicitly
+    users: Mapped[list["User"]] = relationship(
+        back_populates="tenant", foreign_keys="User.tenant_id"
+    )
 
 
 class User(Base, TimestampMixin):
@@ -77,4 +98,4 @@ class User(Base, TimestampMixin):
     is_superadmin: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-    tenant: Mapped[Tenant] = relationship(back_populates="users")
+    tenant: Mapped[Tenant] = relationship(back_populates="users", foreign_keys=[tenant_id])

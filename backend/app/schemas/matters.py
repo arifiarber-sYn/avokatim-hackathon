@@ -14,11 +14,19 @@ class ContactIn(BaseModel):
     notes: str | None = None
     # Client's communication language (sq/sr/tr/bs/en/zh); null = firm default
     locale: str | None = None
+    # KYC / AML (Law 05/L-096)
+    id_doc_type: str | None = None  # id_card | passport | driving_licence | other
+    id_doc_number: str | None = None
+    id_verified_on: date | None = None
+    risk_level: str | None = None  # low | standard | high
+    is_pep: bool = False
+    beneficial_owner: str | None = None
 
 
 class ContactOut(ContactIn):
     id: uuid.UUID
     portal_enabled: bool = False
+    anonymized_at: datetime | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}

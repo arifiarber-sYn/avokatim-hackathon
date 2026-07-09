@@ -887,6 +887,152 @@ Naručilac                                      Pružalac
 # tariff changes.
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# AML indicators for lawyers (Law No. 05/L-096; based on NjIF-K / FIU-Kosovo
+# guidance for reporting entities). Jurisdiction DATA, not code: the checklist
+# activates for matters in the law's scope (real estate transactions, managing
+# client funds, company formation/management).
+# ---------------------------------------------------------------------------
+
+XK_AML_INDICATORS = [
+    {
+        "code": "aml.cash_large",
+        "category": "funds",
+        "text": {
+            "sq": "Pagesa ose depozita në para të gatshme ≥ 10.000 € (ose disa më të vogla të lidhura)",
+            "sr": "Gotovinske uplate ili depoziti ≥ 10.000 € (ili više povezanih manjih)",
+            "tr": "≥ 10.000 € nakit ödeme veya depozito (veya bağlantılı birden çok küçük tutar)",
+            "bs": "Gotovinske uplate ili depoziti ≥ 10.000 € (ili više povezanih manjih)",
+            "en": "Cash payments or deposits ≥ €10,000 (or several linked smaller ones)",
+            "zh": "现金支付或存款 ≥ 10,000 欧元（或多笔关联小额）",
+        },
+    },
+    {
+        "code": "aml.source_unclear",
+        "category": "funds",
+        "text": {
+            "sq": "Burimi i fondeve i paqartë, i padokumentuar ose në mospërputhje me profilin e klientit",
+            "sr": "Poreklo sredstava nejasno, nedokumentovano ili u neskladu sa profilom klijenta",
+            "tr": "Fon kaynağı belirsiz, belgesiz veya müvekkil profiliyle uyumsuz",
+            "bs": "Porijeklo sredstava nejasno, nedokumentovano ili u neskladu s profilom klijenta",
+            "en": "Source of funds unclear, undocumented or inconsistent with the client profile",
+            "zh": "资金来源不明、无凭证或与客户情况不符",
+        },
+    },
+    {
+        "code": "aml.identity_reluctance",
+        "category": "kyc",
+        "text": {
+            "sq": "Klienti heziton të japë dokument identifikimi ose jep të dhëna kontradiktore",
+            "sr": "Klijent okleva da pruži identifikacioni dokument ili daje protivrečne podatke",
+            "tr": "Müvekkil kimlik belgesi vermekte isteksiz veya çelişkili bilgiler veriyor",
+            "bs": "Klijent oklijeva da pruži identifikacioni dokument ili daje protivrječne podatke",
+            "en": "Client reluctant to provide ID or gives contradictory information",
+            "zh": "客户不愿提供身份证件或提供矛盾信息",
+        },
+    },
+    {
+        "code": "aml.third_party",
+        "category": "kyc",
+        "text": {
+            "sq": "Palë e tretë e paidentifikuar paguan ose udhëzon transaksionin; përfaqësim pa arsye të qartë",
+            "sr": "Neidentifikovano treće lice plaća ili usmerava transakciju; zastupanje bez jasnog razloga",
+            "tr": "Kimliği belirsiz üçüncü kişi işlemi ödüyor veya yönlendiriyor; açık nedeni olmayan temsil",
+            "bs": "Neidentifikovano treće lice plaća ili usmjerava transakciju; zastupanje bez jasnog razloga",
+            "en": "Unidentified third party funds or directs the transaction; representation without clear reason",
+            "zh": "身份不明的第三方付款或主导交易；无明确理由的代理",
+        },
+    },
+    {
+        "code": "aml.property_value",
+        "category": "real_estate",
+        "text": {
+            "sq": "Çmimi i patundshmërisë dukshëm nën/mbi vlerën e tregut, ose rishitje të shpejta të njëpasnjëshme",
+            "sr": "Cena nepokretnosti znatno ispod/iznad tržišne vrednosti, ili brze uzastopne preprodaje",
+            "tr": "Gayrimenkul fiyatı piyasa değerinin belirgin altında/üstünde veya art arda hızlı satışlar",
+            "bs": "Cijena nekretnine znatno ispod/iznad tržišne vrijednosti, ili brze uzastopne preprodaje",
+            "en": "Property price clearly below/above market value, or rapid successive resales",
+            "zh": "房产价格明显低于/高于市场价，或快速连续转售",
+        },
+    },
+    {
+        "code": "aml.shell_company",
+        "category": "company",
+        "text": {
+            "sq": "Themelim kompanish pa aktivitet të qartë ekonomik, me pronarë të fshehur ose struktura komplekse pa arsye",
+            "sr": "Osnivanje kompanija bez jasne ekonomske aktivnosti, sa skrivenim vlasnicima ili nepotrebno složenim strukturama",
+            "tr": "Açık ekonomik faaliyeti olmayan, gizli sahipli veya gereksiz karmaşık yapılı şirket kuruluşu",
+            "bs": "Osnivanje kompanija bez jasne ekonomske aktivnosti, sa skrivenim vlasnicima ili nepotrebno složenim strukturama",
+            "en": "Company formation without clear economic activity, hidden owners or needlessly complex structures",
+            "zh": "设立无明确经济活动的公司、隐藏所有人或无故复杂的结构",
+        },
+    },
+    {
+        "code": "aml.pep",
+        "category": "kyc",
+        "text": {
+            "sq": "Klienti ose pronari përfitues është person i ekspozuar politikisht (PEP)",
+            "sr": "Klijent ili stvarni vlasnik je politički eksponirana ličnost (PEP)",
+            "tr": "Müvekkil veya gerçek faydalanıcı siyasi nüfuz sahibi kişi (PEP)",
+            "bs": "Klijent ili stvarni vlasnik je politički eksponirana osoba (PEP)",
+            "en": "Client or beneficial owner is a politically exposed person (PEP)",
+            "zh": "客户或受益所有人为政治公众人物（PEP）",
+        },
+    },
+    {
+        "code": "aml.geography",
+        "category": "kyc",
+        "text": {
+            "sq": "Lidhje me juridiksione me rrezik të lartë ose nën sanksione",
+            "sr": "Veze sa jurisdikcijama visokog rizika ili pod sankcijama",
+            "tr": "Yüksek riskli veya yaptırım altındaki ülkelerle bağlantılar",
+            "bs": "Veze s jurisdikcijama visokog rizika ili pod sankcijama",
+            "en": "Links to high-risk or sanctioned jurisdictions",
+            "zh": "与高风险或受制裁司法辖区有关联",
+        },
+    },
+    {
+        "code": "aml.urgency",
+        "category": "behavior",
+        "text": {
+            "sq": "Ngutje e pazakontë, mungesë interesi për kushtet, ose gatishmëri për të paguar tarifa dukshëm më të larta",
+            "sr": "Neuobičajena žurba, nezainteresovanost za uslove, ili spremnost da se plate znatno veće naknade",
+            "tr": "Olağandışı acele, koşullara ilgisizlik veya belirgin şekilde yüksek ücret ödemeye isteklilik",
+            "bs": "Neuobičajena žurba, nezainteresovanost za uslove, ili spremnost da se plate znatno veće naknade",
+            "en": "Unusual urgency, indifference to terms, or willingness to pay clearly higher fees",
+            "zh": "异常急迫、对条款漠不关心或愿意支付明显偏高的费用",
+        },
+    },
+    {
+        "code": "aml.transaction_pattern",
+        "category": "funds",
+        "text": {
+            "sq": "Transaksione të shpeshta, të fragmentuara ose kalime fondesh pa logjikë të qartë afariste",
+            "sr": "Česte, fragmentisane transakcije ili prenosi sredstava bez jasne poslovne logike",
+            "tr": "Sık, parçalanmış işlemler veya açık ticari mantığı olmayan fon transferleri",
+            "bs": "Česte, fragmentirane transakcije ili prijenosi sredstava bez jasne poslovne logike",
+            "en": "Frequent, fragmented transactions or fund movements without clear business logic",
+            "zh": "频繁、拆分的交易或缺乏明确商业逻辑的资金流转",
+        },
+    },
+]
+
+# Matter is "in scope" of Law 05/L-096 for lawyers when it involves these
+# activities (art. 16: real estate, managing client money, company formation).
+XK_AML_SCOPE_HINT = {
+    "sq": "Ligji 05/L-096 zbatohet për avokatët kur lënda përfshin: transaksione patundshmërie, "
+          "menaxhim të parave/llogarive të klientit, themelim ose administrim kompanish.",
+    "sr": "Zakon 05/L-096 važi za advokate kada predmet obuhvata: transakcije nepokretnostima, "
+          "upravljanje novcem/računima klijenta, osnivanje ili upravljanje kompanijama.",
+    "tr": "05/L-096 sayılı Kanun, dosya şunları içerdiğinde avukatlar için geçerlidir: gayrimenkul "
+          "işlemleri, müvekkil parası/hesap yönetimi, şirket kuruluşu veya yönetimi.",
+    "bs": "Zakon 05/L-096 važi za advokate kada predmet obuhvata: transakcije nekretninama, "
+          "upravljanje novcem/računima klijenta, osnivanje ili upravljanje kompanijama.",
+    "en": "Law 05/L-096 applies to lawyers when the matter involves: real-estate transactions, "
+          "managing client money/accounts, company formation or management.",
+    "zh": "当案件涉及以下内容时，第05/L-096号法律适用于律师：房地产交易、管理客户资金/账户、公司设立或管理。",
+}
+
 XK_FEE_TARIFF = [
     # Nr. tarifor 1-2: criminal defense / representation, per session or action
     {

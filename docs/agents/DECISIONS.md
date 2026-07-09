@@ -149,3 +149,39 @@
   it is written (better perceived latency). The non-streaming `/ask` endpoint
   remains for scripts/tests. Streaming endpoints must create their own DB
   session — the request-scoped dependency may close before the body finishes.
+
+## D-011: Kosovo compliance is data + explicit records, not hidden logic (2026-07-09)
+
+- Context: full compatibility with Kosovo law requires the Use of Languages
+  law (02/L-37), the Data Protection law (06/L-082, GDPR-aligned) and the
+  AML law (05/L-096, lawyers are reporting entities for real estate, client
+  funds and company formation).
+- Decisions:
+  - **Languages**: six locales everywhere (sq/sr/tr/bs/en/zh). Client-facing
+    output follows `Contact.locale` (fallback tenant default → sq) through
+    the single backend catalog `app/i18n.py`; official documents (invoice
+    PDF) are **bilingual** sq + client language via `bilabel()` rather than
+    replacing Albanian. AI-translated legal templates are seeded but named
+    "kërkon rishikim nga avokati" — never released without human review.
+  - **Consent is a record, not a boolean**: `ConsentRecord` rows carry kind,
+    grant/revoke timestamps, method and IP so consent is demonstrable
+    (art. 7). Features that need consent (SMS) query the record at send time.
+  - **Erasure = anonymization**: matter files must legally be retained, so
+    the right to erasure strips identifiers from the contact and revokes
+    consents instead of deleting rows; blocked while matters are open.
+  - **Retention flags, never auto-deletes**: expired closed matters are
+    listed for the lawyer's decision (`retention_years` per tenant).
+  - **International transfers are a tenant switch**: `allow_external_ai`
+    forces the local LLM provider server-side (not just hidden in UI), and
+    the UI labels what leaves the country. Sub-processors are enumerated in
+    the DPA Annex A.
+  - **AML follows jurisdiction-as-data**: NjIF-K indicators and scope hints
+    are seeds (`XK_AML_INDICATORS`), the per-matter checklist state lives in
+    `Matter.extra["aml"]` (no schema churn), and suspicion reports are
+    generated as PDFs for manual filing — the platform never notifies anyone
+    automatically (tipping-off prohibition, art. 30).
+- Consequences: adding a jurisdiction means adding data (indicators, rules,
+  translations), not code; compliance features are auditable end-to-end
+  (every consent, erasure, export, large deposit and report is in the audit
+  log); one extra FK path tenants↔users required explicit `foreign_keys` on
+  the membership relationship.

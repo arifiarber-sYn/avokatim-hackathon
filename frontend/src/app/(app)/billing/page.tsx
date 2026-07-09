@@ -658,6 +658,7 @@ function TrustTab({ matters }: { matters: Matter[] }) {
     amount: "",
     description: "",
     reference: "",
+    source_of_funds: "",
   });
 
   const load = useCallback(() => {
@@ -680,8 +681,9 @@ function TrustTab({ matters }: { matters: Matter[] }) {
         amount: form.amount,
         description: form.description,
         reference: form.reference || null,
+        source_of_funds: form.source_of_funds || null,
       });
-      setForm({ ...form, amount: "", description: "", reference: "" });
+      setForm({ ...form, amount: "", description: "", reference: "", source_of_funds: "" });
       load();
     } catch (err) {
       setError(err instanceof Error ? err.message : t.error);
@@ -766,8 +768,23 @@ function TrustTab({ matters }: { matters: Matter[] }) {
             <Label>{t.paymentReference}</Label>
             <Input value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} placeholder={t.trustReferenceHint} />
           </div>
+          {form.kind === "deposit" && (
+            <div className="flex-1 min-w-48">
+              <Label>{t.sourceOfFunds}</Label>
+              <Input
+                value={form.source_of_funds}
+                onChange={(e) => setForm({ ...form, source_of_funds: e.target.value })}
+              />
+            </div>
+          )}
           <Button type="submit">{t.addTransaction}</Button>
         </form>
+        {/* AML large-amount warning (Law 05/L-096) */}
+        {form.kind === "deposit" && Number(form.amount) >= 10000 && (
+          <p className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            ⚠ {t.largeCashWarning}
+          </p>
+        )}
         <div className="mt-2"><ErrorNote message={error} /></div>
       </Card>
 

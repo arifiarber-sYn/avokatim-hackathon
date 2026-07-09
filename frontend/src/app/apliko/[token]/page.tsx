@@ -11,6 +11,7 @@ export default function PublicIntakePage({ params }: { params: Promise<{ token: 
   const [logo, setLogo] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [form, setForm] = useState({ client_name: "", client_email: "", client_phone: "", summary: "" });
+  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -41,6 +42,7 @@ export default function PublicIntakePage({ params }: { params: Promise<{ token: 
           client_email: form.client_email || null,
           client_phone: form.client_phone || null,
           summary: form.summary,
+          accept_privacy: acceptPrivacy,
         }),
       });
       if (!res.ok) throw new Error(t.error);
@@ -121,8 +123,23 @@ export default function PublicIntakePage({ params }: { params: Promise<{ token: 
                   minLength={10}
                 />
               </div>
+              <label className="flex items-start gap-2 text-xs text-slate-600 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={acceptPrivacy}
+                  onChange={(e) => setAcceptPrivacy(e.target.checked)}
+                  required
+                  className="mt-0.5 accent-indigo-600"
+                />
+                <span>
+                  {t.acceptPrivacyIntake} —{" "}
+                  <a href="/privatesia" target="_blank" className="text-indigo-600 hover:underline">
+                    {t.privacyPolicy}
+                  </a>
+                </span>
+              </label>
               <ErrorNote message={error} />
-              <Button type="submit" disabled={busy} className="w-full">
+              <Button type="submit" disabled={busy || !acceptPrivacy} className="w-full">
                 {busy ? t.loading : t.submitApplication}
               </Button>
             </form>

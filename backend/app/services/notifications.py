@@ -14,6 +14,7 @@ from app.config import settings
 from app.database import SessionLocal
 from app.i18n import pick_locale, tr
 from app.models import Contact, Deadline, Matter, Tenant, User
+from app.services.consent import has_consent
 from app.services.push import push_enabled, send_push_to_user
 from app.services.sms import send_sms, sms_enabled
 
@@ -121,7 +122,12 @@ async def _check_deadline_reminders(redis: aioredis.Redis) -> None:
                 sms_key = f"reminder-sms:{deadline.id}:{days_left}"
                 if await redis.set(sms_key, "1", nx=True, ex=DEDUP_TTL_SECONDS):
                     client = await db.get(Contact, client_id)
-                    if client is not None and client.phone:
+                    # SMS only with recorded consent (Law 06/L-082 art. 7)
+                    if (
+                        client is not None
+                        and client.phone
+                        and await has_consent(db, client.id, "sms")
+                    ):
                         tenant = await db.get(Tenant, client.tenant_id)
                         client_loc = pick_locale(
                             client.locale, tenant.default_locale if tenant else None

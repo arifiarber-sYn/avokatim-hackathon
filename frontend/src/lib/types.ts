@@ -9,6 +9,23 @@ export interface Contact {
   notes: string | null;
   locale: string | null;
   portal_enabled: boolean;
+  anonymized_at: string | null;
+  // KYC / AML (Law 05/L-096)
+  id_doc_type: string | null;
+  id_doc_number: string | null;
+  id_verified_on: string | null;
+  risk_level: string | null;
+  is_pep: boolean;
+  beneficial_owner: string | null;
+}
+
+export interface ConsentRecord {
+  id: string;
+  kind: string;
+  granted_at: string;
+  revoked_at: string | null;
+  method: string;
+  ip: string | null;
 }
 
 export interface Matter {

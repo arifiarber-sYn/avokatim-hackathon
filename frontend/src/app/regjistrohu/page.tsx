@@ -16,6 +16,7 @@ export default function SignupPage() {
     email: "",
     password: "",
   });
+  const [acceptTos, setAcceptTos] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -27,6 +28,7 @@ export default function SignupPage() {
       const r = await apiPost<{ access_token: string }>("/auth/signup", {
         ...form,
         locale,
+        accept_tos: acceptTos,
       });
       setToken(r.access_token);
       router.push("/dashboard?welcome=1");
@@ -84,8 +86,27 @@ export default function SignupPage() {
             />
             <p className="text-xs text-slate-400 mt-1">{t.passwordMinHint}</p>
           </div>
+          <label className="flex items-start gap-2 text-xs text-slate-600 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={acceptTos}
+              onChange={(e) => setAcceptTos(e.target.checked)}
+              required
+              className="mt-0.5 accent-indigo-600"
+            />
+            <span>
+              {t.acceptTosLabel} —{" "}
+              <Link href="/kushtet" target="_blank" className="text-indigo-600 hover:underline">
+                {t.termsOfService}
+              </Link>
+              {" · "}
+              <Link href="/privatesia" target="_blank" className="text-indigo-600 hover:underline">
+                {t.privacyPolicy}
+              </Link>
+            </span>
+          </label>
           <ErrorNote message={error} />
-          <Button type="submit" disabled={busy} className="w-full">
+          <Button type="submit" disabled={busy || !acceptTos} className="w-full">
             {t.startTrial}
           </Button>
           <p className="text-xs text-slate-500 text-center">{t.trialTerms}</p>

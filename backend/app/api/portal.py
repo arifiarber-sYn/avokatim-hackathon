@@ -17,6 +17,7 @@ from app.models import Contact, Deadline, Matter, MatterMessage, SignatureReques
 from app.security import hash_password, verify_password
 from app.services.audit import log_action
 from app.i18n import pick_locale, tr
+from app.services.consent import grant_consent, has_consent
 from app.services.notifications import send_email
 
 router = APIRouter(prefix="/portal", tags=["portal"])
@@ -87,6 +88,9 @@ async def portal_login(body: PortalLoginIn, db: AsyncSession = Depends(get_db)):
         "client_name": contact.display_name,
         "firm_name": tenant.name if tenant else "BoraLaw",
         "firm_logo": tenant.logo if tenant else None,
+        # First-login ToS/Privacy acceptance (Law 06/L-082)
+        "terms_accepted": await has_consent(db, contact.id, "portal_tos"),
+        "locale": contact.locale,
     }
 
 
@@ -105,6 +109,30 @@ async def _portal_contact(
     if contact is None or not contact.portal_enabled:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Portal access disabled")
     return contact
+
+
+@router.post("/accept-terms")
+async def portal_accept_terms(
+    request: Request,
+    contact: Contact = Depends(_portal_contact),
+    db: AsyncSession = Depends(get_db),
+):
+    """Records the client's ToS/Privacy acceptance as a consent record
+    (Law 06/L-082 art. 7 — demonstrable consent, with timestamp and IP)."""
+    await grant_consent(
+        db,
+        tenant_id=contact.tenant_id,
+        contact_id=contact.id,
+        kind="portal_tos",
+        method="portal",
+        ip=request.client.host if request.client else None,
+    )
+    await log_action(
+        db, tenant_id=contact.tenant_id, user_id=None, action="consent.grant",
+        entity_type="contact", entity_id=str(contact.id), details={"kind": "portal_tos"},
+    )
+    await db.commit()
+    return {"accepted": True}
 
 
 @router.get("/my-matters")

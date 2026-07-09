@@ -39,9 +39,120 @@ export default function SettingsPage() {
       <TwoFASection />
       <CorpusSection />
       <PortalSection />
+      {isAdmin && <ComplianceSection />}
       {isAdmin && <AuditLogSection />}
       {isAdmin && <ExportSection />}
     </div>
+  );
+}
+
+/** Data protection (Law 06/L-082) + AML (Law 05/L-096) firm settings:
+    retention period, external-AI gate, compliance officer, retention review. */
+function ComplianceSection() {
+  const { t } = useI18n();
+  const [retention, setRetention] = useState("10");
+  const [allowAi, setAllowAi] = useState(true);
+  const [officerId, setOfficerId] = useState("");
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [review, setReview] = useState<{
+    matters: { id: string; reference: string; title: string; closed_on: string }[];
+  } | null>(null);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    apiGet<{ retention_years: number; allow_external_ai: boolean; compliance_officer_id: string | null }>("/firm")
+      .then((r) => {
+        setRetention(String(r.retention_years ?? 10));
+        setAllowAi(r.allow_external_ai ?? true);
+        setOfficerId(r.compliance_officer_id || "");
+      })
+      .catch(() => {});
+    apiGet<TeamMember[]>("/team").then(setMembers).catch(() => {});
+    apiGet<{ matters: { id: string; reference: string; title: string; closed_on: string }[] }>(
+      "/privacy/retention-review"
+    )
+      .then(setReview)
+      .catch(() => {});
+  }, []);
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setSaved(false);
+    try {
+      await apiPatch("/firm", {
+        retention_years: Number(retention),
+        allow_external_ai: allowAi,
+        compliance_officer_id: officerId || null,
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  return (
+    <Card className="p-5 space-y-4">
+      <h2 className="font-semibold">{t.privacyTitle}</h2>
+      <form onSubmit={save} className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <Label>{t.retentionYears}</Label>
+            <Input
+              type="number"
+              min={1}
+              max={100}
+              value={retention}
+              onChange={(e) => setRetention(e.target.value)}
+            />
+            <p className="text-xs text-slate-400 mt-1">{t.retentionHint}</p>
+          </div>
+          <div>
+            <Label>{t.complianceOfficer}</Label>
+            <Select value={officerId} onChange={(e) => setOfficerId(e.target.value)}>
+              <option value="">—</option>
+              {members.map((m) => (
+                <option key={m.id} value={m.id}>{m.full_name}</option>
+              ))}
+            </Select>
+          </div>
+        </div>
+        <label className="flex items-start gap-2 text-sm cursor-pointer">
+          <input
+            type="checkbox"
+            checked={allowAi}
+            onChange={(e) => setAllowAi(e.target.checked)}
+            className="mt-0.5 accent-indigo-600"
+          />
+          <span>
+            {t.allowExternalAi}
+            <span className="block text-xs text-slate-400">{t.allowExternalAiHint}</span>
+          </span>
+        </label>
+        <div className="flex items-center gap-3">
+          <Button type="submit">{t.save}</Button>
+          {saved && <span className="text-sm text-emerald-700">✓ {t.saved}</span>}
+          <ErrorNote message={error} />
+        </div>
+      </form>
+      <div className="pt-3 border-t border-slate-100 space-y-2">
+        <p className="text-sm font-medium">{t.retentionReview}</p>
+        {!review || review.matters.length === 0 ? (
+          <p className="text-xs text-slate-400">{t.retentionEmpty}</p>
+        ) : (
+          review.matters.map((m) => (
+            <p key={m.id} className="text-sm text-slate-600">
+              • <span className="font-mono text-xs">{m.reference}</span> {m.title}{" "}
+              <span className="text-xs text-slate-400">
+                — {t.closedOn} {new Date(m.closed_on).toLocaleDateString()}
+              </span>
+            </p>
+          ))
+        )}
+      </div>
+    </Card>
   );
 }
 

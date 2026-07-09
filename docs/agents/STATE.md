@@ -5,7 +5,7 @@
 
 **Last updated:** 2026-07-09
 
-## Status: demo-ready — P0/P1/P2 closed (incl. trust ledger, OAK tariff, .docx, email-in, SMS, card payments); zero known feature gaps
+## Status: demo-ready — P0/P1/P2 closed + full Kosovo-law compliance layer (6 languages, data protection 06/L-082, AML 05/L-096); zero known feature gaps
 
 All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
@@ -175,7 +175,8 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   tenant "Zyra Demo" (8 matters, deadlines, docs, tasks, expenses, trust
   transactions, invoices, portal client with pending signature; logins in the
   script header); demo runbook `docs/pitch/skenari-demo.md`.
-  `full_simulation.py` covers everything: **66 PASS / 0 FAIL / 0 GAP**.
+  `full_simulation.py` covers everything incl. languages/privacy/AML
+  (sections 20–23): **89 PASS / 0 FAIL / 0 GAP**.
 - **Client portal**: full UI at `/portal` — login, matters with hearings,
   two-way messages, e-signature inbox. Shows the **firm's own name + logo**
   (from portal login response) instead of "BoraLaw"; the public intake form
@@ -194,10 +195,50 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   shows push notifications and opens the matter on tap.
 - **Backups**: `backup.sh` — encrypted (AES-256, key at
   `~/.config/boralaw/backup.key`) archive of pg_dump + `data/documents` +
-  `backend/.env` into `~/BoraLawBackups/`, retention 14. Daily at 03:00 via
+  `backend/.env` into `~/BoraLawBackups/`, retention 30. Daily at 03:00 via
   systemd user timer `boralaw-backup.timer` (enabled). Restore steps in the
   script header. **The key file must also be copied somewhere off-machine.**
-- **i18n**: sq / en / zh complete for existing UI.
+- **i18n — 6 languages** (2026-07-09, Law 02/L-37): UI in sq/sr/tr/bs/en/zh
+  (`dictionaries.ts`, ~490 keys each; every new UI string goes in ALL SIX).
+  Backend catalog `app/i18n.py` (`tr`/`pick_locale`/`bilabel`) localizes
+  server-generated output: reminder emails, SMS, invoice email + PDF
+  (bilingual sq + client language), signature-request email, certificate.
+  `Contact.locale` = client communication language (contact form/detail +
+  returned by portal login, portal auto-switches); fallback chain contact →
+  tenant default → sq. Seeds carry sr/tr/bs names for deadline rules,
+  holidays, OAK tariff (merged into existing rows via `_merge_name`);
+  3 Serbian client-facing templates marked "kërkon rishikim nga avokati".
+- **Data protection — Law 06/L-082** (2026-07-09): public multilingual ToS +
+  Privacy pages (`/kushtet`, `/privatesia`; texts in `frontend/src/lib/legal.ts`,
+  long-form Albanian originals in `docs/legal/kushtet-e-perdorimit.md` +
+  `politika-e-privatesise.md`). Mandatory checkboxes: signup
+  (`accept_tos` → `Tenant.tos_accepted_at`), public intake (`accept_privacy` →
+  `IntakeRequest.tos_accepted_at`), portal first login (gate screen →
+  `POST /portal/accept-terms` → ConsentRecord). **ConsentRecord** model
+  (kinds: portal_tos/email/sms/ai_processing; granted/revoked, method, IP) +
+  `/contacts/{id}/consents` API + consent card in contact detail; SMS
+  reminders send only with recorded consent. **Erasure**
+  (`POST /contacts/{id}/erasure`, admin, blocked on open matters — anonymizes
+  identifiers, revokes consents), **data-subject export ZIP**
+  (`GET /contacts/{id}/export`), **retention review**
+  (`Tenant.retention_years`, `GET /privacy/retention-review` flags expired
+  closed matters — never auto-deletes; Settings → compliance card).
+  **External-AI gate**: `Tenant.allow_external_ai` — when off the assistant
+  is forced to the local provider (`_effective_provider`), UI shows a lock
+  note; when on, an art.-49 transfer warning shows for the external provider.
+  Ops docs in `docs/legal/`: breach-notification procedure (72h → AIP), RoPA,
+  DPA Annex A (sub-processors + transfers). `backup.sh` retention 14→30
+  (matches SLA).
+- **AML — Law 05/L-096** (2026-07-09): KYC fields on Contact (id_doc_type/
+  number, id_verified_on, risk_level, is_pep, beneficial_owner; contact-detail
+  form + risk column). `TrustTransaction.source_of_funds` + audit flag
+  `aml_large_amount` and UI warning for deposits ≥ 10,000 €. NjIF-K suspicion
+  indicators as seed data (`XK_AML_INDICATORS`, 10 items × 6 languages) +
+  per-matter AML checklist (state in `Matter.extra["aml"]`, scope
+  auto-suggested when the matter has trust transactions; AML tab on matter).
+  **SuspicionReport** model + `/aml/reports` API + WeasyPrint PDF for filing
+  with NjIF-K + mark-submitted; `Tenant.compliance_officer_id` picker in
+  Settings. Internal AML policy model at `docs/legal/politika-aml.md`.
 - **Audit log** on matter/document actions.
 
 ## Environment

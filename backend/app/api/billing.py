@@ -224,10 +224,17 @@ async def create_trust_transaction(
     )
     db.add(txn)
     await db.flush()
+    # AML (Law 05/L-096 art. 25): deposits at/over 10,000 EUR are flagged in
+    # the audit trail; the UI shows a source-of-funds warning
+    large_cash = body.kind == "deposit" and body.amount >= 10_000
     await log_action(
         db, tenant_id=user.tenant_id, user_id=user.id, action="trust.transaction",
         entity_type="trust_transaction", entity_id=str(txn.id),
-        details={"kind": body.kind, "amount": str(body.amount), "matter": matter.reference},
+        details={
+            "kind": body.kind, "amount": str(body.amount), "matter": matter.reference,
+            **({"aml_large_amount": True} if large_cash else {}),
+            **({"source_of_funds": body.source_of_funds} if body.source_of_funds else {}),
+        },
     )
     await db.commit()
     await db.refresh(txn)

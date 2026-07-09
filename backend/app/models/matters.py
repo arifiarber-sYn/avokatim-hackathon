@@ -41,6 +41,20 @@ class Contact(Base, TenantMixin, TimestampMixin):
     portal_password_hash: Mapped[str | None] = mapped_column(String(255))
     portal_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
 
+    # Right to erasure (Law 06/L-082 art. 17): set when anonymized
+    anonymized_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    # --- KYC / AML (Law 05/L-096: client identification) ---
+    id_doc_type: Mapped[str | None] = mapped_column(String(32))  # id_card | passport | ...
+    id_doc_number: Mapped[str | None] = mapped_column(String(64))
+    id_verified_on: Mapped[date | None] = mapped_column(Date)
+    # low | standard | high (risk-based approach, art. 14)
+    risk_level: Mapped[str | None] = mapped_column(String(16))
+    # Politically exposed person (art. 21 - enhanced due diligence)
+    is_pep: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    # Ultimate beneficial owner, for organizations
+    beneficial_owner: Mapped[str | None] = mapped_column(String(255))
+
 
 class Matter(Base, TenantMixin, TimestampMixin):
     """The case file — the heart of the system."""
@@ -176,3 +190,5 @@ class IntakeRequest(Base, TenantMixin, TimestampMixin):
     matter_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("matters.id", ondelete="SET NULL")
     )
+    # Public form: when the applicant accepted the ToS/Privacy checkbox
+    tos_accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

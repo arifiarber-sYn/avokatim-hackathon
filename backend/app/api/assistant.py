@@ -30,10 +30,32 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/assistant", tags=["assistant"])
 
 
+async def _external_ai_allowed(db: AsyncSession, user: User) -> bool:
+    """Tenant switch for international data transfers (Law 06/L-082 art. 49):
+    when off, the assistant is forced to the local provider."""
+    tenant = await db.get(Tenant, user.tenant_id)
+    return bool(tenant.allow_external_ai) if tenant else True
+
+
+async def _effective_provider(
+    db: AsyncSession, user: User, requested: str | None
+) -> str | None:
+    if not await _external_ai_allowed(db, user):
+        return "local"
+    return requested
+
+
 @router.get("/providers")
-async def providers(user: User = Depends(get_current_user)):
-    """Available LLM backends — the lawyer picks external (DeepSeek) or local."""
-    return list_providers()
+async def providers(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Available LLM backends — the lawyer picks external (DeepSeek) or local.
+    Includes the tenant's external-AI switch so the UI can warn/gate."""
+    return {
+        "providers": list_providers(),
+        "external_ai_allowed": await _external_ai_allowed(db, user),
+    }
 
 
 @router.get("/conversations", response_model=list[ConversationOut])
@@ -147,6 +169,7 @@ async def ask(
     db: AsyncSession = Depends(get_db),
 ):
     conversation, history, jurisdiction_id = await _prepare_ask(db, user, body)
+    provider_name = await _effective_provider(db, user, body.provider)
 
     try:
         answer, citations = await ask_bora(
@@ -154,7 +177,7 @@ async def ask(
             question=body.question,
             matter_id=body.matter_id or conversation.matter_id,
             jurisdiction_id=jurisdiction_id,
-            provider_name=body.provider,
+            provider_name=provider_name,
             history=history,
         )
     except RuntimeError as exc:
@@ -186,6 +209,7 @@ async def ask_stream(body: AskRequest, user: User = Depends(get_current_user)):
 
             yield _sse({"type": "meta", "conversation_id": str(conversation.id)})
 
+            provider_name = await _effective_provider(db, user, body.provider)
             parts: list[str] = []
             try:
                 citations, chunks = await ask_bora_stream(
@@ -193,7 +217,7 @@ async def ask_stream(body: AskRequest, user: User = Depends(get_current_user)):
                     question=body.question,
                     matter_id=body.matter_id or conversation.matter_id,
                     jurisdiction_id=jurisdiction_id,
-                    provider_name=body.provider,
+                    provider_name=provider_name,
                     history=history,
                 )
                 async for kind, text in chunks:
@@ -232,6 +256,7 @@ async def summarize_matter(
     db: AsyncSession = Depends(get_db),
 ):
     matter = await get_owned_matter(db, user, matter_id)
+    provider_name = await _effective_provider(db, user, provider)
     try:
         answer, citations = await ask_bora(
             db,
@@ -241,7 +266,7 @@ async def summarize_matter(
             ),
             matter_id=matter_id,
             jurisdiction_id=matter.jurisdiction_id,
-            provider_name=provider,
+            provider_name=provider_name,
         )
     except RuntimeError as exc:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc))
@@ -257,13 +282,14 @@ async def prep_for_hearing(
     """Court-day preparation: chronology, arguments, weaknesses, witness
     questions and a checklist — grounded in the matter file."""
     matter = await get_owned_matter(db, user, body.matter_id)
+    provider_name = await _effective_provider(db, user, body.provider)
     try:
         answer, citations = await hearing_prep(
             db,
             matter_id=body.matter_id,
             jurisdiction_id=matter.jurisdiction_id,
             extra_instructions=body.extra_instructions,
-            provider_name=body.provider,
+            provider_name=provider_name,
         )
     except RuntimeError as exc:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc))

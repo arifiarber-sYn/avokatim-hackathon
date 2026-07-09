@@ -118,3 +118,26 @@ të Republikës së Kosovës. Kontestet zgjidhen nga gjykata kompetente në
 | Emri: [____] | Emri: [____] |
 | Pozita: [____] | Pozita: [____] |
 | Nënshkrimi: ______________ | Nënshkrimi: ______________ |
+
+---
+
+## Aneksi A — Nënpërpunuesit dhe transferimet ndërkombëtare
+
+*Sipas nenit 49 të Ligjit Nr. 06/L-082: transferimi në shtete pa vendim
+përshtatshmërie kërkon masa mbrojtëse të përshtatshme ose autorizim nga
+Agjencia për Informim dhe Privatësi (AIP). Kontrolluesi duhet ta shqyrtojë
+këtë listë dhe, ku kërkohet, të sigurojë autorizimin përkatës përpara
+aktivizimit të shërbimit opsional.*
+
+| Nënpërpunuesi | Shërbimi | Të dhënat | Vendndodhja | Statusi |
+|---|---|---|---|---|
+| DeepSeek (Hangzhou DeepSeek AI) | Asistenti AI i jashtëm (opsional) | Pyetjet e avokatit, fragmente konteksti të zgjedhura | Kinë | **I çaktivizueshëm** te Cilësimet → "AI e jashtme". Alternativa plotësisht e përputhshme: modeli lokal. |
+| Stripe, Inc. | Pagesa me kartelë (opsionale) | Emri i klientit, email, shuma e faturës | SHBA/BE | Aktivizohet vetëm me konfigurim; Stripe operon me klauzola kontraktuale standarde. |
+| Ofruesi SMTP (p.sh. Google/Gmail) | Dërgimi i emaileve (opsional) | Adresat email, përmbajtja e njoftimeve | SHBA/BE | Sipas konfigurimit të zyrës në `.env`; mund të përdoret ofrues vendor. |
+| Ofruesi SMS (Twilio-kompatibël) | Kujtesa SMS (opsionale) | Numri i telefonit, teksti i kujtesës | SHBA/BE | Vetëm me pëlqim të regjistruar të klientit. |
+| Cloudflare (nëse përdoret tunel/proxy) | Qasje nga interneti (opsionale) | Trafiku i enkriptuar TLS | Global | Nuk ruan përmbajtje; alternativa: qasje vetëm LAN/VPN. |
+
+**Parimi:** dokumentet e klientëve ruhen të enkriptuara në serverin e zyrës
+dhe **kurrë** nuk dërgohen jashtë për indeksim (embeddings lokale). Vetëm
+shërbimet opsionale të listuara më lart përfshijnë transferim, dhe secili
+mund të çaktivizohet.

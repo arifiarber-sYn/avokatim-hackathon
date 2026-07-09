@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import (
     admin_tools,
+    aml,
     assistant,
     auth,
     billing,
@@ -22,6 +23,7 @@ from app.api import (
     matters,
     platform,
     portal,
+    privacy,
     push,
     reports,
     search,
@@ -85,6 +87,8 @@ app.include_router(platform.router, prefix=api_prefix)
 app.include_router(tasks.router, prefix=api_prefix)
 app.include_router(search.router, prefix=api_prefix)
 app.include_router(admin_tools.router, prefix=api_prefix)
+app.include_router(privacy.router, prefix=api_prefix)
+app.include_router(aml.router, prefix=api_prefix)
 
 
 @app.get("/api/health")
