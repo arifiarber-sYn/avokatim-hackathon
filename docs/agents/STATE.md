@@ -245,8 +245,8 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
 - Host: owner's Fedora Linux machine; everything runs locally.
 - **Public domain**: https://avokatiim.ai (+ www) via **Cloudflare Tunnel** —
-  (old domain boraarifi.ai still routed during transition; its DNS zone stays
-  on Cloudflare, avokatiim.ai needs its nameservers moved to Cloudflare too) —
+  live since 2026-07-10 (old domain boraarifi.ai still routed during the
+  transition; both zones on Cloudflare) —
   tunnel `boralaw` (id d22368e7-b5a0-44fb-80f5-12aa1aa5fa7f), config at
   `~/.cloudflared/config.yml` (ingress → 127.0.0.1:3000; Next.js rewrites proxy
   /api → backend). Runs as systemd user service `boralaw-tunnel.service`

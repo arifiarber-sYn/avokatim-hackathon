@@ -19,12 +19,16 @@
   `docs/pitch/skenari-demo.md`, the ICL offer files on Desktop (HTML + email,
   PDF regenerated), and STATE.md. Stack + tunnel restarted.
 - Verified: health OK, frontend 200, old domain https://boraarifi.ai still 200.
-- Left open / next: avokatiim.ai is NOT live yet — its nameservers still point
-  to Namecheap (registrar-servers.com). Owner must add avokatiim.ai as a site
-  in the Cloudflare dashboard and switch nameservers at Namecheap; then run
-  `cloudflared tunnel route dns boralaw avokatiim.ai` (+ www) again. The two
-  stray CNAMEs `avokatiim.ai.boraarifi.ai` / `www.avokatiim.ai.boraarifi.ai`
-  created in the boraarifi.ai zone should be deleted in the dashboard.
+- Update (same evening): owner added avokatiim.ai to Cloudflare + switched
+  nameservers; re-ran `cloudflared tunnel login` (new cert.pem scoped to the
+  new zone; old cert kept as `cert.pem.boraarifi.bak2`), then
+  `cloudflared tunnel route dns --overwrite-dns boralaw avokatiim.ai` (+ www).
+- Verified: https://avokatiim.ai and https://www.avokatiim.ai serve the app
+  (200 + `/api/health` ok); old domain boraarifi.ai still 200.
+- Left open / next: two stray CNAMEs `avokatiim.ai.boraarifi.ai` /
+  `www.avokatiim.ai.boraarifi.ai` in the boraarifi.ai zone are harmless but
+  can be deleted in the dashboard. Once the transition is over, remove the
+  boraarifi.ai ingress entries from `~/.cloudflared/config.yml`.
 
 ## 2026-07-10 — Refresh the first-client proposal before sending (Cursor / Fable 5)
 
