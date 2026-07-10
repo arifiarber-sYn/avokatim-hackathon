@@ -25,10 +25,19 @@
   `cloudflared tunnel route dns --overwrite-dns boralaw avokatiim.ai` (+ www).
 - Verified: https://avokatiim.ai and https://www.avokatiim.ai serve the app
   (200 + `/api/health` ok); old domain boraarifi.ai still 200.
+- Update 2: owner asked that boraarifi.ai no longer serve the app. Added a
+  minimal parking page in the Caddyfile (`http://:8099`, inline HTML respond)
+  and pointed the tunnel ingress for boraarifi.ai + www there instead of
+  127.0.0.1:3000. Note: `http://127.0.0.1:8099` as the site address made
+  Caddy return empty 200 bodies through the tunnel — binding `http://:8099`
+  fixed it.
+- Verified: boraarifi.ai + www serve the parking page (200, "Ky domen është i
+  rezervuar"); avokatiim.ai + www serve the app (200 + /api/health ok); LAN
+  :8443 unaffected.
 - Left open / next: two stray CNAMEs `avokatiim.ai.boraarifi.ai` /
   `www.avokatiim.ai.boraarifi.ai` in the boraarifi.ai zone are harmless but
-  can be deleted in the dashboard. Once the transition is over, remove the
-  boraarifi.ai ingress entries from `~/.cloudflared/config.yml`.
+  can be deleted in the dashboard. When the old domain is dropped entirely,
+  remove its ingress entries and the :8099 block.
 
 ## 2026-07-10 — Refresh the first-client proposal before sending (Cursor / Fable 5)
 
