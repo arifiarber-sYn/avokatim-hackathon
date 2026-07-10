@@ -10,6 +10,23 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-10 — Refresh the first-client proposal before sending (Cursor / Fable 5)
+
+- Done: updated `docs/pitch/prezantimi-firma-avokatesh.md` (still unsent) to
+  match the current product: 6 languages instead of 3 (Law 02/L-37 argument),
+  the multi-lawyer firm layer is now described as BUILT (roles, restricted
+  matters, per-lawyer reports) instead of "next step" — partnership argument
+  repositioned to roadmap prioritization; added the newer differentiators
+  (e-signature + certificate 08/L-022, trust ledger, OAK tariff, fiscal
+  invoice PDF + card payments, email/SMS/calendar, public intake) and a new
+  section on legal compliance as a product feature (06/L-082 consents/
+  erasure/retention + ready contract pack, 05/L-096 KYC/source of funds/
+  NjIF-K reports). Confidentiality paragraph now mentions the external-AI
+  kill switch. Self-notes updated (demo flow, don't sell the firm module as
+  future, demo tenant + runbook pointers).
+- Verified: n/a (docs only).
+- Left open / next: owner fills [emri]/[numri]/[emaili] and sends.
+
 ## 2026-07-09 — Full Kosovo-law compliance: 6 languages, data protection (06/L-082), AML (05/L-096) (Cursor / Fable 5)
 
 - Done — **Phase 1, languages (Law 02/L-37)**: `Locale` extended to
