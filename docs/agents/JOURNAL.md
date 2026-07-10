@@ -10,6 +10,22 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-10 — Domain change: boraarifi.ai → avokatiim.ai (Cursor / Fable 5)
+
+- Done: owner bought avokatiim.ai; updated `PUBLIC_BASE_URL` in `backend/.env`,
+  added avokatiim.ai + www to the Cloudflare tunnel ingress
+  (`~/.cloudflared/config.yml`) while keeping boraarifi.ai routed during the
+  transition; replaced the domain in `full_simulation.py`, `isolation_check.py`,
+  `docs/pitch/skenari-demo.md`, the ICL offer files on Desktop (HTML + email,
+  PDF regenerated), and STATE.md. Stack + tunnel restarted.
+- Verified: health OK, frontend 200, old domain https://boraarifi.ai still 200.
+- Left open / next: avokatiim.ai is NOT live yet — its nameservers still point
+  to Namecheap (registrar-servers.com). Owner must add avokatiim.ai as a site
+  in the Cloudflare dashboard and switch nameservers at Namecheap; then run
+  `cloudflared tunnel route dns boralaw avokatiim.ai` (+ www) again. The two
+  stray CNAMEs `avokatiim.ai.boraarifi.ai` / `www.avokatiim.ai.boraarifi.ai`
+  created in the boraarifi.ai zone should be deleted in the dashboard.
+
 ## 2026-07-10 — Refresh the first-client proposal before sending (Cursor / Fable 5)
 
 - Done: updated `docs/pitch/prezantimi-firma-avokatesh.md` (still unsent) to

@@ -322,7 +322,8 @@ async def main() -> None:
         check("analitika financiare", r.status_code == 200)
 
         r = await c.get(f"{BASE}/calendar/feed-url", headers=h)
-        ics_url = r.json()["url"].replace("https://www.boraarifi.ai", "http://127.0.0.1:8000") \
+        ics_url = r.json()["url"].replace("https://www.avokatiim.ai", "http://127.0.0.1:8000") \
+                                 .replace("https://avokatiim.ai", "http://127.0.0.1:8000") \
                                  .replace("http://127.0.0.1:3000", "http://127.0.0.1:8000")
         r = await c.get(ics_url)
         check("ICS feed me afatet", r.status_code == 200 and b"VEVENT" in r.content)

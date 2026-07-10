@@ -244,7 +244,9 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 ## Environment
 
 - Host: owner's Fedora Linux machine; everything runs locally.
-- **Public domain**: https://boraarifi.ai (+ www) via **Cloudflare Tunnel** —
+- **Public domain**: https://avokatiim.ai (+ www) via **Cloudflare Tunnel** —
+  (old domain boraarifi.ai still routed during transition; its DNS zone stays
+  on Cloudflare, avokatiim.ai needs its nameservers moved to Cloudflare too) —
   tunnel `boralaw` (id d22368e7-b5a0-44fb-80f5-12aa1aa5fa7f), config at
   `~/.cloudflared/config.yml` (ingress → 127.0.0.1:3000; Next.js rewrites proxy
   /api → backend). Runs as systemd user service `boralaw-tunnel.service`
@@ -280,7 +282,8 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   `LOCAL_LLM_MODEL=qwen3:8b` in `backend/.env`.
 - E-signature is the simple flow (typed name + SHA-256 + audit); qualified
   eIDAS/Kosovo e-signature law compliance is future work.
-- ~~PUBLIC_BASE_URL placeholder~~ done 2026-07-07: set to https://boraarifi.ai.
+- ~~PUBLIC_BASE_URL placeholder~~ set to https://avokatiim.ai (2026-07-10;
+  was boraarifi.ai before).
 - Caddy serves a self-signed cert on :8443 (browser warning is expected on LAN).
 
 ## Jurisdictions

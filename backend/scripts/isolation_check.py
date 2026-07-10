@@ -89,7 +89,8 @@ async def main() -> None:
 
         # B's ICS feed must not contain A's deadline
         feed_url = (await c.get(f"{BASE}/calendar/feed-url", headers=hb)).json()["url"]
-        ics = (await c.get(feed_url.replace("https://boraarifi.ai", "http://127.0.0.1:8000")
+        ics = (await c.get(feed_url.replace("https://avokatiim.ai", "http://127.0.0.1:8000")
+                           .replace("https://www.avokatiim.ai", "http://127.0.0.1:8000")
                            .replace("http://127.0.0.1:3000", "http://127.0.0.1:8000"))).text
         check("ICS isolated", str(deadline.get("id")) not in ics and "Afat izolimi" not in ics)
 

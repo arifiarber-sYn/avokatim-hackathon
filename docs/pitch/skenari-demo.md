@@ -8,7 +8,7 @@
 
 | Kush | Ku | Email | Fjalëkalimi |
 |---|---|---|---|
-| Avokatja | http://127.0.0.1:3000 (ose https://boraarifi.ai) | `demo@boralaw.app` | `Demo2026!bora` |
+| Avokatja | http://127.0.0.1:3000 (ose https://avokatiim.ai) | `demo@boralaw.app` | `Demo2026!bora` |
 | Klienti (portal) | `/portal` — hapeni në **telefon** | `klienti.demo@boralaw.app` | `Demo2026!klient` |
 
 ---
