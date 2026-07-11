@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getToken } from "@/lib/api";
+import { getToken, setToken } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { Button, Textarea } from "@/components/ui";
 import PublicShell from "@/components/public-shell";
@@ -23,9 +23,24 @@ export default function Home() {
   const [question, setQuestion] = useState("");
 
   useEffect(() => {
-    // Logged-in lawyers go straight to their dashboard
-    if (getToken()) router.replace("/dashboard");
-    else setReady(true);
+    // Lawyers with a VALID session go straight to their dashboard. A stale
+    // token must not trap visitors on the login page — validate it first
+    // (plain fetch: apiGet would hard-redirect to /login on 401).
+    const token = getToken();
+    if (!token) {
+      setReady(true);
+      return;
+    }
+    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => {
+        if (res.ok) {
+          router.replace("/dashboard");
+        } else {
+          setToken(null);
+          setReady(true);
+        }
+      })
+      .catch(() => setReady(true));
   }, [router]);
 
   useEffect(() => {
