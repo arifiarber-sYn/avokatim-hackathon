@@ -12,11 +12,24 @@ from app.api.matters import _next_reference
 from app.config import settings
 from app.database import get_db
 from app.deps import get_current_user
-from app.models import Contact, IntakeRequest, Jurisdiction, Matter, MatterParty, Tenant, User
+from app.i18n import pick_locale, tr
+from app.models import (
+    CaseRequest,
+    CitizenUser,
+    Contact,
+    IntakeRequest,
+    Jurisdiction,
+    Matter,
+    MatterParty,
+    Tenant,
+    User,
+)
 from app.schemas.matters import IntakeIn, IntakeOut
 from app.services.audit import log_action
 from app.services.conflicts import check_conflicts
+from app.services.consent import grant_consent
 from app.services.assistant import classify_intake
+from app.services.notifications import send_email
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/intake", tags=["intake"])
@@ -129,13 +142,54 @@ async def accept_intake(
 
     intake.status = "accepted"
     intake.matter_id = matter.id
+
+    # Marketplace conversion: the citizen becomes a portal client with the
+    # same credentials as their citizen account.
+    marketplace_citizen = None
+    case = (
+        await db.execute(
+            select(CaseRequest).where(CaseRequest.intake_request_id == intake.id)
+        )
+    ).scalar_one_or_none()
+    if case is not None:
+        marketplace_citizen = await db.get(CitizenUser, case.citizen_id)
+        if marketplace_citizen is not None:
+            client.email = marketplace_citizen.email
+            client.phone = marketplace_citizen.phone
+            client.locale = marketplace_citizen.locale
+            client.portal_password_hash = marketplace_citizen.password_hash
+            client.portal_enabled = True
+            # Carry the citizen's signup privacy consent into the tenant's
+            # consent registry (Law 06/L-082 art. 7 — demonstrable consent)
+            await grant_consent(
+                db, tenant_id=user.tenant_id, contact_id=client.id,
+                kind="portal_tos", method="marketplace",
+                notes=(
+                    "Accepted at citizen signup "
+                    f"{marketplace_citizen.privacy_accepted_at.isoformat() if marketplace_citizen.privacy_accepted_at else '?'}"
+                ),
+            )
+        case.status = "converted"
+        case.contact_id = client.id
+
     await log_action(
         db, tenant_id=user.tenant_id, user_id=user.id, action="intake.accept",
         entity_type="intake", entity_id=str(intake.id),
-        details={"matter_reference": matter.reference},
+        details={"matter_reference": matter.reference,
+                 "from_marketplace": case is not None},
     )
     await db.commit()
     await db.refresh(intake)
+
+    if marketplace_citizen is not None:
+        tenant = await db.get(Tenant, user.tenant_id)
+        loc = pick_locale(marketplace_citizen.locale)
+        await send_email(
+            marketplace_citizen.email,
+            tr(loc, "case_portal_ready_subject"),
+            tr(loc, "case_portal_ready_body", firm=tenant.name,
+               url=f"{settings.public_base_url}/portal"),
+        )
     return intake
 
 

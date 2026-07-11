@@ -10,6 +10,37 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-11 — Public citizen marketplace: Phase 1 of the citizen-bridge vision (Cursor / Fable 5)
+
+- Why: extend AvokatIM from a professionals-only tool into a public bridge
+  citizens ↔ lawyers (owner's "pocket lawyer" vision, D-013). Phase 1 = the
+  case marketplace; Phases 2–4 (public Ava, SOS video, revenue) designed only.
+- Done (backend): `app/models/marketplace.py` — platform-level (tenantless)
+  `CitizenUser`, `LawyerProfile`, `CaseRequest`, `CaseRequestMessage`;
+  Alembic `ca20354674bd`. `app/api/marketplace.py` — citizen signup/login
+  (own JWT claim `citizen`, mandatory privacy consent, email verification via
+  purpose token, Redis rate limits), public lawyer directory with filters,
+  case CRUD + messages; lawyer side: profile upsert, browse (masked citizen
+  name), claim → existing conflict check → IntakeRequest source="marketplace",
+  report-abuse. Intake accept now converts the linked case: Contact gets the
+  citizen's email/locale/same password hash with portal auto-enabled, signup
+  consent lands in ConsentRecord, citizen gets a localized "portal ready"
+  email. 10 new email keys ×6 languages in `app/i18n.py`.
+- Done (frontend): public `/avokatet`, `/posto-rastin` (auth + form,
+  `?avokati=` for directed requests), `/rasti-im` (statuses, chat, close,
+  `?verifiko=` email confirmation), new two-audience landing `/`; in-app
+  `(app)/marketplace` "Tregu" (open/mine, claim + conflict warning, chat,
+  report) + Settings "Profili publik"; `lib/citizen.ts` client with separate
+  token. ~60 new UI keys ×6 languages.
+- Verified: 24 pytest pass (5 new in test_marketplace.py); tsc + next build
+  clean; full_simulation extended with section 24 — **106 PASS / 0 FAIL**
+  (citizen signup guards, masked browse, claim/convert, same-password portal
+  login, abuse report); all new pages return 200 on the live stack.
+- Left open / next: Phase 2 public Ava (RAG is already platform-level),
+  Phase 3 SOS video/audio (blocked on WebRTC media ports — Cloudflare Tunnel
+  is HTTP-only; needs port forwarding or a TURN relay VPS), Phase 4 lawyer
+  plans/lead fees + public stats dashboard for the government pitch.
+
 ## 2026-07-11 — Full rebrand: BoraLaw → AvokatIM, assistant Bora → Ava (Cursor / Fable 5)
 
 - Why: the owner's daughter now works at a company with a similar product;

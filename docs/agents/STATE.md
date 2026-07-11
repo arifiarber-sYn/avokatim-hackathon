@@ -3,9 +3,9 @@
 > Update this file whenever the state changes (new module, dependency, behavior,
 > known issue). Keep it a snapshot, not a history — history lives in JOURNAL.md.
 
-**Last updated:** 2026-07-09
+**Last updated:** 2026-07-11
 
-## Status: demo-ready — P0/P1/P2 closed + full Kosovo-law compliance layer (6 languages, data protection 06/L-082, AML 05/L-096); zero known feature gaps
+## Status: demo-ready — P0/P1/P2 closed + full Kosovo-law compliance layer (6 languages, data protection 06/L-082, AML 05/L-096) + public citizen marketplace (Phase 1 of the citizen-bridge vision); zero known feature gaps
 
 All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
@@ -240,6 +240,41 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   with NjIF-K + mark-submitted; `Tenant.compliance_officer_id` picker in
   Settings. Internal AML policy model at `docs/legal/politika-aml.md`.
 - **Audit log** on matter/document actions.
+- **Public marketplace — citizens ↔ lawyers** (2026-07-11, Phase 1 of D-013):
+  platform-level models in `app/models/marketplace.py` (no tenant_id):
+  `CitizenUser` (own bcrypt password, locale, email verification,
+  `privacy_accepted_at`), `LawyerProfile` (opt-in public directory entry per
+  tenant user: bio/areas/cities/languages/photo, `is_visible`), `CaseRequest`
+  (open → claimed → converted / closed; optional `directed_tenant_id` for
+  requests aimed at one lawyer from the directory), `CaseRequestMessage`
+  (citizen ↔ claiming lawyer pre-intake chat). API `app/api/marketplace.py`:
+  public `/public/citizen/*` (signup with mandatory privacy consent, login,
+  verify-email via purpose token, cases CRUD, messages — Redis rate limits:
+  5 signups/h/IP, 5 cases/day, 60 msgs/day; posting requires verified email;
+  citizen JWT has its own `citizen` claim, unusable as lawyer/portal token),
+  public `GET /public/lawyers` (visible profiles, filter area/city/language),
+  lawyer `/marketplace/*` (profile upsert, browse open cases with masked
+  citizen name, **claim** → existing conflict check → `IntakeRequest
+  source="marketplace"`, mine, messages, report-abuse → closes + audit).
+  On intake **accept**, the linked CaseRequest becomes `converted`, the new
+  Contact gets the citizen's email/locale/**same password hash** with portal
+  auto-enabled, signup consent carried into ConsentRecord
+  (method="marketplace"), and the citizen is emailed that the portal is ready.
+  Emails localized in all 6 langs (`citizen_verify_*`, `case_claimed_*`,
+  `case_directed_*`, `case_message_*`, `case_portal_ready_*` in `app/i18n.py`).
+  Frontend: public `/avokatet` (directory + filters), `/posto-rastin`
+  (citizen signup/login + case form, supports `?avokati=<tenant_id>`),
+  `/rasti-im` (citizen dashboard: statuses, chat, close; handles
+  `?verifiko=<token>`), **new two-audience landing at `/`** (citizens vs
+  lawyers; logged-in lawyers still auto-redirect to /dashboard);
+  in-app `(app)/marketplace` ("Tregu" in nav) with open/mine tabs, claim +
+  conflict warning + report; Settings → "Profili publik" section. Citizen
+  token kept in `localStorage.avokatim_citizen_token`
+  (`frontend/src/lib/citizen.ts`). ~60 new UI keys ×6 languages.
+  Tests: `tests/test_marketplace.py`; `full_simulation.py` section 24
+  (**106 PASS / 0 FAIL**). Phases 2 (public Ava), 3 (SOS video/audio,
+  needs WebRTC ports — Cloudflare Tunnel can't carry UDP media) and
+  4 (revenue) are designed in the plan but not built.
 
 ## Environment
 

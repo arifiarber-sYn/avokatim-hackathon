@@ -204,3 +204,26 @@
   demo credentials changed (demo@avokatim.app / Demo2026!ava); old
   `boralaw_boralaw_*` docker volumes kept temporarily as a safety net; old
   encrypted backups remain readable (same key, copied to the new path).
+
+## D-013: Citizens as platform-level entities, marketplace-first (2026-07-11)
+
+- Context: the owner wants AvokatIM to also serve citizens ("pocket lawyer"):
+  find a lawyer, post a case, free legal AI, live SOS help — free for
+  citizens, revenue from the lawyer side. The existing system is strictly
+  tenant-scoped (lawyers) with per-tenant Contacts (clients).
+- Decision: citizens are a **new platform-level identity** (`CitizenUser`,
+  no tenant_id), NOT tenants and NOT contacts. A citizen's `CaseRequest`
+  crosses into a tenant only at **claim**, which reuses the existing pipeline
+  (conflict check → IntakeRequest source="marketplace" → accept → Contact +
+  Matter). On conversion the Contact inherits the citizen's password hash so
+  one set of credentials works for both the marketplace and the client portal.
+  Lawyer visibility in the public directory is opt-in (`LawyerProfile
+  .is_visible`), and open cases show a masked citizen name until claimed.
+  MVP order fixed as: 1) marketplace, 2) public Ava, 3) SOS video/audio
+  (self-hosted LiveKit + coturn per owner's choice), 4) monetization.
+- Consequences: no duplication of the intake/portal flows; platform-level
+  tables need their own abuse protection (Redis rate limits, email
+  verification, report-abuse) since they sit outside tenant isolation;
+  audit rows for citizen actions have tenant_id=NULL; Phase 3 cannot ship
+  over the current Cloudflare Tunnel (HTTP-only) — needs open UDP ports or
+  a TURN relay, decided before Phase 3 starts.

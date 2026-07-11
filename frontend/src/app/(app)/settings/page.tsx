@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { apiDownload, apiGet, apiPatch, apiPost, apiUpload } from "@/lib/api";
+import { apiDownload, apiGet, apiPatch, apiPost, apiPut, apiUpload } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { Contact } from "@/lib/types";
 import { Button, Card, ErrorNote, Input, Label, Select, Textarea } from "@/components/ui";
@@ -35,6 +35,7 @@ export default function SettingsPage() {
       <TeamSection />
       <CalendarFeedSection />
       <PublicIntakeSection />
+      <PublicProfileSection />
       <ImportSection />
       <TwoFASection />
       <CorpusSection />
@@ -1081,6 +1082,178 @@ function PortalSection() {
         </div>
         <Button type="submit">{t.invitePortal}</Button>
         {message && <span className="text-sm">{message}</span>}
+      </form>
+    </Card>
+  );
+}
+
+/** Public marketplace directory profile: opt-in visibility, bio, areas. */
+function PublicProfileSection() {
+  const { t } = useI18n();
+  const [profile, setProfile] = useState({
+    is_visible: false,
+    bio: "",
+    practice_areas: [] as string[],
+    cities: "",
+    languages: [] as string[],
+    photo: null as string | null,
+  });
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+
+  const AREAS = ["civil", "criminal", "family", "commercial", "labor", "administrative", "other"];
+  const LANGS: { code: string; label: string }[] = [
+    { code: "sq", label: "Shqip" },
+    { code: "sr", label: "Srpski" },
+    { code: "tr", label: "Türkçe" },
+    { code: "bs", label: "Bosanski" },
+    { code: "en", label: "English" },
+    { code: "zh", label: "中文" },
+  ];
+
+  useEffect(() => {
+    apiGet<{
+      is_visible: boolean;
+      bio: string | null;
+      practice_areas: string[];
+      cities: string[];
+      languages: string[];
+      photo: string | null;
+    }>("/marketplace/profile")
+      .then((p) =>
+        setProfile({
+          is_visible: p.is_visible,
+          bio: p.bio || "",
+          practice_areas: p.practice_areas,
+          cities: p.cities.join(", "),
+          languages: p.languages,
+          photo: p.photo,
+        })
+      )
+      .catch(() => {});
+  }, []);
+
+  function toggle(list: string[], value: string): string[] {
+    return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+  }
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setSaved(false);
+    try {
+      await apiPut("/marketplace/profile", {
+        is_visible: profile.is_visible,
+        bio: profile.bio || null,
+        practice_areas: profile.practice_areas,
+        cities: profile.cities.split(",").map((c) => c.trim()).filter(Boolean),
+        languages: profile.languages,
+        photo: profile.photo,
+      });
+      setSaved(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  function onPhotoFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || file.size > 200 * 1024) return;
+    const reader = new FileReader();
+    reader.onload = () => setProfile((p) => ({ ...p, photo: reader.result as string }));
+    reader.readAsDataURL(file);
+  }
+
+  return (
+    <Card className="p-5 space-y-4">
+      <div>
+        <h2 className="font-semibold">{t.mkPublicProfile}</h2>
+        <p className="text-xs text-slate-500 mt-0.5">{t.mkPublicProfileHint}</p>
+      </div>
+      <form onSubmit={save} className="space-y-4">
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="checkbox"
+            checked={profile.is_visible}
+            onChange={(e) => setProfile({ ...profile, is_visible: e.target.checked })}
+            className="accent-indigo-600"
+          />
+          {t.mkVisibleInDirectory}
+        </label>
+        <div>
+          <Label>{t.mkBio}</Label>
+          <Textarea
+            rows={3}
+            value={profile.bio}
+            onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+            maxLength={4000}
+          />
+        </div>
+        <div>
+          <Label>{t.practiceArea}</Label>
+          <div className="flex flex-wrap gap-2">
+            {AREAS.map((a) => (
+              <button
+                key={a}
+                type="button"
+                onClick={() =>
+                  setProfile({ ...profile, practice_areas: toggle(profile.practice_areas, a) })
+                }
+                className={`text-xs rounded-full px-3 py-1 border ${
+                  profile.practice_areas.includes(a)
+                    ? "bg-indigo-600 text-white border-indigo-600"
+                    : "bg-white text-slate-600 border-slate-300"
+                }`}
+              >
+                {t[a as keyof typeof t] as string}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <Label>{t.mkCities}</Label>
+          <Input
+            value={profile.cities}
+            onChange={(e) => setProfile({ ...profile, cities: e.target.value })}
+            placeholder="Prishtinë, Prizren"
+          />
+        </div>
+        <div>
+          <Label>{t.mkLanguagesLabel}</Label>
+          <div className="flex flex-wrap gap-2">
+            {LANGS.map((l) => (
+              <button
+                key={l.code}
+                type="button"
+                onClick={() =>
+                  setProfile({ ...profile, languages: toggle(profile.languages, l.code) })
+                }
+                className={`text-xs rounded-full px-3 py-1 border ${
+                  profile.languages.includes(l.code)
+                    ? "bg-indigo-600 text-white border-indigo-600"
+                    : "bg-white text-slate-600 border-slate-300"
+                }`}
+              >
+                {l.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <Label>{t.mkPhoto}</Label>
+          <div className="flex items-center gap-3">
+            {profile.photo && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={profile.photo} alt="" className="h-12 w-12 rounded-full object-cover" />
+            )}
+            <input type="file" accept="image/*" onChange={onPhotoFile} className="text-xs" />
+          </div>
+        </div>
+        <ErrorNote message={error} />
+        <div className="flex items-center gap-3">
+          <Button type="submit">{t.save}</Button>
+          {saved && <span className="text-sm text-emerald-600">{t.mkProfileSaved}</span>}
+        </div>
       </form>
     </Card>
   );

@@ -20,6 +20,7 @@ from app.api import (
     firm,
     imports,
     intake,
+    marketplace,
     matters,
     platform,
     portal,
@@ -89,6 +90,8 @@ app.include_router(search.router, prefix=api_prefix)
 app.include_router(admin_tools.router, prefix=api_prefix)
 app.include_router(privacy.router, prefix=api_prefix)
 app.include_router(aml.router, prefix=api_prefix)
+app.include_router(marketplace.router, prefix=api_prefix)
+app.include_router(marketplace.public_router, prefix=api_prefix)
 
 
 @app.get("/api/health")

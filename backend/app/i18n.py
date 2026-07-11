@@ -74,6 +74,29 @@ _SQ = {
     "email_new_message_body": '{client} ju shkroi për lëndën "{title}":',
     "email_signed_subject": "Dokumenti u nënshkrua",
     "email_signed_body": "{client} sapo nënshkroi dokumentin e kërkuar (kërkesa {request_id}).",
+    # Marketplace (citizens)
+    "citizen_verify_subject": "AvokatIM — Konfirmo email-in",
+    "citizen_verify_body": (
+        "Konfirmo adresën tënde të email-it duke hapur këtë link:\n{url}\n\n"
+        "Linku vlen 3 ditë."
+    ),
+    "case_claimed_subject": "AvokatIM — Një avokat e mori rastin tënd",
+    "case_claimed_body": (
+        "Rasti yt u mor nga {firm}. Avokati do të të kontaktojë së shpejti — "
+        "mund t'i shkruash edhe ti te 'Rasti im':\n{url}"
+    ),
+    "case_directed_subject": "AvokatIM — Kërkesë e re nga një qytetar",
+    "case_directed_body": (
+        "Një qytetar ju ka dërguar një kërkesë ({category}, {city}). "
+        "Shikojeni te Tregu në AvokatIM:\n{url}"
+    ),
+    "case_message_subject": "AvokatIM — Mesazh i ri për rastin tënd",
+    "case_message_body": "Keni një mesazh të ri për rastin tuaj:\n{url}",
+    "case_portal_ready_subject": "AvokatIM — Rasti u pranua, portali yt është gati",
+    "case_portal_ready_body": (
+        "{firm} e pranoi rastin tënd. Tani ke qasje në portalin e klientit me "
+        "të njëjtin email dhe fjalëkalim:\n{url}"
+    ),
 }
 
 _SR = {
@@ -133,6 +156,29 @@ _SR = {
     "email_new_message_body": '{client} vam je pisao/la o predmetu "{title}":',
     "email_signed_subject": "Dokument je potpisan",
     "email_signed_body": "{client} je upravo potpisao/la traženi dokument (zahtev {request_id}).",
+    # Marketplace (citizens)
+    "citizen_verify_subject": "AvokatIM — Potvrdite email",
+    "citizen_verify_body": (
+        "Potvrdite svoju email adresu otvaranjem ovog linka:\n{url}\n\n"
+        "Link važi 3 dana."
+    ),
+    "case_claimed_subject": "AvokatIM — Advokat je preuzeo vaš slučaj",
+    "case_claimed_body": (
+        "Vaš slučaj je preuzela kancelarija {firm}. Advokat će vas uskoro "
+        "kontaktirati — možete i vi pisati na 'Moj slučaj':\n{url}"
+    ),
+    "case_directed_subject": "AvokatIM — Novi zahtev od građanina",
+    "case_directed_body": (
+        "Građanin vam je poslao zahtev ({category}, {city}). "
+        "Pogledajte na Tržištu u AvokatIM:\n{url}"
+    ),
+    "case_message_subject": "AvokatIM — Nova poruka za vaš slučaj",
+    "case_message_body": "Imate novu poruku za vaš slučaj:\n{url}",
+    "case_portal_ready_subject": "AvokatIM — Slučaj je prihvaćen, vaš portal je spreman",
+    "case_portal_ready_body": (
+        "{firm} je prihvatila vaš slučaj. Sada imate pristup klijentskom "
+        "portalu sa istim emailom i lozinkom:\n{url}"
+    ),
 }
 
 _TR = {
@@ -192,6 +238,29 @@ _TR = {
     "email_new_message_body": '{client} size "{title}" dosyası hakkında yazdı:',
     "email_signed_subject": "Belge imzalandı",
     "email_signed_body": "{client} az önce istenen belgeyi imzaladı (talep {request_id}).",
+    # Marketplace (citizens)
+    "citizen_verify_subject": "AvokatIM — E-postanızı doğrulayın",
+    "citizen_verify_body": (
+        "E-posta adresinizi bu bağlantıyı açarak doğrulayın:\n{url}\n\n"
+        "Bağlantı 3 gün geçerlidir."
+    ),
+    "case_claimed_subject": "AvokatIM — Bir avukat davanızı üstlendi",
+    "case_claimed_body": (
+        "Davanız {firm} tarafından üstlenildi. Avukat kısa süre içinde sizinle "
+        "iletişime geçecek — 'Davam' bölümünden siz de yazabilirsiniz:\n{url}"
+    ),
+    "case_directed_subject": "AvokatIM — Bir vatandaştan yeni talep",
+    "case_directed_body": (
+        "Bir vatandaş size talep gönderdi ({category}, {city}). "
+        "AvokatIM'de Pazar bölümünden inceleyin:\n{url}"
+    ),
+    "case_message_subject": "AvokatIM — Davanız için yeni mesaj",
+    "case_message_body": "Davanız için yeni bir mesajınız var:\n{url}",
+    "case_portal_ready_subject": "AvokatIM — Davanız kabul edildi, portalınız hazır",
+    "case_portal_ready_body": (
+        "{firm} davanızı kabul etti. Artık aynı e-posta ve şifreyle müvekkil "
+        "portalına erişebilirsiniz:\n{url}"
+    ),
 }
 
 _BS = {
@@ -251,6 +320,29 @@ _BS = {
     "email_new_message_body": '{client} vam je pisao/la o predmetu "{title}":',
     "email_signed_subject": "Dokument je potpisan",
     "email_signed_body": "{client} je upravo potpisao/la traženi dokument (zahtjev {request_id}).",
+    # Marketplace (citizens)
+    "citizen_verify_subject": "AvokatIM — Potvrdite email",
+    "citizen_verify_body": (
+        "Potvrdite svoju email adresu otvaranjem ovog linka:\n{url}\n\n"
+        "Link vrijedi 3 dana."
+    ),
+    "case_claimed_subject": "AvokatIM — Advokat je preuzeo vaš slučaj",
+    "case_claimed_body": (
+        "Vaš slučaj je preuzela kancelarija {firm}. Advokat će vas uskoro "
+        "kontaktirati — možete i vi pisati na 'Moj slučaj':\n{url}"
+    ),
+    "case_directed_subject": "AvokatIM — Novi zahtjev od građanina",
+    "case_directed_body": (
+        "Građanin vam je poslao zahtjev ({category}, {city}). "
+        "Pogledajte na Tržištu u AvokatIM:\n{url}"
+    ),
+    "case_message_subject": "AvokatIM — Nova poruka za vaš slučaj",
+    "case_message_body": "Imate novu poruku za vaš slučaj:\n{url}",
+    "case_portal_ready_subject": "AvokatIM — Slučaj je prihvaćen, vaš portal je spreman",
+    "case_portal_ready_body": (
+        "{firm} je prihvatila vaš slučaj. Sada imate pristup klijentskom "
+        "portalu s istim emailom i lozinkom:\n{url}"
+    ),
 }
 
 _EN = {
@@ -310,6 +402,29 @@ _EN = {
     "email_new_message_body": '{client} wrote to you about the matter "{title}":',
     "email_signed_subject": "Document signed",
     "email_signed_body": "{client} just signed the requested document (request {request_id}).",
+    # Marketplace (citizens)
+    "citizen_verify_subject": "AvokatIM — Confirm your email",
+    "citizen_verify_body": (
+        "Confirm your email address by opening this link:\n{url}\n\n"
+        "The link is valid for 3 days."
+    ),
+    "case_claimed_subject": "AvokatIM — A lawyer took your case",
+    "case_claimed_body": (
+        "Your case was taken by {firm}. The lawyer will contact you shortly — "
+        "you can also write to them under 'My case':\n{url}"
+    ),
+    "case_directed_subject": "AvokatIM — New request from a citizen",
+    "case_directed_body": (
+        "A citizen sent you a request ({category}, {city}). "
+        "See it in the AvokatIM Marketplace:\n{url}"
+    ),
+    "case_message_subject": "AvokatIM — New message about your case",
+    "case_message_body": "You have a new message about your case:\n{url}",
+    "case_portal_ready_subject": "AvokatIM — Case accepted, your portal is ready",
+    "case_portal_ready_body": (
+        "{firm} accepted your case. You now have access to the client portal "
+        "with the same email and password:\n{url}"
+    ),
 }
 
 _ZH = {
@@ -361,6 +476,20 @@ _ZH = {
     "email_new_message_body": "{client} 就案件“{title}”给您留言：",
     "email_signed_subject": "文件已签署",
     "email_signed_body": "{client} 刚刚签署了所请求的文件（请求 {request_id}）。",
+    # Marketplace (citizens)
+    "citizen_verify_subject": "AvokatIM — 确认您的邮箱",
+    "citizen_verify_body": "请打开以下链接确认您的邮箱地址：\n{url}\n\n链接有效期为 3 天。",
+    "case_claimed_subject": "AvokatIM — 一位律师接受了您的案件",
+    "case_claimed_body": (
+        "您的案件已由 {firm} 接手。律师将很快与您联系——您也可以在"
+        "“我的案件”中给他们留言：\n{url}"
+    ),
+    "case_directed_subject": "AvokatIM — 来自公民的新请求",
+    "case_directed_body": "一位公民向您发送了请求（{category}，{city}）。请在 AvokatIM 市场中查看：\n{url}",
+    "case_message_subject": "AvokatIM — 您的案件有新消息",
+    "case_message_body": "您的案件收到新消息：\n{url}",
+    "case_portal_ready_subject": "AvokatIM — 案件已受理，您的门户已就绪",
+    "case_portal_ready_body": "{firm} 已受理您的案件。您现在可以使用相同的邮箱和密码访问客户门户：\n{url}",
 }
 
 CATALOG: dict[str, dict[str, str]] = {

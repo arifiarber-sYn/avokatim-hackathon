@@ -562,10 +562,108 @@ async def main() -> None:
         check("raporti shënohet i dërguar", r.status_code == 200
               and r.json().get("status") == "submitted")
 
+        print("\n=== 24. TREGU PUBLIK (qytetarë ↔ avokatë) ===")
+        r = await c.put(f"{BASE}/marketplace/profile", headers=h, json={
+            "is_visible": True, "bio": "Avokat me përvojë në të drejtën civile.",
+            "practice_areas": ["civil", "commercial"], "cities": ["Prishtinë"],
+            "languages": ["sq", "en"],
+        })
+        check("avokati aktivizon profilin publik", r.status_code == 200
+              and r.json().get("is_visible") is True)
+        r = await c.get(f"{BASE}/public/lawyers")
+        directory = r.json() if r.status_code == 200 else []
+        check("drejtoria publike e avokatëve me filtra",
+              any(x["firm_name"] == f"Zyra Sim {SUFFIX}" for x in directory),
+              f"{len(directory)} profile")
+
+        cit_email = f"qytetari.sim.{SUFFIX}@gmail.com"
+        r = await c.post(f"{BASE}/public/citizen/signup", json={
+            "full_name": "Qytetar Simulues", "email": cit_email,
+            "password": "qytetari-pw-123",
+        })
+        check("regjistrimi i qytetarit pa pëlqim privatësie REFUZOHET",
+              r.status_code == 400)
+        r = await c.post(f"{BASE}/public/citizen/signup", json={
+            "full_name": "Qytetar Simulues", "email": cit_email,
+            "phone": "+383 44 555 666", "password": "qytetari-pw-123",
+            "locale": "sq", "accept_privacy": True,
+        })
+        check("regjistrimi i qytetarit (llogari platformë-nivel)", r.status_code == 201)
+        cit_id = r.json()["citizen"]["id"]
+        ch = {"Authorization": f"Bearer {r.json()['access_token']}"}
+
+        case_body = {
+            "category": "civil",
+            "description": "Qiradhënësi nuk ma kthen depozitën prej 500 EUR edhe pse "
+                           "banesën e dorëzova pa dëmtime para dy muajsh.",
+            "city": "Prishtinë", "urgency": "normal",
+        }
+        r = await c.post(f"{BASE}/public/citizen/cases", headers=ch, json=case_body)
+        check("postimi i rastit pa email të verifikuar REFUZOHET", r.status_code == 403)
+
+        from app.security import create_purpose_token
+        vtoken = create_purpose_token("citizen_verify", uuid.UUID(cit_id), minutes=60)
+        r = await c.post(f"{BASE}/public/citizen/verify-email", json={"token": vtoken})
+        check("verifikimi i email-it të qytetarit", r.status_code == 200)
+
+        r = await c.post(f"{BASE}/public/citizen/cases", headers=ch, json=case_body)
+        check("qytetari poston rastin", r.status_code == 201)
+        case_id = r.json()["id"]
+
+        r = await c.get(f"{BASE}/marketplace/cases", headers=h)
+        browse = r.json() if r.status_code == 200 else []
+        mine_in_browse = [x for x in browse if x["id"] == case_id]
+        check("avokati sheh rastin me emër të maskuar",
+              len(mine_in_browse) == 1
+              and mine_in_browse[0]["citizen_name"] == "Qytetar S.")
+
+        r = await c.post(f"{BASE}/marketplace/cases/{case_id}/claim", headers=h)
+        check("claim: conflict check + IntakeRequest source=marketplace",
+              r.status_code == 200 and r.json().get("claimed") is True)
+        mk_intake_id = r.json()["intake_request_id"]
+        r = await c.get(f"{BASE}/intake", headers=h)
+        mk_intake = next((x for x in r.json() if x["id"] == mk_intake_id), None)
+        check("intake nga tregu shfaqet me burim marketplace",
+              mk_intake is not None and mk_intake["source"] == "marketplace")
+
+        r = await c.post(f"{BASE}/public/citizen/cases/{case_id}/messages",
+                         headers=ch, json={"body": "A keni nevojë për kontratën e qirasë?"})
+        check("qytetari i shkruan avokatit", r.status_code == 201)
+        r = await c.post(f"{BASE}/marketplace/cases/{case_id}/messages",
+                         headers=h, json={"body": "Po, ma dërgoni kontratën ju lutem."})
+        check("avokati i përgjigjet qytetarit", r.status_code == 201)
+        r = await c.get(f"{BASE}/public/citizen/cases/{case_id}/messages", headers=ch)
+        check("biseda shihet nga qytetari (2 mesazhe)",
+              r.status_code == 200 and len(r.json()) == 2)
+
+        r = await c.post(f"{BASE}/intake/{mk_intake_id}/accept", headers=h)
+        check("pranimi i intake konverton rastin", r.status_code == 200)
+        r = await c.get(f"{BASE}/public/citizen/cases", headers=ch)
+        conv = next((x for x in r.json() if x["id"] == case_id), None)
+        check("statusi i rastit bëhet converted",
+              conv is not None and conv["status"] == "converted")
+        r = await c.post(f"{BASE}/portal/login", json={
+            "email": cit_email, "password": "qytetari-pw-123",
+        })
+        check("qytetari kyçet në portal me TË NJËJTIN fjalëkalim",
+              r.status_code == 200 and r.json().get("access_token"))
+
+        # abuse protection: report a spammy case
+        r = await c.post(f"{BASE}/public/citizen/cases", headers=ch, json={
+            "category": "other",
+            "description": "Blej ilaçe të lira online pa recetë — oferta më e mirë në treg!!!",
+        })
+        spam_id = r.json()["id"]
+        r = await c.post(f"{BASE}/marketplace/cases/{spam_id}/report", headers=h)
+        check("avokati raporton rast abuziv (mbyllet + audit)",
+              r.status_code == 200 and r.json().get("reported") is True)
+
     # ============ cleanup ============
     from sqlalchemy import text as sqltext
     from app.database import SessionLocal
     async with SessionLocal() as db:
+        await db.execute(sqltext("DELETE FROM citizen_users WHERE email = :e"),
+                         {"e": f"qytetari.sim.{SUFFIX}@gmail.com"})
         await db.execute(sqltext("DELETE FROM tenants WHERE name = :n"),
                          {"n": f"Zyra Sim {SUFFIX}"})
         await db.commit()

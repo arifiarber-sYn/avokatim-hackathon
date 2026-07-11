@@ -26,6 +26,12 @@ from app.models.collab import MatterMessage, PushSubscription, SignatureRequest
 from app.models.privacy import ConsentRecord
 from app.models.aml import SuspicionReport
 from app.models.tasks import Task
+from app.models.marketplace import (
+    CaseRequest,
+    CaseRequestMessage,
+    CitizenUser,
+    LawyerProfile,
+)
 
 __all__ = [
     "Base",
@@ -61,4 +67,8 @@ __all__ = [
     "SignatureRequest",
     "ConsentRecord",
     "SuspicionReport",
+    "CitizenUser",
+    "LawyerProfile",
+    "CaseRequest",
+    "CaseRequestMessage",
 ]

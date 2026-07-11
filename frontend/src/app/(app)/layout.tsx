@@ -45,6 +45,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { href: "/dashboard", label: t.dashboard, icon: "▦" },
     { href: "/matters", label: t.matters, icon: "▤" },
     { href: "/intake", label: t.intake, icon: "▷" },
+    { href: "/marketplace", label: t.marketplace, icon: "◇" },
     { href: "/calendar", label: t.calendar, icon: "▧" },
     { href: "/contacts", label: t.contacts, icon: "◉" },
     { href: "/templates", label: t.templates, icon: "▣" },
