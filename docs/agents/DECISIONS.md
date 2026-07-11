@@ -250,3 +250,24 @@
   free→paid upgrade a reason to exist without a payment provider; the
   402 signal is already handled distinctly in the frontend so a future
   self-serve upgrade flow can hook into it.
+
+## D-015: Self-hosted LiveKit, LAN-first, tokens via plain JWT (2026-07-11)
+
+- Context: the SOS video room (D-013 phase 3) needs a WebRTC SFU. The owner
+  chose self-hosted (privacy, no per-minute vendor cost) over Twilio/Daily.
+  Public-internet media transport is still undecided (router port
+  forwarding vs TURN relay VPS), but LAN/localhost calls need nothing.
+- Decision: run `livekit-server` in docker-compose next to db/redis/caddy;
+  ship it **LAN-first** (`use_external_ip: false`, media 7881/tcp +
+  7882/udp, signaling proxied by Caddy :7443 for wss). Join tokens are
+  minted in `app/services/livekit.py` with **pyjwt directly** (LiveKit
+  tokens are standard HS256 JWTs) — no Python SDK dependency for a single
+  token shape. Grants are restricted to one `sos-<case_id>` room, 4h TTL,
+  and only for claimed/converted cases where the caller is a party.
+  API keys live only in the git-ignored `.env` files and must match
+  between the container (`LIVEKIT_KEYS`) and the backend.
+- Consequences: video works end-to-end today on localhost and LAN and the
+  whole app-layer (tokens, buttons, overlay) is final; going public is a
+  pure infra change (port forward + `use_external_ip: true`, or coturn) —
+  no code changes expected. If we later need server-side room control
+  (kick, recording), we add the `livekit-api` package then.

@@ -10,6 +10,36 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-11 — SOS video/audio room with self-hosted LiveKit (Phase 3, LAN) (Cursor / Fable 5)
+
+- Done (infra): `livekit/livekit-server:v1.9` added to docker-compose
+  (signaling 127.0.0.1:7880, media 7881/tcp + 7882/udp, `livekit.yaml`
+  with `use_external_ip: false` for now). Generated API key/secret pair —
+  stored ONLY in git-ignored `.env` (root, → container `LIVEKIT_KEYS`) and
+  `backend/.env` (`LIVEKIT_API_KEY/SECRET`); the two must match. Caddy
+  gained `https://:7443 → 7880` so LAN browsers get wss:// signaling.
+- Done (backend): `app/services/livekit.py` mints HS256 join tokens with
+  pyjwt (no SDK; 4h TTL, grant restricted to one `sos-<case_id>` room).
+  `POST /api/marketplace/cases/{id}/call-token` +
+  `/api/public/citizen/cases/{id}/call-token` give the lawyer and the
+  citizen tokens for the same room (claimed/converted cases only,
+  audit-logged, `enabled:false` graceful when keys missing). New config:
+  `livekit_api_key/secret/url` in `config.py`.
+- Done (frontend): `src/components/video-call.tsx` (npm `livekit-client`) —
+  full-screen call overlay (remote video, local preview, mic/cam toggles,
+  hang up, waiting/off/error states); "Thirrje video" buttons on claimed
+  cases in Tregu and `/rasti-im`. Signaling URL derived from the page host
+  (ws://127.0.0.1:7880 local, wss://<host>:7443 LAN). 8 new UI keys ×6.
+- Verified: 31 pytest pass; tsc + next build clean; simulation section 27 —
+  **123 PASS / 0 FAIL** (both sides get tokens for the same room, LiveKit
+  server itself validates both tokens via /rtc/validate, non-active case
+  denied). Token generation verified against the running server.
+- Left open / next: calls work on localhost + LAN today. For calls over the
+  public internet (avokatiim.ai) the owner must either port-forward
+  7881/tcp + 7882/udp on the router (then set `use_external_ip: true` in
+  livekit.yaml) or stand up a coturn TURN relay on a small VPS, plus a
+  public wss signaling route. Everything else is ready and unchanged.
+
 ## 2026-07-11 — SOS duty flow (Phase 3, no video) + lead limits (Phase 4) (Cursor / Fable 5)
 
 - Done (backend): `LawyerProfile.sos_on_duty` + migration `e98ec43b937a`;

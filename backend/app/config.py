@@ -88,6 +88,14 @@ class Settings(BaseSettings):
     stripe_secret_key: str = ""
     stripe_webhook_secret: str = ""
 
+    # LiveKit (SOS video/audio calls). Empty api key = video disabled.
+    # Keys must match LIVEKIT_KEYS given to the livekit container (root .env).
+    livekit_api_key: str = ""
+    livekit_api_secret: str = ""
+    # Client-facing signaling URL. Empty = the frontend derives it:
+    # ws://127.0.0.1:7880 on localhost, wss://<host>:7443 (Caddy) on LAN.
+    livekit_url: str = ""
+
     # Web Push (PWA notifications). Generated once; empty = push disabled.
     vapid_public_key: str = ""
     vapid_private_key: str = ""

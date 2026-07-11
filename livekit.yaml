@@ -1,0 +1,13 @@
+# LiveKit server config for AvokatIM SOS calls.
+# API keys are NOT here — they come from LIVEKIT_KEYS in docker-compose
+# (sourced from the git-ignored .env).
+port: 7880
+rtc:
+  tcp_port: 7881
+  udp_port: 7882
+  # LAN-only for now. When the owner opens media ports / adds a TURN relay
+  # for public internet access, set use_external_ip: true and add a turn:
+  # section here.
+  use_external_ip: false
+logging:
+  level: info

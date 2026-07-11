@@ -35,6 +35,15 @@ https://:8443 {
     }
 }
 
+# LiveKit signaling over TLS for LAN clients (browsers require wss:// in a
+# secure context). The frontend derives wss://<host>:7443 automatically.
+https://:7443 {
+    tls internal {
+        on_demand
+    }
+    reverse_proxy 127.0.0.1:7880
+}
+
 # Temporary parking page for the old domain (boraarifi.ai) — the Cloudflare
 # tunnel routes that hostname here instead of the app.
 http://:8099 {

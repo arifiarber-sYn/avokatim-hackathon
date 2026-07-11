@@ -70,7 +70,7 @@ AI assistance → billing → client portal.
 | `frontend/src/lib/` | `api.ts` (API client), `types.ts`, `i18n.tsx`, `dictionaries.ts` (sq/sr/tr/bs/en/zh), `legal.ts` (ToS/Privacy texts) |
 | `data/` | Runtime data: encrypted documents, legal corpus, logs — **git-ignored, never delete** |
 | `docs/agents/` | Agent management system (state, journal, decisions, roadmap) |
-| `docker-compose.yml` | Postgres 17 + pgvector (port 5433), Redis (6380), Caddy (8443 HTTPS) |
+| `docker-compose.yml` | Postgres 17 + pgvector (port 5433), Redis (6380), Caddy (8443 HTTPS), LiveKit (7880/7881/7882, SOS calls) |
 
 Key config: `backend/app/config.py` — every setting is overridable via `backend/.env`.
 

@@ -308,10 +308,30 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   (`TRIAL_MONTHLY_LEAD_LIMIT`, claim returns 402 when exhausted), solo/firm
   unlimited; `GET /api/marketplace/lead-quota` shown in the Tregu header.
   Plans are still set manually by the operator (D-008).
-  Simulation section 26 (**118 PASS / 0 FAIL** total).
-  Phase 3 **video/audio room** stays blocked on WebRTC media ports —
-  Cloudflare Tunnel is HTTP-only; needs router port forwarding or a TURN
-  relay VPS (owner's decision/action) before it can start.
+  Simulation section 26.
+- **SOS video/audio room** (2026-07-11, Phase 3 complete for LAN):
+  self-hosted **LiveKit** (`livekit/livekit-server:v1.9` in docker-compose,
+  signaling 127.0.0.1:7880, media 7881/tcp + 7882/udp, config
+  `livekit.yaml`; API keys in root `.env` → container env `LIVEKIT_KEYS`
+  and in `backend/.env` → `LIVEKIT_API_KEY/SECRET` — must match).
+  Backend `app/services/livekit.py` mints HS256 join tokens (no SDK,
+  pyjwt; 4h TTL, single-room grant); `POST /api/marketplace/cases/{id}/
+  call-token` (lawyer) and `/api/public/citizen/cases/{id}/call-token`
+  (citizen) hand both sides tokens for the same `sos-<case_id>` room on
+  claimed/converted cases, audit-logged; `enabled:false` graceful when
+  keys are missing. Frontend `src/components/video-call.tsx`
+  (livekit-client): full-screen overlay with local preview, mic/cam
+  toggles, hang-up — "Thirrje video" buttons in Tregu and `/rasti-im`.
+  Signaling URL is derived client-side: `ws://127.0.0.1:7880` on
+  localhost, `wss://<host>:7443` on LAN (Caddy :7443 proxies to 7880
+  with the internal CA cert). Simulation section 27
+  (**123 PASS / 0 FAIL** total).
+  **Remaining for public-internet calls** (owner's decision/action):
+  WebRTC media cannot cross Cloudflare Tunnel (HTTP-only) — needs router
+  port forwarding of 7881/tcp + 7882/udp (then `use_external_ip: true`
+  in `livekit.yaml`) or a small TURN relay VPS (coturn), plus a public
+  wss route for signaling. Calls work today on localhost and LAN
+  (https://<ip>:8443 + :7443).
 
 ## Environment
 
@@ -328,7 +348,9 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - **Autostart**: systemd user service `avokatim.service`
   (`~/.config/systemd/user/avokatim.service`) runs `start.sh` on boot; lingering enabled.
 - Containers (restart: unless-stopped): `avokatim-db` (pgvector/pg17, host port 5433),
-  `avokatim-redis` (6380), `avokatim-caddy` (host network, HTTPS 8443).
+  `avokatim-redis` (6380), `avokatim-caddy` (host network, HTTPS 8443 app +
+  7443 LiveKit wss), `avokatim-livekit` (7880 localhost signaling,
+  7881/tcp + 7882/udp media).
 - Backend: uvicorn on 127.0.0.1:8000, venv at `backend/.venv`. Frontend: Next.js on :3000.
 - Secrets in `backend/.env` (git-ignored): DeepSeek key, doc encryption key, DB password.
 - **Optional integrations, off until configured in `backend/.env`** (all degrade

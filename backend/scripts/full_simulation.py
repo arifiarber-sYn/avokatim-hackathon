@@ -753,6 +753,32 @@ async def main() -> None:
         check("SOS i tretë brenda 24h bllokohet (mbrojtje abuzimi)",
               sos2_ok and r.status_code == 429)
 
+        print("\n=== 27. DHOMA VIDEO/AUDIO SOS (LiveKit) ===")
+        r = await c.post(f"{BASE}/marketplace/cases/{sos_id}/call-token", headers=h)
+        lk = r.json() if r.status_code == 200 else {}
+        check("avokati merr token për dhomën e thirrjes",
+              r.status_code == 200 and lk.get("room") == f"sos-{sos_id}",
+              f"enabled={lk.get('enabled')}")
+        r = await c.post(f"{BASE}/public/citizen/cases/{sos_id}/call-token", headers=ch)
+        lk_cit = r.json() if r.status_code == 200 else {}
+        check("qytetari merr token për TË NJËJTËN dhomë",
+              r.status_code == 200 and lk_cit.get("room") == lk.get("room"))
+        if lk.get("enabled") and lk.get("token"):
+            rv = await c.get("http://127.0.0.1:7880/rtc/validate",
+                             params={"access_token": lk["token"]})
+            check("serveri LiveKit e pranon tokenin e avokatit", rv.status_code == 200)
+            rv = await c.get("http://127.0.0.1:7880/rtc/validate",
+                             params={"access_token": lk_cit["token"]})
+            check("serveri LiveKit e pranon tokenin e qytetarit", rv.status_code == 200)
+        else:
+            check("LiveKit i konfiguruar (çelësat në backend/.env)", False,
+                  "video e çaktivizuar — kontrollo LIVEKIT_API_KEY/SECRET")
+        # the reported spam case was never claimed by the tenant → 404;
+        # a claimed-then-closed case would give 400 — both deny the call
+        r = await c.post(f"{BASE}/marketplace/cases/{spam_id}/call-token", headers=h)
+        check("s'ka thirrje për raste jo-aktive (të mbyllura)",
+              r.status_code in (400, 404), f"status={r.status_code}")
+
     # ============ cleanup ============
     from sqlalchemy import text as sqltext
     from app.database import SessionLocal

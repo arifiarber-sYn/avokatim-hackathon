@@ -1128,3 +1128,75 @@ async def lawyer_send_message(
             tr(loc, "case_message_body", url=f"{settings.public_base_url}/rasti-im"),
         )
     return _message_out(message)
+
+
+# ---------- SOS video/audio room (Phase 3, LiveKit) ----------
+# Both sides of a claimed case can request a join token for the same room.
+# Disabled (enabled=false) until LIVEKIT_API_KEY/SECRET are configured.
+
+CALLABLE_STATUSES = ("claimed", "converted")
+
+
+def _call_response(case: CaseRequest, token: str | None, identity: str) -> dict:
+    from app.services.livekit import livekit_enabled, sos_room_name
+
+    return {
+        "enabled": livekit_enabled(),
+        "room": sos_room_name(case.id),
+        "token": token,
+        "identity": identity,
+        # Empty url = the client derives ws(s):// from its own host
+        "url": settings.livekit_url or None,
+    }
+
+
+@router.post("/cases/{case_id}/call-token")
+async def lawyer_call_token(
+    case_id: uuid.UUID,
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from app.services.livekit import room_token, sos_room_name
+
+    case = await _tenant_case(db, user, case_id)
+    if case.status not in CALLABLE_STATUSES:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Case is not active")
+    identity = f"lawyer-{user.id}"
+    token = room_token(sos_room_name(case.id), identity, user.full_name)
+    if token is not None:
+        await log_action(
+            db, tenant_id=user.tenant_id, user_id=user.id,
+            action="marketplace.call_join", entity_type="case_request",
+            entity_id=str(case.id), details={"side": "lawyer"},
+            ip_address=_ip(request),
+        )
+        await db.commit()
+    return _call_response(case, token, identity)
+
+
+@public_router.post("/citizen/cases/{case_id}/call-token")
+async def citizen_call_token(
+    case_id: uuid.UUID,
+    request: Request,
+    citizen: CitizenUser = Depends(_current_citizen),
+    db: AsyncSession = Depends(get_db),
+):
+    from app.services.livekit import room_token, sos_room_name
+
+    case = await _owned_case(db, citizen, case_id)
+    if case.status not in CALLABLE_STATUSES:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "Calls are available once a lawyer takes the case"
+        )
+    identity = f"citizen-{citizen.id}"
+    token = room_token(sos_room_name(case.id), identity, citizen.full_name)
+    if token is not None:
+        await log_action(
+            db, tenant_id=None, user_id=None,
+            action="marketplace.call_join", entity_type="case_request",
+            entity_id=str(case.id), details={"side": "citizen"},
+            ip_address=_ip(request),
+        )
+        await db.commit()
+    return _call_response(case, token, identity)

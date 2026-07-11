@@ -13,6 +13,7 @@ import {
   setCitizenToken,
 } from "@/lib/citizen";
 import { Button, Card, ErrorNote, Input, Label, LocaleSwitcher, Spinner, Textarea } from "@/components/ui";
+import VideoCall, { CallGrant } from "@/components/video-call";
 
 interface CaseMessage {
   id: string;
@@ -50,6 +51,7 @@ function MyCaseInner() {
   const [sosSent, setSosSent] = useState(false);
   const [sosBusy, setSosBusy] = useState(false);
   const [sosError, setSosError] = useState("");
+  const [callCase, setCallCase] = useState<string | null>(null);
 
   useEffect(() => {
     if (verifyToken) {
@@ -288,6 +290,14 @@ function MyCaseInner() {
                       {t.mkMessages}
                     </button>
                   )}
+                  {(c.status === "claimed" || c.status === "converted") && (
+                    <button
+                      onClick={() => setCallCase(c.id)}
+                      className="text-red-600 font-medium hover:underline"
+                    >
+                      {t.mkCall}
+                    </button>
+                  )}
                   {(c.status === "open" || c.status === "claimed") && (
                     <button onClick={() => closeCase(c.id)} className="text-slate-400 hover:underline">
                       {t.mkCloseCase}
@@ -333,6 +343,13 @@ function MyCaseInner() {
               </Card>
             ))}
           </div>
+        )}
+
+        {callCase && (
+          <VideoCall
+            fetchGrant={() => citizenPost<CallGrant>(`/citizen/cases/${callCase}/call-token`)}
+            onClose={() => setCallCase(null)}
+          />
         )}
       </main>
     </div>

@@ -115,6 +115,30 @@ async def test_lead_quota_paid_plans_are_unlimited():
         assert quota == {"plan": plan, "limit": None, "used": None, "remaining": None}
 
 
+def test_livekit_token_disabled_without_keys(monkeypatch):
+    from app.services import livekit
+
+    monkeypatch.setattr(settings, "livekit_api_key", "")
+    monkeypatch.setattr(settings, "livekit_api_secret", "")
+    assert livekit.livekit_enabled() is False
+    assert livekit.room_token("sos-x", "lawyer-1", "Test") is None
+
+
+def test_livekit_token_payload_grants_only_one_room(monkeypatch):
+    from app.services import livekit
+
+    monkeypatch.setattr(settings, "livekit_api_key", "APItest")
+    monkeypatch.setattr(settings, "livekit_api_secret", "secret-test")
+    case_id = uuid.uuid4()
+    room = livekit.sos_room_name(case_id)
+    token = livekit.room_token(room, f"citizen-{case_id}", "Qytetari")
+    payload = pyjwt.decode(token, "secret-test", algorithms=["HS256"])
+    assert payload["iss"] == "APItest"
+    assert payload["video"]["room"] == f"sos-{case_id}"
+    assert payload["video"]["roomJoin"] is True
+    assert payload["exp"] - payload["iat"] == livekit.TOKEN_TTL_MINUTES * 60
+
+
 def test_marketplace_i18n_keys_in_all_languages():
     for code in ALL_LOCALES:
         for key in MARKETPLACE_KEYS:

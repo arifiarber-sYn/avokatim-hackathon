@@ -621,6 +621,14 @@ const sq = {
   mkLeadQuota: "Lead-et këtë muaj: {used}/{limit}",
   mkLeadUnlimited: "Lead-e pa kufi",
   mkLeadLimitReached: "Kufiri mujor i lead-eve u arrit — përditëso planin për lead-e pa kufi.",
+  mkCall: "Thirrje video",
+  mkCallConnecting: "Duke u lidhur…",
+  mkCallWaiting: "Duke pritur palën tjetër të bashkohet…",
+  mkCallNotConfigured: "Thirrjet video s'janë të aktivizuara ende në këtë server.",
+  mkCallFailed: "Lidhja dështoi. Provo përsëri ose përdor mesazhet.",
+  mkCallMic: "Mikrofoni",
+  mkCallCam: "Kamera",
+  mkCallEnd: "Mbyll thirrjen",
 
 };
 
@@ -1190,6 +1198,14 @@ const en: typeof sq = {
   mkLeadQuota: "Leads this month: {used}/{limit}",
   mkLeadUnlimited: "Unlimited leads",
   mkLeadLimitReached: "Monthly lead limit reached — upgrade your plan for unlimited leads.",
+  mkCall: "Video call",
+  mkCallConnecting: "Connecting…",
+  mkCallWaiting: "Waiting for the other side to join…",
+  mkCallNotConfigured: "Video calls are not enabled on this server yet.",
+  mkCallFailed: "Connection failed. Try again or use messages.",
+  mkCallMic: "Microphone",
+  mkCallCam: "Camera",
+  mkCallEnd: "End call",
 
 };
 
@@ -1749,6 +1765,14 @@ const zh: typeof sq = {
   mkLeadQuota: "本月线索：{used}/{limit}",
   mkLeadUnlimited: "线索不限量",
   mkLeadLimitReached: "已达本月线索上限——升级套餐可获得不限量线索。",
+  mkCall: "视频通话",
+  mkCallConnecting: "连接中……",
+  mkCallWaiting: "正在等待对方加入……",
+  mkCallNotConfigured: "此服务器尚未启用视频通话。",
+  mkCallFailed: "连接失败。请重试或使用消息。",
+  mkCallMic: "麦克风",
+  mkCallCam: "摄像头",
+  mkCallEnd: "结束通话",
 
 };
 
@@ -2317,6 +2341,14 @@ const sr: typeof sq = {
   mkLeadQuota: "Potencijalni klijenti ovog meseca: {used}/{limit}",
   mkLeadUnlimited: "Neograničeni potencijalni klijenti",
   mkLeadLimitReached: "Mesečni limit potencijalnih klijenata je dostignut — nadogradite plan za neograničeno.",
+  mkCall: "Video poziv",
+  mkCallConnecting: "Povezivanje…",
+  mkCallWaiting: "Čeka se da se druga strana pridruži…",
+  mkCallNotConfigured: "Video pozivi još nisu omogućeni na ovom serveru.",
+  mkCallFailed: "Veza nije uspela. Pokušajte ponovo ili koristite poruke.",
+  mkCallMic: "Mikrofon",
+  mkCallCam: "Kamera",
+  mkCallEnd: "Završi poziv",
 
 };
 
@@ -2885,6 +2917,14 @@ const tr: typeof sq = {
   mkLeadQuota: "Bu ayki müşteri adayları: {used}/{limit}",
   mkLeadUnlimited: "Sınırsız müşteri adayı",
   mkLeadLimitReached: "Aylık müşteri adayı sınırına ulaşıldı — sınırsız için planınızı yükseltin.",
+  mkCall: "Görüntülü arama",
+  mkCallConnecting: "Bağlanıyor…",
+  mkCallWaiting: "Karşı tarafın katılması bekleniyor…",
+  mkCallNotConfigured: "Bu sunucuda görüntülü aramalar henüz etkin değil.",
+  mkCallFailed: "Bağlantı başarısız. Tekrar deneyin veya mesajları kullanın.",
+  mkCallMic: "Mikrofon",
+  mkCallCam: "Kamera",
+  mkCallEnd: "Aramayı bitir",
 
 };
 
@@ -3453,6 +3493,14 @@ const bs: typeof sq = {
   mkLeadQuota: "Potencijalni klijenti ovog mjeseca: {used}/{limit}",
   mkLeadUnlimited: "Neograničeni potencijalni klijenti",
   mkLeadLimitReached: "Mjesečni limit potencijalnih klijenata je dostignut — nadogradite plan za neograničeno.",
+  mkCall: "Video poziv",
+  mkCallConnecting: "Povezivanje…",
+  mkCallWaiting: "Čeka se da se druga strana pridruži…",
+  mkCallNotConfigured: "Video pozivi još nisu omogućeni na ovom serveru.",
+  mkCallFailed: "Veza nije uspjela. Pokušajte ponovo ili koristite poruke.",
+  mkCallMic: "Mikrofon",
+  mkCallCam: "Kamera",
+  mkCallEnd: "Završi poziv",
 
 };
 

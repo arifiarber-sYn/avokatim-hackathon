@@ -5,6 +5,7 @@ import Link from "next/link";
 import { apiGet, apiPost, apiPut } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { Button, Card, ErrorNote, Spinner, Textarea } from "@/components/ui";
+import VideoCall, { CallGrant } from "@/components/video-call";
 
 interface OpenCase {
   id: string;
@@ -61,6 +62,7 @@ export default function MarketplacePage() {
   const [draft, setDraft] = useState("");
   const [profile, setProfile] = useState<LawyerProfile | null>(null);
   const [quota, setQuota] = useState<LeadQuota | null>(null);
+  const [callCase, setCallCase] = useState<string | null>(null);
 
   const load = useCallback(() => {
     apiGet<OpenCase[]>("/marketplace/cases").then(setOpenCases).catch(() => setOpenCases([]));
@@ -283,6 +285,14 @@ export default function MarketplacePage() {
                     {t.mkMessages}
                   </button>
                 )}
+                {(c.status === "claimed" || c.status === "converted") && (
+                  <button
+                    onClick={() => setCallCase(c.id)}
+                    className="text-red-600 font-medium hover:underline"
+                  >
+                    {t.mkCall}
+                  </button>
+                )}
                 <Link href="/intake" className="text-slate-500 hover:underline">
                   {t.mkGoToIntake}
                 </Link>
@@ -318,6 +328,13 @@ export default function MarketplacePage() {
             </Card>
           ))}
         </div>
+      )}
+
+      {callCase && (
+        <VideoCall
+          fetchGrant={() => apiPost<CallGrant>(`/marketplace/cases/${callCase}/call-token`)}
+          onClose={() => setCallCase(null)}
+        />
       )}
     </div>
   );

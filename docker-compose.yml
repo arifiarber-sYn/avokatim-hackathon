@@ -27,6 +27,24 @@ services:
       - avokatim_caddy_data:/data
       - avokatim_caddy_config:/config
 
+  # WebRTC SFU for SOS video/audio calls. Signaling on 7880 (localhost,
+  # proxied by Caddy :7443 for LAN wss). Media on 7881/tcp + 7882/udp —
+  # fine on LAN; public access additionally needs router port forwarding
+  # or a TURN relay (see docs/agents/STATE.md).
+  livekit:
+    image: livekit/livekit-server:v1.9
+    container_name: avokatim-livekit
+    restart: unless-stopped
+    command: --config /etc/livekit.yaml
+    environment:
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY:-devkey}: ${LIVEKIT_API_SECRET:-devsecret-change-me-in-dot-env}"
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro,z
+    ports:
+      - "127.0.0.1:7880:7880"
+      - "7881:7881"
+      - "7882:7882/udp"
+
   redis:
     image: redis:7-alpine
     container_name: avokatim-redis
