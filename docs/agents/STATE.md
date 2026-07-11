@@ -265,8 +265,8 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   Frontend: public `/avokatet` (directory + filters), `/posto-rastin`
   (citizen signup/login + case form, supports `?avokati=<tenant_id>`),
   `/rasti-im` (citizen dashboard: statuses, chat, close; handles
-  `?verifiko=<token>`), **new two-audience landing at `/`** (citizens vs
-  lawyers; logged-in lawyers still auto-redirect to /dashboard);
+  `?verifiko=<token>`), **citizen-first landing at `/`** (see below;
+  logged-in lawyers still auto-redirect to /dashboard);
   in-app `(app)/marketplace` ("Tregu" in nav) with open/mine tabs, claim +
   conflict warning + report; Settings → "Profili publik" section. Citizen
   token kept in `localStorage.avokatim_citizen_token`
@@ -332,6 +332,24 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   in `livekit.yaml`) or a small TURN relay VPS (coturn), plus a public
   wss route for signaling. Calls work today on localhost and LAN
   (https://<ip>:8443 + :7443).
+- **Citizen-first public UX** (2026-07-11, after web research on Avvo/
+  JustAnswer/Airbnb + 2026 marketplace UX; analysis canvas
+  `nderfaqja-qytetar-vs-avokat`): "two experiences, one platform".
+  `src/components/public-shell.tsx` wraps all citizen pages (`/`, `/ava`,
+  `/avokatet`, `/posto-rastin`, `/rasti-im`): desktop = slim header with
+  text nav + SOS button + discreet "Për avokatët" link; mobile = fixed
+  **bottom navigation** in the thumb zone (Ava · Avokatët · Posto ·
+  Rasti im) with an **elevated red SOS button dead-center** (48px+
+  targets, `safe-area-inset-bottom`). Landing `/` is citizen-first:
+  hero = Ava question box (JustAnswer pattern) that stores
+  `localStorage.avokatim_ava_prefill` and routes to `/ava` which
+  auto-asks it; 3 secondary action cards; stats strip; footer links.
+  Lawyers get a dedicated dark marketing page **`/per-avokatet`**
+  (6 feature bullets, plan comparison trial-vs-paid, signup/login CTAs)
+  — the lawyer app itself is unchanged. PWA manifest: `start_url` is
+  now `/` (role-routed) with long-press `shortcuts` SOS / Ava / Rasti im.
+  ~20 new UI keys ×6 languages (`lp*`, `pn*`, `mkHeroTitle`,
+  `mkForLawyersLink`).
 
 ## Environment
 

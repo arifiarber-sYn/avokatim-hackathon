@@ -11,7 +11,8 @@ import {
   getCitizenToken,
   setCitizenToken,
 } from "@/lib/citizen";
-import { Button, Card, ErrorNote, Input, Label, LocaleSwitcher, Select, Spinner, Textarea } from "@/components/ui";
+import { Button, Card, ErrorNote, Input, Label, Select, Spinner, Textarea } from "@/components/ui";
+import PublicShell from "@/components/public-shell";
 
 const AREAS = ["civil", "criminal", "family", "commercial", "labor", "administrative", "other"] as const;
 
@@ -101,21 +102,8 @@ function PostCaseInner() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-lg font-bold text-indigo-700">
-            Avokat<span className="text-slate-900">IM</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/avokatet" className="text-sm text-slate-600 hover:underline">
-              {t.mkLawyersDirectory}
-            </Link>
-            <LocaleSwitcher />
-          </div>
-        </div>
-      </header>
-      <main className="max-w-xl mx-auto px-4 py-8 space-y-4">
+    <PublicShell>
+      <main className="w-full max-w-xl mx-auto px-4 py-8 space-y-4">
         <div>
           <h1 className="text-2xl font-bold">{t.mkPostCase}</h1>
           <p className="text-sm text-slate-500 mt-1">{t.mkPostCaseHint}</p>
@@ -259,7 +247,7 @@ function PostCaseInner() {
         )}
         <p className="text-xs text-slate-400 text-center">{t.mkDisclaimer}</p>
       </main>
-    </div>
+    </PublicShell>
   );
 }
 

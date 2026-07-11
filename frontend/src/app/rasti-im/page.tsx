@@ -12,8 +12,9 @@ import {
   getCitizenToken,
   setCitizenToken,
 } from "@/lib/citizen";
-import { Button, Card, ErrorNote, Input, Label, LocaleSwitcher, Spinner, Textarea } from "@/components/ui";
+import { Button, Card, ErrorNote, Input, Label, Spinner, Textarea } from "@/components/ui";
 import VideoCall, { CallGrant } from "@/components/video-call";
+import PublicShell from "@/components/public-shell";
 
 interface CaseMessage {
   id: string;
@@ -147,21 +148,8 @@ function MyCaseInner() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-lg font-bold text-indigo-700">
-            Avokat<span className="text-slate-900">IM</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/posto-rastin" className="text-sm font-medium text-indigo-600 hover:underline">
-              {t.mkPostCase}
-            </Link>
-            <LocaleSwitcher />
-          </div>
-        </div>
-      </header>
-      <main className="max-w-2xl mx-auto px-4 py-8 space-y-4">
+    <PublicShell>
+      <main className="w-full max-w-2xl mx-auto px-4 py-8 space-y-4">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-2xl font-bold">{t.mkMyCases}</h1>
           {citizen !== null && !sosSent && (
@@ -352,7 +340,7 @@ function MyCaseInner() {
           />
         )}
       </main>
-    </div>
+    </PublicShell>
   );
 }
 

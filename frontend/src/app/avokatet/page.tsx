@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 import { LOCALES } from "@/lib/dictionaries";
 import { PublicLawyer } from "@/lib/citizen";
-import { Card, Input, LocaleSwitcher, Select, Spinner } from "@/components/ui";
+import { Card, Input, Select, Spinner } from "@/components/ui";
+import PublicShell from "@/components/public-shell";
 
 const AREAS = ["civil", "criminal", "family", "commercial", "labor", "administrative", "other"] as const;
 
@@ -34,24 +35,8 @@ export default function LawyerDirectoryPage() {
   }, [lawyers, area, city, language]);
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-lg font-bold text-indigo-700">
-            Avokat<span className="text-slate-900">IM</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/posto-rastin" className="text-sm font-medium text-indigo-600 hover:underline">
-              {t.mkPostCase}
-            </Link>
-            <Link href="/rasti-im" className="text-sm text-slate-600 hover:underline">
-              {t.mkMyCase}
-            </Link>
-            <LocaleSwitcher />
-          </div>
-        </div>
-      </header>
-      <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+    <PublicShell wide>
+      <main className="w-full max-w-5xl mx-auto px-4 py-8 space-y-6">
         <div>
           <h1 className="text-2xl font-bold">{t.mkLawyersDirectory}</h1>
           <p className="text-sm text-slate-500 mt-1">{t.mkDisclaimer}</p>
@@ -119,6 +104,6 @@ export default function LawyerDirectoryPage() {
           </div>
         )}
       </main>
-    </div>
+    </PublicShell>
   );
 }

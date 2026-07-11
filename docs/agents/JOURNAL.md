@@ -10,6 +10,28 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-11 — Citizen-first public UX: landing, bottom nav, /per-avokatet (Cursor / Fable 5)
+
+- Context: owner asked whether citizens need their own interface separate
+  from lawyers, especially on the phone. Researched Avvo, JustAnswer,
+  LegalZoom, Airbnb (dual-persona, one platform) and 2026 marketplace-UX
+  guides; delivered the analysis canvas `nderfaqja-qytetar-vs-avokat`
+  and the owner approved the proposal.
+- Done: `src/components/public-shell.tsx` — shared shell for all citizen
+  pages: desktop header (nav links + SOS + discreet "Për avokatët") and a
+  mobile **fixed bottom nav** (Ava · Avokatët · elevated red SOS center ·
+  Posto · Rasti im; 48px+ targets, safe-area-inset). Landing `/` rebuilt
+  citizen-first: hero = Ava question box (stores `avokatim_ava_prefill`;
+  `/ava` auto-asks it on mount), 3 action cards, stats, footer. New dark
+  marketing page `/per-avokatet` (features, trial-vs-paid plans, CTAs).
+  `/ava`, `/avokatet`, `/posto-rastin`, `/rasti-im` now use the shell
+  (own headers removed). Manifest: start_url `/` + shortcuts SOS/Ava/
+  Rasti im. ~20 new keys ×6 languages.
+- Verified: tsc + next build clean; all six public routes return 200;
+  manifest serves the shortcuts. Lawyer app untouched.
+- Left open / next: trust signals on lawyer profiles (reviews, verified
+  OAK licence badge, response time) — after the pilot.
+
 ## 2026-07-11 — SOS video/audio room with self-hosted LiveKit (Phase 3, LAN) (Cursor / Fable 5)
 
 - Done (infra): `livekit/livekit-server:v1.9` added to docker-compose

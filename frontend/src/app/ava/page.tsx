@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
 import { getCitizenToken } from "@/lib/citizen";
-import { Button, Card, ErrorNote, LocaleSwitcher, Textarea } from "@/components/ui";
+import { Button, Card, ErrorNote, Textarea } from "@/components/ui";
+import PublicShell from "@/components/public-shell";
 
 interface ChatMsg {
   role: "user" | "assistant";
@@ -34,6 +35,9 @@ export default function PublicAvaPage() {
   const [limit, setLimit] = useState<number | null>(null);
   const [isCitizen, setIsCitizen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const busyRef = useRef(false);
+  const messagesRef = useRef<ChatMsg[]>([]);
+  messagesRef.current = messages;
 
   useEffect(() => {
     const headers: Record<string, string> = {};
@@ -53,14 +57,13 @@ export default function PublicAvaPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, thinking]);
 
-  async function ask(e: React.FormEvent) {
-    e.preventDefault();
-    const question = draft.trim();
-    if (!question || busy) return;
+  const askQuestion = useCallback(async (question: string) => {
+    if (!question || busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     setError("");
     setDraft("");
-    const history = messages.map((m) => ({ role: m.role, content: m.content }));
+    const history = messagesRef.current.map((m) => ({ role: m.role, content: m.content }));
     setMessages((prev) => [...prev, { role: "user", content: question }]);
 
     const headers: Record<string, string> = { "Content-Type": "application/json" };
@@ -131,9 +134,25 @@ export default function PublicAvaPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : t.error);
     } finally {
+      busyRef.current = false;
       setBusy(false);
       setThinking(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Question typed in the landing hero — ask it right away
+  useEffect(() => {
+    const prefill = localStorage.getItem("avokatim_ava_prefill");
+    if (prefill) {
+      localStorage.removeItem("avokatim_ava_prefill");
+      askQuestion(prefill.trim());
+    }
+  }, [askQuestion]);
+
+  function ask(e: React.FormEvent) {
+    e.preventDefault();
+    askQuestion(draft.trim());
   }
 
   function connectToLawyer() {
@@ -146,21 +165,7 @@ export default function PublicAvaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-lg font-bold text-indigo-700">
-            Avokat<span className="text-slate-900">IM</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/avokatet" className="text-sm text-slate-600 hover:underline">
-              {t.mkLawyersDirectory}
-            </Link>
-            <LocaleSwitcher />
-          </div>
-        </div>
-      </header>
-
+    <PublicShell>
       <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-6 flex flex-col gap-4">
         <div>
           <h1 className="text-2xl font-bold">{t.mkAvaTitle}</h1>
@@ -218,7 +223,7 @@ export default function PublicAvaPage() {
         )}
 
         <ErrorNote message={error} />
-        <form onSubmit={ask} className="flex gap-2 items-end sticky bottom-4">
+        <form onSubmit={ask} className="flex gap-2 items-end sticky bottom-24 md:bottom-4">
           <Textarea
             rows={2}
             value={draft}
@@ -237,6 +242,6 @@ export default function PublicAvaPage() {
           </Button>
         </form>
       </main>
-    </div>
+    </PublicShell>
   );
 }
