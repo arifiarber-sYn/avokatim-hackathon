@@ -50,6 +50,12 @@ export default function Home() {
                 {t.mkFindLawyer}
               </Link>
               <Link
+                href="/ava"
+                className="block w-full text-center rounded-lg border border-indigo-200 text-indigo-700 py-2.5 text-sm font-medium hover:bg-indigo-50"
+              >
+                {t.mkAskAva}
+              </Link>
+              <Link
                 href="/posto-rastin"
                 className="block w-full text-center rounded-lg border border-indigo-200 text-indigo-700 py-2.5 text-sm font-medium hover:bg-indigo-50"
               >

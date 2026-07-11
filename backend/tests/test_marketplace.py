@@ -56,6 +56,34 @@ def test_masked_name_hides_surname():
     assert _masked_name("") == "?"
 
 
+def test_ava_quota_keys_separate_anon_and_citizen():
+    from types import SimpleNamespace
+
+    from app.api.marketplace import (
+        AVA_ANON_DAILY_LIMIT,
+        AVA_CITIZEN_DAILY_LIMIT,
+        _ava_quota_key,
+    )
+
+    citizen = SimpleNamespace(id=uuid.uuid4())
+    anon_key, anon_limit = _ava_quota_key(None, "1.2.3.4", "sess1")
+    cit_key, cit_limit = _ava_quota_key(citizen, "1.2.3.4", "sess1")
+    assert anon_key != cit_key
+    assert anon_limit == AVA_ANON_DAILY_LIMIT
+    assert cit_limit == AVA_CITIZEN_DAILY_LIMIT
+    # citizens keep their quota across devices/IPs
+    cit_key2, _ = _ava_quota_key(citizen, "5.6.7.8", None)
+    assert cit_key == cit_key2
+
+
+def test_public_ava_prompt_is_information_not_advice():
+    from app.api.marketplace import PUBLIC_AVA_SYSTEM_PROMPT
+
+    assert "INFORMIM" in PUBLIC_AVA_SYSTEM_PROMPT
+    assert "JO këshillë" in PUBLIC_AVA_SYSTEM_PROMPT
+    assert "Më lidh me avokat" in PUBLIC_AVA_SYSTEM_PROMPT
+
+
 def test_marketplace_i18n_keys_in_all_languages():
     for code in ALL_LOCALES:
         for key in MARKETPLACE_KEYS:

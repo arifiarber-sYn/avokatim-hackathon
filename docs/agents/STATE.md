@@ -271,10 +271,25 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   conflict warning + report; Settings → "Profili publik" section. Citizen
   token kept in `localStorage.avokatim_citizen_token`
   (`frontend/src/lib/citizen.ts`). ~60 new UI keys ×6 languages.
-  Tests: `tests/test_marketplace.py`; `full_simulation.py` section 24
-  (**106 PASS / 0 FAIL**). Phases 2 (public Ava), 3 (SOS video/audio,
-  needs WebRTC ports — Cloudflare Tunnel can't carry UDP media) and
-  4 (revenue) are designed in the plan but not built.
+  Tests: `tests/test_marketplace.py`; `full_simulation.py` section 24.
+- **Public Ava — free legal-information chat** (2026-07-11, Phase 2 of
+  D-013): `/api/public/ava/*` in `app/api/marketplace.py` — `ask` +
+  `ask-stream` (SSE), grounded in the XK legal corpus via the existing RAG
+  (`search_corpus`), own system prompt (`PUBLIC_AVA_SYSTEM_PROMPT`:
+  information NOT advice, answer in the question's language, cite laws,
+  suggest "Më lidh me avokat" when professional help is needed). Stateless —
+  the browser holds the history; nothing persisted. Daily quotas in Redis:
+  **5 questions/day anonymous** (IP + localStorage session id),
+  **20/day with citizen account** (optional citizen bearer token);
+  `GET /public/ava/quota` for the counter. Frontend `/ava`: streaming chat
+  with citation chips, 6-language disclaimer, quota bar, and
+  **"Më lidh me avokat"** which stores the user's questions in
+  `localStorage.avokatim_case_draft` — `/posto-rastin` prefills the case
+  description from it. Landing citizen block links to `/ava`.
+  Simulation section 25 (**110 PASS / 0 FAIL** total).
+  Phase 3 (SOS video/audio) stays blocked on WebRTC media ports —
+  Cloudflare Tunnel is HTTP-only; needs router port forwarding or a TURN
+  relay VPS before it can start. Phase 4 (lawyer plans/lead fees) not built.
 
 ## Environment
 

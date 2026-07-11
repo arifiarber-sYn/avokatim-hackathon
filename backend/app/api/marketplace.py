@@ -29,6 +29,7 @@ from app.models import (
     CaseRequest,
     CaseRequestMessage,
     CitizenUser,
+    Jurisdiction,
     LawyerProfile,
     Tenant,
     User,
@@ -487,6 +488,209 @@ async def citizen_send_message(
                    url=f"{settings.public_base_url}/marketplace"),
             )
     return _message_out(message)
+
+
+# ---------- public Ava (Phase 2): free legal information chat ----------
+
+PUBLIC_AVA_SYSTEM_PROMPT = (
+    "Ti je Ava, asistentja publike ligjore e platformës AvokatIM në Kosovë. "
+    "Jep INFORMIM ligjor të përgjithshëm për qytetarët — JO këshillë ligjore "
+    "të personalizuar. Përgjigju në gjuhën e pyetjes (shqip, serbisht, "
+    "turqisht, boshnjakisht, anglisht ose kinezisht). Bazohu në copëzat e "
+    "ligjeve të dhëna dhe në parimet e përgjithshme juridike; kur citon ligj, "
+    "shëno saktë burimin (p.sh. 'LPK neni 176'). Kur nuk je e sigurt, thuaje "
+    "hapur. Shpjego thjesht, pa zhargon të tepërt. Kur çështja kërkon "
+    "vlerësim profesional, përfaqësim ose ka afate, rekomandoja qytetarit "
+    "butonin 'Më lidh me avokat' për ta postuar rastin te avokatët e "
+    "platformës. Mos kërko dhe mos ruaj të dhëna personale të panevojshme."
+)
+
+AVA_ANON_DAILY_LIMIT = 5
+AVA_CITIZEN_DAILY_LIMIT = 20
+AVA_HISTORY_MAX = 8
+
+
+class AvaAskIn(BaseModel):
+    question: str = Field(min_length=3, max_length=2000)
+    # [{role: "user"|"assistant", content: str}] — client-held, stateless server
+    history: list[dict] = []
+    # Anonymous visitors send a random session id (kept in localStorage)
+    session_id: str | None = Field(default=None, max_length=64)
+
+
+async def _optional_citizen(
+    creds: HTTPAuthorizationCredentials | None = Depends(citizen_bearer),
+    db: AsyncSession = Depends(get_db),
+) -> CitizenUser | None:
+    if creds is None:
+        return None
+    try:
+        payload = pyjwt.decode(creds.credentials, settings.secret_key, algorithms=["HS256"])
+        citizen = await db.get(CitizenUser, uuid.UUID(payload["citizen"]))
+    except Exception:
+        return None
+    return citizen if citizen is not None and citizen.is_active else None
+
+
+def _ava_quota_key(citizen: CitizenUser | None, ip: str, session_id: str | None) -> tuple[str, int]:
+    """(redis key, daily limit) for this caller."""
+    day = datetime.now(UTC).strftime("%Y%m%d")
+    if citizen is not None:
+        return f"avokatim:ava:{day}:cit:{citizen.id}", AVA_CITIZEN_DAILY_LIMIT
+    return f"avokatim:ava:{day}:anon:{ip}:{session_id or 'nosession'}", AVA_ANON_DAILY_LIMIT
+
+
+async def _ava_take_quota(key: str, limit: int) -> int:
+    """Consume one question; returns remaining (raises 429 when exhausted).
+    Fails open if Redis is down."""
+    try:
+        r = aioredis.from_url(settings.redis_url)
+        pipe = r.pipeline()
+        pipe.incr(key)
+        pipe.expire(key, 24 * 3600)
+        count, _ = await pipe.execute()
+        await r.aclose()
+        used = int(count)
+        if used > limit:
+            raise HTTPException(
+                status.HTTP_429_TOO_MANY_REQUESTS,
+                "Daily free question limit reached",
+            )
+        return max(0, limit - used)
+    except HTTPException:
+        raise
+    except Exception:
+        logger.warning("Ava quota check unavailable")
+        return limit
+
+
+async def _ava_quota_left(key: str, limit: int) -> int:
+    try:
+        r = aioredis.from_url(settings.redis_url)
+        used = await r.get(key)
+        await r.aclose()
+        return max(0, limit - int(used or 0))
+    except Exception:
+        return limit
+
+
+@public_router.get("/ava/quota")
+async def ava_quota(
+    request: Request,
+    session_id: str | None = None,
+    citizen: CitizenUser | None = Depends(_optional_citizen),
+):
+    key, limit = _ava_quota_key(citizen, _ip(request), session_id)
+    return {
+        "limit": limit,
+        "remaining": await _ava_quota_left(key, limit),
+        "is_citizen": citizen is not None,
+    }
+
+
+async def _ava_prepare(
+    db: AsyncSession, body: AvaAskIn
+) -> tuple[list, list[dict]]:
+    """Build the grounded message list + citations for a public question."""
+    from app.llm.base import ChatMessage
+    from app.services import rag
+
+    jurisdiction = (
+        await db.execute(select(Jurisdiction).where(Jurisdiction.code == "XK"))
+    ).scalar_one_or_none()
+
+    context_blocks: list[str] = []
+    citations: list[dict] = []
+    if jurisdiction is not None:
+        for hit in await rag.search_corpus(db, jurisdiction.id, body.question):
+            label = hit["doc_title"] + (f", {hit['section']}" if hit["section"] else "")
+            context_blocks.append(f"[Nga ligji: {label}]\n{hit['text']}")
+            citations.append(
+                {"type": "law", "title": hit["doc_title"], "section": hit["section"],
+                 "reference": hit["reference"]}
+            )
+
+    user_content = body.question
+    if context_blocks:
+        user_content = (
+            "BAZA LIGJORE:\n\n" + "\n\n---\n\n".join(context_blocks)
+            + f"\n\n=== PYETJA E QYTETARIT ===\n{body.question}"
+        )
+
+    messages = [ChatMessage(role="system", content=PUBLIC_AVA_SYSTEM_PROMPT)]
+    for m in body.history[-AVA_HISTORY_MAX:]:
+        role, content = m.get("role"), str(m.get("content", ""))[:4000]
+        if role in ("user", "assistant") and content:
+            messages.append(ChatMessage(role=role, content=content))
+    messages.append(ChatMessage(role="user", content=user_content))
+    return messages, citations
+
+
+@public_router.post("/ava/ask")
+async def ava_ask(
+    body: AvaAskIn,
+    request: Request,
+    citizen: CitizenUser | None = Depends(_optional_citizen),
+    db: AsyncSession = Depends(get_db),
+):
+    """Free public legal-information chat, grounded in the XK legal corpus.
+    Stateless: the client holds the history; nothing is persisted."""
+    from app.llm import get_provider
+
+    key, limit = _ava_quota_key(citizen, _ip(request), body.session_id)
+    remaining = await _ava_take_quota(key, limit)
+
+    messages, citations = await _ava_prepare(db, body)
+    provider = get_provider(None)
+    try:
+        result = await provider.chat(messages)
+    except RuntimeError as exc:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc))
+    return {"answer": result.content, "citations": citations, "remaining": remaining}
+
+
+@public_router.post("/ava/ask-stream")
+async def ava_ask_stream(
+    body: AvaAskIn,
+    request: Request,
+    citizen: CitizenUser | None = Depends(_optional_citizen),
+):
+    """SSE variant so long answers survive proxies (see D-010)."""
+    import json as jsonlib
+
+    from fastapi.responses import StreamingResponse
+
+    from app.database import SessionLocal
+    from app.llm import get_provider
+
+    key, limit = _ava_quota_key(citizen, _ip(request), body.session_id)
+    remaining = await _ava_take_quota(key, limit)
+
+    def sse(event: dict) -> str:
+        return f"data: {jsonlib.dumps(event, ensure_ascii=False)}\n\n"
+
+    async def event_stream():
+        async with SessionLocal() as db:
+            messages, citations = await _ava_prepare(db, body)
+        yield sse({"type": "meta", "citations": citations, "remaining": remaining})
+        provider = get_provider(None)
+        try:
+            async for kind, text in provider.chat_stream(messages):
+                if kind == "thinking":
+                    yield sse({"type": "thinking", "text": text})
+                else:
+                    yield sse({"type": "delta", "text": text})
+        except Exception as exc:
+            logger.exception("public ava stream failed")
+            yield sse({"type": "error", "detail": str(exc)})
+            return
+        yield sse({"type": "done"})
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 # ---------- lawyer side ----------

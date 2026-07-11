@@ -27,6 +27,15 @@ function PostCaseInner() {
   const [auth, setAuth] = useState({ full_name: "", email: "", phone: "", password: "" });
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [form, setForm] = useState({ category: "civil", description: "", city: "", urgency: "normal" });
+
+  // Prefill from a public Ava conversation ("Më lidh me avokat")
+  useEffect(() => {
+    const draft = localStorage.getItem("avokatim_case_draft");
+    if (draft) {
+      setForm((f) => ({ ...f, description: draft }));
+      localStorage.removeItem("avokatim_case_draft");
+    }
+  }, []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [verifySent, setVerifySent] = useState(false);

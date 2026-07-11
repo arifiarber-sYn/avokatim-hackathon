@@ -597,6 +597,16 @@ const sq = {
   mkPhoto: "Fotoja e profilit (max 200 KB)",
   mkReport: "Raporto si abuziv",
   mkReported: "Rasti u raportua dhe u mbyll.",
+  mkAskAva: "Pyet Avën falas",
+  mkAvaTitle: "Ava — asistentja ligjore falas",
+  mkAvaIntro: "Pyet çfarëdo për ligjet e Kosovës — Ava përgjigjet me referenca në ligje.",
+  mkAvaDisclaimer: "Ava jep informim ligjor të përgjithshëm, JO këshillë ligjore të personalizuar. Për rastin tënd konkret fol me avokat të licencuar — pa pagesë përmes butonit 'Më lidh me avokat'.",
+  mkAvaPlaceholder: "Shkruaj pyetjen tënde ligjore...",
+  mkAvaLimitReached: "E arrite kufirin ditor të pyetjeve falas. Provo nesër ose krijo llogari qytetari për më shumë.",
+  mkAvaRemaining: "{n} nga {total} pyetje të mbetura sot",
+  mkAvaSigninForMore: "krijo llogari për më shumë pyetje",
+  mkAvaConnectHint: "Ke nevojë për ndihmë konkrete nga avokat?",
+  mkAvaConnectLawyer: "Më lidh me avokat",
 
 };
 
@@ -1142,6 +1152,16 @@ const en: typeof sq = {
   mkPhoto: "Profile photo (max 200 KB)",
   mkReport: "Report as abusive",
   mkReported: "The case was reported and closed.",
+  mkAskAva: "Ask Ava for free",
+  mkAvaTitle: "Ava — the free legal assistant",
+  mkAvaIntro: "Ask anything about Kosovo's laws — Ava answers with references to the laws.",
+  mkAvaDisclaimer: "Ava provides general legal information, NOT personalized legal advice. For your specific case talk to a licensed lawyer — free of charge via the 'Connect me with a lawyer' button.",
+  mkAvaPlaceholder: "Type your legal question...",
+  mkAvaLimitReached: "You reached today's free question limit. Try again tomorrow or create a citizen account for more.",
+  mkAvaRemaining: "{n} of {total} questions left today",
+  mkAvaSigninForMore: "create an account for more questions",
+  mkAvaConnectHint: "Need concrete help from a lawyer?",
+  mkAvaConnectLawyer: "Connect me with a lawyer",
 
 };
 
@@ -1677,6 +1697,16 @@ const zh: typeof sq = {
   mkPhoto: "个人资料照片（最大 200 KB）",
   mkReport: "举报滥用",
   mkReported: "该案件已被举报并关闭。",
+  mkAskAva: "免费咨询 Ava",
+  mkAvaTitle: "Ava — 免费法律助手",
+  mkAvaIntro: "关于科索沃法律的任何问题都可以问——Ava 会附上法律条文引用来回答。",
+  mkAvaDisclaimer: "Ava 提供一般性法律信息，而非个性化法律建议。您的具体案件请咨询持牌律师——通过“为我联系律师”按钮免费进行。",
+  mkAvaPlaceholder: "输入您的法律问题...",
+  mkAvaLimitReached: "您已达到今日免费提问上限。请明天再试，或创建公民账户以获得更多。",
+  mkAvaRemaining: "今日剩余 {n}/{total} 个问题",
+  mkAvaSigninForMore: "创建账户以获得更多提问",
+  mkAvaConnectHint: "需要律师的具体帮助吗？",
+  mkAvaConnectLawyer: "为我联系律师",
 
 };
 
@@ -2221,6 +2251,16 @@ const sr: typeof sq = {
   mkPhoto: "Profilna fotografija (max 200 KB)",
   mkReport: "Prijavi kao zloupotrebu",
   mkReported: "Slučaj je prijavljen i zatvoren.",
+  mkAskAva: "Pitaj Avu besplatno",
+  mkAvaTitle: "Ava — besplatni pravni asistent",
+  mkAvaIntro: "Pitajte bilo šta o zakonima Kosova — Ava odgovara sa referencama na zakone.",
+  mkAvaDisclaimer: "Ava pruža opšte pravne informacije, NE personalizovane pravne savete. Za vaš konkretan slučaj razgovarajte sa licenciranim advokatom — besplatno preko dugmeta 'Poveži me sa advokatom'.",
+  mkAvaPlaceholder: "Upišite svoje pravno pitanje...",
+  mkAvaLimitReached: "Dostigli ste dnevni limit besplatnih pitanja. Pokušajte sutra ili kreirajte nalog građanina za više.",
+  mkAvaRemaining: "Preostalo {n} od {total} pitanja danas",
+  mkAvaSigninForMore: "kreirajte nalog za više pitanja",
+  mkAvaConnectHint: "Treba vam konkretna pomoć advokata?",
+  mkAvaConnectLawyer: "Poveži me sa advokatom",
 
 };
 
@@ -2765,6 +2805,16 @@ const tr: typeof sq = {
   mkPhoto: "Profil fotoğrafı (en fazla 200 KB)",
   mkReport: "Kötüye kullanım olarak bildir",
   mkReported: "Dava bildirildi ve kapatıldı.",
+  mkAskAva: "Ava'ya ücretsiz sor",
+  mkAvaTitle: "Ava — ücretsiz hukuk asistanı",
+  mkAvaIntro: "Kosova yasaları hakkında her şeyi sorun — Ava yasalara atıflarla yanıtlar.",
+  mkAvaDisclaimer: "Ava genel hukuki bilgi verir, kişiselleştirilmiş hukuki tavsiye DEĞİL. Somut davanız için lisanslı bir avukatla görüşün — 'Beni bir avukatla buluştur' düğmesiyle ücretsiz.",
+  mkAvaPlaceholder: "Hukuki sorunuzu yazın...",
+  mkAvaLimitReached: "Bugünkü ücretsiz soru sınırına ulaştınız. Yarın tekrar deneyin veya daha fazlası için vatandaş hesabı oluşturun.",
+  mkAvaRemaining: "Bugün {total} sorudan {n} tanesi kaldı",
+  mkAvaSigninForMore: "daha fazla soru için hesap oluşturun",
+  mkAvaConnectHint: "Bir avukattan somut yardıma mı ihtiyacınız var?",
+  mkAvaConnectLawyer: "Beni bir avukatla buluştur",
 
 };
 
@@ -3309,6 +3359,16 @@ const bs: typeof sq = {
   mkPhoto: "Profilna fotografija (max 200 KB)",
   mkReport: "Prijavi kao zloupotrebu",
   mkReported: "Slučaj je prijavljen i zatvoren.",
+  mkAskAva: "Pitaj Avu besplatno",
+  mkAvaTitle: "Ava — besplatni pravni asistent",
+  mkAvaIntro: "Pitajte bilo šta o zakonima Kosova — Ava odgovara s referencama na zakone.",
+  mkAvaDisclaimer: "Ava pruža opće pravne informacije, NE personalizirane pravne savjete. Za vaš konkretan slučaj razgovarajte s licenciranim advokatom — besplatno preko dugmeta 'Poveži me s advokatom'.",
+  mkAvaPlaceholder: "Upišite svoje pravno pitanje...",
+  mkAvaLimitReached: "Dostigli ste dnevni limit besplatnih pitanja. Pokušajte sutra ili kreirajte račun građanina za više.",
+  mkAvaRemaining: "Preostalo {n} od {total} pitanja danas",
+  mkAvaSigninForMore: "kreirajte račun za više pitanja",
+  mkAvaConnectHint: "Treba vam konkretna pomoć advokata?",
+  mkAvaConnectLawyer: "Poveži me s advokatom",
 
 };
 

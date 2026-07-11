@@ -10,6 +10,25 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-11 — Public Ava: free legal chat for citizens (Phase 2) (Cursor / Fable 5)
+
+- Done (backend): `/api/public/ava/ask` + `/ask-stream` (SSE) + `/quota` in
+  `app/api/marketplace.py`. Reuses the platform-level RAG corpus (XK) for
+  citations; dedicated public system prompt (legal information, NOT advice;
+  answers in the question's language; recommends "Më lidh me avokat").
+  Stateless (client-held history, nothing persisted). Redis daily quotas:
+  5/day anonymous (IP+session), 20/day with citizen account (optional
+  citizen token). Provider через the existing LLM abstraction (default).
+- Done (frontend): public `/ava` streaming chat (citation chips, disclaimer,
+  quota display, Enter-to-send), "Më lidh me avokat" prefills
+  `/posto-rastin` via localStorage draft; landing citizen block gained the
+  "Pyet Avën falas" button. 10 new UI keys ×6 languages.
+- Verified: 26 pytest pass (2 new); tsc + next build clean; full_simulation
+  section 25 — **110 PASS / 0 FAIL** (anon quota 5, citizen quota 20, real
+  LLM answer with 6 corpus citations, quota decrement); /ava returns 200.
+- Left open / next: Phase 3 SOS (still blocked on WebRTC ports / TURN),
+  Phase 4 (plans/lead fees + public stats + government pitch).
+
 ## 2026-07-11 — Public citizen marketplace: Phase 1 of the citizen-bridge vision (Cursor / Fable 5)
 
 - Why: extend AvokatIM from a professionals-only tool into a public bridge

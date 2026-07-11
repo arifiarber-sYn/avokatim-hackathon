@@ -648,6 +648,30 @@ async def main() -> None:
         check("qytetari kyçet në portal me TË NJËJTIN fjalëkalim",
               r.status_code == 200 and r.json().get("access_token"))
 
+        print("\n=== 25. AVA PUBLIKE FALAS (Faza 2) ===")
+        r = await c.get(f"{BASE}/public/ava/quota?session_id=sim{SUFFIX}")
+        check("kuota anonime (5 pyetje/ditë)",
+              r.status_code == 200 and r.json().get("limit") == 5
+              and r.json().get("is_citizen") is False)
+        r = await c.get(f"{BASE}/public/ava/quota?session_id=sim{SUFFIX}", headers=ch)
+        check("kuota e qytetarit (20 pyetje/ditë)",
+              r.status_code == 200 and r.json().get("limit") == 20
+              and r.json().get("is_citizen") is True)
+        r = await c.post(f"{BASE}/public/ava/ask", json={
+            "question": "Sa është afati i ankesës kundër aktgjykimit në "
+                        "procedurën kontestimore në Kosovë?",
+            "session_id": f"sim{SUFFIX}",
+        })
+        ava = r.json() if r.status_code == 200 else {}
+        check("Ava publike përgjigjet me citime nga korpusi",
+              r.status_code == 200 and len(ava.get("answer", "")) > 50
+              and len(ava.get("citations", [])) > 0,
+              f"{len(ava.get('citations', []))} citime, mbeten {ava.get('remaining')}")
+        r = await c.get(f"{BASE}/public/ava/quota?session_id=sim{SUFFIX}")
+        check("kuota zbritet pas pyetjes",
+              r.status_code == 200 and r.json().get("remaining") == 4,
+              f"remaining={r.json().get('remaining')}")
+
         # abuse protection: report a spammy case
         r = await c.post(f"{BASE}/public/citizen/cases", headers=ch, json={
             "category": "other",
