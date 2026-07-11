@@ -2,12 +2,12 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "/api";
 
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("boralaw_token");
+  return localStorage.getItem("avokatim_token");
 }
 
 export function setToken(token: string | null) {
-  if (token) localStorage.setItem("boralaw_token", token);
-  else localStorage.removeItem("boralaw_token");
+  if (token) localStorage.setItem("avokatim_token", token);
+  else localStorage.removeItem("avokatim_token");
 }
 
 export class ApiError extends Error {

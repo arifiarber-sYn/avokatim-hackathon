@@ -8,8 +8,8 @@
 
 | Kush | Ku | Email | Fjalëkalimi |
 |---|---|---|---|
-| Avokatja | http://127.0.0.1:3000 (ose https://avokatiim.ai) | `demo@boralaw.app` | `Demo2026!bora` |
-| Klienti (portal) | `/portal` — hapeni në **telefon** | `klienti.demo@boralaw.app` | `Demo2026!klient` |
+| Avokatja | http://127.0.0.1:3000 (ose https://avokatiim.ai) | `demo@avokatim.app` | `Demo2026!ava` |
+| Klienti (portal) | `/portal` — hapeni në **telefon** | `klienti.demo@avokatim.app` | `Demo2026!klient` |
 
 ---
 
@@ -33,11 +33,11 @@ afatet, **detyrat**, mesazhet.
 Te Afatet: shtoni afat **nga rregulli ligjor** (p.sh. kundërshtimi i urdhërpagesës,
 LPK neni 156) — data llogaritet vetë, duke i anashkaluar fundjavat dhe **festat e Kosovës**.
 Te Dokumentet: hapni **parapamjen** e kontratës, pastaj klikoni **"Nxirr afatet me AI"**
-— Bora i lexon vendimet gjyqësore dhe i propozon afatet vetë.
+— Ava i lexon vendimet gjyqësore dhe i propozon afatet vetë.
 > "Ky është ai gabimi që i kushton karrierën një avokati — afati i humbur. Këtu s'ndodh."
 
-### 4. Bora — asistentja ligjore (3 min)
-Tab-i AI në lëndë ose faqja e Bora-s. Pyesni:
+### 4. Ava — asistentja ligjore (3 min)
+Tab-i AI në lëndë ose faqja e Ava-s. Pyesni:
 *"Sa është afati për kundërshtim të urdhërpagesës dhe cili nen e rregullon?"*
 Tregoni **citimet nga ligjet reale të Kosovës** (GZK). Pastaj "Përmblidhe lëndën".
 > "Nuk është chatbot i përgjithshëm — përgjigjet me nene konkrete nga korpusi ynë ligjor."

@@ -11,7 +11,7 @@ from app.config import settings
 
 _SQ = {
     # Deadline reminder (lawyer)
-    "reminder_subject": "[BoraLaw] Afat pas {days} ditësh: {title}",
+    "reminder_subject": "[AvokatIM] Afat pas {days} ditësh: {title}",
     "reminder_matter": "Lënda",
     "reminder_deadline": "Afati",
     "reminder_expires": "Skadon",
@@ -77,7 +77,7 @@ _SQ = {
 }
 
 _SR = {
-    "reminder_subject": "[BoraLaw] Rok za {days} dana: {title}",
+    "reminder_subject": "[AvokatIM] Rok za {days} dana: {title}",
     "reminder_matter": "Predmet",
     "reminder_deadline": "Rok",
     "reminder_expires": "Ističe",
@@ -136,7 +136,7 @@ _SR = {
 }
 
 _TR = {
-    "reminder_subject": "[BoraLaw] {days} gün sonra süre: {title}",
+    "reminder_subject": "[AvokatIM] {days} gün sonra süre: {title}",
     "reminder_matter": "Dosya",
     "reminder_deadline": "Süre",
     "reminder_expires": "Son tarih",
@@ -195,7 +195,7 @@ _TR = {
 }
 
 _BS = {
-    "reminder_subject": "[BoraLaw] Rok za {days} dana: {title}",
+    "reminder_subject": "[AvokatIM] Rok za {days} dana: {title}",
     "reminder_matter": "Predmet",
     "reminder_deadline": "Rok",
     "reminder_expires": "Ističe",
@@ -254,7 +254,7 @@ _BS = {
 }
 
 _EN = {
-    "reminder_subject": "[BoraLaw] Deadline in {days} days: {title}",
+    "reminder_subject": "[AvokatIM] Deadline in {days} days: {title}",
     "reminder_matter": "Matter",
     "reminder_deadline": "Deadline",
     "reminder_expires": "Due",
@@ -313,7 +313,7 @@ _EN = {
 }
 
 _ZH = {
-    "reminder_subject": "[BoraLaw] {days} 天后到期：{title}",
+    "reminder_subject": "[AvokatIM] {days} 天后到期：{title}",
     "reminder_matter": "案件",
     "reminder_deadline": "期限",
     "reminder_expires": "到期",

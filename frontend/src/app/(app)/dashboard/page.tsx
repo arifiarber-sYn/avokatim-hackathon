@@ -102,7 +102,7 @@ export default function DashboardPage() {
     loadTasks();
     if (
       new URLSearchParams(window.location.search).get("welcome") &&
-      !localStorage.getItem("boralaw_welcome_done")
+      !localStorage.getItem("avokatim_welcome_done")
     ) {
       setWelcome(true);
     }
@@ -166,7 +166,7 @@ export default function DashboardPage() {
             </div>
             <button
               onClick={() => {
-                localStorage.setItem("boralaw_welcome_done", "1");
+                localStorage.setItem("avokatim_welcome_done", "1");
                 setWelcome(false);
               }}
               className="text-slate-400 hover:text-slate-600 text-lg leading-none"

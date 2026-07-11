@@ -3,9 +3,9 @@ import "./globals.css";
 import { I18nProvider } from "@/lib/i18n";
 
 export const metadata: Metadata = {
-  title: "BoraLaw",
+  title: "AvokatIM",
   description: "Modern legal practice management",
-  appleWebApp: { capable: true, title: "BoraLaw", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "AvokatIM", statusBarStyle: "default" },
   icons: { apple: "/icons/apple-touch-icon.png" },
 };
 

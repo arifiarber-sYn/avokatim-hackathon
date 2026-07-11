@@ -1,44 +1,44 @@
 services:
   db:
     image: pgvector/pgvector:pg17
-    container_name: boralaw-db
+    container_name: avokatim-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: boralaw
-      POSTGRES_USER: boralaw
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-boralaw-dev-password}
+      POSTGRES_DB: avokatim
+      POSTGRES_USER: avokatim
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-avokatim-dev-password}
     ports:
       - "127.0.0.1:5433:5432"
     volumes:
-      - boralaw_pgdata:/var/lib/postgresql/data
+      - avokatim_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U boralaw"]
+      test: ["CMD-SHELL", "pg_isready -U avokatim"]
       interval: 5s
       timeout: 3s
       retries: 10
 
   caddy:
     image: caddy:2-alpine
-    container_name: boralaw-caddy
+    container_name: avokatim-caddy
     restart: unless-stopped
     network_mode: host
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro,z
-      - boralaw_caddy_data:/data
-      - boralaw_caddy_config:/config
+      - avokatim_caddy_data:/data
+      - avokatim_caddy_config:/config
 
   redis:
     image: redis:7-alpine
-    container_name: boralaw-redis
+    container_name: avokatim-redis
     restart: unless-stopped
     ports:
       - "127.0.0.1:6380:6379"
     volumes:
-      - boralaw_redis:/data
+      - avokatim_redis:/data
     command: ["redis-server", "--appendonly", "yes"]
 
 volumes:
-  boralaw_pgdata:
-  boralaw_redis:
-  boralaw_caddy_data:
-  boralaw_caddy_config:
+  avokatim_pgdata:
+  avokatim_redis:
+  avokatim_caddy_data:
+  avokatim_caddy_config:

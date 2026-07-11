@@ -1,4 +1,4 @@
-"""Bora — the AI assistant. Every function builds a grounded prompt (matter
+"""Ava — the AI assistant. Every function builds a grounded prompt (matter
 facts, documents, legal corpus citations) and calls the selected LLM provider."""
 import json
 import re
@@ -14,7 +14,7 @@ from app.models import Deadline, Document, Matter, MatterNote, MatterParty
 from app.services import rag
 
 SYSTEM_PROMPT = (
-    "Ti je Bora, asistente juridike profesionale në aplikacionin BoraLaw. "
+    "Ti je Ava, asistente juridike profesionale në aplikacionin AvokatIM. "
     "Punon për një avokat të licencuar. Përgjigju në gjuhën e pyetjes "
     "(shqip, anglisht ose kinezisht). Bazohu VETËM në materialet e dhëna "
     "dhe në parimet e përgjithshme juridike; kur citon ligj, shëno saktë "

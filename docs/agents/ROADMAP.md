@@ -6,8 +6,8 @@
 ## Vision
 
 A platform where one lawyer works with the capacity of a whole firm — from case
-intake to full processing, eventually assisting in court itself. Built for Bora's
-future as a modern lawyer. Target: competitive with the global legal-tech
+intake to full processing, eventually assisting in court itself.
+Target: competitive with the global legal-tech
 standard, multi-jurisdictional (XK active; GB, CN, INTL prepared).
 
 ## Phase 1 — Solo lawyer MVP  ✅ (2026-07-06)
@@ -26,7 +26,7 @@ Everything in STATE.md "What exists and works".
       sqi/eng/chi_sim installed; synthetic Albanian scanned image and image-only
       PDF both OCR correctly (diacritics ë/ç intact).
 - [ ] Local LLM option in production: configure Ollama/vLLM endpoint, quality-test
-      "Bora" against DeepSeek on Albanian legal questions. (Checked 2026-07-07:
+      "Ava" against DeepSeek on Albanian legal questions. (Checked 2026-07-07:
       ollama binary present but no models/service and no GPU tooling on host —
       CPU inference would be slow; needs owner decision on model/hardware.)
 - [x] Email/notification channel for approaching deadlines ✅ (2026-07-07):
@@ -59,7 +59,7 @@ Everything in STATE.md "What exists and works".
 
 Priority before the law-firm pilot:
 - [x] AI deadline extraction from court documents ✅ (2026-07-07): button on any
-      document with text → Bora proposes deadlines (date, legal basis,
+      document with text → Ava proposes deadlines (date, legal basis,
       confidence), lawyer accepts selected ones.
 - [x] Calendar sync via ICS subscription feed ✅ (2026-07-07): signed-token URL
       in Settings, works with Google/Outlook/phone.

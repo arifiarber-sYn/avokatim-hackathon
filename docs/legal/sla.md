@@ -1,13 +1,13 @@
-# Marrëveshja e Nivelit të Shërbimit (SLA) — BoraLaw
+# Marrëveshja e Nivelit të Shërbimit (SLA) — AvokatIM
 
-> Model marrëveshjeje ndërmjet ofruesit të BoraLaw ("Ofruesi") dhe zyrës së
+> Model marrëveshjeje ndërmjet ofruesit të AvokatIM ("Ofruesi") dhe zyrës së
 > avokatisë kliente ("Klienti"). Plotësohen fushat në kllapa para nënshkrimit.
 
 **Data:** [____] · **Ofruesi:** [____] · **Klienti:** [____]
 
 ## 1. Shërbimi
 
-Platforma BoraLaw për menaxhimin e praktikës ligjore: dosjet e lëndëve,
+Platforma AvokatIM për menaxhimin e praktikës ligjore: dosjet e lëndëve,
 afatet, dokumentet, faturimi, portali i klientit dhe asistenti AI, e
 qasshme si shërbim i instaluar në [serverin e Ofruesit / serverin e Klientit].
 

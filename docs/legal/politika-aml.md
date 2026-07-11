@@ -6,7 +6,7 @@ veprimtari në fushëveprimin e ligjit duhet ta miratojë dhe zbatojë këtë
 politikë. Plotëso fushat [__] dhe rishiko me kujdes.*
 
 **Zyra:** [Emri i zyrës ligjore]
-**Zyrtari i përputhshmërisë:** [Emri] (caktohet edhe te Cilësimet → Zyra në BoraLaw)
+**Zyrtari i përputhshmërisë:** [Emri] (caktohet edhe te Cilësimet → Zyra në AvokatIM)
 **Miratuar më:** [data]
 
 ## 1. Fushëveprimi (neni 16)
@@ -16,7 +16,7 @@ përfshihen në:
 
 - transaksione **patundshmërie** (blerje/shitje);
 - **menaxhim të parave**, letrave me vlerë ose pasurive të klientit
-  (përfshirë llogarinë e mjeteve të klientit — trust ledger në BoraLaw);
+  (përfshirë llogarinë e mjeteve të klientit — trust ledger në AvokatIM);
 - hapje/menaxhim llogarish bankare ose të kursimeve;
 - **themelim, funksionim ose administrim të kompanive** dhe strukturave;
 - blerje/shitje të subjekteve afariste.
@@ -30,7 +30,7 @@ profesional, neni 16.3), përveç kur avokati merr pjesë vetë në pastrim para
 Për çdo lëndë në fushëveprim, para fillimit të punës:
 
 1. **Identifiko klientin** me dokument zyrtar (letërnjoftim/pasaportë) —
-   regjistro llojin, numrin dhe datën e verifikimit te kontakti në BoraLaw.
+   regjistro llojin, numrin dhe datën e verifikimit te kontakti në AvokatIM.
 2. **Identifiko pronarin përfitues** për personat juridikë (≥25% pronësi ose
    kontroll efektiv).
 3. **Vlerëso rrezikun** (i ulët / standard / i lartë) sipas: profili i
@@ -39,18 +39,18 @@ Për çdo lëndë në fushëveprim, para fillimit të punës:
    zgjeruar — miratimi i zyrtarit të përputhshmërisë, burimi i pasurisë.
 5. **Burimi i fondeve**: për çdo depozitë në llogarinë e mjeteve të klientit
    regjistro burimin e deklaruar; për shuma **≥ 10.000 €** kërkohet
-   dokumentim shtesë (BoraLaw shfaq paralajmërim automatik).
+   dokumentim shtesë (AvokatIM shfaq paralajmërim automatik).
 
 ## 3. Monitorimi dhe indikatorët
 
 Gjatë gjithë marrëdhënies ndiqen indikatorët e dyshimit (lista e NjIF-K është
-e integruar në BoraLaw → lënda → Checklist AML). Çdo anëtar i zyrës që vëren
+e integruar në AvokatIM → lënda → Checklist AML). Çdo anëtar i zyrës që vëren
 indikator njofton **vetëm** zyrtarin e përputhshmërisë.
 
 ## 4. Raportimi te NjIF-K (nenet 22–25)
 
 - **Raport dyshimi (SAR)**: kur ka dyshim të bazuar, zyrtari i
-  përputhshmërisë përpilon raportin (formulari në BoraLaw → AML → Raport
+  përputhshmërisë përpilon raportin (formulari në AvokatIM → AML → Raport
   dyshimi → PDF) dhe e dërgon te **Njësia e Inteligjencës Financiare e
   Kosovës** përmes kanaleve zyrtare, **para** kryerjes së transaksionit kur
   është e mundur.

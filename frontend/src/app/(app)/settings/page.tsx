@@ -242,7 +242,7 @@ function ExportSection() {
     try {
       await apiDownload(
         "/export/tenant",
-        `boralaw-eksporti-${new Date().toISOString().slice(0, 10)}.zip`
+        `avokatim-eksporti-${new Date().toISOString().slice(0, 10)}.zip`
       );
     } finally {
       setBusy(false);

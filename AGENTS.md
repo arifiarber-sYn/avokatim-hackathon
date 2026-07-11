@@ -1,4 +1,4 @@
-# BoraLaw — Agent Operating Manual
+# AvokatIM — Agent Operating Manual
 
 > Ky skedar është udhëzuesi kryesor për çdo agjent AI që punon në këtë projekt.
 > This file is the entry point for ANY AI agent or LLM working on this project,
@@ -6,13 +6,16 @@
 
 ## 0. Who you are working for
 
-- The owner is a solo developer building this for his daughter **Bora**, so she can
-  one day practice law as a modern lawyer. Treat the project with that care.
+- The owner is a solo developer building this as his own legal-tech product,
+  **AvokatIM**. Treat the project with care — it is aimed at real, paying law firms.
+- Historical note: the project was called "BoraLaw" and the assistant "Bora"
+  until 2026-07-11; it was fully rebranded to AvokatIM (assistant: "Ava") to
+  avoid any conflict of interest. Do not reintroduce the old names.
 - **Always communicate with the owner in Albanian.** Code, comments, commits and
   these agent docs stay in English so any LLM can work with them.
 - The owner values a competitive, industry-standard product over speed or cost.
 
-## 1. What BoraLaw is
+## 1. What AvokatIM is
 
 A legal practice management platform that lets **one lawyer work with the capacity
 of a whole firm**: case intake → digital matter files → deadlines → documents →
@@ -71,15 +74,15 @@ Key config: `backend/app/config.py` — every setting is overridable via `backen
 The stack runs on this machine via a **systemd user service** (starts on boot):
 
 ```bash
-systemctl --user status boralaw     # status
-systemctl --user restart boralaw    # restart everything
+systemctl --user status avokatim     # status
+systemctl --user restart avokatim    # restart everything
 ./start.sh                          # manual start (same thing)
 ./stop.sh                           # stop backend, frontend, containers
 ```
 
 URLs: local http://127.0.0.1:3000 · LAN https://<machine-ip>:8443 · API http://127.0.0.1:8000/api
 
-- Health check: `curl http://127.0.0.1:8000/api/health` → `{"status":"ok","app":"BoraLaw"}`
+- Health check: `curl http://127.0.0.1:8000/api/health` → `{"status":"ok","app":"AvokatIM"}`
 - Logs: `data/backend.log`, `data/frontend.log`
 - Backend tests: `cd backend && .venv/bin/python -m pytest tests/ -q`
 - New migration: `cd backend && .venv/bin/alembic revision --autogenerate -m "..."`
@@ -89,7 +92,7 @@ URLs: local http://127.0.0.1:3000 · LAN https://<machine-ip>:8443 · API http:/
 `frontend/.next` is missing. After changing frontend code you MUST rebuild:
 
 ```bash
-cd frontend && npm run build && systemctl --user restart boralaw
+cd frontend && npm run build && systemctl --user restart avokatim
 ```
 
 ## 5. Hard rules

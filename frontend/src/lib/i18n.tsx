@@ -19,13 +19,13 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("sq");
 
   useEffect(() => {
-    const saved = localStorage.getItem("boralaw_locale") as Locale | null;
+    const saved = localStorage.getItem("avokatim_locale") as Locale | null;
     if (saved && dictionaries[saved]) setLocaleState(saved);
   }, []);
 
   const setLocale = (l: Locale) => {
     setLocaleState(l);
-    localStorage.setItem("boralaw_locale", l);
+    localStorage.setItem("avokatim_locale", l);
   };
 
   return (

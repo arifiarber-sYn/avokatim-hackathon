@@ -77,7 +77,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <>
       <div className="p-5 border-b border-slate-800">
         <h1 className="text-xl font-bold text-white">
-          Bora<span className="text-indigo-400">Law</span>
+          Avokat<span className="text-indigo-400">IM</span>
         </h1>
         <p className="text-xs text-slate-400 mt-0.5">{t.tagline}</p>
       </div>
@@ -124,7 +124,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile top bar */}
       <header className="md:hidden fixed top-0 inset-x-0 z-40 h-14 bg-slate-900 text-white flex items-center justify-between px-4 shadow">
         <h1 className="text-lg font-bold">
-          Bora<span className="text-indigo-400">Law</span>
+          Avokat<span className="text-indigo-400">IM</span>
         </h1>
         <button
           onClick={() => setDrawerOpen(true)}

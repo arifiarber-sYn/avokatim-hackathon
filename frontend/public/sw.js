@@ -1,7 +1,7 @@
-/* BoraLaw service worker: Web Push notifications + offline app shell.
+/* AvokatIM service worker: Web Push notifications + offline app shell.
    API responses are intentionally NOT cached (auth-scoped, must stay fresh). */
 
-const CACHE = "boralaw-shell-v1";
+const CACHE = "avokatim-shell-v1";
 const OFFLINE_URLS = ["/dashboard", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -60,7 +60,7 @@ self.addEventListener("fetch", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  let data = { title: "BoraLaw", body: "", url: "/dashboard" };
+  let data = { title: "AvokatIM", body: "", url: "/dashboard" };
   try {
     data = { ...data, ...event.data.json() };
   } catch {

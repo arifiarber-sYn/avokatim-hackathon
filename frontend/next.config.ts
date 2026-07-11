@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   experimental: {
-    // The /api rewrite proxy defaults to 30s; Bora (LLM with thinking mode)
+    // The /api rewrite proxy defaults to 30s; Ava (LLM with thinking mode)
     // can take longer, which surfaced as "NetworkError" in the browser.
     // Match the backend's LLM timeout (180s) with headroom.
     proxyTimeout: 300_000,

@@ -86,7 +86,7 @@ async def portal_login(body: PortalLoginIn, db: AsyncSession = Depends(get_db)):
     return {
         "access_token": token,
         "client_name": contact.display_name,
-        "firm_name": tenant.name if tenant else "BoraLaw",
+        "firm_name": tenant.name if tenant else "AvokatIM",
         "firm_logo": tenant.logo if tenant else None,
         # First-login ToS/Privacy acceptance (Law 06/L-082)
         "terms_accepted": await has_consent(db, contact.id, "portal_tos"),

@@ -63,7 +63,7 @@ export default function PublicIntakePage({ params }: { params: Promise<{ token: 
               /* eslint-disable-next-line @next/next/no-img-element */
               <img src={logo} alt="" className="h-8 w-8 rounded object-contain" />
             )}
-            <h1 className="text-lg font-bold text-indigo-700 truncate">{practiceName || "BoraLaw"}</h1>
+            <h1 className="text-lg font-bold text-indigo-700 truncate">{practiceName || "AvokatIM"}</h1>
           </div>
           <LocaleSwitcher />
         </div>

@@ -207,7 +207,7 @@ export default function AssistantPage() {
           {messages.length === 0 && (
             <div className="text-center py-20">
               <p className="text-4xl mb-3">✦</p>
-              <p className="text-slate-500 text-sm">{t.askBora}</p>
+              <p className="text-slate-500 text-sm">{t.askAva}</p>
             </div>
           )}
           {messages.map((m, i) => (
@@ -248,7 +248,7 @@ export default function AssistantPage() {
               rows={2}
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              placeholder={t.askBora}
+              placeholder={t.askAva}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();

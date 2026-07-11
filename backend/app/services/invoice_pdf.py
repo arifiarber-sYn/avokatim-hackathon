@@ -87,7 +87,7 @@ _PAGE = """<!DOCTYPE html>
   {notes_html}
 
   <div class="foot">
-    Gjeneruar nga BoraLaw · {generated_on}{fiscal_foot}
+    Gjeneruar nga AvokatIM · {generated_on}{fiscal_foot}
   </div>
 </body>
 </html>"""

@@ -1,4 +1,4 @@
-# BoraLaw
+# AvokatIM
 
 Platformë moderne për menaxhimin e praktikës ligjore — e ndërtuar që një avokat i vetëm
 të punojë me kapacitetin e një zyre të tërë: nga pranimi i lëndës deri te përgatitja për seancë.
@@ -12,7 +12,7 @@ të punojë me kapacitetin e një zyre të tërë: nga pranimi i lëndës deri t
 | **Afatet** | Motor afatesh me rregullat procedurale të Kosovës (LPK, KPPRK, LKA...) — llogaritje automatike me festa zyrtare |
 | **Dokumentet** | Ruajtje e enkriptuar, versionim, nxjerrje teksti + OCR, indeksim për kërkim semantik |
 | **Shabllonet** | Padi, ankesa, autorizime — plotësohen automatikisht me të dhënat e lëndës |
-| **Asistentja Bora** | AI me RAG mbi legjislacionin dhe dokumentet e lëndës: përmbledhje, hulumtim me citime, përgatitje për seancë |
+| **Asistentja Ava** | AI me RAG mbi legjislacionin dhe dokumentet e lëndës: përmbledhje, hulumtim me citime, përgatitje për seancë |
 | **Portali i klientit** | Klienti sheh statusin e lëndës dhe seancat e ardhshme |
 | **Faturimi** | Orët e punës, fatura automatike nga orët e pafaturuara |
 | **Paneli** | Ngarkesa, afatet e javës, financat |
@@ -69,7 +69,7 @@ dhe zgjidhe "Lokal" te Asistentja në aplikacion.
 ## Korpusi ligjor
 
 Te **Cilësimet → Baza ligjore** ngarko tekstet e ligjeve (nga Gazeta Zyrtare).
-Ndahen automatikisht për nen ("Neni X"), indeksohen me embeddings, dhe Bora i citon
+Ndahen automatikisht për nen ("Neni X"), indeksohen me embeddings, dhe Ava i citon
 me saktësi në përgjigjet e saj.
 
 ## Testet
@@ -81,7 +81,7 @@ cd backend && .venv/bin/python -m pytest tests/ -q
 ## Struktura
 
 ```
-BoraLaw/
+AvokatIM/
 ├── backend/            # FastAPI API
 │   ├── app/
 │   │   ├── models/     # SQLAlchemy (multi-tenant + multi-juridiksional)

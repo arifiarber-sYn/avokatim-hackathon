@@ -87,9 +87,9 @@ async def feed(
     lines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
-        "PRODID:-//BoraLaw//Deadlines//SQ",
+        "PRODID:-//AvokatIM//Deadlines//SQ",
         "CALSCALE:GREGORIAN",
-        "X-WR-CALNAME:BoraLaw",
+        "X-WR-CALNAME:AvokatIM",
     ]
     for deadline, ref in rows:
         start = deadline.due_at.astimezone(UTC)
@@ -97,7 +97,7 @@ async def feed(
         description = deadline.legal_basis or ""
         lines += [
             "BEGIN:VEVENT",
-            f"UID:{deadline.id}@boralaw",
+            f"UID:{deadline.id}@avokatim",
             f"DTSTAMP:{datetime.now(UTC):%Y%m%dT%H%M%SZ}",
             f"DTSTART:{start:%Y%m%dT%H%M%SZ}",
             f"DTEND:{start + timedelta(hours=1):%Y%m%dT%H%M%SZ}",
@@ -113,5 +113,5 @@ async def feed(
     return Response(
         content="\r\n".join(lines) + "\r\n",
         media_type="text/calendar",
-        headers={"Content-Disposition": 'attachment; filename="boralaw.ics"'},
+        headers={"Content-Disposition": 'attachment; filename="avokatim.ics"'},
     )

@@ -1,4 +1,4 @@
-# Politika e Privatësisë — BoraLaw
+# Politika e Privatësisë — AvokatIM
 
 *Versioni 1.0 · Korrik 2026 · Sipas Ligjit Nr. 06/L-082 për Mbrojtjen e të
 Dhënave Personale të Republikës së Kosovës. Teksti autoritativ është ai në
@@ -8,7 +8,7 @@ gjuhën shqipe.*
 
 - **Kontrolluesi** i të dhënave të lëndëve dhe klientëve është zyra ligjore
   që ju përfaqëson ("Zyra").
-- **Përpunuesi** është operatori i platformës BoraLaw, i cili i përpunon të
+- **Përpunuesi** është operatori i platformës AvokatIM, i cili i përpunon të
   dhënat vetëm sipas udhëzimeve të Zyrës dhe Marrëveshjes së Përpunimit të të
   Dhënave (DPA).
 

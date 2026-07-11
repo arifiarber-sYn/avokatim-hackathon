@@ -5,7 +5,7 @@ import { apiGet, apiPost } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { Button, Label, Select, Textarea } from "@/components/ui";
 
-const TIMER_KEY = "boralaw_timer_start";
+const TIMER_KEY = "avokatim_timer_start";
 
 interface MatterOption {
   id: string;

@@ -55,7 +55,7 @@ async def _check_login_rate_limit(email: str, ip: str | None) -> None:
     """Sliding lockout: max LOGIN_MAX_ATTEMPTS failed tries per email+IP window."""
     try:
         r = aioredis.from_url(settings.redis_url)
-        key = f"boralaw:login_fail:{email}:{ip or 'noip'}"
+        key = f"avokatim:login_fail:{email}:{ip or 'noip'}"
         count = await r.get(key)
         await r.aclose()
         if count is not None and int(count) >= LOGIN_MAX_ATTEMPTS:
@@ -72,7 +72,7 @@ async def _check_login_rate_limit(email: str, ip: str | None) -> None:
 async def _record_login_failure(email: str, ip: str | None) -> None:
     try:
         r = aioredis.from_url(settings.redis_url)
-        key = f"boralaw:login_fail:{email}:{ip or 'noip'}"
+        key = f"avokatim:login_fail:{email}:{ip or 'noip'}"
         pipe = r.pipeline()
         pipe.incr(key)
         pipe.expire(key, LOGIN_WINDOW_SECONDS)
@@ -100,9 +100,9 @@ async def _send_verification_email(user_id: uuid.UUID, email: str, locale: str) 
     url = f"{settings.public_base_url}/verifiko-email?token={token}"
     await send_email(
         email,
-        "BoraLaw — Konfirmo email-in / Confirm your email",
+        "AvokatIM — Konfirmo email-in / Confirm your email",
         "Përshëndetje,\n\nKonfirmo adresën tënde të email-it duke hapur këtë link:\n"
-        f"{url}\n\nLinku vlen 3 ditë.\n\n— BoraLaw",
+        f"{url}\n\nLinku vlen 3 ditë.\n\n— AvokatIM",
     )
 
 
@@ -239,9 +239,9 @@ async def forgot_password(
         async def _send() -> None:
             await send_email(
                 user.email,
-                "BoraLaw — Rivendos fjalëkalimin / Reset your password",
+                "AvokatIM — Rivendos fjalëkalimin / Reset your password",
                 "Përshëndetje,\n\nPër të rivendosur fjalëkalimin hape këtë link "
-                f"(vlen 1 orë):\n{url}\n\nNëse nuk e kërkove ti, injoroje këtë email.\n\n— BoraLaw",
+                f"(vlen 1 orë):\n{url}\n\nNëse nuk e kërkove ti, injoroje këtë email.\n\n— AvokatIM",
             )
 
         background.add_task(_send)

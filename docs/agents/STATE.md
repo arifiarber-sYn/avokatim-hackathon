@@ -39,7 +39,7 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   against the live backend after auth/tenancy changes.
 - **Mobile responsive + PWA** (2026-07-09): app shell with `hidden md:flex`
   sidebar, mobile top bar + hamburger drawer + bottom nav (Paneli, Lëndët,
-  Kalendari, Bora, Më shumë); matters/contacts render as card lists on phones,
+  Kalendari, Ava, Më shumë); matters/contacts render as card lists on phones,
   other tables scroll horizontally; matter tabs scroll; assistant collapses to
   one panel with a conversation dropdown; dashboard charts stack. Manifest has
   maskable icon (`icon-512-maskable.png`), scope/orientation; `sw.js` precaches
@@ -79,7 +79,7 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   shown on the invoice card. Numbering remains sequential per year (F-YYYY-NNNN).
 - **Deadline engine**: Kosovo procedural rules (LPK, KPPRK, LKA) seeded as data,
   automatic calculation with official holidays. Tests in `test_deadline_engine.py`.
-- **AI deadline extraction**: button on any document with text — Bora proposes
+- **AI deadline extraction**: button on any document with text — Ava proposes
   deadlines (title/date/legal basis/confidence), lawyer reviews and accepts →
   `POST .../extract-deadlines` + `POST .../deadlines/bulk`.
 - **Calendar sync**: ICS feed (`/api/calendar/feed.ics?token=...`, signed token,
@@ -97,7 +97,7 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   lawsuit, appeal, power of attorney, payment-order objection, labor lawsuit,
   administrative lawsuit, demand letter, NDA, service contract, employment
   contract, legal opinion, due-diligence checklist (all in `seeds/kosovo.py`).
-- **Assistant "Bora"**: RAG over legal corpus + matter documents, with citations.
+- **Assistant "Ava"**: RAG over legal corpus + matter documents, with citations.
   Providers: DeepSeek (default) or local OpenAI-compatible (Ollama/vLLM), selectable per request.
   **Answers stream (SSE)** via `/api/assistant/ask-stream` — the UI renders text
   progressively and no proxy/browser/Cloudflare idle timeout can drop long
@@ -179,7 +179,7 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   (sections 20–23): **89 PASS / 0 FAIL / 0 GAP**.
 - **Client portal**: full UI at `/portal` — login, matters with hearings,
   two-way messages, e-signature inbox. Shows the **firm's own name + logo**
-  (from portal login response) instead of "BoraLaw"; the public intake form
+  (from portal login response) instead of "AvokatIM"; the public intake form
   does the same (logo uploaded in Settings → Firm profile, data-URL ≤200 KB).
 - **Reminders**: background loop (hourly) notifies the responsible lawyer at
   each deadline's `remind_days_before` offsets; deduped via Redis. Two channels:
@@ -194,9 +194,9 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - **PWA**: manifest + icons; installable on phone; service worker (`public/sw.js`)
   shows push notifications and opens the matter on tap.
 - **Backups**: `backup.sh` — encrypted (AES-256, key at
-  `~/.config/boralaw/backup.key`) archive of pg_dump + `data/documents` +
-  `backend/.env` into `~/BoraLawBackups/`, retention 30. Daily at 03:00 via
-  systemd user timer `boralaw-backup.timer` (enabled). Restore steps in the
+  `~/.config/avokatim/backup.key`) archive of pg_dump + `data/documents` +
+  `backend/.env` into `~/AvokatIMBackups/`, retention 30. Daily at 03:00 via
+  systemd user timer `avokatim-backup.timer` (enabled). Restore steps in the
   script header. **The key file must also be copied somewhere off-machine.**
 - **i18n — 6 languages** (2026-07-09, Law 02/L-37): UI in sq/sr/tr/bs/en/zh
   (`dictionaries.ts`, ~490 keys each; every new UI string goes in ALL SIX).
@@ -247,15 +247,16 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - **Public domain**: https://avokatiim.ai (+ www) via **Cloudflare Tunnel** —
   live since 2026-07-10 (old domain boraarifi.ai now serves only a static
   parking page via Caddy :8099; both zones on Cloudflare) —
-  tunnel `boralaw` (id d22368e7-b5a0-44fb-80f5-12aa1aa5fa7f), config at
+  tunnel named `boralaw` on Cloudflare (legacy internal name, kept because the
+  tunnel ID is wired into both DNS zones; id d22368e7-b5a0-44fb-80f5-12aa1aa5fa7f), config at
   `~/.cloudflared/config.yml` (ingress → 127.0.0.1:3000; Next.js rewrites proxy
-  /api → backend). Runs as systemd user service `boralaw-tunnel.service`
+  /api → backend). Runs as systemd user service `avokatim-tunnel.service`
   (enabled). TLS terminates at Cloudflare edge — no cert management needed.
   DNS on Cloudflare (free plan), domain registered at Namecheap (.ai).
-- **Autostart**: systemd user service `boralaw.service`
-  (`~/.config/systemd/user/boralaw.service`) runs `start.sh` on boot; lingering enabled.
-- Containers (restart: unless-stopped): `boralaw-db` (pgvector/pg17, host port 5433),
-  `boralaw-redis` (6380), `boralaw-caddy` (host network, HTTPS 8443).
+- **Autostart**: systemd user service `avokatim.service`
+  (`~/.config/systemd/user/avokatim.service`) runs `start.sh` on boot; lingering enabled.
+- Containers (restart: unless-stopped): `avokatim-db` (pgvector/pg17, host port 5433),
+  `avokatim-redis` (6380), `avokatim-caddy` (host network, HTTPS 8443).
 - Backend: uvicorn on 127.0.0.1:8000, venv at `backend/.venv`. Frontend: Next.js on :3000.
 - Secrets in `backend/.env` (git-ignored): DeepSeek key, doc encryption key, DB password.
 - **Optional integrations, off until configured in `backend/.env`** (all degrade

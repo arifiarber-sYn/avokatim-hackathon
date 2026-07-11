@@ -24,10 +24,10 @@ të paenkriptuar.
 1. **Kufizo** — izolo sistemin e prekur (shkëput nga rrjeti, ndrysho
    fjalëkalimet, revoko sesionet).
 2. **Vlerëso** — çfarë të dhënash u prekën, sa subjekte, a ishin të
-   enkriptuara (dokumentet në BoraLaw janë të enkriptuara në disk — nëse
+   enkriptuara (dokumentet në AvokatIM janë të enkriptuara në disk — nëse
    çelësi nuk është kompromentuar, rreziku real mund të jetë i ulët).
 3. **Regjistro** — koha e zbulimit, si u zbulua, sistemi/dosjet e prekura,
-   vlerësimi i rrezikut (përdor regjistrin e veprimeve të BoraLaw si provë).
+   vlerësimi i rrezikut (përdor regjistrin e veprimeve të AvokatIM si provë).
 4. **Njofto AIP-në brenda 72 orëve** kur ka gjasa rreziku:
    Agjencia për Informim dhe Privatësi — https://aip.rks-gov.net.
    Përmbajtja: natyra e shkeljes, kategoritë/numri i subjekteve, pasojat e

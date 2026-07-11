@@ -52,7 +52,7 @@ async def lifespan(app: FastAPI):
     email_ingest.cancel()
 
 
-app = FastAPI(title="BoraLaw API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="AvokatIM API", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

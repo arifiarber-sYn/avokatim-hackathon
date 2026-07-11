@@ -10,6 +10,34 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-11 — Full rebrand: BoraLaw → AvokatIM, assistant Bora → Ava (Cursor / Fable 5)
+
+- Why: the owner's daughter now works at a company with a similar product;
+  keeping her name on this project could look like a conflict of interest.
+- Done (visible): every UI string in all 6 locales, PWA manifest + regenerated
+  icons/favicon ("A" on indigo), sidebar/mobile wordmark Avokat|IM, signature
+  certificate brand, legal docs (ToS/PP/DPA/SLA/AML/RoPA), pitch docs, README,
+  ICL offer on Desktop (folder + files renamed, PDF regenerated). Assistant
+  renamed to "Ava" (system prompt, dictionaries in 6 languages incl. inflected
+  forms, dictionary key askBora→askAva). Demo persona now "Av. Vera Demolli",
+  demo login demo@avokatim.app / Demo2026!ava (tenant deleted + reseeded;
+  seed_demo gained the now-required accept_tos flag).
+- Done (infra): project folder ~/BoraLaw → ~/AvokatIM (compat symlink
+  ~/BoraLaw kept for the IDE workspace); DB migrated to new cluster
+  (user/db avokatim, dump+restore, 0 errors, 4016 corpus chunks verified);
+  containers/volumes now avokatim-*; systemd units renamed to avokatim.service,
+  avokatim-tunnel.service, avokatim-backup.{service,timer} (old ones removed,
+  new enabled); backups dir → ~/AvokatIMBackups with key copied to
+  ~/.config/avokatim/backup.key; backend/.env DATABASE_URL + SMTP_FROM updated.
+  Cloudflare tunnel keeps its internal name `boralaw` (ID is wired into DNS).
+- Verified: 19 pytest pass; tsc + next build clean; full_simulation 89/89 PASS;
+  https://www.avokatiim.ai serves title "AvokatIM" + health {"app":"AvokatIM"};
+  boraarifi.ai still shows the parking page.
+- Left open / next: old docker volumes (boralaw_boralaw_*) kept as a safety
+  net — remove after a few weeks; AGENTS.md keeps a historical-note line about
+  the old names (intentional, so agents don't reintroduce them); old encrypted
+  backups (boralaw-*.tar.gz.enc) remain readable with the same key.
+
 ## 2026-07-10 — Domain change: boraarifi.ai → avokatiim.ai (Cursor / Fable 5)
 
 - Done: owner bought avokatiim.ai; updated `PUBLIC_BASE_URL` in `backend/.env`,
@@ -22,7 +50,7 @@
 - Update (same evening): owner added avokatiim.ai to Cloudflare + switched
   nameservers; re-ran `cloudflared tunnel login` (new cert.pem scoped to the
   new zone; old cert kept as `cert.pem.boraarifi.bak2`), then
-  `cloudflared tunnel route dns --overwrite-dns boralaw avokatiim.ai` (+ www).
+  `cloudflared tunnel route dns --overwrite-dns avokatim avokatiim.ai` (+ www).
 - Verified: https://avokatiim.ai and https://www.avokatiim.ai serve the app
   (200 + `/api/health` ok); old domain boraarifi.ai still 200.
 - Update 2: owner asked that boraarifi.ai no longer serve the app. Added a
@@ -125,9 +153,9 @@
 - Note: matter AI tab (summarize/hearing-prep) still non-streaming — those
   are shorter, but candidates for the same treatment if timeouts appear.
 
-## 2026-07-09 — Fix: Bora "NetworkError" on long answers (Cursor / Fable 5)
+## 2026-07-09 — Fix: Ava "NetworkError" on long answers (Cursor / Fable 5)
 
-- Bug: asking Bora on `/assistant` sometimes showed "NetworkError when
+- Bug: asking Ava on `/assistant` sometimes showed "NetworkError when
   attempting to fetch resource". Cause: the Next.js `/api` rewrite proxy has a
   **30s default timeout** (`proxy-request.ts`); DeepSeek with thinking mode can
   exceed it — the backend kept working and logged 200, but the browser
@@ -207,7 +235,7 @@
 - Done (P3): `backend/scripts/seed_demo.py` — resettable "Zyra Demo" tenant
   (8 matters across stages, rule-based deadlines + hearings, 4 PDF docs, tasks,
   time+expenses, paid+draft invoices, portal client with messages and pending
-  signature; logins demo@boralaw.app / klienti.demo@boralaw.app); demo script
+  signature; logins demo@avokatim.app / klienti.demo@avokatim.app); demo script
   `docs/pitch/skenari-demo.md` (20-min flow + objection answers); extended
   `full_simulation.py` with steps 12–16 covering all new features.
 - Migration `17000f590312`: tenants.bank_details, documents.visible_to_client,
@@ -228,7 +256,7 @@
   simulation played from both sides (firm admin + portal client): signup →
   firm profile → team invite → public intake → conflict check → intake→matter
   → parties → deadline engine → PDF upload + text extraction + AI deadline
-  extraction → doc review workflow → template render → Bora ask (7 citations)
+  extraction → doc review workflow → template render → Ava ask (7 citations)
   → time entries → invoice with VAT → payment → portal invite/login/messages →
   e-signature + certificate PDF → reports → ICS feed → gap probes. Result:
   39/40 PASS against the live stack (test tenant cleaned up after).
@@ -306,7 +334,7 @@
   Corrected the legal basis: Law 08/L-022 (not 06/L-037). Documented QTSP
   research in DECISIONS D-007 (Evrotrust + rTrust are the licensed providers).
   weasyprint added to requirements.txt.
-- Verified: 9 pytest pass; tsc + build clean; Bora answers real questions with
+- Verified: 9 pytest pass; tsc + build clean; Ava answers real questions with
   correct citations (LPK art. 176 appeal deadline; Labor Law art. 32 annual
   leave — 6 law citations each); NDA renders; E2E certificate flow
   (invite → sign in portal → 17 KB PDF, %PDF magic OK, 400 before signing);
@@ -322,7 +350,7 @@
   pricing (Clio/Smokeball/MyCase July 2026), Kosovo market; produced a full offer
   canvas (3 models: SaaS €24/user/mo w/ 3-month pilot; license+source €18k;
   partnership €25k → 25–30% co-ownership) and exported it to
-  `~/Desktop/Oferta-BoraLaw-ICL/` (HTML + WeasyPrint PDF + cover email text).
+  `~/Desktop/Oferta-AvokatIM-ICL/` (HTML + WeasyPrint PDF + cover email text).
 - Done (code): migration `3a316e59b755`. Per-matter permissions
   (`matters.restricted` + `matter_members`; enforcement centralized in
   `get_owned_matter` + `restricted_visibility_filter`, applied to matter list,
@@ -347,9 +375,9 @@
 
 - Done: owner bought boraarifi.ai (Namecheap) + moved DNS to Cloudflare (free)
   + authorized `cloudflared tunnel login`. Installed cloudflared 2026.6.1 (rpm),
-  created tunnel `boralaw`, CNAMEs for apex + www (--overwrite-dns over old
+  created tunnel `avokatim`, CNAMEs for apex + www (--overwrite-dns over old
   parking records), config → 127.0.0.1:3000 (Next rewrites carry /api),
-  systemd user service `boralaw-tunnel.service` (enabled, Restart=always).
+  systemd user service `avokatim-tunnel.service` (enabled, Restart=always).
   PUBLIC_BASE_URL=https://boraarifi.ai in backend/.env; stack restarted.
 - Verified through the public internet: /login /dashboard /portal /apliko/{token}
   /manifest.webmanifest /sw.js /api/health /api/public/intake/{token} all 200 on
@@ -377,7 +405,7 @@
 - Root cause: owner saw a broken dashboard because the running `next-server`
   (started 14:50) predated the last `npm run build` (15:11) — old HTML referenced
   chunk files that the new build had replaced, so the browser got 404s on JS and
-  pages never hydrated. Fixed by `systemctl --user restart boralaw.service` and
+  pages never hydrated. Fixed by `systemctl --user restart avokatim.service` and
   **hardened `start.sh`**: it now rebuilds when `frontend/src`/`public` is newer
   than `.next/BUILD_ID` and kills the stale server before starting a fresh one.
 - Full audit (all green): 9 pytest pass; alembic at head `fdb43a0e95bc`; every
@@ -386,7 +414,7 @@
   chunks referenced by /dashboard load 200; /api reports/dashboard + analytics,
   matters, invoices, time-entries, team, intake, templates all 200 with a real
   token; public intake page (/apliko/{token}) 200 + its public API OK; ICS feed
-  200; Caddy HTTPS 200; containers healthy; boralaw.service + backup timer
+  200; Caddy HTTPS 200; containers healthy; avokatim.service + backup timer
   enabled (next run 03:00).
 - Left open / next: SMTP app password (owner), real corpus, public domain.
 
@@ -410,7 +438,7 @@
   /reports/analytics gained `by_lawyer` (open matters, MTD hours vs target,
   utilization) — table shows when tenant has >1 active member. Encrypted daily
   backups: `backup.sh` (pg_dump + documents + .env, AES-256, retention 14) +
-  `boralaw-backup.timer` (03:00, enabled); key at `~/.config/boralaw/backup.key`.
+  `avokatim-backup.timer` (03:00, enabled); key at `~/.config/avokatim/backup.key`.
 - Verified: 9 tests pass; API roundtrip (invoice paid with TRX ref, by_lawyer
   payload with temp member, push subscribe/unsubscribe) then synthetic data
   removed; backup ran and restore-tested (dump + docs + env decrypt OK);
@@ -454,8 +482,8 @@
 - Done: researched full 2026 feature sets of Clio (Manage AI, Draft, Grow,
   Accounting), Smokeball (Archie AI, AutoTime, 20k forms) and MyCase (IQ,
   built-in e-sign/SMS). Compared 27 capabilities across 5 areas. Canvas:
-  `~/.cursor/projects/home-kllosha-BoraLaw/canvases/krahasimi-i-plote-aplikacionit.canvas.tsx`.
-- Scores: Clio 24/27, Smokeball 21.5/27, MyCase 20/27, BoraLaw 16.5/27.
+  `~/.cursor/projects/home-kllosha-AvokatIM/canvases/krahasimi-i-plote-aplikacionit.canvas.tsx`.
+- Scores: Clio 24/27, Smokeball 21.5/27, MyCase 20/27, AvokatIM 16.5/27.
   Our structural advantages nobody matches: XK procedural rules as data,
   RAG with article citations, self-hosting, local-LLM option, sq/en/zh UI.
   Biggest gaps: multi-user roles, e-signature, calendar sync, AI deadline
@@ -496,7 +524,7 @@
 - Done: web research comparing our dashboard vs Clio, Smokeball, MyCase +
   2026 legal-KPI best practices (curate 5-7 KPIs; categories: financial/
   production/capacity/marketing; trends over static numbers). Result canvas:
-  `~/.cursor/projects/home-kllosha-BoraLaw/canvases/dashboard-krahasimi.canvas.tsx`.
+  `~/.cursor/projects/home-kllosha-AvokatIM/canvases/dashboard-krahasimi.canvas.tsx`.
 - Findings: we already have real-time clickable KPI cards and a unique
   differentiator (deadlines with procedural legal basis — nobody has that);
   main gaps are today-agenda, trend charts, A/R aging, utilization/realization,
@@ -516,7 +544,7 @@
 - Done: created the agent operating system for this repo: root `AGENTS.md`
   (entry point for any LLM/agent), `CLAUDE.md` pointer, `docs/agents/`
   (STATE, JOURNAL, DECISIONS, ROADMAP). Made the first git commit.
-- Done: `boralaw.service` (systemd user unit, enabled) so the stack starts on boot;
+- Done: `avokatim.service` (systemd user unit, enabled) so the stack starts on boot;
   hardened `start.sh` (waits for docker + DB health, skips rebuild when `.next` exists).
 - Done: recovered the original project chat that was orphaned in Cursor
   (it had been run from an empty window; relinked it to this workspace).

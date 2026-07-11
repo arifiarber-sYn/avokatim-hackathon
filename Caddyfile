@@ -1,10 +1,10 @@
-# BoraLaw reverse proxy.
+# AvokatIM reverse proxy.
 #
 # Default: HTTPS on port 8443 with a locally-trusted certificate (Caddy's
 # internal CA) — works for LAN/WireGuard access via https://<ip-e-serverit>:8443
 #
 # When you get a public domain, replace the site block with:
-#   boralaw.example.com {
+#   avokatim.example.com {
 #       reverse_proxy 127.0.0.1:3000
 #   }
 # and Caddy will obtain a real Let's Encrypt certificate automatically.

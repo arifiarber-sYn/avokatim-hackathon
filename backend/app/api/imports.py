@@ -1,4 +1,4 @@
-"""CSV data migration: bring existing clients and matters into BoraLaw.
+"""CSV data migration: bring existing clients and matters into AvokatIM.
 
 Contacts CSV columns (header row required, extra columns ignored):
     display_name*, kind, email, phone, address, national_id, notes

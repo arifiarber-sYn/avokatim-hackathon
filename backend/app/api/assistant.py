@@ -100,7 +100,7 @@ async def _prepare_ask(
         jurisdiction_id = matter.jurisdiction_id
     else:
         # No matter given: still ground answers in the tenant's default
-        # jurisdiction corpus so Bora cites the actual laws.
+        # jurisdiction corpus so Ava cites the actual laws.
         tenant = await db.get(Tenant, user.tenant_id)
         code = tenant.default_jurisdiction_code if tenant else "XK"
         jurisdiction = (

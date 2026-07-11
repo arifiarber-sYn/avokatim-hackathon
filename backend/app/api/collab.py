@@ -277,7 +277,7 @@ async def extract_deadlines(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Bora reads a court document and proposes deadlines. The lawyer reviews
+    """Ava reads a court document and proposes deadlines. The lawyer reviews
     each proposal before anything is saved."""
     await get_owned_matter(db, user, matter_id)
     document = await db.get(Document, document_id)

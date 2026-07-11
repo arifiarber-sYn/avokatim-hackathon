@@ -1,10 +1,10 @@
-# Kushtet e Përdorimit — BoraLaw
+# Kushtet e Përdorimit — AvokatIM
 
 *Versioni 1.0 · Korrik 2026 · Teksti autoritativ është ai në gjuhën shqipe.*
 
 ## 1. Palët dhe objekti
 
-Këto Kushte rregullojnë përdorimin e platformës **BoraLaw** ("Platforma") nga
+Këto Kushte rregullojnë përdorimin e platformës **AvokatIM** ("Platforma") nga
 zyra ligjore që hap llogari ("Zyra") dhe nga klientët e saj që përdorin
 portalin e klientit. Operatori i Platformës është ofruesi i shërbimit
 ("Operatori").

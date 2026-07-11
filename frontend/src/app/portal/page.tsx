@@ -4,11 +4,11 @@ import { useCallback, useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { Button, Card, ErrorNote, Input, Label, LocaleSwitcher, Spinner } from "@/components/ui";
 
-const TOKEN_KEY = "boralaw_portal_token";
-const NAME_KEY = "boralaw_portal_name";
-const FIRM_NAME_KEY = "boralaw_portal_firm";
-const FIRM_LOGO_KEY = "boralaw_portal_firm_logo";
-const TERMS_KEY = "boralaw_portal_terms";
+const TOKEN_KEY = "avokatim_portal_token";
+const NAME_KEY = "avokatim_portal_name";
+const FIRM_NAME_KEY = "avokatim_portal_firm";
+const FIRM_LOGO_KEY = "avokatim_portal_firm_logo";
+const TERMS_KEY = "avokatim_portal_terms";
 const API = "/api/portal";
 
 function portalToken(): string | null {
@@ -99,7 +99,7 @@ export default function PortalPage() {
               <img src={firmLogo} alt="" className="h-8 w-8 rounded object-contain shrink-0" />
             )}
             <div className="min-w-0">
-              <h1 className="text-lg font-bold text-indigo-700 truncate">{firmName || "BoraLaw"}</h1>
+              <h1 className="text-lg font-bold text-indigo-700 truncate">{firmName || "AvokatIM"}</h1>
               <p className="text-xs text-slate-500 truncate">{t.portalTitle}</p>
             </div>
           </div>

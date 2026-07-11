@@ -8,7 +8,7 @@ from app.models.base import Base, TenantMixin, TimestampMixin, uuid_pk
 
 
 class Conversation(Base, TenantMixin, TimestampMixin):
-    """A conversation with the Bora AI assistant, optionally tied to a matter."""
+    """A conversation with the Ava AI assistant, optionally tied to a matter."""
 
     __tablename__ = "conversations"
 

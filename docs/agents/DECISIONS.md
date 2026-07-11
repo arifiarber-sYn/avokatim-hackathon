@@ -58,7 +58,7 @@
 
 ## D-007: E-signature legal basis and the path to qualified signatures (2026-07-08)
 
-- Context: BoraLaw's portal e-signature (typed name + SHA-256 + IP + timestamp)
+- Context: AvokatIM's portal e-signature (typed name + SHA-256 + IP + timestamp)
   is a *simple* electronic signature. Kosovo's governing law is
   **Law No. 08/L-022 on Electronic Identification and Trust Services in
   Electronic Transactions** (in force 2022; earlier docs wrongly cited
@@ -185,3 +185,22 @@
   (every consent, erasure, export, large deposit and report is in the audit
   log); one extra FK path tenants↔users required explicit `foreign_keys` on
   the membership relationship.
+
+## D-012: Full rebrand BoraLaw → AvokatIM (2026-07-11)
+
+- Context: the owner's daughter (the product's namesake) started working at a
+  company with a similar product; keeping her name on the project could be
+  seen as a conflict of interest. The public domain had already moved to
+  avokatiim.ai.
+- Decision: complete rebrand, not just user-facing strings — product name
+  AvokatIM, assistant "Ava", new icons, and internal identifiers too: project
+  folder ~/AvokatIM (with ~/BoraLaw compat symlink), DB user/db `avokatim`
+  (dump/restore into a fresh cluster), containers/volumes `avokatim-*`,
+  systemd units `avokatim*`, backups `~/AvokatIMBackups`. Two deliberate
+  exceptions: the Cloudflare tunnel keeps its internal name `boralaw`
+  (its ID is wired into both DNS zones; invisible to users), and AGENTS.md
+  keeps one historical note so agents don't reintroduce the old names.
+- Consequences: users must log in again (localStorage token key changed);
+  demo credentials changed (demo@avokatim.app / Demo2026!ava); old
+  `boralaw_boralaw_*` docker volumes kept temporarily as a safety net; old
+  encrypted backups remain readable (same key, copied to the new path).

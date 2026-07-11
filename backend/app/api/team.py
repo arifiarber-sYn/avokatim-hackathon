@@ -72,9 +72,9 @@ async def _send_invite_email(
     url = f"{settings.public_base_url}/ftesa?token={token}"
     await send_email(
         email,
-        f"BoraLaw — Ftesë nga {firm}",
+        f"AvokatIM — Ftesë nga {firm}",
         f"Përshëndetje,\n\n{invited_by} të fton të bashkohesh me zyrën \"{firm}\" "
-        f"në BoraLaw.\n\nVendos fjalëkalimin tënd këtu (linku vlen 7 ditë):\n{url}\n\n— BoraLaw",
+        f"në AvokatIM.\n\nVendos fjalëkalimin tënd këtu (linku vlen 7 ditë):\n{url}\n\n— AvokatIM",
     )
 
 
@@ -136,7 +136,7 @@ async def invite_member(
     await db.refresh(member)
     background.add_task(
         _send_invite_email, member.email, user.full_name,
-        tenant.name if tenant else "BoraLaw", token,
+        tenant.name if tenant else "AvokatIM", token,
     )
     return _member_out(member)
 
@@ -161,7 +161,7 @@ async def resend_invite(
     )
     background.add_task(
         _send_invite_email, member.email, user.full_name,
-        tenant.name if tenant else "BoraLaw", token,
+        tenant.name if tenant else "AvokatIM", token,
     )
     return {"sent": True}
 

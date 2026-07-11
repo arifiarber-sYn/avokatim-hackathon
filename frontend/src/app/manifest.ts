@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "BoraLaw",
-    short_name: "BoraLaw",
+    name: "AvokatIM",
+    short_name: "AvokatIM",
     description: "Platforma për menaxhimin e praktikës ligjore",
     start_url: "/dashboard",
     scope: "/",

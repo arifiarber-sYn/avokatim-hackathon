@@ -4,7 +4,7 @@
 kontrollues; përditësohet kur shtohen kategori të reja përpunimi.*
 
 **Kontrolluesi:** [Emri i zyrës ligjore, adresa, kontakti]
-**Përpunuesi kryesor:** Operatori i platformës BoraLaw (sipas DPA-së)
+**Përpunuesi kryesor:** Operatori i platformës AvokatIM (sipas DPA-së)
 
 | # | Aktiviteti | Qëllimi | Kategoritë e subjekteve | Kategoritë e të dhënave | Baza ligjore | Marrësit | Transferim jashtë XK | Afati i ruajtjes | Masat e sigurisë |
 |---|---|---|---|---|---|---|---|---|---|

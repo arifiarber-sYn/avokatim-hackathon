@@ -1,4 +1,4 @@
-"""Full end-to-end simulation of a law firm's lifecycle on BoraLaw, played
+"""Full end-to-end simulation of a law firm's lifecycle on AvokatIM, played
 from BOTH sides: the firm (lawyer/admin) and the client (a company).
 Prints PASS/FAIL for what works and GAP for probes of missing features.
 Run against the live backend:  .venv/bin/python scripts/full_simulation.py
@@ -220,14 +220,14 @@ async def main() -> None:
         check("shkresa ruhet si dokument PDF i lëndës", r.status_code == 201,
               r.text[:150] if r.status_code != 201 else r.json().get("filename", ""))
 
-        # ============ Bora AI with citations ============
-        print("\n=== 7. ZYRA: pyetje ligjore për Borën ===")
+        # ============ Ava AI with citations ============
+        print("\n=== 7. ZYRA: pyetje ligjore për Avën ===")
         r = await c.post(f"{BASE}/assistant/ask", headers=h, json={
             "question": "Sa është afati për kundërshtim të urdhërpagesës dhe cili nen i LPK e rregullon?",
             "matter_id": mid, "provider": "deepseek",
         })
         cits = r.json().get("message", {}).get("citations", []) if r.status_code == 200 else []
-        check("Bora përgjigjet me citime nga korpusi",
+        check("Ava përgjigjet me citime nga korpusi",
               r.status_code == 200 and len(cits) > 0, f"{len(cits)} citime")
 
         r = await c.post(f"{BASE}/assistant/matters/{mid}/summarize", headers=h)

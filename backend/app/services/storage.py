@@ -15,7 +15,7 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-_SALT = b"boralaw-document-storage-v1"
+_SALT = b"avokatim-document-storage-v1"
 
 
 def _fernet() -> Fernet | None:

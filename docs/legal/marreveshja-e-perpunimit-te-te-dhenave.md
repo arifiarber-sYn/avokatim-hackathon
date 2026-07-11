@@ -1,6 +1,6 @@
 # Marrëveshja për Përpunimin e të Dhënave Personale (LMDhP)
 
-> Model kontrate ndërmjet ofruesit të platformës BoraLaw ("Përpunuesi") dhe
+> Model kontrate ndërmjet ofruesit të platformës AvokatIM ("Përpunuesi") dhe
 > zyrës së avokatisë kliente ("Kontrolluesi"), në pajtim me **Ligjin
 > Nr. 06/L-082 për Mbrojtjen e të Dhënave Personale** të Republikës së Kosovës.
 > Plotësohen fushat në kllapa para nënshkrimit. Ky dokument është model pune —
@@ -8,12 +8,12 @@
 
 **Data:** [____]
 **Kontrolluesi:** [Emri i zyrës së avokatisë], me seli në [adresa], NUI [____]
-**Përpunuesi:** [Emri i ofruesit të BoraLaw], me seli në [adresa], NUI [____]
+**Përpunuesi:** [Emri i ofruesit të AvokatIM], me seli në [adresa], NUI [____]
 
 ## 1. Objekti dhe kohëzgjatja
 
 1.1. Kjo marrëveshje rregullon përpunimin e të dhënave personale që Përpunuesi
-kryen në emër të Kontrolluesit gjatë ofrimit të platformës BoraLaw për
+kryen në emër të Kontrolluesit gjatë ofrimit të platformës AvokatIM për
 menaxhimin e praktikës ligjore ("Shërbimi").
 
 1.2. Marrëveshja vlen sa kohë që Kontrolluesi përdor Shërbimin dhe deri në

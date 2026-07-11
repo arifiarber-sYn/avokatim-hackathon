@@ -5,7 +5,7 @@ from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent  # backend/
-PROJECT_DIR = BASE_DIR.parent                      # BoraLaw/
+PROJECT_DIR = BASE_DIR.parent                      # AvokatIM/
 
 
 class Settings(BaseSettings):
@@ -13,19 +13,19 @@ class Settings(BaseSettings):
         env_file=BASE_DIR / ".env", env_file_encoding="utf-8", extra="ignore"
     )
 
-    app_name: str = "BoraLaw"
+    app_name: str = "AvokatIM"
     debug: bool = False
 
     # Database (docker-compose exposes Postgres on 127.0.0.1:5433)
     database_url: str = (
-        "postgresql+psycopg://boralaw:boralaw-dev-password@127.0.0.1:5433/boralaw"
+        "postgresql+psycopg://avokatim:avokatim-dev-password@127.0.0.1:5433/avokatim"
     )
     redis_url: str = "redis://127.0.0.1:6380/0"
 
     # Auth
     secret_key: str = "change-me-in-backend-.env"
     access_token_minutes: int = 60 * 12
-    totp_issuer: str = "BoraLaw"
+    totp_issuer: str = "AvokatIM"
 
     # Document storage (encrypted at rest with Fernet derived from doc_encryption_key)
     documents_dir: Path = PROJECT_DIR / "data" / "documents"
@@ -63,7 +63,7 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     smtp_user: str = ""
     smtp_password: str = ""
-    smtp_from: str = "BoraLaw <noreply@boralaw.local>"
+    smtp_from: str = "AvokatIM <noreply@avokatim.local>"
     smtp_starttls: bool = True
     reminder_check_minutes: int = 60
 
@@ -91,7 +91,7 @@ class Settings(BaseSettings):
     # Web Push (PWA notifications). Generated once; empty = push disabled.
     vapid_public_key: str = ""
     vapid_private_key: str = ""
-    vapid_subject: str = "mailto:noreply@boralaw.local"
+    vapid_subject: str = "mailto:noreply@avokatim.local"
 
 
 @lru_cache

@@ -4,8 +4,8 @@ realistic Kosovo-law data so a client demo never starts from an empty screen.
 Run:    .venv/bin/python scripts/seed_demo.py           (create/reset)
         .venv/bin/python scripts/seed_demo.py --delete  (remove the demo tenant)
 
-Login (lawyer):  demo@boralaw.app        / Demo2026!bora
-Login (portal):  klienti.demo@boralaw.app / Demo2026!klient
+Login (lawyer):  demo@avokatim.app        / Demo2026!ava
+Login (portal):  klienti.demo@avokatim.app / Demo2026!klient
 """
 import asyncio
 import io
@@ -18,9 +18,9 @@ sys.path.insert(0, ".")
 
 BASE = "http://127.0.0.1:8000/api"
 TENANT_NAME = "Zyra Demo"
-LAWYER_EMAIL = "demo@boralaw.app"
-LAWYER_PW = "Demo2026!bora"
-CLIENT_EMAIL = "klienti.demo@boralaw.app"
+LAWYER_EMAIL = "demo@avokatim.app"
+LAWYER_PW = "Demo2026!ava"
+CLIENT_EMAIL = "klienti.demo@avokatim.app"
 CLIENT_PW = "Demo2026!klient"
 
 
@@ -70,8 +70,8 @@ async def seed() -> None:
     today = date.today()
     async with httpx.AsyncClient(timeout=180) as c:
         r = await c.post(f"{BASE}/auth/signup", json={
-            "practice_name": TENANT_NAME, "full_name": "Av. Bora Arifi",
-            "email": LAWYER_EMAIL, "password": LAWYER_PW,
+            "practice_name": TENANT_NAME, "full_name": "Av. Vera Demolli",
+            "email": LAWYER_EMAIL, "password": LAWYER_PW, "accept_tos": True,
         })
         r.raise_for_status()
         h = {"Authorization": f"Bearer {r.json()['access_token']}"}

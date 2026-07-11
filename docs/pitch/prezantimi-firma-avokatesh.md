@@ -1,19 +1,19 @@
-# BoraLaw — teksti i prezantimit për firmën e avokatëve
+# AvokatIM — teksti i prezantimit për firmën e avokatëve
 
 > Statusi: dërguar më ____ te ____
 > Përshtat fushat [emri], [numri], [emaili] para dërgimit.
 
 ---
 
-**Lënda: BoraLaw — platforma që i jep një avokati kapacitetin e një zyre të tërë**
+**Lënda: AvokatIM — platforma që i jep një avokati kapacitetin e një zyre të tërë**
 
 Të nderuar,
 
-Ju falënderoj për interesimin tuaj — më lejoni t'ju prezantoj se çfarë është BoraLaw dhe pse besoj që kjo bisedë vjen në momentin e duhur për të dyja palët.
+Ju falënderoj për interesimin tuaj — më lejoni t'ju prezantoj se çfarë është AvokatIM dhe pse besoj që kjo bisedë vjen në momentin e duhur për të dyja palët.
 
-**Çfarë është BoraLaw**
+**Çfarë është AvokatIM**
 
-BoraLaw është një platformë e plotë për menaxhimin e praktikës ligjore, e ndërtuar sipas standardeve globale të legal-tech 2026, por e projektuar që nga themeli për realitetin procedural dhe ligjor të Kosovës. Ajo mbulon gjithë ciklin e një lënde — nga pranimi deri te pagesa:
+AvokatIM është një platformë e plotë për menaxhimin e praktikës ligjore, e ndërtuar sipas standardeve globale të legal-tech 2026, por e projektuar që nga themeli për realitetin procedural dhe ligjor të Kosovës. Ajo mbulon gjithë ciklin e një lënde — nga pranimi deri te pagesa:
 
 - **Pranimi i lëndëve** me kontroll automatik të konfliktit të interesit dhe klasifikim inteligjent të rastit; formular publik ku klientët aplikojnë vetë online.
 - **Dosja digjitale e lëndës**: palët, dokumentet, shënimet, detyrat, afatet dhe historia e plotë — gjithçka në një vend, me mundësi kufizimi të qasjes për lëndët e ndjeshme.
@@ -28,16 +28,16 @@ BoraLaw është një platformë e plotë për menaxhimin e praktikës ligjore, e
 
 **Përputhshmëria ligjore si pjesë e produktit**
 
-BoraLaw nuk ndalet te puna e përditshme — i mbulon edhe detyrimet ligjore që një zyre avokatie në Kosovë i ka vetë:
+AvokatIM nuk ndalet te puna e përditshme — i mbulon edhe detyrimet ligjore që një zyre avokatie në Kosovë i ka vetë:
 
 - **Mbrojtja e të dhënave (Ligji 06/L-082)**: pëlqimet e klientëve regjistrohen me datë e mënyrë, e drejta e fshirjes dhe eksporti i të dhënave për subjektin janë një klik, afatet e ruajtjes ndiqen automatikisht — dhe paketa kontraktuale (kushtet, politika e privatësisë, marrëveshja e përpunimit të të dhënave) vjen e gatshme.
-- **AML (Ligji 05/L-096)**: avokatët janë subjekte raportuese për patundshmëri, menaxhim fondesh e themelim kompanish — BoraLaw sjell identifikimin e klientit (KYC), evidencën e burimit të fondeve me paralajmërim automatik mbi 10.000 €, listën e indikatorëve të NjIF-K si checklist për lëndë, dhe raportin e dyshimit të gatshëm për dërgim.
+- **AML (Ligji 05/L-096)**: avokatët janë subjekte raportuese për patundshmëri, menaxhim fondesh e themelim kompanish — AvokatIM sjell identifikimin e klientit (KYC), evidencën e burimit të fondeve me paralajmërim automatik mbi 10.000 €, listën e indikatorëve të NjIF-K si checklist për lëndë, dhe raportin e dyshimit të gatshëm për dërgim.
 
 Këto janë detyrime që inspektimi mund t'i kërkojë nesër — dhe që asnjë vegël e huaj nuk i njeh.
 
 **Konfidencialiteti si parim, jo si opsion**
 
-Kjo është pika ku BoraLaw dallon nga çdo zgjidhje cloud e huaj: të dhënat qëndrojnë në infrastrukturë nën kontroll të plotë e të drejtpërdrejtë — jo në cloud publik jashtë vendit — me mundësi instalimi edhe tërësisht në infrastrukturën tuaj. Dokumentet e klientëve enkriptohen në disk dhe indeksohen me modele lokale — **teksti i tyre nuk largohet asnjëherë nga serveri**. Dhe nëse zyra juaj vendos që asnjë e dhënë të mos prekë shërbime të jashtme AI, kjo çaktivizohet me një çelës të vetëm — platforma kalon në modelin plotësisht lokal. Sekreti profesional avokat–klient mbetet teknikisht i garantuar, jo thjesht i premtuar me kontratë.
+Kjo është pika ku AvokatIM dallon nga çdo zgjidhje cloud e huaj: të dhënat qëndrojnë në infrastrukturë nën kontroll të plotë e të drejtpërdrejtë — jo në cloud publik jashtë vendit — me mundësi instalimi edhe tërësisht në infrastrukturën tuaj. Dokumentet e klientëve enkriptohen në disk dhe indeksohen me modele lokale — **teksti i tyre nuk largohet asnjëherë nga serveri**. Dhe nëse zyra juaj vendos që asnjë e dhënë të mos prekë shërbime të jashtme AI, kjo çaktivizohet me një çelës të vetëm — platforma kalon në modelin plotësisht lokal. Sekreti profesional avokat–klient mbetet teknikisht i garantuar, jo thjesht i premtuar me kontratë.
 
 **Ku jemi dhe çfarë ju propozoj**
 

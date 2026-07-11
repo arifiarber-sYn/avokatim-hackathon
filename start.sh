@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Starts the full BoraLaw stack on this machine.
+# Starts the full AvokatIM stack on this machine.
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -52,6 +52,6 @@ curl -sf -o /dev/null http://127.0.0.1:3000 && echo "  Frontend OK"
 
 IP=$(ip -4 addr show scope global | awk '/inet /{print $2}' | cut -d/ -f1 | head -1)
 echo
-echo "BoraLaw eshte gati:"
+echo "AvokatIM eshte gati:"
 echo "  Lokalisht:    http://127.0.0.1:3000"
 echo "  Nga rrjeti:   https://${IP}:8443   (certifikate lokale — prano paralajmerimin e shfletuesit)"

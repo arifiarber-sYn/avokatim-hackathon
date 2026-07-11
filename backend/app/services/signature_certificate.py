@@ -39,13 +39,13 @@ _PAGE = """<!DOCTYPE html>
 </head>
 <body>
   <div class="head">
-    <div class="brand">Bora<span>Law</span></div>
+    <div class="brand">Avokat<span>IM</span></div>
     <h1>CERTIFIKATË E NËNSHKRIMIT ELEKTRONIK</h1>
     <div class="muted">{subtitle}</div>
   </div>
 
   <p>Kjo certifikatë vërteton se dokumenti i identifikuar më poshtë është nënshkruar
-  elektronikisht përmes platformës BoraLaw. Nënshkrimi është i lidhur në mënyrë
+  elektronikisht përmes platformës AvokatIM. Nënshkrimi është i lidhur në mënyrë
   kriptografike me përmbajtjen e saktë të dokumentit përmes vlerës SHA-256.</p>
 
   <table>
@@ -79,7 +79,7 @@ _PAGE = """<!DOCTYPE html>
   </div>
 
   <div class="foot">
-    Gjeneruar nga BoraLaw · {generated_at} · Kjo certifikatë i referohet vetëm
+    Gjeneruar nga AvokatIM · {generated_at} · Kjo certifikatë i referohet vetëm
     versionit të dokumentit me SHA-256 të cekur më lart.
   </div>
 </body>

@@ -21,7 +21,7 @@ const tosSq: LegalDoc = {
   updated: "Versioni 1.0 · Korrik 2026",
   note: "Teksti autoritativ është ai në gjuhën shqipe.",
   sections: [
-    { h: "Shërbimi", p: "BoraLaw ofron menaxhim të lëndëve ligjore, afateve, dokumenteve, faturimit, komunikimit me klientë dhe asistencë me AI. Asistenca AI ka natyrë ndihmëse dhe nuk përbën këshillë ligjore — përgjegjësia profesionale mbetet e avokatit." },
+    { h: "Shërbimi", p: "AvokatIM ofron menaxhim të lëndëve ligjore, afateve, dokumenteve, faturimit, komunikimit me klientë dhe asistencë me AI. Asistenca AI ka natyrë ndihmëse dhe nuk përbën këshillë ligjore — përgjegjësia profesionale mbetet e avokatit." },
     { h: "Llogaria", p: "Zyra përgjigjet për saktësinë e të dhënave të regjistrimit dhe ruajtjen e kredencialeve. Qasjet e paautorizuara raportohen menjëherë." },
     { h: "Të dhënat", p: "Të dhënat e lëndëve dhe dokumentet janë pronë e zyrës ligjore. Ato përpunohen vetëm sipas Marrëveshjes së Përpunimit të të Dhënave dhe Ligjit Nr. 06/L-082. Dokumentet ruhen të enkriptuara dhe indeksohen me modele lokale." },
     { h: "AI e jashtme", p: "Përdorimi i AI-së së jashtme është opsional dhe kontrollohet nga zyra në cilësimet; me çaktivizim përdoret vetëm modeli lokal që nuk dërgon asgjë jashtë serverit." },
@@ -37,7 +37,7 @@ const tosSr: LegalDoc = {
   updated: "Verzija 1.0 · Jul 2026",
   note: "Merodavan je tekst na albanskom jeziku.",
   sections: [
-    { h: "Usluga", p: "BoraLaw pruža upravljanje predmetima, rokovima, dokumentima, fakturisanjem, komunikacijom sa klijentima i AI asistenciju. AI pomoć je pomoćne prirode i ne predstavlja pravni savet — profesionalna odgovornost ostaje na advokatu." },
+    { h: "Usluga", p: "AvokatIM pruža upravljanje predmetima, rokovima, dokumentima, fakturisanjem, komunikacijom sa klijentima i AI asistenciju. AI pomoć je pomoćne prirode i ne predstavlja pravni savet — profesionalna odgovornost ostaje na advokatu." },
     { h: "Nalog", p: "Kancelarija odgovara za tačnost podataka pri registraciji i čuvanje kredencijala. Neovlašćeni pristupi se odmah prijavljuju." },
     { h: "Podaci", p: "Podaci predmeta i dokumenti su vlasništvo advokatske kancelarije. Obrađuju se isključivo prema Ugovoru o obradi podataka i Zakonu br. 06/L-082. Dokumenti se čuvaju šifrovani i indeksiraju lokalnim modelima." },
     { h: "Eksterna AI", p: "Korišćenje eksterne AI je opciono i kancelarija ga kontroliše u podešavanjima; kada je isključeno, koristi se samo lokalni model koji ništa ne šalje van servera." },
@@ -53,7 +53,7 @@ const tosTr: LegalDoc = {
   updated: "Sürüm 1.0 · Temmuz 2026",
   note: "Bağlayıcı metin Arnavutça olandır.",
   sections: [
-    { h: "Hizmet", p: "BoraLaw dava dosyaları, süreler, belgeler, faturalama, müvekkil iletişimi ve yapay zeka desteği sunar. AI yardımı destekleyici niteliktedir ve hukuki tavsiye değildir — mesleki sorumluluk avukata aittir." },
+    { h: "Hizmet", p: "AvokatIM dava dosyaları, süreler, belgeler, faturalama, müvekkil iletişimi ve yapay zeka desteği sunar. AI yardımı destekleyici niteliktedir ve hukuki tavsiye değildir — mesleki sorumluluk avukata aittir." },
     { h: "Hesap", p: "Büro, kayıt bilgilerinin doğruluğundan ve kimlik bilgilerinin korunmasından sorumludur. Yetkisiz erişimler derhal bildirilir." },
     { h: "Veriler", p: "Dosya verileri ve belgeler hukuk bürosunun mülkiyetindedir. Yalnızca Veri İşleme Sözleşmesi ve 06/L-082 sayılı Kanun'a göre işlenir. Belgeler şifreli saklanır ve yerel modellerle dizinlenir." },
     { h: "Harici AI", p: "Harici AI kullanımı isteğe bağlıdır ve ayarlardan büro tarafından kontrol edilir; kapatıldığında sunucu dışına hiçbir şey göndermeyen yerel model kullanılır." },
@@ -69,7 +69,7 @@ const tosBs: LegalDoc = {
   updated: "Verzija 1.0 · Juli 2026",
   note: "Mjerodavan je tekst na albanskom jeziku.",
   sections: [
-    { h: "Usluga", p: "BoraLaw pruža upravljanje predmetima, rokovima, dokumentima, fakturisanjem, komunikacijom s klijentima i AI asistenciju. AI pomoć je pomoćne prirode i ne predstavlja pravni savjet — profesionalna odgovornost ostaje na advokatu." },
+    { h: "Usluga", p: "AvokatIM pruža upravljanje predmetima, rokovima, dokumentima, fakturisanjem, komunikacijom s klijentima i AI asistenciju. AI pomoć je pomoćne prirode i ne predstavlja pravni savjet — profesionalna odgovornost ostaje na advokatu." },
     { h: "Račun", p: "Kancelarija odgovara za tačnost podataka pri registraciji i čuvanje kredencijala. Neovlašteni pristupi se odmah prijavljuju." },
     { h: "Podaci", p: "Podaci predmeta i dokumenti su vlasništvo advokatske kancelarije. Obrađuju se isključivo prema Ugovoru o obradi podataka i Zakonu br. 06/L-082. Dokumenti se čuvaju šifrirani i indeksiraju lokalnim modelima." },
     { h: "Eksterna AI", p: "Korištenje eksterne AI je opcionalno i kancelarija ga kontroliše u postavkama; kada je isključeno, koristi se samo lokalni model koji ništa ne šalje van servera." },
@@ -85,7 +85,7 @@ const tosEn: LegalDoc = {
   updated: "Version 1.0 · July 2026",
   note: "The authoritative text is the Albanian version.",
   sections: [
-    { h: "The service", p: "BoraLaw provides legal matter management, deadlines, documents, billing, client communication and AI assistance. AI assistance is supportive in nature and is not legal advice — professional responsibility stays with the lawyer." },
+    { h: "The service", p: "AvokatIM provides legal matter management, deadlines, documents, billing, client communication and AI assistance. AI assistance is supportive in nature and is not legal advice — professional responsibility stays with the lawyer." },
     { h: "Account", p: "The firm is responsible for accurate registration data and for safeguarding member credentials. Unauthorized access must be reported immediately." },
     { h: "Data", p: "Matter data and documents are the property of the law firm. They are processed only under the Data Processing Agreement and Law No. 06/L-082. Documents are stored encrypted and indexed with local models." },
     { h: "External AI", p: "Use of external AI is optional and controlled by the firm in settings; when disabled, only the local model is used and nothing leaves the server." },
@@ -101,7 +101,7 @@ const tosZh: LegalDoc = {
   updated: "版本 1.0 · 2026年7月",
   note: "以阿尔巴尼亚语文本为准。",
   sections: [
-    { h: "服务", p: "BoraLaw 提供案件管理、期限、文件、计费、客户沟通和 AI 协助。AI 协助仅为辅助性质，不构成法律意见——职业责任仍由律师承担。" },
+    { h: "服务", p: "AvokatIM 提供案件管理、期限、文件、计费、客户沟通和 AI 协助。AI 协助仅为辅助性质，不构成法律意见——职业责任仍由律师承担。" },
     { h: "账户", p: "律所负责注册信息的准确性并妥善保管成员凭据。发现未经授权的访问须立即报告。" },
     { h: "数据", p: "案件数据和文件归律所所有，仅根据数据处理协议和第06/L-082号法律处理。文件加密存储，并使用本地模型进行索引。" },
     { h: "外部 AI", p: "外部 AI 的使用是可选的，由律所在设置中控制；关闭后仅使用本地模型，任何内容都不会离开服务器。" },
@@ -117,7 +117,7 @@ const privSq: LegalDoc = {
   updated: "Versioni 1.0 · Korrik 2026 · Sipas Ligjit Nr. 06/L-082",
   note: "Teksti autoritativ është ai në gjuhën shqipe.",
   sections: [
-    { h: "Kush i përpunon të dhënat", p: "Kontrolluesi i të dhënave është zyra ligjore që ju përfaqëson. Operatori i BoraLaw është përpunues dhe vepron vetëm sipas udhëzimeve të zyrës dhe DPA-së." },
+    { h: "Kush i përpunon të dhënat", p: "Kontrolluesi i të dhënave është zyra ligjore që ju përfaqëson. Operatori i AvokatIM është përpunues dhe vepron vetëm sipas udhëzimeve të zyrës dhe DPA-së." },
     { h: "Çfarë përpunohet", p: "Të dhëna identifikuese (emri, nr. personal, kontakti), të dhëna të lëndës (parashtresa, prova, korrespondenca), financiare (fatura, mjetet në besim) dhe teknike (log-e, IP, pëlqime)." },
     { h: "Si ruhen", p: "Dokumentet ruhen të enkriptuara. Indeksimi bëhet me modele lokale — teksti nuk dërgohet jashtë. Pagesat me kartelë përpunohen nga ofruesi i pagesave; të dhënat e kartelës nuk ruhen." },
     { h: "AI e jashtme", p: "Nëse zyra e aktivizon, fragmente pyetjesh dhe konteksti mund t'i dërgohen ofruesit të jashtëm të AI-së. Kjo shënohet qartë në asistente dhe mund të çaktivizohet plotësisht." },
@@ -133,7 +133,7 @@ const privSr: LegalDoc = {
   updated: "Verzija 1.0 · Jul 2026 · Prema Zakonu br. 06/L-082",
   note: "Merodavan je tekst na albanskom jeziku.",
   sections: [
-    { h: "Ko obrađuje podatke", p: "Kontrolor podataka je advokatska kancelarija koja vas zastupa. Operater BoraLaw je obrađivač i postupa isključivo po uputstvima kancelarije i DPA." },
+    { h: "Ko obrađuje podatke", p: "Kontrolor podataka je advokatska kancelarija koja vas zastupa. Operater AvokatIM je obrađivač i postupa isključivo po uputstvima kancelarije i DPA." },
     { h: "Šta se obrađuje", p: "Identifikacioni podaci (ime, lični broj, kontakt), podaci predmeta (podnesci, dokazi, prepiska), finansijski (fakture, sredstva u poverenju) i tehnički (logovi, IP, saglasnosti)." },
     { h: "Kako se čuvaju", p: "Dokumenti se čuvaju šifrovani. Indeksiranje se vrši lokalnim modelima — tekst se ne šalje van. Plaćanja karticom obrađuje pružalac plaćanja; podaci kartice se ne čuvaju." },
     { h: "Eksterna AI", p: "Ako je kancelarija aktivira, fragmenti pitanja i konteksta mogu se slati eksternom AI provajderu. To je jasno označeno u asistentu i može se potpuno isključiti." },
@@ -149,7 +149,7 @@ const privTr: LegalDoc = {
   updated: "Sürüm 1.0 · Temmuz 2026 · 06/L-082 sayılı Kanun'a göre",
   note: "Bağlayıcı metin Arnavutça olandır.",
   sections: [
-    { h: "Verileri kim işler", p: "Veri sorumlusu sizi temsil eden hukuk bürosudur. BoraLaw operatörü veri işleyendir ve yalnızca büronun talimatlarına ve DPA'ya göre hareket eder." },
+    { h: "Verileri kim işler", p: "Veri sorumlusu sizi temsil eden hukuk bürosudur. AvokatIM operatörü veri işleyendir ve yalnızca büronun talimatlarına ve DPA'ya göre hareket eder." },
     { h: "Neler işlenir", p: "Kimlik verileri (ad, kimlik no, iletişim), dosya verileri (dilekçeler, deliller, yazışmalar), mali veriler (faturalar, emanet fonlar) ve teknik veriler (loglar, IP, onaylar)." },
     { h: "Nasıl saklanır", p: "Belgeler şifreli saklanır. Dizinleme yerel modellerle yapılır — metin dışarı gönderilmez. Kart ödemeleri ödeme sağlayıcısı tarafından işlenir; kart verileri saklanmaz." },
     { h: "Harici AI", p: "Büro etkinleştirirse, soru ve bağlam parçaları harici AI sağlayıcısına gönderilebilir. Bu, asistanda açıkça belirtilir ve tamamen kapatılabilir." },
@@ -165,7 +165,7 @@ const privBs: LegalDoc = {
   updated: "Verzija 1.0 · Juli 2026 · Prema Zakonu br. 06/L-082",
   note: "Mjerodavan je tekst na albanskom jeziku.",
   sections: [
-    { h: "Ko obrađuje podatke", p: "Kontrolor podataka je advokatska kancelarija koja vas zastupa. Operater BoraLaw je obrađivač i postupa isključivo po uputama kancelarije i DPA." },
+    { h: "Ko obrađuje podatke", p: "Kontrolor podataka je advokatska kancelarija koja vas zastupa. Operater AvokatIM je obrađivač i postupa isključivo po uputama kancelarije i DPA." },
     { h: "Šta se obrađuje", p: "Identifikacioni podaci (ime, lični broj, kontakt), podaci predmeta (podnesci, dokazi, prepiska), finansijski (fakture, sredstva u povjerenju) i tehnički (logovi, IP, saglasnosti)." },
     { h: "Kako se čuvaju", p: "Dokumenti se čuvaju šifrirani. Indeksiranje se vrši lokalnim modelima — tekst se ne šalje van. Plaćanja karticom obrađuje pružalac plaćanja; podaci kartice se ne čuvaju." },
     { h: "Eksterna AI", p: "Ako je kancelarija aktivira, fragmenti pitanja i konteksta mogu se slati eksternom AI provajderu. To je jasno označeno u asistentu i može se potpuno isključiti." },
@@ -181,7 +181,7 @@ const privEn: LegalDoc = {
   updated: "Version 1.0 · July 2026 · Under Law No. 06/L-082",
   note: "The authoritative text is the Albanian version.",
   sections: [
-    { h: "Who processes your data", p: "The data controller is the law firm representing you. The BoraLaw operator is a processor acting only on the firm's instructions and under the DPA." },
+    { h: "Who processes your data", p: "The data controller is the law firm representing you. The AvokatIM operator is a processor acting only on the firm's instructions and under the DPA." },
     { h: "What is processed", p: "Identification data (name, personal number, contact), case data (filings, evidence, correspondence), financial data (invoices, trust funds) and technical data (logs, IP, consents)." },
     { h: "How it is stored", p: "Documents are stored encrypted. Indexing uses local models — text never leaves the server. Card payments are handled by the payment provider; card data is not stored." },
     { h: "External AI", p: "If the firm enables it, fragments of questions and context may be sent to the external AI provider. This is clearly indicated in the assistant and can be fully disabled." },
@@ -197,7 +197,7 @@ const privZh: LegalDoc = {
   updated: "版本 1.0 · 2026年7月 · 依据第06/L-082号法律",
   note: "以阿尔巴尼亚语文本为准。",
   sections: [
-    { h: "谁处理您的数据", p: "数据控制者是代理您的律所。BoraLaw 运营方是数据处理者，仅根据律所的指示和数据处理协议行事。" },
+    { h: "谁处理您的数据", p: "数据控制者是代理您的律所。AvokatIM 运营方是数据处理者，仅根据律所的指示和数据处理协议行事。" },
     { h: "处理哪些数据", p: "身份数据（姓名、个人编号、联系方式）、案件数据（书状、证据、往来函件）、财务数据（发票、信托资金）和技术数据（日志、IP、同意记录）。" },
     { h: "如何存储", p: "文件加密存储。索引使用本地模型——文本不会离开服务器。银行卡支付由支付服务商处理；不存储卡片数据。" },
     { h: "外部 AI", p: "如果律所启用，问题和上下文片段可能会发送给外部 AI 提供商。这会在助手中明确标示，并可完全关闭。" },

@@ -232,7 +232,7 @@ _REPORT_PAGE = """<!DOCTYPE html>
   palëve të treta se është përpiluar apo dërguar ky raport ("tipping-off").
   Raporti dërgohet te NjIF-K përmes kanaleve zyrtare të raportimit.</div>
 
-  <div class="foot">Gjeneruar nga BoraLaw · {generated} · ID {report_id}</div>
+  <div class="foot">Gjeneruar nga AvokatIM · {generated} · ID {report_id}</div>
 </body>
 </html>"""
 

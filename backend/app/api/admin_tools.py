@@ -190,6 +190,6 @@ async def export_tenant(
         content=zbuf.getvalue(),
         media_type="application/zip",
         headers={
-            "Content-Disposition": f'attachment; filename="boralaw-eksporti-{stamp}.zip"'
+            "Content-Disposition": f'attachment; filename="avokatim-eksporti-{stamp}.zip"'
         },
     )
