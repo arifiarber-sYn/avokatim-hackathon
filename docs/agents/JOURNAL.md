@@ -10,6 +10,20 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-11 — Project presentation deck (Cursor / Fable 5)
+
+- Context: owner asked for a presentation of the whole project now that the
+  citizen side + marketplace exist, delivered to a folder on the Desktop.
+- Done: 9-slide HTML deck (16:9, Albanian) + PDF via WeasyPrint in
+  `~/Desktop/Prezantimi-AvokatIM/` (outside the repo, per request). Covers:
+  the two-sided problem, the bridge/marketplace, citizen side (Ava/market/SOS),
+  lawyer side (office + leads), quality-up/cost-down effects, revenue model
+  (0€ citizens, 3mo trial, €24/user/mo, no fee split), tech/trust, call to
+  action. Facts sourced from `docs/pitch/qasje-ne-drejtesi.md` and D-016.
+- Verified: rendered all PDF pages to images and inspected layout.
+- Left open: nothing; deck is a static artifact, regenerate from the HTML if
+  pricing or stats change.
+
 ## 2026-07-11 — Platform subscription billing + demand↔supply matching (Cursor / Fable 5)
 
 - Context: owner asked to compare AvokatIM with the field leaders
