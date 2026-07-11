@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { apiDownload, apiGet, apiPost, apiPut } from "@/lib/api";
 import { LOCALES } from "@/lib/dictionaries";
 import { useI18n } from "@/lib/i18n";
+import PageIntro from "@/components/page-intro";
 import { ConsentRecord, Contact } from "@/lib/types";
 import { Badge, Button, Card, ErrorNote, Input, Label, Select, Spinner } from "@/components/ui";
 
@@ -64,6 +65,8 @@ export default function ContactsPage() {
         <h1 className="text-2xl font-bold">{t.contacts}</h1>
         <Button onClick={() => setShowNew(!showNew)}>{t.newContact}</Button>
       </div>
+
+      <PageIntro k="contacts" title={t.contactsIntroT} body={t.contactsIntro} />
 
       {showNew && (
         <Card className="p-5">

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiDownload, apiGet, apiPatch, apiPost, apiPut, apiUpload } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
+import PageIntro from "@/components/page-intro";
 import { Contact } from "@/lib/types";
 import { Button, Card, ErrorNote, Input, Label, Select, Textarea } from "@/components/ui";
 
@@ -29,6 +30,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8 max-w-3xl">
       <h1 className="text-2xl font-bold">{t.settings}</h1>
+      <PageIntro k="settings" title={t.settingsIntroT} body={t.settingsIntro} />
       <ProfileSection />
       <FirmSection />
       <PushSection />

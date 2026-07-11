@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiDownload, apiGet, apiPost } from "@/lib/api";
 import { localized, useI18n } from "@/lib/i18n";
+import PageIntro from "@/components/page-intro";
 import { Doc, Matter, Template } from "@/lib/types";
 import { Button, Card, ErrorNote, Input, Label, Select, Spinner, Textarea } from "@/components/ui";
 
@@ -71,6 +72,8 @@ export default function TemplatesPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t.generateDocument}</h1>
+
+      <PageIntro k="templates" title={t.templatesIntroT} body={t.templatesIntro} />
 
       <div className="grid lg:grid-cols-2 gap-6">
         <Card className="p-5">

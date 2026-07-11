@@ -10,6 +10,24 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-11 — Per-page onboarding intros + "how it works" landing section (Cursor / Fable 5)
+
+- Context: owner asked to enrich every page with explanations so both
+  citizens and lawyers understand how to use it, and to have the landing
+  page tell the platform story exactly as in the presentation deck.
+- Done: new `frontend/src/components/page-intro.tsx` — dismissible
+  explainer card per page (localStorage-remembered, collapses into a
+  "?" pill that reopens it). Mounted on 4 citizen pages (/ava,
+  /posto-rastin, /rasti-im, /avokatet) and 11 lawyer pages (dashboard,
+  intake, matters, contacts, calendar, templates, assistant, billing,
+  marketplace, reports, settings). Landing `/` got a "Si funksionon
+  AvokatIM" section: one-platform-two-worlds line, 3 steps
+  (ask/post → marketplace matches → follow in portal), free-forever note.
+  41 new dictionary keys ×6 locales. SW cache bumped to v3.
+- Verified: tsc clean, `npm run build` OK, service restarted, health OK,
+  /avokatet SSR shows the intro text (others render client-side by design).
+- Left open: nothing.
+
 ## 2026-07-11 — Project presentation deck (Cursor / Fable 5)
 
 - Context: owner asked for a presentation of the whole project now that the

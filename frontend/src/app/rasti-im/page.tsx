@@ -15,6 +15,7 @@ import {
 import { Button, Card, ErrorNote, Input, Label, Spinner, Textarea } from "@/components/ui";
 import VideoCall, { CallGrant } from "@/components/video-call";
 import PublicShell from "@/components/public-shell";
+import PageIntro from "@/components/page-intro";
 
 interface CaseMessage {
   id: string;
@@ -161,6 +162,8 @@ function MyCaseInner() {
             </button>
           )}
         </div>
+
+        <PageIntro k="rasti-im" title={t.myCaseIntroT} body={t.myCaseIntro} />
         {verified && (
           <p className="text-sm bg-emerald-50 text-emerald-700 rounded-lg p-3">{t.mkEmailVerified}</p>
         )}

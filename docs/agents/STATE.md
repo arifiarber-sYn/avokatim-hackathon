@@ -378,6 +378,17 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   now `/` (role-routed) with long-press `shortcuts` SOS / Ava / Rasti im.
   ~20 new UI keys ×6 languages (`lp*`, `pn*`, `mkHeroTitle`,
   `mkForLawyersLink`).
+- **Per-page onboarding intros** (2026-07-11):
+  `src/components/page-intro.tsx` — dismissible "how this page works"
+  card (localStorage `avokatim:intro:<key>`, collapses to a small "?"
+  pill that reopens it). Mounted on all 4 citizen pages (`/ava`,
+  `/posto-rastin`, `/rasti-im`, `/avokatet`) and 11 lawyer pages
+  (dashboard, intake, matters, contacts, calendar, templates, assistant,
+  billing, marketplace, reports, settings). Landing `/` gained a
+  "Si funksionon AvokatIM" section (hiw* keys): the presentation
+  narrative — one platform two worlds, 3 steps, free-forever note.
+  All strings ×6 locales (`*IntroT`/`*Intro`, `hiw*`, `introShow`/`introHide`).
+  Service-worker cache bumped to `avokatim-shell-v3`.
 
 ## Environment
 

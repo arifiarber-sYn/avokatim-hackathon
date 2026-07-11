@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { apiGet, apiStream } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
+import PageIntro from "@/components/page-intro";
 import { Conversation, Matter, Message } from "@/lib/types";
 import { Button, Card, ErrorNote, Select, Textarea } from "@/components/ui";
 
@@ -114,7 +115,9 @@ export default function AssistantPage() {
   }
 
   return (
-    <div className="flex gap-6 h-[calc(100vh-9rem)] md:h-[calc(100vh-6rem)]">
+    <div className="flex flex-col gap-4 h-[calc(100vh-9rem)] md:h-[calc(100vh-6rem)]">
+      <PageIntro k="assistant" title={t.assistantIntroT} body={t.assistantIntro} />
+      <div className="flex gap-6 flex-1 min-h-0">
       <div className="hidden md:block w-64 shrink-0 space-y-3 overflow-auto">
         <Button
           className="w-full"
@@ -262,6 +265,7 @@ export default function AssistantPage() {
           </div>
         </form>
       </Card>
+      </div>
     </div>
   );
 }

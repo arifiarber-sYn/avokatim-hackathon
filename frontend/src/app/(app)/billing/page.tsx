@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiDelete, apiDownload, apiGet, apiPost, getToken } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
+import PageIntro from "@/components/page-intro";
 import {
   Expense,
   FeeTariffItem,
@@ -37,6 +38,7 @@ export default function BillingPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t.billing}</h1>
+      <PageIntro k="billing" title={t.billingIntroT} body={t.billingIntro} />
       <div className="flex gap-1 border-b border-slate-200 overflow-x-auto whitespace-nowrap">
         {(["time", "expenses", "invoices", "trust"] as const).map((key) => (
           <button

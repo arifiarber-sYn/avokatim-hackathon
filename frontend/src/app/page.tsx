@@ -113,6 +113,29 @@ export default function Home() {
           </Link>
         </div>
 
+        {/* How it works: the presentation narrative — one platform, two worlds */}
+        <section className="max-w-4xl mx-auto space-y-5 pt-2">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-bold text-slate-900">{t.hiwTitle}</h2>
+            <p className="text-sm text-slate-500 max-w-2xl mx-auto">{t.hiwSub}</p>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {[
+              { title: t.hiw1T, body: t.hiw1 },
+              { title: t.hiw2T, body: t.hiw2 },
+              { title: t.hiw3T, body: t.hiw3 },
+            ].map((s, i) => (
+              <div key={i} className="bg-white rounded-xl border border-slate-200 p-5 space-y-1.5">
+                <p className="font-semibold text-indigo-700">{s.title}</p>
+                <p className="text-sm text-slate-600 leading-relaxed">{s.body}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 max-w-2xl mx-auto">
+            {t.hiwFree}
+          </p>
+        </section>
+
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center max-w-3xl mx-auto">
             {[

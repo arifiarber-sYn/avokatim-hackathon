@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { apiGet, apiPost, apiPut } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
+import PageIntro from "@/components/page-intro";
 import { Button, Card, ErrorNote, Spinner, Textarea } from "@/components/ui";
 import VideoCall, { CallGrant } from "@/components/video-call";
 
@@ -135,6 +136,9 @@ export default function MarketplacePage() {
         <div>
           <h1 className="text-2xl font-bold">{t.marketplace}</h1>
           <p className="text-sm text-slate-500 mt-1">{t.mkPublicProfileHint}</p>
+        </div>
+        <div className="w-full order-last">
+          <PageIntro k="marketplace" title={t.marketplaceIntroT} body={t.marketplaceIntro} />
         </div>
         <div className="text-right space-y-2">
           {profile && (

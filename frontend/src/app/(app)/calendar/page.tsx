@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiGet, getToken } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
+import PageIntro from "@/components/page-intro";
 import { Deadline } from "@/lib/types";
 import { Badge, Card, Spinner } from "@/components/ui";
 
@@ -43,6 +44,7 @@ export default function CalendarPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t.calendar}</h1>
+      <PageIntro k="calendar" title={t.calendarIntroT} body={t.calendarIntro} />
       {deadlines.length === 0 && <p className="text-sm text-slate-500">{t.noDeadlines}</p>}
       {[...groups.entries()].map(([day, items]) => (
         <div key={day}>

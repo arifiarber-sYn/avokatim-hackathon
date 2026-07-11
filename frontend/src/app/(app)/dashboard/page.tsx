@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { apiGet, apiPatch } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
+import PageIntro from "@/components/page-intro";
 import { Task } from "@/lib/types";
 import { Badge, Card, Spinner } from "@/components/ui";
 
@@ -156,6 +157,8 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t.dashboard}</h1>
+
+      <PageIntro k="dashboard" title={t.dashIntroT} body={t.dashIntro} />
 
       {welcome && (
         <Card className="p-5 border-indigo-300 bg-indigo-50/50">

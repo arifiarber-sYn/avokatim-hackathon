@@ -7,6 +7,7 @@ import { LOCALES } from "@/lib/dictionaries";
 import { PublicLawyer } from "@/lib/citizen";
 import { Card, Input, Select, Spinner } from "@/components/ui";
 import PublicShell from "@/components/public-shell";
+import PageIntro from "@/components/page-intro";
 
 const AREAS = ["civil", "criminal", "family", "commercial", "labor", "administrative", "other"] as const;
 
@@ -41,6 +42,8 @@ export default function LawyerDirectoryPage() {
           <h1 className="text-2xl font-bold">{t.mkLawyersDirectory}</h1>
           <p className="text-sm text-slate-500 mt-1">{t.mkDisclaimer}</p>
         </div>
+
+        <PageIntro k="avokatet" title={t.lawyersIntroT} body={t.lawyersIntro} />
 
         <div className="grid md:grid-cols-3 gap-3">
           <Select value={area} onChange={(e) => setArea(e.target.value)}>

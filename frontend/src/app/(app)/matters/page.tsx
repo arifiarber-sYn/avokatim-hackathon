@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { apiGet, apiPost } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
+import PageIntro from "@/components/page-intro";
 import { Contact, Matter, PRACTICE_AREAS } from "@/lib/types";
 import {
   Badge, Button, Card, ErrorNote, Input, Label, Select, Spinner, Textarea,
@@ -66,6 +67,8 @@ export default function MattersPage() {
         <h1 className="text-2xl font-bold">{t.matters}</h1>
         <Button onClick={() => setShowNew(!showNew)}>{t.newMatter}</Button>
       </div>
+
+      <PageIntro k="matters" title={t.mattersIntroT} body={t.mattersIntro} />
 
       {showNew && (
         <Card className="p-5">

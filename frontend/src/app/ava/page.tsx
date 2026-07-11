@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/i18n";
 import { getCitizenToken } from "@/lib/citizen";
 import { Button, Card, ErrorNote, Textarea } from "@/components/ui";
 import PublicShell from "@/components/public-shell";
+import PageIntro from "@/components/page-intro";
 
 interface ChatMsg {
   role: "user" | "assistant";
@@ -171,6 +172,8 @@ export default function PublicAvaPage() {
           <h1 className="text-2xl font-bold">{t.mkAvaTitle}</h1>
           <p className="text-sm text-slate-500 mt-1">{t.mkAvaIntro}</p>
         </div>
+
+        <PageIntro k="ava" title={t.avaIntroT} body={t.avaIntro} />
 
         <p className="text-xs bg-amber-50 text-amber-800 rounded-lg p-3">{t.mkAvaDisclaimer}</p>
 

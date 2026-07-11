@@ -13,6 +13,7 @@ import {
 } from "@/lib/citizen";
 import { Button, Card, ErrorNote, Input, Label, Select, Spinner, Textarea } from "@/components/ui";
 import PublicShell from "@/components/public-shell";
+import PageIntro from "@/components/page-intro";
 
 const AREAS = ["civil", "criminal", "family", "commercial", "labor", "administrative", "other"] as const;
 
@@ -108,6 +109,8 @@ function PostCaseInner() {
           <h1 className="text-2xl font-bold">{t.mkPostCase}</h1>
           <p className="text-sm text-slate-500 mt-1">{t.mkPostCaseHint}</p>
         </div>
+
+        <PageIntro k="posto-rastin" title={t.postIntroT} body={t.postIntro} />
 
         {checking ? (
           <Spinner />

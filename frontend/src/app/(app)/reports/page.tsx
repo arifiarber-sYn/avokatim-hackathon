@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { apiGet } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
+import PageIntro from "@/components/page-intro";
 import { Card, Spinner } from "@/components/ui";
 
 interface Analytics {
@@ -108,6 +109,8 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t.analytics}</h1>
+
+      <PageIntro k="reports" title={t.reportsIntroT} body={t.reportsIntro} />
 
       <div className="grid md:grid-cols-3 gap-4">
         <RateCard

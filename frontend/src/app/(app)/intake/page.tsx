@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiGet, apiPost } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
+import PageIntro from "@/components/page-intro";
 import { Intake } from "@/lib/types";
 import { Badge, Button, Card, ErrorNote, Input, Label, Select, Spinner, Textarea } from "@/components/ui";
 
@@ -70,6 +71,8 @@ export default function IntakePage() {
         <h1 className="text-2xl font-bold">{t.intake}</h1>
         <Button onClick={() => setShowNew(!showNew)}>{t.newIntake}</Button>
       </div>
+
+      <PageIntro k="intake" title={t.intakeIntroT} body={t.intakeIntro} />
 
       {showNew && (
         <Card className="p-5">
