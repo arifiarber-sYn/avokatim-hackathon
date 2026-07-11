@@ -10,6 +10,30 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-11 — SOS duty flow (Phase 3, no video) + lead limits (Phase 4) (Cursor / Fable 5)
+
+- Done (backend): `LawyerProfile.sos_on_duty` + migration `e98ec43b937a`;
+  `POST /api/public/citizen/sos` (citizen account required, verified email
+  NOT required — emergencies can't wait for an inbox; rate limit 2/24h per
+  citizen) creates a `CaseRequest` with `urgency="sos"` and background-alerts
+  every on-duty lawyer of every active tenant via push + email
+  (`sos_alert_*` ×6 languages). SOS cases sort first in lawyer browse.
+  Lead limits: trial plan = 5 claims/calendar-month (claim → 402 when
+  exhausted), solo/firm unlimited; `GET /api/marketplace/lead-quota`.
+- Done (frontend): red SOS button + form on `/rasti-im` (auto-opens with
+  `?sos=1`; landing citizen block links to it), SOS badges on both sides,
+  SOS-duty toggle in the Tregu header + settings public-profile checkbox
+  (settings now round-trips `sos_on_duty` so saving the profile doesn't
+  wipe the duty flag), lead-quota counter in the Tregu header,
+  friendly 6-language message when the lead limit is hit. 10 new UI keys ×6.
+- Verified: 29 pytest pass; tsc + next build clean; full_simulation section
+  26 — **118 PASS / 0 FAIL** (duty opt-in, SOS posted, sorts first, claimed,
+  quota 1→2 of 5, third SOS in 24h blocked with 429).
+- Left open / next: Phase 3 video/audio room still blocked on WebRTC media
+  ports (Cloudflare Tunnel is HTTP-only; needs router port forwarding or a
+  TURN relay VPS — owner's call). When infra lands: LiveKit self-hosted +
+  room tokens on SOS claim. Paid-plan billing itself stays manual (D-008).
+
 ## 2026-07-11 — Public stats + "access to justice" pitch (Phase 4 groundwork) (Cursor / Fable 5)
 
 - Done: anonymous `GET /api/public/stats` (visible lawyers, cases

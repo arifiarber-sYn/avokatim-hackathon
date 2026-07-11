@@ -611,6 +611,16 @@ const sq = {
   mkStatsCases: "raste të postuara",
   mkStatsTaken: "raste të marra nga avokatët",
   mkStatsLaws: "ligje të Kosovës në bazën ligjore",
+  mkSos: "SOS — ndihmë urgjente",
+  mkSosHint: "Për situata urgjente (p.sh. ndalim nga policia, dhunë, dëbim). Avokatët kujdestarë njoftohen menjëherë.",
+  mkSosDescribe: "Përshkruaj shkurt situatën dhe ku ndodhesh",
+  mkSosSend: "Dërgo SOS",
+  mkSosSent: "SOS u dërgua — avokatët kujdestarë u njoftuan menjëherë. Rasti yt shfaqet më poshtë; avokati i parë që e merr do të të shkruajë aty.",
+  mkSosDuty: "Kujdestar SOS",
+  mkSosDutyHint: "Merr njoftim të menjëhershëm (push + email) kur një qytetar dërgon SOS.",
+  mkLeadQuota: "Lead-et këtë muaj: {used}/{limit}",
+  mkLeadUnlimited: "Lead-e pa kufi",
+  mkLeadLimitReached: "Kufiri mujor i lead-eve u arrit — përditëso planin për lead-e pa kufi.",
 
 };
 
@@ -1170,6 +1180,16 @@ const en: typeof sq = {
   mkStatsCases: "cases posted",
   mkStatsTaken: "cases taken by lawyers",
   mkStatsLaws: "Kosovo laws in the legal base",
+  mkSos: "SOS — urgent help",
+  mkSosHint: "For urgent situations (e.g. police stop, violence, eviction). On-duty lawyers are alerted immediately.",
+  mkSosDescribe: "Briefly describe the situation and where you are",
+  mkSosSend: "Send SOS",
+  mkSosSent: "SOS sent — on-duty lawyers were alerted immediately. Your case appears below; the first lawyer to take it will write to you there.",
+  mkSosDuty: "SOS duty lawyer",
+  mkSosDutyHint: "Get an instant notification (push + email) when a citizen sends an SOS.",
+  mkLeadQuota: "Leads this month: {used}/{limit}",
+  mkLeadUnlimited: "Unlimited leads",
+  mkLeadLimitReached: "Monthly lead limit reached — upgrade your plan for unlimited leads.",
 
 };
 
@@ -1719,6 +1739,16 @@ const zh: typeof sq = {
   mkStatsCases: "已发布案件",
   mkStatsTaken: "律师已接手案件",
   mkStatsLaws: "法律库中的科索沃法律",
+  mkSos: "SOS — 紧急求助",
+  mkSosHint: "用于紧急情况（如被警察拦截、暴力、驱逐）。值班律师会立即收到通知。",
+  mkSosDescribe: "简要描述情况和您所在的位置",
+  mkSosSend: "发送 SOS",
+  mkSosSent: "SOS 已发送——值班律师已立即收到通知。您的案件显示在下方；第一位接手的律师会在那里给您留言。",
+  mkSosDuty: "SOS 值班律师",
+  mkSosDutyHint: "当公民发送 SOS 时立即收到通知（推送 + 邮件）。",
+  mkLeadQuota: "本月线索：{used}/{limit}",
+  mkLeadUnlimited: "线索不限量",
+  mkLeadLimitReached: "已达本月线索上限——升级套餐可获得不限量线索。",
 
 };
 
@@ -2277,6 +2307,16 @@ const sr: typeof sq = {
   mkStatsCases: "objavljenih slučajeva",
   mkStatsTaken: "slučajeva koje su preuzeli advokati",
   mkStatsLaws: "zakona Kosova u pravnoj bazi",
+  mkSos: "SOS — hitna pomoć",
+  mkSosHint: "Za hitne situacije (npr. policijsko zaustavljanje, nasilje, iseljenje). Dežurni advokati se odmah obaveštavaju.",
+  mkSosDescribe: "Ukratko opišite situaciju i gde se nalazite",
+  mkSosSend: "Pošalji SOS",
+  mkSosSent: "SOS je poslat — dežurni advokati su odmah obavešteni. Vaš slučaj se prikazuje ispod; prvi advokat koji ga preuzme pisaće vam tamo.",
+  mkSosDuty: "SOS dežurni advokat",
+  mkSosDutyHint: "Primite trenutno obaveštenje (push + email) kada građanin pošalje SOS.",
+  mkLeadQuota: "Potencijalni klijenti ovog meseca: {used}/{limit}",
+  mkLeadUnlimited: "Neograničeni potencijalni klijenti",
+  mkLeadLimitReached: "Mesečni limit potencijalnih klijenata je dostignut — nadogradite plan za neograničeno.",
 
 };
 
@@ -2835,6 +2875,16 @@ const tr: typeof sq = {
   mkStatsCases: "yayınlanan davalar",
   mkStatsTaken: "avukatların üstlendiği davalar",
   mkStatsLaws: "hukuk tabanındaki Kosova yasaları",
+  mkSos: "SOS — acil yardım",
+  mkSosHint: "Acil durumlar için (örn. polis durdurması, şiddet, tahliye). Nöbetçi avukatlar anında bilgilendirilir.",
+  mkSosDescribe: "Durumu ve nerede olduğunuzu kısaca anlatın",
+  mkSosSend: "SOS gönder",
+  mkSosSent: "SOS gönderildi — nöbetçi avukatlar anında bilgilendirildi. Davanız aşağıda görünür; ilk üstlenen avukat size oradan yazacak.",
+  mkSosDuty: "SOS nöbetçi avukat",
+  mkSosDutyHint: "Bir vatandaş SOS gönderdiğinde anında bildirim alın (push + e-posta).",
+  mkLeadQuota: "Bu ayki müşteri adayları: {used}/{limit}",
+  mkLeadUnlimited: "Sınırsız müşteri adayı",
+  mkLeadLimitReached: "Aylık müşteri adayı sınırına ulaşıldı — sınırsız için planınızı yükseltin.",
 
 };
 
@@ -3393,6 +3443,16 @@ const bs: typeof sq = {
   mkStatsCases: "objavljenih slučajeva",
   mkStatsTaken: "slučajeva koje su preuzeli advokati",
   mkStatsLaws: "zakona Kosova u pravnoj bazi",
+  mkSos: "SOS — hitna pomoć",
+  mkSosHint: "Za hitne situacije (npr. policijsko zaustavljanje, nasilje, iseljenje). Dežurni advokati se odmah obavještavaju.",
+  mkSosDescribe: "Ukratko opišite situaciju i gdje se nalazite",
+  mkSosSend: "Pošalji SOS",
+  mkSosSent: "SOS je poslan — dežurni advokati su odmah obaviješteni. Vaš slučaj se prikazuje ispod; prvi advokat koji ga preuzme pisat će vam tamo.",
+  mkSosDuty: "SOS dežurni advokat",
+  mkSosDutyHint: "Primite trenutnu obavijest (push + email) kada građanin pošalje SOS.",
+  mkLeadQuota: "Potencijalni klijenti ovog mjeseca: {used}/{limit}",
+  mkLeadUnlimited: "Neograničeni potencijalni klijenti",
+  mkLeadLimitReached: "Mjesečni limit potencijalnih klijenata je dostignut — nadogradite plan za neograničeno.",
 
 };
 

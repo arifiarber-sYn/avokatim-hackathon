@@ -227,3 +227,26 @@
   audit rows for citizen actions have tenant_id=NULL; Phase 3 cannot ship
   over the current Cloudflare Tunnel (HTTP-only) — needs open UDP ports or
   a TURN relay, decided before Phase 3 starts.
+
+## D-014: SOS ships without video first; trial lead cap (2026-07-11)
+
+- Context: Phase 3's video/audio room is blocked on network infrastructure
+  (WebRTC media cannot cross Cloudflare Tunnel; the owner hasn't yet chosen
+  port forwarding vs a TURN relay VPS). Phase 4 needs a concrete lever that
+  makes the free plan convert without adding payment processing (D-008
+  keeps billing manual).
+- Decision: split Phase 3 — ship the **SOS duty flow now** (opt-in
+  `sos_on_duty` roster, citizen SOS button, instant push+email alerts,
+  first-to-claim, existing chat) and add the LiveKit video room later as a
+  drop-in on top of the claim step once media transport exists. SOS needs a
+  citizen account but not a verified email (emergencies), compensated by a
+  hard 2/24h rate limit and audit logging. For monetization: **trial plan =
+  5 marketplace leads/calendar-month** (`TRIAL_MONTHLY_LEAD_LIMIT`), solo
+  and firm plans unlimited; enforcement at claim time (HTTP 402), quota
+  visible in the Tregu header. The operator still switches plans manually
+  in the platform panel.
+- Consequences: citizens get real emergency value today and the video room
+  becomes an incremental upgrade, not a blocker; the lead cap gives the
+  free→paid upgrade a reason to exist without a payment provider; the
+  402 signal is already handled distinctly in the frontend so a future
+  self-serve upgrade flow can hook into it.

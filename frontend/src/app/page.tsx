@@ -78,6 +78,12 @@ export default function Home() {
                 {t.mkPostCase}
               </Link>
               <Link
+                href="/rasti-im?sos=1"
+                className="block w-full text-center rounded-lg bg-red-600 text-white py-2.5 text-sm font-bold hover:bg-red-700"
+              >
+                {t.mkSos}
+              </Link>
+              <Link
                 href="/rasti-im"
                 className="block text-center text-sm text-slate-500 hover:underline"
               >

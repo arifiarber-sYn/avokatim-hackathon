@@ -15,7 +15,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.models.base import Base, TimestampMixin, uuid_pk
 
 CASE_REQUEST_STATUSES = ["open", "claimed", "converted", "closed"]
-CASE_URGENCIES = ["normal", "urgent"]
+CASE_URGENCIES = ["normal", "urgent", "sos"]
 
 
 class CitizenUser(Base, TimestampMixin):
@@ -54,6 +54,9 @@ class LawyerProfile(Base, TimestampMixin):
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True
     )
     is_visible: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    # SOS duty roster (Phase 3): opted-in lawyers get instant alerts for
+    # urgent citizen requests
+    sos_on_duty: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     bio: Mapped[str | None] = mapped_column(Text)
     practice_areas: Mapped[list] = mapped_column(JSONB, default=list)  # PRACTICE_AREAS codes
     cities: Mapped[list] = mapped_column(JSONB, default=list)

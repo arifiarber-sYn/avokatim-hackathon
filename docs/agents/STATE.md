@@ -294,7 +294,22 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   (Albanian, for the Ministry of Justice / OAK / donors). Lawyer paid plans
   and lead fees are NOT built (billing stays manual per D-008; `Tenant.plan`
   already exists when that starts).
-  Phase 3 (SOS video/audio) stays blocked on WebRTC media ports —
+- **SOS duty flow + lead limits** (2026-07-11, Phase 3 without video +
+  Phase 4 revenue scaffold): `LawyerProfile.sos_on_duty` (opt-in toggle in
+  `(app)/marketplace` header and settings public-profile section).
+  Citizen `POST /api/public/citizen/sos` — needs a citizen account but NOT
+  a verified email (emergencies), rate limit 2/24h per citizen; creates a
+  `CaseRequest` with `urgency="sos"` and background-notifies every on-duty
+  lawyer via push + email (`sos_alert_*` i18n keys, 6 languages). SOS cases
+  sort first in lawyer browse and carry a red SOS badge on both sides;
+  red SOS button on `/rasti-im` (auto-opens with `?sos=1`, linked from
+  landing). First lawyer to claim wins; normal claim → intake → chat flow.
+  **Lead limits**: trial plan = 5 claims/calendar-month
+  (`TRIAL_MONTHLY_LEAD_LIMIT`, claim returns 402 when exhausted), solo/firm
+  unlimited; `GET /api/marketplace/lead-quota` shown in the Tregu header.
+  Plans are still set manually by the operator (D-008).
+  Simulation section 26 (**118 PASS / 0 FAIL** total).
+  Phase 3 **video/audio room** stays blocked on WebRTC media ports —
   Cloudflare Tunnel is HTTP-only; needs router port forwarding or a TURN
   relay VPS (owner's decision/action) before it can start.
 

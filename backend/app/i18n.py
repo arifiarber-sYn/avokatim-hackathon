@@ -97,6 +97,11 @@ _SQ = {
         "{firm} e pranoi rastin tënd. Tani ke qasje në portalin e klientit me "
         "të njëjtin email dhe fjalëkalim:\n{url}"
     ),
+    "sos_alert_subject": "AvokatIM — SOS: qytetar kërkon ndihmë URGJENTE",
+    "sos_alert_body": (
+        "Një qytetar kërkon ndihmë urgjente ({city}). Ti je kujdestar SOS — "
+        "hape Tregun dhe merre rastin sa më parë:\n{url}"
+    ),
 }
 
 _SR = {
@@ -178,6 +183,11 @@ _SR = {
     "case_portal_ready_body": (
         "{firm} je prihvatila vaš slučaj. Sada imate pristup klijentskom "
         "portalu sa istim emailom i lozinkom:\n{url}"
+    ),
+    "sos_alert_subject": "AvokatIM — SOS: građanin traži HITNU pomoć",
+    "sos_alert_body": (
+        "Građanin traži hitnu pomoć ({city}). Vi ste SOS dežurni — "
+        "otvorite Tržište i preuzmite slučaj što pre:\n{url}"
     ),
 }
 
@@ -261,6 +271,11 @@ _TR = {
         "{firm} davanızı kabul etti. Artık aynı e-posta ve şifreyle müvekkil "
         "portalına erişebilirsiniz:\n{url}"
     ),
+    "sos_alert_subject": "AvokatIM — SOS: bir vatandaş ACİL yardım istiyor",
+    "sos_alert_body": (
+        "Bir vatandaş acil yardım istiyor ({city}). SOS nöbetçisisiniz — "
+        "Pazar'ı açın ve davayı en kısa sürede üstlenin:\n{url}"
+    ),
 }
 
 _BS = {
@@ -342,6 +357,11 @@ _BS = {
     "case_portal_ready_body": (
         "{firm} je prihvatila vaš slučaj. Sada imate pristup klijentskom "
         "portalu s istim emailom i lozinkom:\n{url}"
+    ),
+    "sos_alert_subject": "AvokatIM — SOS: građanin traži HITNU pomoć",
+    "sos_alert_body": (
+        "Građanin traži hitnu pomoć ({city}). Vi ste SOS dežurni — "
+        "otvorite Tržište i preuzmite slučaj što prije:\n{url}"
     ),
 }
 
@@ -425,6 +445,11 @@ _EN = {
         "{firm} accepted your case. You now have access to the client portal "
         "with the same email and password:\n{url}"
     ),
+    "sos_alert_subject": "AvokatIM — SOS: a citizen needs URGENT help",
+    "sos_alert_body": (
+        "A citizen is asking for urgent help ({city}). You are on SOS duty — "
+        "open the Marketplace and take the case as soon as possible:\n{url}"
+    ),
 }
 
 _ZH = {
@@ -490,6 +515,8 @@ _ZH = {
     "case_message_body": "您的案件收到新消息：\n{url}",
     "case_portal_ready_subject": "AvokatIM — 案件已受理，您的门户已就绪",
     "case_portal_ready_body": "{firm} 已受理您的案件。您现在可以使用相同的邮箱和密码访问客户门户：\n{url}",
+    "sos_alert_subject": "AvokatIM — SOS：一位公民需要紧急帮助",
+    "sos_alert_body": "一位公民请求紧急帮助（{city}）。您是 SOS 值班律师——请尽快打开市场并接手案件：\n{url}",
 }
 
 CATALOG: dict[str, dict[str, str]] = {

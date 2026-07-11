@@ -22,6 +22,8 @@ MARKETPLACE_KEYS = [
     "case_message_body",
     "case_portal_ready_subject",
     "case_portal_ready_body",
+    "sos_alert_subject",
+    "sos_alert_body",
 ]
 
 
@@ -82,6 +84,35 @@ def test_public_ava_prompt_is_information_not_advice():
     assert "INFORMIM" in PUBLIC_AVA_SYSTEM_PROMPT
     assert "JO këshillë" in PUBLIC_AVA_SYSTEM_PROMPT
     assert "Më lidh me avokat" in PUBLIC_AVA_SYSTEM_PROMPT
+
+
+def test_sos_is_a_valid_urgency():
+    from app.models.marketplace import CASE_URGENCIES
+
+    assert "sos" in CASE_URGENCIES
+
+
+def test_sos_input_requires_meaningful_description():
+    from pydantic import ValidationError
+
+    from app.api.marketplace import SosIn
+
+    with pytest.raises(ValidationError):
+        SosIn(description="ndihme")
+    ok = SosIn(description="Më ndaloi policia në Prishtinë, kam nevojë për avokat")
+    assert ok.city is None
+
+
+@pytest.mark.anyio
+async def test_lead_quota_paid_plans_are_unlimited():
+    from types import SimpleNamespace
+
+    from app.api.marketplace import TRIAL_MONTHLY_LEAD_LIMIT, _lead_quota
+
+    assert TRIAL_MONTHLY_LEAD_LIMIT > 0
+    for plan in ("solo", "firm"):
+        quota = await _lead_quota(None, SimpleNamespace(plan=plan))
+        assert quota == {"plan": plan, "limit": None, "used": None, "remaining": None}
 
 
 def test_marketplace_i18n_keys_in_all_languages():

@@ -410,6 +410,75 @@ async def citizen_close_case(
     return {"closed": True}
 
 
+# ---------- SOS: urgent help with on-duty lawyer alerts (Phase 3) ----------
+
+class SosIn(BaseModel):
+    description: str = Field(min_length=10, max_length=4000)
+    city: str | None = Field(default=None, max_length=120)
+
+
+async def _notify_on_duty_lawyers(case_id: uuid.UUID, city: str | None) -> None:
+    """Instant push + email to every opted-in duty lawyer. Own session:
+    runs as a background task after the request commits."""
+    from app.database import SessionLocal
+    from app.services.push import send_push_to_user
+
+    async with SessionLocal() as db:
+        rows = (
+            await db.execute(
+                select(User)
+                .join(LawyerProfile, LawyerProfile.user_id == User.id)
+                .join(Tenant, Tenant.id == LawyerProfile.tenant_id)
+                .where(
+                    LawyerProfile.sos_on_duty.is_(True),
+                    User.is_active.is_(True),
+                    Tenant.status == "active",
+                )
+            )
+        ).scalars().all()
+        for lawyer in rows:
+            loc = pick_locale(lawyer.locale)
+            subject = tr(loc, "sos_alert_subject")
+            body = tr(loc, "sos_alert_body", city=city or "-",
+                      url=f"{settings.public_base_url}/marketplace")
+            await send_push_to_user(
+                db, lawyer.id, title=subject, body=body, url="/marketplace"
+            )
+            await send_email(lawyer.email, subject, body)
+        logger.info("SOS %s: alerted %d on-duty lawyers", case_id, len(rows))
+
+
+@public_router.post("/citizen/sos", status_code=201)
+async def citizen_sos(
+    body: SosIn,
+    request: Request,
+    background: BackgroundTasks,
+    citizen: CitizenUser = Depends(_current_citizen),
+    db: AsyncSession = Depends(get_db),
+):
+    """Emergency request: needs a citizen account but NOT a verified email
+    (emergencies can't wait for an inbox); hard rate limit instead."""
+    await _rate_limit("citizen_sos", str(citizen.id), limit=2, window_seconds=24 * 3600)
+    case = CaseRequest(
+        citizen_id=citizen.id,
+        category="other",
+        description=body.description,
+        city=body.city,
+        locale=citizen.locale,
+        urgency="sos",
+    )
+    db.add(case)
+    await db.flush()
+    await log_action(
+        db, tenant_id=None, user_id=None, action="marketplace.sos_create",
+        entity_type="case_request", entity_id=str(case.id),
+        details={"city": body.city}, ip_address=_ip(request),
+    )
+    await db.commit()
+    background.add_task(_notify_on_duty_lawyers, case.id, body.city)
+    return _case_out(case)
+
+
 # ---------- messages (both sides) ----------
 
 def _message_out(m: CaseRequestMessage) -> dict:
@@ -743,11 +812,12 @@ async def ava_ask_stream(
 def _profile_out(profile: LawyerProfile | None) -> dict:
     if profile is None:
         return {
-            "is_visible": False, "bio": None, "practice_areas": [],
-            "cities": [], "languages": [], "photo": None,
+            "is_visible": False, "sos_on_duty": False, "bio": None,
+            "practice_areas": [], "cities": [], "languages": [], "photo": None,
         }
     return {
         "is_visible": profile.is_visible,
+        "sos_on_duty": profile.sos_on_duty,
         "bio": profile.bio,
         "practice_areas": profile.practice_areas or [],
         "cities": profile.cities or [],
@@ -768,6 +838,7 @@ async def get_my_profile(
 
 class ProfileIn(BaseModel):
     is_visible: bool = False
+    sos_on_duty: bool = False
     bio: str | None = Field(default=None, max_length=4000)
     practice_areas: list[str] = []
     cities: list[str] = []
@@ -788,6 +859,7 @@ async def update_my_profile(
         profile = LawyerProfile(tenant_id=user.tenant_id, user_id=user.id)
         db.add(profile)
     profile.is_visible = body.is_visible
+    profile.sos_on_duty = body.sos_on_duty
     profile.bio = body.bio
     profile.practice_areas = [a for a in body.practice_areas if a in PRACTICE_AREAS]
     profile.cities = [c.strip() for c in body.cities if c.strip()][:20]
@@ -825,7 +897,10 @@ async def lawyer_browse_cases(
                 (CaseRequest.directed_tenant_id.is_(None))
                 | (CaseRequest.directed_tenant_id == user.tenant_id),
             )
-            .order_by(CaseRequest.created_at.desc())
+            # SOS cases always float to the top
+            .order_by(
+                (CaseRequest.urgency == "sos").desc(), CaseRequest.created_at.desc()
+            )
             .limit(200)
         )
     ).all()
@@ -866,6 +941,44 @@ async def lawyer_my_cases(
     ]
 
 
+# Revenue model (Phase 4, D-008: billing stays manual): the free/trial plan
+# gets a monthly lead allowance; paid plans (solo/firm) claim without limits.
+# The platform operator changes plans in the /platform panel.
+TRIAL_MONTHLY_LEAD_LIMIT = 5
+
+
+async def _lead_quota(db: AsyncSession, tenant: Tenant) -> dict:
+    from sqlalchemy import func
+
+    if tenant.plan != "trial":
+        return {"plan": tenant.plan, "limit": None, "used": None, "remaining": None}
+    month_start = datetime.now(UTC).replace(
+        day=1, hour=0, minute=0, second=0, microsecond=0
+    )
+    used = (
+        await db.execute(
+            select(func.count(CaseRequest.id)).where(
+                CaseRequest.claimed_by_tenant_id == tenant.id,
+                CaseRequest.claimed_at >= month_start,
+            )
+        )
+    ).scalar_one()
+    return {
+        "plan": tenant.plan,
+        "limit": TRIAL_MONTHLY_LEAD_LIMIT,
+        "used": used,
+        "remaining": max(0, TRIAL_MONTHLY_LEAD_LIMIT - used),
+    }
+
+
+@router.get("/lead-quota")
+async def lead_quota(
+    user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
+    tenant = await db.get(Tenant, user.tenant_id)
+    return await _lead_quota(db, tenant)
+
+
 @router.post("/cases/{case_id}/claim")
 async def lawyer_claim_case(
     case_id: uuid.UUID,
@@ -875,6 +988,14 @@ async def lawyer_claim_case(
 ):
     """Take the case: conflict check + IntakeRequest(source=marketplace)."""
     from app.models import IntakeRequest
+
+    tenant = await db.get(Tenant, user.tenant_id)
+    quota = await _lead_quota(db, tenant)
+    if quota["remaining"] == 0:
+        raise HTTPException(
+            status.HTTP_402_PAYMENT_REQUIRED,
+            "Monthly lead limit reached — upgrade your plan",
+        )
 
     case = await db.get(CaseRequest, case_id)
     if case is None:
@@ -912,7 +1033,6 @@ async def lawyer_claim_case(
     )
     await db.commit()
 
-    tenant = await db.get(Tenant, user.tenant_id)
     loc = pick_locale(citizen.locale)
     background.add_task(
         send_email,

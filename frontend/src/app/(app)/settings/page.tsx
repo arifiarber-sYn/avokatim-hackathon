@@ -1092,6 +1092,7 @@ function PublicProfileSection() {
   const { t } = useI18n();
   const [profile, setProfile] = useState({
     is_visible: false,
+    sos_on_duty: false,
     bio: "",
     practice_areas: [] as string[],
     cities: "",
@@ -1114,6 +1115,7 @@ function PublicProfileSection() {
   useEffect(() => {
     apiGet<{
       is_visible: boolean;
+      sos_on_duty: boolean;
       bio: string | null;
       practice_areas: string[];
       cities: string[];
@@ -1123,6 +1125,7 @@ function PublicProfileSection() {
       .then((p) =>
         setProfile({
           is_visible: p.is_visible,
+          sos_on_duty: p.sos_on_duty,
           bio: p.bio || "",
           practice_areas: p.practice_areas,
           cities: p.cities.join(", "),
@@ -1144,6 +1147,7 @@ function PublicProfileSection() {
     try {
       await apiPut("/marketplace/profile", {
         is_visible: profile.is_visible,
+        sos_on_duty: profile.sos_on_duty,
         bio: profile.bio || null,
         practice_areas: profile.practice_areas,
         cities: profile.cities.split(",").map((c) => c.trim()).filter(Boolean),
@@ -1179,6 +1183,15 @@ function PublicProfileSection() {
             className="accent-indigo-600"
           />
           {t.mkVisibleInDirectory}
+        </label>
+        <label className="flex items-center gap-2 text-sm cursor-pointer" title={t.mkSosDutyHint}>
+          <input
+            type="checkbox"
+            checked={profile.sos_on_duty}
+            onChange={(e) => setProfile({ ...profile, sos_on_duty: e.target.checked })}
+            className="accent-red-600"
+          />
+          {t.mkSosDuty}
         </label>
         <div>
           <Label>{t.mkBio}</Label>

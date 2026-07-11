@@ -45,6 +45,11 @@ function MyCaseInner() {
   const [openCase, setOpenCase] = useState<string | null>(null);
   const [messages, setMessages] = useState<CaseMessage[]>([]);
   const [draft, setDraft] = useState("");
+  const [sosOpen, setSosOpen] = useState(params.get("sos") === "1");
+  const [sos, setSos] = useState({ description: "", city: "" });
+  const [sosSent, setSosSent] = useState(false);
+  const [sosBusy, setSosBusy] = useState(false);
+  const [sosError, setSosError] = useState("");
 
   useEffect(() => {
     if (verifyToken) {
@@ -113,6 +118,25 @@ function MyCaseInner() {
     loadCases();
   }
 
+  async function sendSos(e: React.FormEvent) {
+    e.preventDefault();
+    setSosBusy(true);
+    setSosError("");
+    try {
+      await citizenPost("/citizen/sos", {
+        description: sos.description.trim(),
+        city: sos.city.trim() || null,
+      });
+      setSosSent(true);
+      setSosOpen(false);
+      loadCases();
+    } catch (err) {
+      setSosError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setSosBusy(false);
+    }
+  }
+
   const statusLabel: Record<string, string> = {
     open: t.mkStatusOpen,
     claimed: t.mkStatusClaimed,
@@ -136,9 +160,50 @@ function MyCaseInner() {
         </div>
       </header>
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-4">
-        <h1 className="text-2xl font-bold">{t.mkMyCases}</h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-2xl font-bold">{t.mkMyCases}</h1>
+          {citizen !== null && !sosSent && (
+            <button
+              onClick={() => setSosOpen((v) => !v)}
+              className="text-sm font-bold bg-red-600 text-white rounded-lg px-4 py-2 hover:bg-red-700 shadow-sm"
+            >
+              {t.mkSos}
+            </button>
+          )}
+        </div>
         {verified && (
           <p className="text-sm bg-emerald-50 text-emerald-700 rounded-lg p-3">{t.mkEmailVerified}</p>
+        )}
+        {sosSent && (
+          <p className="text-sm bg-red-50 text-red-700 rounded-lg p-3">{t.mkSosSent}</p>
+        )}
+        {citizen !== null && sosOpen && !sosSent && (
+          <Card className="p-5 space-y-3 border-red-200">
+            <p className="text-xs text-slate-500">{t.mkSosHint}</p>
+            <form onSubmit={sendSos} className="space-y-3">
+              <div>
+                <Label>{t.mkSosDescribe}</Label>
+                <Textarea
+                  rows={3}
+                  value={sos.description}
+                  onChange={(e) => setSos({ ...sos, description: e.target.value })}
+                  required
+                  minLength={10}
+                />
+              </div>
+              <div>
+                <Label>{t.mkCity}</Label>
+                <Input
+                  value={sos.city}
+                  onChange={(e) => setSos({ ...sos, city: e.target.value })}
+                />
+              </div>
+              <ErrorNote message={sosError} />
+              <Button type="submit" disabled={sosBusy} className="w-full !bg-red-600 hover:!bg-red-700">
+                {sosBusy ? t.loading : t.mkSosSend}
+              </Button>
+            </form>
+          </Card>
         )}
 
         {checking ? (
@@ -196,6 +261,11 @@ function MyCaseInner() {
                     {c.urgency === "urgent" && (
                       <span className="ml-1.5 text-xs bg-red-50 text-red-700 rounded-full px-2 py-0.5">
                         {t.mkUrgent}
+                      </span>
+                    )}
+                    {c.urgency === "sos" && (
+                      <span className="ml-1.5 text-xs font-bold bg-red-600 text-white rounded-full px-2 py-0.5">
+                        SOS
                       </span>
                     )}
                   </div>

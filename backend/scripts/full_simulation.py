@@ -698,6 +698,61 @@ async def main() -> None:
         check("avokati raporton rast abuziv (mbyllet + audit)",
               r.status_code == 200 and r.json().get("reported") is True)
 
+        print("\n=== 26. SOS + KUFIJTË E LEAD-EVE (Faza 3/4) ===")
+        rr = aioredis.from_url(app_settings.redis_url)
+        async for rkey in rr.scan_iter("avokatim:rl:citizen_sos:*"):
+            await rr.delete(rkey)
+        await rr.aclose()
+
+        r = await c.put(f"{BASE}/marketplace/profile", headers=h, json={
+            "is_visible": True, "sos_on_duty": True,
+            "bio": "Avokat me përvojë në të drejtën civile.",
+            "practice_areas": ["civil", "commercial"], "cities": ["Prishtinë"],
+            "languages": ["sq", "en"],
+        })
+        check("avokati bëhet kujdestar SOS", r.status_code == 200
+              and r.json().get("sos_on_duty") is True)
+
+        r = await c.get(f"{BASE}/marketplace/lead-quota", headers=h)
+        quota_before = r.json() if r.status_code == 200 else {}
+        check("kuota e lead-eve për planin trial (5/muaj)",
+              r.status_code == 200 and quota_before.get("limit") == 5
+              and quota_before.get("used") == 1,
+              f"used={quota_before.get('used')}, mbeten={quota_before.get('remaining')}")
+
+        r = await c.post(f"{BASE}/public/citizen/sos", headers=ch, json={
+            "description": "Më ndaloi policia dhe po ma kontrollojnë veturën pa "
+                           "arsyetim — kam nevojë për avokat TANI.",
+            "city": "Prishtinë",
+        })
+        check("qytetari dërgon SOS (pa pritur verifikim emaili)",
+              r.status_code == 201 and r.json().get("urgency") == "sos")
+        sos_id = r.json()["id"]
+
+        r = await c.get(f"{BASE}/marketplace/cases", headers=h)
+        browse = r.json() if r.status_code == 200 else []
+        check("rasti SOS del i pari në Tregun e avokatëve",
+              len(browse) > 0 and browse[0]["id"] == sos_id
+              and browse[0]["urgency"] == "sos")
+
+        r = await c.post(f"{BASE}/marketplace/cases/{sos_id}/claim", headers=h)
+        check("kujdestari e merr rastin SOS", r.status_code == 200
+              and r.json().get("claimed") is True)
+        r = await c.get(f"{BASE}/marketplace/lead-quota", headers=h)
+        check("kuota zbritet pas marrjes së lead-it",
+              r.status_code == 200 and r.json().get("used") == 2
+              and r.json().get("remaining") == 3)
+
+        r = await c.post(f"{BASE}/public/citizen/sos", headers=ch, json={
+            "description": "Situatë e dytë urgjente për të njëjtin qytetar sot."
+        })
+        sos2_ok = r.status_code == 201
+        r = await c.post(f"{BASE}/public/citizen/sos", headers=ch, json={
+            "description": "E treta brenda ditës — duhet të bllokohet nga limiti."
+        })
+        check("SOS i tretë brenda 24h bllokohet (mbrojtje abuzimi)",
+              sos2_ok and r.status_code == 429)
+
     # ============ cleanup ============
     from sqlalchemy import text as sqltext
     from app.database import SessionLocal

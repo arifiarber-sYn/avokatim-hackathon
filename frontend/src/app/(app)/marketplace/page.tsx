@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { apiGet, apiPost } from "@/lib/api";
+import { apiGet, apiPost, apiPut } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { Button, Card, ErrorNote, Spinner, Textarea } from "@/components/ui";
 
@@ -32,6 +32,23 @@ interface CaseMessage {
   created_at: string;
 }
 
+interface LawyerProfile {
+  is_visible: boolean;
+  sos_on_duty: boolean;
+  bio: string | null;
+  practice_areas: string[];
+  cities: string[];
+  languages: string[];
+  photo: string | null;
+}
+
+interface LeadQuota {
+  plan: string;
+  limit: number | null;
+  used: number | null;
+  remaining: number | null;
+}
+
 export default function MarketplacePage() {
   const { t } = useI18n();
   const [tab, setTab] = useState<"open" | "mine">("open");
@@ -42,10 +59,14 @@ export default function MarketplacePage() {
   const [openChat, setOpenChat] = useState<string | null>(null);
   const [messages, setMessages] = useState<CaseMessage[]>([]);
   const [draft, setDraft] = useState("");
+  const [profile, setProfile] = useState<LawyerProfile | null>(null);
+  const [quota, setQuota] = useState<LeadQuota | null>(null);
 
   const load = useCallback(() => {
     apiGet<OpenCase[]>("/marketplace/cases").then(setOpenCases).catch(() => setOpenCases([]));
     apiGet<MyCase[]>("/marketplace/cases/mine").then(setMyCases).catch(() => setMyCases([]));
+    apiGet<LawyerProfile>("/marketplace/profile").then(setProfile).catch(() => {});
+    apiGet<LeadQuota>("/marketplace/lead-quota").then(setQuota).catch(() => {});
   }, []);
 
   useEffect(load, [load]);
@@ -60,7 +81,19 @@ export default function MarketplacePage() {
       setTab("mine");
       load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t.error);
+      const msg = err instanceof Error ? err.message : t.error;
+      setError(msg.toLowerCase().includes("lead limit") ? t.mkLeadLimitReached : msg);
+    }
+  }
+
+  async function toggleDuty() {
+    if (!profile) return;
+    const next = { ...profile, sos_on_duty: !profile.sos_on_duty };
+    setProfile(next);
+    try {
+      await apiPut("/marketplace/profile", next);
+    } catch {
+      setProfile(profile);
     }
   }
 
@@ -94,9 +127,41 @@ export default function MarketplacePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{t.marketplace}</h1>
-        <p className="text-sm text-slate-500 mt-1">{t.mkPublicProfileHint}</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold">{t.marketplace}</h1>
+          <p className="text-sm text-slate-500 mt-1">{t.mkPublicProfileHint}</p>
+        </div>
+        <div className="text-right space-y-2">
+          {profile && (
+            <label className="flex items-center gap-2 justify-end cursor-pointer" title={t.mkSosDutyHint}>
+              <span className="text-sm font-medium text-slate-700">{t.mkSosDuty}</span>
+              <button
+                onClick={toggleDuty}
+                role="switch"
+                aria-checked={profile.sos_on_duty}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  profile.sos_on_duty ? "bg-red-600" : "bg-slate-300"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
+                    profile.sos_on_duty ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </label>
+          )}
+          {quota && (
+            <p className="text-xs text-slate-500">
+              {quota.limit === null
+                ? t.mkLeadUnlimited
+                : t.mkLeadQuota
+                    .replace("{used}", String(quota.used))
+                    .replace("{limit}", String(quota.limit))}
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="flex gap-2">
@@ -146,6 +211,11 @@ export default function MarketplacePage() {
                     {c.urgency === "urgent" && (
                       <span className="text-xs bg-red-50 text-red-700 rounded-full px-2 py-0.5">
                         {t.mkUrgent}
+                      </span>
+                    )}
+                    {c.urgency === "sos" && (
+                      <span className="text-xs font-bold bg-red-600 text-white rounded-full px-2 py-0.5">
+                        SOS
                       </span>
                     )}
                     {c.directed_to_me && (
