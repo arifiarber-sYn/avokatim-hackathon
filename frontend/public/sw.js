@@ -1,8 +1,10 @@
 /* AvokatIM service worker: Web Push notifications + offline app shell.
    API responses are intentionally NOT cached (auth-scoped, must stay fresh). */
 
-const CACHE = "avokatim-shell-v1";
-const OFFLINE_URLS = ["/dashboard", "/icons/icon-192.png", "/icons/icon-512.png"];
+// Bump the version on UI overhauls: activate deletes every older cache,
+// so returning browsers drop any stale shell immediately.
+const CACHE = "avokatim-shell-v2";
+const OFFLINE_URLS = ["/", "/dashboard", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -53,7 +55,7 @@ self.addEventListener("fetch", (event) => {
           return res;
         })
         .catch(() =>
-          caches.match(event.request).then((hit) => hit || caches.match("/dashboard"))
+          caches.match(event.request).then((hit) => hit || caches.match("/"))
         )
     );
   }
