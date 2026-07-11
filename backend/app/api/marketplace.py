@@ -490,6 +490,51 @@ async def citizen_send_message(
     return _message_out(message)
 
 
+# ---------- public platform stats (Phase 4: "access to justice") ----------
+
+@public_router.get("/stats")
+async def public_stats(db: AsyncSession = Depends(get_db)):
+    """Anonymous aggregate numbers for the landing page and the
+    government/OAK pitch. No personal data."""
+    from sqlalchemy import func
+
+    from app.models import LegalCorpusChunk, LegalCorpusDoc
+
+    lawyers = (
+        await db.execute(
+            select(func.count(LawyerProfile.id)).where(LawyerProfile.is_visible.is_(True))
+        )
+    ).scalar_one()
+    cases_total = (await db.execute(select(func.count(CaseRequest.id)))).scalar_one()
+    cases_taken = (
+        await db.execute(
+            select(func.count(CaseRequest.id)).where(
+                CaseRequest.status.in_(["claimed", "converted"])
+            )
+        )
+    ).scalar_one()
+    # Average time from posting to a lawyer claiming, in hours
+    avg_seconds = (
+        await db.execute(
+            select(
+                func.avg(
+                    func.extract("epoch", CaseRequest.claimed_at - CaseRequest.created_at)
+                )
+            ).where(CaseRequest.claimed_at.isnot(None))
+        )
+    ).scalar_one()
+    laws = (await db.execute(select(func.count(LegalCorpusDoc.id)))).scalar_one()
+    chunks = (await db.execute(select(func.count(LegalCorpusChunk.id)))).scalar_one()
+    return {
+        "lawyers_in_directory": lawyers,
+        "cases_posted": cases_total,
+        "cases_taken": cases_taken,
+        "avg_claim_hours": round(avg_seconds / 3600, 1) if avg_seconds else None,
+        "laws_in_corpus": laws,
+        "corpus_chunks": chunks,
+    }
+
+
 # ---------- public Ava (Phase 2): free legal information chat ----------
 
 PUBLIC_AVA_SYSTEM_PROMPT = (

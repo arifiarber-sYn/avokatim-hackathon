@@ -7,16 +7,32 @@ import { getToken } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { LocaleSwitcher } from "@/components/ui";
 
+interface PublicStats {
+  lawyers_in_directory: number;
+  cases_posted: number;
+  cases_taken: number;
+  laws_in_corpus: number;
+}
+
 export default function Home() {
   const router = useRouter();
   const { t } = useI18n();
   const [ready, setReady] = useState(false);
+  const [stats, setStats] = useState<PublicStats | null>(null);
 
   useEffect(() => {
     // Logged-in lawyers go straight to their dashboard
     if (getToken()) router.replace("/dashboard");
     else setReady(true);
   }, [router]);
+
+  useEffect(() => {
+    if (!ready) return;
+    fetch("/api/public/stats")
+      .then((res) => res.json())
+      .then(setStats)
+      .catch(() => {});
+  }, [ready]);
 
   if (!ready) return null;
 
@@ -98,6 +114,22 @@ export default function Home() {
             </div>
           </section>
         </div>
+
+        {stats && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            {[
+              { value: stats.lawyers_in_directory, label: t.mkStatsLawyers },
+              { value: stats.cases_posted, label: t.mkStatsCases },
+              { value: stats.cases_taken, label: t.mkStatsTaken },
+              { value: stats.laws_in_corpus, label: t.mkStatsLaws },
+            ].map((s) => (
+              <div key={s.label} className="bg-white rounded-xl border border-slate-200 p-4">
+                <p className="text-2xl font-bold text-indigo-700">{s.value}</p>
+                <p className="text-xs text-slate-500 mt-1">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
         <footer className="text-center text-xs text-slate-400 space-x-4">
           <Link href="/kushtet" className="hover:underline">{t.termsOfService}</Link>

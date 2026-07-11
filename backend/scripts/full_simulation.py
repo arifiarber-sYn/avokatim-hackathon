@@ -563,6 +563,15 @@ async def main() -> None:
               and r.json().get("status") == "submitted")
 
         print("\n=== 24. TREGU PUBLIK (qytetarë ↔ avokatë) ===")
+        # Repeated simulation runs share this machine's IP — clear the
+        # signup rate-limit counters so the run stays deterministic.
+        import redis.asyncio as aioredis
+        from app.config import settings as app_settings
+        rr = aioredis.from_url(app_settings.redis_url)
+        async for rkey in rr.scan_iter("avokatim:rl:citizen_signup:*"):
+            await rr.delete(rkey)
+        await rr.aclose()
+
         r = await c.put(f"{BASE}/marketplace/profile", headers=h, json={
             "is_visible": True, "bio": "Avokat me përvojë në të drejtën civile.",
             "practice_areas": ["civil", "commercial"], "cities": ["Prishtinë"],
@@ -647,6 +656,13 @@ async def main() -> None:
         })
         check("qytetari kyçet në portal me TË NJËJTIN fjalëkalim",
               r.status_code == 200 and r.json().get("access_token"))
+
+        r = await c.get(f"{BASE}/public/stats")
+        stats = r.json() if r.status_code == 200 else {}
+        check("statistikat publike (qasje në drejtësi)",
+              r.status_code == 200 and stats.get("lawyers_in_directory", 0) >= 1
+              and stats.get("laws_in_corpus", 0) >= 9,
+              f"avokatë={stats.get('lawyers_in_directory')}, ligje={stats.get('laws_in_corpus')}")
 
         print("\n=== 25. AVA PUBLIKE FALAS (Faza 2) ===")
         r = await c.get(f"{BASE}/public/ava/quota?session_id=sim{SUFFIX}")

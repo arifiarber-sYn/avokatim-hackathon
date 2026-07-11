@@ -10,6 +10,24 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-11 — Public stats + "access to justice" pitch (Phase 4 groundwork) (Cursor / Fable 5)
+
+- Done: anonymous `GET /api/public/stats` (visible lawyers, cases
+  posted/taken, average hours from posting to claim, laws/chunks in the
+  corpus — no personal data) + 4-card stat strip on the public landing
+  (4 new UI keys ×6 languages); pitch document
+  `docs/pitch/qasje-ne-drejtesi.md` for the government/OAK proposal.
+  full_simulation gained a stats check and now clears citizen-signup
+  rate-limit keys at the start of section 24 (repeated runs from the same
+  IP were hitting the 5/hour limit — first re-run crashed on that; also
+  cleaned up the leftover "Zyra Sim 95b156" tenant from the crashed run).
+- Verified: 26 pytest pass; tsc + next build clean; full_simulation
+  **111 PASS / 0 FAIL**; /api/public/stats live (9 laws, 4016 chunks).
+- Left open / next: Phase 3 SOS video/audio — blocked on network
+  infrastructure (WebRTC media can't cross Cloudflare Tunnel; needs router
+  port forwarding or a small TURN relay VPS — owner's call); paid lawyer
+  plans/lead fees (billing stays manual per D-008 until the owner decides).
+
 ## 2026-07-11 — Public Ava: free legal chat for citizens (Phase 2) (Cursor / Fable 5)
 
 - Done (backend): `/api/public/ava/ask` + `/ask-stream` (SSE) + `/quota` in
@@ -18,7 +36,7 @@
   answers in the question's language; recommends "Më lidh me avokat").
   Stateless (client-held history, nothing persisted). Redis daily quotas:
   5/day anonymous (IP+session), 20/day with citizen account (optional
-  citizen token). Provider через the existing LLM abstraction (default).
+  citizen token). Provider goes through the existing LLM abstraction.
 - Done (frontend): public `/ava` streaming chat (citation chips, disclaimer,
   quota display, Enter-to-send), "Më lidh me avokat" prefills
   `/posto-rastin` via localStorage draft; landing citizen block gained the

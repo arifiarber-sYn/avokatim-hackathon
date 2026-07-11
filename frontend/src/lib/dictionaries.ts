@@ -607,6 +607,10 @@ const sq = {
   mkAvaSigninForMore: "krijo llogari për më shumë pyetje",
   mkAvaConnectHint: "Ke nevojë për ndihmë konkrete nga avokat?",
   mkAvaConnectLawyer: "Më lidh me avokat",
+  mkStatsLawyers: "avokatë në drejtori",
+  mkStatsCases: "raste të postuara",
+  mkStatsTaken: "raste të marra nga avokatët",
+  mkStatsLaws: "ligje të Kosovës në bazën ligjore",
 
 };
 
@@ -1162,6 +1166,10 @@ const en: typeof sq = {
   mkAvaSigninForMore: "create an account for more questions",
   mkAvaConnectHint: "Need concrete help from a lawyer?",
   mkAvaConnectLawyer: "Connect me with a lawyer",
+  mkStatsLawyers: "lawyers in the directory",
+  mkStatsCases: "cases posted",
+  mkStatsTaken: "cases taken by lawyers",
+  mkStatsLaws: "Kosovo laws in the legal base",
 
 };
 
@@ -1707,6 +1715,10 @@ const zh: typeof sq = {
   mkAvaSigninForMore: "创建账户以获得更多提问",
   mkAvaConnectHint: "需要律师的具体帮助吗？",
   mkAvaConnectLawyer: "为我联系律师",
+  mkStatsLawyers: "名录律师",
+  mkStatsCases: "已发布案件",
+  mkStatsTaken: "律师已接手案件",
+  mkStatsLaws: "法律库中的科索沃法律",
 
 };
 
@@ -2261,6 +2273,10 @@ const sr: typeof sq = {
   mkAvaSigninForMore: "kreirajte nalog za više pitanja",
   mkAvaConnectHint: "Treba vam konkretna pomoć advokata?",
   mkAvaConnectLawyer: "Poveži me sa advokatom",
+  mkStatsLawyers: "advokata u imeniku",
+  mkStatsCases: "objavljenih slučajeva",
+  mkStatsTaken: "slučajeva koje su preuzeli advokati",
+  mkStatsLaws: "zakona Kosova u pravnoj bazi",
 
 };
 
@@ -2815,6 +2831,10 @@ const tr: typeof sq = {
   mkAvaSigninForMore: "daha fazla soru için hesap oluşturun",
   mkAvaConnectHint: "Bir avukattan somut yardıma mı ihtiyacınız var?",
   mkAvaConnectLawyer: "Beni bir avukatla buluştur",
+  mkStatsLawyers: "rehberdeki avukatlar",
+  mkStatsCases: "yayınlanan davalar",
+  mkStatsTaken: "avukatların üstlendiği davalar",
+  mkStatsLaws: "hukuk tabanındaki Kosova yasaları",
 
 };
 
@@ -3369,6 +3389,10 @@ const bs: typeof sq = {
   mkAvaSigninForMore: "kreirajte račun za više pitanja",
   mkAvaConnectHint: "Treba vam konkretna pomoć advokata?",
   mkAvaConnectLawyer: "Poveži me s advokatom",
+  mkStatsLawyers: "advokata u imeniku",
+  mkStatsCases: "objavljenih slučajeva",
+  mkStatsTaken: "slučajeva koje su preuzeli advokati",
+  mkStatsLaws: "zakona Kosova u pravnoj bazi",
 
 };
 

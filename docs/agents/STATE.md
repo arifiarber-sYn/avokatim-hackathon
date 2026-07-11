@@ -287,9 +287,16 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   `localStorage.avokatim_case_draft` — `/posto-rastin` prefills the case
   description from it. Landing citizen block links to `/ava`.
   Simulation section 25 (**110 PASS / 0 FAIL** total).
+- **Public stats + government pitch** (2026-07-11, Phase 4 groundwork of
+  D-013): anonymous `GET /api/public/stats` (visible lawyers, cases
+  posted/taken, avg hours-to-claim, corpus size) rendered as a stat strip on
+  the public landing; pitch document `docs/pitch/qasje-ne-drejtesi.md`
+  (Albanian, for the Ministry of Justice / OAK / donors). Lawyer paid plans
+  and lead fees are NOT built (billing stays manual per D-008; `Tenant.plan`
+  already exists when that starts).
   Phase 3 (SOS video/audio) stays blocked on WebRTC media ports —
   Cloudflare Tunnel is HTTP-only; needs router port forwarding or a TURN
-  relay VPS before it can start. Phase 4 (lawyer plans/lead fees) not built.
+  relay VPS (owner's decision/action) before it can start.
 
 ## Environment
 
