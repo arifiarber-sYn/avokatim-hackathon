@@ -46,7 +46,8 @@ from app.services.notifications import send_email
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-TRIAL_DAYS = 30
+# 3 free months (the ICL-pilot promise); after that a paid plan is required
+from app.services.platform_billing import TRIAL_DAYS  # noqa: E402  (=90)
 LOGIN_MAX_ATTEMPTS = 5
 LOGIN_WINDOW_SECONDS = 15 * 60
 

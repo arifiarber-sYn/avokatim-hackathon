@@ -1,7 +1,17 @@
 import uuid
 from datetime import datetime
+from decimal import Decimal
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -30,7 +40,7 @@ class Tenant(Base, TimestampMixin):
     # Default VAT percentage applied to new invoices (Kosovo standard: 18)
     default_vat_rate: Mapped[int] = mapped_column(Integer, default=18, server_default="18")
 
-    # SaaS subscription (billing itself is manual for now)
+    # SaaS subscription (platform invoices in app/models/platform_billing.py)
     plan: Mapped[str] = mapped_column(
         String(20), default="trial", server_default="trial"
     )  # trial | solo | firm
@@ -40,6 +50,11 @@ class Tenant(Base, TimestampMixin):
     seats_limit: Mapped[int] = mapped_column(Integer, default=3, server_default="3")
     trial_ends_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     suspended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Monthly price per active user in EUR. 0 = free forever (founder tenant,
+    # strategic partners); overridable per tenant for negotiated deals.
+    plan_price_eur: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=Decimal("24"), server_default="24"
+    )
     # Free-form notes for the platform operator (payment references etc.)
     billing_notes: Mapped[str | None] = mapped_column(Text)
     # Firm-wide security policy: force every member to enable TOTP

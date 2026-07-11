@@ -18,6 +18,7 @@ interface OpenCase {
   citizen_name: string;
   citizen_locale: string;
   directed_to_me: boolean;
+  matches_profile?: boolean;
 }
 
 interface MyCase extends OpenCase {
@@ -48,6 +49,7 @@ interface LeadQuota {
   limit: number | null;
   used: number | null;
   remaining: number | null;
+  past_due?: boolean;
 }
 
 export default function MarketplacePage() {
@@ -176,6 +178,14 @@ export default function MarketplacePage() {
       </div>
 
       <ErrorNote message={error} />
+      {quota?.past_due && (
+        <div className="rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-3">
+          {t.subPastDue}{" "}
+          <Link href="/settings" className="font-medium underline">
+            {t.settings}
+          </Link>
+        </div>
+      )}
       {claimResult && (
         <div
           className={`rounded-lg text-sm px-4 py-3 ${
@@ -223,6 +233,11 @@ export default function MarketplacePage() {
                     {c.directed_to_me && (
                       <span className="text-xs bg-amber-50 text-amber-700 rounded-full px-2 py-0.5">
                         {t.mkDirectedToYou}
+                      </span>
+                    )}
+                    {c.matches_profile && !c.directed_to_me && (
+                      <span className="text-xs bg-emerald-50 text-emerald-700 rounded-full px-2 py-0.5">
+                        {t.mkMatch}
                       </span>
                     )}
                   </div>

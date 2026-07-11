@@ -32,6 +32,7 @@ from app.models.marketplace import (
     CitizenUser,
     LawyerProfile,
 )
+from app.models.platform_billing import PlatformInvoice
 
 __all__ = [
     "Base",
@@ -71,4 +72,5 @@ __all__ = [
     "LawyerProfile",
     "CaseRequest",
     "CaseRequestMessage",
+    "PlatformInvoice",
 ]

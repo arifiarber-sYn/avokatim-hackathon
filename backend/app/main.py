@@ -28,6 +28,7 @@ from app.api import (
     push,
     reports,
     search,
+    subscription,
     tasks,
     team,
     templates,
@@ -37,6 +38,7 @@ from app.database import SessionLocal
 from app.seeds import seed_jurisdictions
 from app.services.email_ingest import email_ingest_loop
 from app.services.notifications import reminder_loop
+from app.services.platform_billing import billing_loop
 
 logging.basicConfig(level=logging.INFO)
 
@@ -48,9 +50,11 @@ async def lifespan(app: FastAPI):
         await seed_jurisdictions(db)
     reminders = asyncio.create_task(reminder_loop())
     email_ingest = asyncio.create_task(email_ingest_loop())
+    billing = asyncio.create_task(billing_loop())
     yield
     reminders.cancel()
     email_ingest.cancel()
+    billing.cancel()
 
 
 app = FastAPI(title="AvokatIM API", version="0.1.0", lifespan=lifespan)
@@ -92,6 +96,7 @@ app.include_router(privacy.router, prefix=api_prefix)
 app.include_router(aml.router, prefix=api_prefix)
 app.include_router(marketplace.router, prefix=api_prefix)
 app.include_router(marketplace.public_router, prefix=api_prefix)
+app.include_router(subscription.router, prefix=api_prefix)
 
 
 @app.get("/api/health")

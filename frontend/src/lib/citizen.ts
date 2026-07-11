@@ -77,4 +77,6 @@ export interface PublicLawyer {
   cities: string[];
   languages: string[];
   photo: string | null;
+  // Paid-plan perk: sorted first and softly emphasized in the directory
+  highlighted?: boolean;
 }

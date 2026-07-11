@@ -65,7 +65,10 @@ export default function LawyerDirectoryPage() {
         ) : (
           <div className="grid md:grid-cols-2 gap-4">
             {filtered.map((lawyer) => (
-              <Card key={lawyer.id} className="p-5 space-y-3">
+              <Card
+                key={lawyer.id}
+                className={`p-5 space-y-3 ${lawyer.highlighted ? "ring-1 ring-indigo-200 border-indigo-200" : ""}`}
+              >
                 <div className="flex items-start gap-3">
                   {lawyer.photo ? (
                     /* eslint-disable-next-line @next/next/no-img-element */

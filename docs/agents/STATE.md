@@ -12,7 +12,8 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 ## What exists and works
 
 - **Auth**: public self-service signup (`POST /auth/signup` → new tenant on a
-  30-day trial + admin user; page `/regjistrohu`), JWT login, 2FA (TOTP),
+  **90-day trial** ("3 muaj falas", `platform_billing.TRIAL_DAYS`) + admin
+  user; page `/regjistrohu`), JWT login, 2FA (TOTP),
   email verification (signed purpose tokens, page `/verifiko-email`, banner +
   resend in app), password reset (`/harrova-fjalekalimin` → `/rivendos?token=`,
   single-use via password-hash fingerprint), change password (Settings →
@@ -22,13 +23,35 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   without TOTP can only reach `/api/auth` until they enable it).
 - **Multi-company SaaS** (2026-07-09): Tenant carries `plan`
   (trial/solo/firm), `status` (active/suspended), `seats_limit`,
-  `trial_ends_at`, `billing_notes`, `require_2fa`, `logo`. Seat limits enforced
-  on team invite/reactivation (402). Trial banner + verify-email banner in the
-  app shell. **Platform panel** (`/platform`, superadmin only — flag
-  `users.is_superadmin`, never settable via API): list tenants with
-  seats/matters/status, suspend/activate, change plan/seats, extend trial,
-  billing notes. Billing itself is manual (D-008). The founder user is
-  superadmin; founder tenant is plan=firm/25 seats.
+  `trial_ends_at`, `plan_price_eur`, `billing_notes`, `require_2fa`, `logo`.
+  Seat limits enforced on team invite/reactivation (402). Trial banner +
+  verify-email banner in the app shell. **Platform panel** (`/platform`,
+  superadmin only — flag `users.is_superadmin`, never settable via API):
+  list tenants with seats/matters/status, suspend/activate, change
+  plan/seats/price, extend trial, billing notes, **platform invoices**
+  (list/generate/mark-paid/void). The founder user is superadmin; founder
+  tenant is plan=firm/25 seats/price 0 (never billed).
+- **Platform subscription billing** (2026-07-11, D-016 — replaces manual
+  D-008): revenue model = lawyers pay `plan_price_eur` (default **24
+  €/user/month**, per-tenant override; 0 = free forever) which includes the
+  whole platform + unlimited marketplace leads; citizens never pay; **never a
+  % of lawyer fees** (Avvo Legal Services died of fee splitting).
+  `PlatformInvoice` model (unique tenant+month, number P-YYYY-NNNN);
+  `app/services/platform_billing.py`: `TRIAL_DAYS=90`, due 14 d, grace 14 d,
+  idempotent monthly generation + **daily billing loop** (lifespan task,
+  every 12 h): issues current-month invoices + emails admins, weekly dunning
+  reminders (Redis dedup), trial-ending nudges (≤7 d). Tenant-admin API
+  `/billing/subscription` (state+invoices), `/upgrade` (self-service trial →
+  solo/firm, first invoice issued instantly), `/invoices/{id}/payment-link`
+  (Stripe Checkout, metadata `platform_invoice_id`, same `/api/stripe/webhook`
+  marks it paid). **Enforcement**: open invoice > due+grace ⇒ `past_due` —
+  marketplace claim returns 402 and Tregu/Settings show a red banner; data
+  access is NEVER blocked (operator may suspend chronic non-payers).
+  Settings → "Abonimi" section (plan, price×seats, upgrade CTA, invoice list,
+  card-pay button, bank-transfer hint from `platform_bank_details` in
+  backend/.env — set it before the first real invoice!). Emails in 6 langs
+  (`platform_invoice_*`, `platform_overdue_*`, `trial_ending_*`).
+  Tests `tests/test_platform_billing.py`; simulation section 28.
 - **Tenant isolation** (2026-07-09): corpus writes superadmin-only (shared
   read-only knowledge base), `document_text` goes through restricted-matter
   checks, portal login is tenant-aware (same client email may exist at several
@@ -252,7 +275,9 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   verify-email via purpose token, cases CRUD, messages — Redis rate limits:
   5 signups/h/IP, 5 cases/day, 60 msgs/day; posting requires verified email;
   citizen JWT has its own `citizen` claim, unusable as lawyer/portal token),
-  public `GET /public/lawyers` (visible profiles, filter area/city/language),
+  public `GET /public/lawyers` (visible profiles, filter area/city/language;
+  paid-plan profiles sort first + `highlighted` flag — the "profil i
+  theksuar" perk, soft indigo ring in `/avokatet`),
   lawyer `/marketplace/*` (profile upsert, browse open cases with masked
   citizen name, **claim** → existing conflict check → `IntakeRequest
   source="marketplace"`, mine, messages, report-abuse → closes + audit).
@@ -290,10 +315,9 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - **Public stats + government pitch** (2026-07-11, Phase 4 groundwork of
   D-013): anonymous `GET /api/public/stats` (visible lawyers, cases
   posted/taken, avg hours-to-claim, corpus size) rendered as a stat strip on
-  the public landing; pitch document `docs/pitch/qasje-ne-drejtesi.md`
+  the public landing;   pitch document `docs/pitch/qasje-ne-drejtesi.md`
   (Albanian, for the Ministry of Justice / OAK / donors). Lawyer paid plans
-  and lead fees are NOT built (billing stays manual per D-008; `Tenant.plan`
-  already exists when that starts).
+  are now real — see "Platform subscription billing" above (D-016).
 - **SOS duty flow + lead limits** (2026-07-11, Phase 3 without video +
   Phase 4 revenue scaffold): `LawyerProfile.sos_on_duty` (opt-in toggle in
   `(app)/marketplace` header and settings public-profile section).
@@ -306,9 +330,13 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   landing). First lawyer to claim wins; normal claim → intake → chat flow.
   **Lead limits**: trial plan = 5 claims/calendar-month
   (`TRIAL_MONTHLY_LEAD_LIMIT`, claim returns 402 when exhausted), solo/firm
-  unlimited; `GET /api/marketplace/lead-quota` shown in the Tregu header.
-  Plans are still set manually by the operator (D-008).
-  Simulation section 26.
+  unlimited; `GET /api/marketplace/lead-quota` (now also returns `past_due`)
+  shown in the Tregu header. Simulation section 26.
+- **Demand↔supply matching** (2026-07-11): posting a non-directed case
+  background-notifies (push + email, `case_match_*` ×6) every visible lawyer
+  whose `practice_areas`/`cities` match (empty profile lists = match all);
+  lawyer browse is ranked SOS → directed-to-me → profile match (category+2,
+  city+1) → recency, each row carries `matches_profile` (green chip in Tregu).
 - **SOS video/audio room** (2026-07-11, Phase 3 complete for LAN):
   self-hosted **LiveKit** (`livekit/livekit-server:v1.9` in docker-compose,
   signaling 127.0.0.1:7880, media 7881/tcp + 7882/udp, config
@@ -325,7 +353,7 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   Signaling URL is derived client-side: `ws://127.0.0.1:7880` on
   localhost, `wss://<host>:7443` on LAN (Caddy :7443 proxies to 7880
   with the internal CA cert). Simulation section 27
-  (**123 PASS / 0 FAIL** total).
+  (**133 PASS / 0 FAIL** total with section 28).
   **Remaining for public-internet calls** (owner's decision/action):
   WebRTC media cannot cross Cloudflare Tunnel (HTTP-only) — needs router
   port forwarding of 7881/tcp + 7882/udp (then `use_external_ip: true`

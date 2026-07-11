@@ -88,6 +88,11 @@ class Settings(BaseSettings):
     stripe_secret_key: str = ""
     stripe_webhook_secret: str = ""
 
+    # Platform subscription billing: operator's bank details printed in the
+    # subscription-invoice emails (bank transfer is the default rail until a
+    # card gateway that operates in Kosovo is contracted).
+    platform_bank_details: str = ""
+
     # LiveKit (SOS video/audio calls). Empty api key = video disabled.
     # Keys must match LIVEKIT_KEYS given to the livekit container (root .env).
     livekit_api_key: str = ""

@@ -10,6 +10,40 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-11 — Platform subscription billing + demand↔supply matching (Cursor / Fable 5)
+
+- Context: owner asked to compare AvokatIM with the field leaders
+  (LegalMatch/Avvo/Thumbtack/Clio), close the gaps, and implement lawyer
+  payments — "after 3 free months the system must collect revenue".
+  Decision recorded as D-016 (per-seat subscription, never fee splitting).
+- Done (billing): `PlatformInvoice` model + `Tenant.plan_price_eur`
+  (migration `befbfa13f9f3`; founder tenant price 0). Service
+  `app/services/platform_billing.py`: TRIAL_DAYS 30→90, idempotent
+  monthly invoice generation (P-YYYY-NNNN, seats × price), daily billing
+  loop in the lifespan (invoices + emails, weekly dunning with Redis dedup,
+  trial-ending nudges). Tenant API `/billing/subscription` (+`/upgrade`
+  self-service, +Stripe payment-link with `platform_invoice_id` metadata;
+  webhook extended). Superadmin: `/platform/invoices`
+  (list/generate/mark-paid/void) + per-tenant price. Enforcement: overdue
+  past 14+14 days ⇒ `past_due` ⇒ marketplace claim 402 + red banners;
+  data access never blocked. UI: Settings→"Abonimi" section, platform
+  invoices panel, trial banner now points to self-serve upgrade.
+- Done (matching): new non-directed cases push+email lawyers whose
+  practice areas/cities match (`case_match_*` ×6); lawyer browse ranked
+  SOS → directed → profile match → recency with `matches_profile` chip;
+  paid plans sort first in the public directory (`highlighted` ring) —
+  the "profil i theksuar" perk is now real.
+- Done (i18n): 8 backend keys + ~28 UI keys ×6 languages; trial texts
+  30 days → 3 months everywhere.
+- Verified: 35 unit tests pass; `full_simulation.py` **133 PASS / 0 FAIL**
+  (new section 28: upgrade → invoice = seats×price, double-upgrade 400,
+  unlimited leads after upgrade, overdue→402, bank-transfer mark-paid →
+  claim resumes); next build clean; health OK.
+- Left open / next: set `PLATFORM_BANK_DETAILS` in backend/.env before the
+  first real invoice; contract a card gateway usable in Kosovo (Stripe
+  doesn't operate XK-direct) and route the webhook publicly; consider a
+  subscription-invoice PDF if firms ask for one.
+
 ## 2026-07-11 — Citizen-first public UX: landing, bottom nav, /per-avokatet (Cursor / Fable 5)
 
 - Context: owner asked whether citizens need their own interface separate

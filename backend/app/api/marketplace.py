@@ -246,7 +246,8 @@ async def public_lawyers(
                 User.is_active.is_(True),
                 Tenant.status == "active",
             )
-            .order_by(LawyerProfile.created_at)
+            # Highlighted directory placement is a paid-plan perk (lpPlanPaid)
+            .order_by((Tenant.plan != "trial").desc(), LawyerProfile.created_at)
             .limit(500)
         )
     ).all()
@@ -269,6 +270,7 @@ async def public_lawyers(
                 "cities": profile.cities or [],
                 "languages": profile.languages or [],
                 "photo": profile.photo,
+                "highlighted": tenant.plan != "trial",
             }
         )
     return result
@@ -341,6 +343,9 @@ async def citizen_create_case(
     )
     await db.commit()
 
+    if directed_tenant is None:
+        # Demand->supply matching: alert lawyers whose profile fits the case
+        background.add_task(_notify_matching_lawyers, case.id, body.category, body.city)
     if directed_tenant is not None:
         admins = (
             await db.execute(
@@ -408,6 +413,48 @@ async def citizen_close_case(
     case.closed_reason = "closed_by_citizen"
     await db.commit()
     return {"closed": True}
+
+
+async def _notify_matching_lawyers(
+    case_id: uuid.UUID, category: str, city: str | None
+) -> None:
+    """Push + email to directory lawyers whose practice areas/cities match a
+    freshly posted case — the supply side learns about demand instantly
+    instead of having to poll the browse list. Own session (background)."""
+    from app.database import SessionLocal
+    from app.services.push import send_push_to_user
+
+    async with SessionLocal() as db:
+        rows = (
+            await db.execute(
+                select(User, LawyerProfile)
+                .join(LawyerProfile, LawyerProfile.user_id == User.id)
+                .join(Tenant, Tenant.id == LawyerProfile.tenant_id)
+                .where(
+                    LawyerProfile.is_visible.is_(True),
+                    User.is_active.is_(True),
+                    Tenant.status == "active",
+                )
+            )
+        ).all()
+        notified = 0
+        for lawyer, profile in rows:
+            areas = profile.practice_areas or []
+            cities = [c.lower() for c in profile.cities or []]
+            if areas and category not in areas:
+                continue
+            if city and cities and city.lower() not in cities:
+                continue
+            loc = pick_locale(lawyer.locale)
+            subject = tr(loc, "case_match_subject")
+            body = tr(loc, "case_match_body", category=category, city=city or "-",
+                      url=f"{settings.public_base_url}/marketplace")
+            await send_push_to_user(
+                db, lawyer.id, title=subject, body=body, url="/marketplace"
+            )
+            await send_email(lawyer.email, subject, body)
+            notified += 1
+        logger.info("Case %s: alerted %d matching lawyers", case_id, notified)
 
 
 # ---------- SOS: urgent help with on-duty lawyer alerts (Phase 3) ----------
@@ -887,7 +934,9 @@ def _masked_name(full_name: str) -> str:
 async def lawyer_browse_cases(
     user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):
-    """Open cases: generic ones plus those directed to my tenant."""
+    """Open cases: generic ones plus those directed to my tenant, ranked so
+    the best demand/supply matches surface first: SOS, directed to me,
+    my practice areas + cities, then recency."""
     rows = (
         await db.execute(
             select(CaseRequest, CitizenUser)
@@ -897,21 +946,44 @@ async def lawyer_browse_cases(
                 (CaseRequest.directed_tenant_id.is_(None))
                 | (CaseRequest.directed_tenant_id == user.tenant_id),
             )
-            # SOS cases always float to the top
-            .order_by(
-                (CaseRequest.urgency == "sos").desc(), CaseRequest.created_at.desc()
-            )
+            .order_by(CaseRequest.created_at.desc())
             .limit(200)
         )
     ).all()
+
+    profile = (
+        await db.execute(select(LawyerProfile).where(LawyerProfile.user_id == user.id))
+    ).scalar_one_or_none()
+    my_areas = set(profile.practice_areas or []) if profile else set()
+    my_cities = {c.lower() for c in (profile.cities or [])} if profile else set()
+
+    def match_score(case: CaseRequest) -> int:
+        score = 0
+        if case.category in my_areas:
+            score += 2
+        if case.city and case.city.lower() in my_cities:
+            score += 1
+        return score
+
+    ranked = sorted(
+        rows,
+        key=lambda pair: (
+            pair[0].urgency == "sos",
+            pair[0].directed_tenant_id == user.tenant_id,
+            match_score(pair[0]),
+            pair[0].created_at,
+        ),
+        reverse=True,
+    )
     return [
         {
             **_case_out(case),
             "citizen_name": _masked_name(citizen.full_name),
             "citizen_locale": citizen.locale,
             "directed_to_me": case.directed_tenant_id == user.tenant_id,
+            "matches_profile": match_score(case) > 0,
         }
-        for case, citizen in rows
+        for case, citizen in ranked
     ]
 
 
@@ -975,8 +1047,12 @@ async def _lead_quota(db: AsyncSession, tenant: Tenant) -> dict:
 async def lead_quota(
     user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):
+    from app.services.platform_billing import has_past_due
+
     tenant = await db.get(Tenant, user.tenant_id)
-    return await _lead_quota(db, tenant)
+    quota = await _lead_quota(db, tenant)
+    quota["past_due"] = await has_past_due(db, tenant.id)
+    return quota
 
 
 @router.post("/cases/{case_id}/claim")
@@ -988,6 +1064,7 @@ async def lawyer_claim_case(
 ):
     """Take the case: conflict check + IntakeRequest(source=marketplace)."""
     from app.models import IntakeRequest
+    from app.services.platform_billing import has_past_due
 
     tenant = await db.get(Tenant, user.tenant_id)
     quota = await _lead_quota(db, tenant)
@@ -995,6 +1072,13 @@ async def lawyer_claim_case(
         raise HTTPException(
             status.HTTP_402_PAYMENT_REQUIRED,
             "Monthly lead limit reached — upgrade your plan",
+        )
+    # Dunning: an unpaid subscription invoice past due+grace pauses new
+    # leads (the lawyer keeps full access to their own matters and data)
+    if await has_past_due(db, tenant.id):
+        raise HTTPException(
+            status.HTTP_402_PAYMENT_REQUIRED,
+            "Subscription invoice overdue — settle it in Settings to keep claiming",
         )
 
     case = await db.get(CaseRequest, case_id)

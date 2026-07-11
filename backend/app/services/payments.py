@@ -27,18 +27,21 @@ async def create_payment_link(
     currency: str,
     description: str,
     customer_email: str | None = None,
+    metadata_key: str = "invoice_id",
+    return_path: str = "/portal",
 ) -> tuple[str, str]:
-    """Create a Stripe Checkout session for an invoice.
+    """Create a Stripe Checkout session for an invoice (client invoice by
+    default; metadata_key='platform_invoice_id' for subscription invoices).
     Returns (checkout_url, session_id). Raises on API errors."""
     data: dict[str, str] = {
         "mode": "payment",
-        "success_url": f"{settings.public_base_url}/portal?payment=success",
-        "cancel_url": f"{settings.public_base_url}/portal?payment=cancelled",
+        "success_url": f"{settings.public_base_url}{return_path}?payment=success",
+        "cancel_url": f"{settings.public_base_url}{return_path}?payment=cancelled",
         "line_items[0][quantity]": "1",
         "line_items[0][price_data][currency]": currency.lower(),
         "line_items[0][price_data][unit_amount]": str(amount_cents),
         "line_items[0][price_data][product_data][name]": description,
-        "metadata[invoice_id]": invoice_id,
+        f"metadata[{metadata_key}]": invoice_id,
         "metadata[invoice_number]": invoice_number,
     }
     if customer_email:

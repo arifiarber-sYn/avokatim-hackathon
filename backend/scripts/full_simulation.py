@@ -68,7 +68,7 @@ async def main() -> None:
             "email": f"driton.sim.{SUFFIX}@gmail.com", "password": PW_FIRM,
             "accept_tos": True,
         })
-        check("signup i zyrës (trial 30d, kushtet e pranuara)", r.status_code == 201)
+        check("signup i zyrës (trial 3 muaj, kushtet e pranuara)", r.status_code == 201)
         h = {"Authorization": f"Bearer {r.json()['access_token']}"}
 
         r = await c.patch(f"{BASE}/firm", headers=h, json={
@@ -778,6 +778,78 @@ async def main() -> None:
         r = await c.post(f"{BASE}/marketplace/cases/{spam_id}/call-token", headers=h)
         check("s'ka thirrje për raste jo-aktive (të mbyllura)",
               r.status_code in (400, 404), f"status={r.status_code}")
+
+        print("\n=== 28. ABONIMI I PLATFORMËS (të hyrat pas 3 muajve falas) ===")
+        from sqlalchemy import text as _sqltext
+
+        from app.database import SessionLocal as _Session
+
+        r = await c.get(f"{BASE}/billing/subscription", headers=h)
+        sub = r.json() if r.status_code == 200 else {}
+        check("gjendja e abonimit: trial, 24 €/përdorues/muaj, pa fatura",
+              r.status_code == 200 and sub.get("plan") == "trial"
+              and sub.get("price_eur") == 24.0 and sub.get("invoices") == [],
+              f"ulëse={sub.get('seats')}")
+
+        r = await c.post(f"{BASE}/billing/subscription/upgrade", headers=h)
+        up = r.json() if r.status_code == 200 else {}
+        inv = up.get("invoice") or {}
+        check("upgrade vetë-shërbyes trial → plan me pagesë + fatura e parë",
+              r.status_code == 200 and up.get("plan") in ("solo", "firm")
+              and inv.get("status") == "open",
+              f"plan={up.get('plan')}, fatura={inv.get('number')}")
+        check("shuma e faturës = ulëse × çmimi",
+              inv and abs(inv["amount_eur"] - inv["seats"] * inv["unit_price_eur"]) < 0.01,
+              f"{inv.get('seats')} × {inv.get('unit_price_eur')} = {inv.get('amount_eur')} €")
+        r = await c.post(f"{BASE}/billing/subscription/upgrade", headers=h)
+        check("upgrade i dytë refuzohet (tashmë me pagesë)", r.status_code == 400)
+
+        r = await c.get(f"{BASE}/marketplace/lead-quota", headers=h)
+        check("pas upgrade: lead-e PA KUFI nga Tregu",
+              r.status_code == 200 and r.json().get("limit") is None)
+
+        # Dunning: overdue past grace pauses new claims (data stays accessible)
+        async with _Session() as db:
+            await db.execute(
+                _sqltext("UPDATE platform_invoices SET due_on = CURRENT_DATE - 20 "
+                         "WHERE id = :i"), {"i": inv["id"]})
+            await db.commit()
+        r = await c.get(f"{BASE}/marketplace/lead-quota", headers=h)
+        check("fatura 20 ditë vonesë (> grace 14) → past_due",
+              r.status_code == 200 and r.json().get("past_due") is True)
+
+        r = await c.post(f"{BASE}/public/citizen/cases", headers=ch, json={
+            "category": "commercial",
+            "description": "Kontratë biznesi e pashlyer — furnitori nuk po i "
+                           "përmbahet afatit të dorëzimit të mallit.",
+            "city": "Prishtinë",
+        })
+        case2_id = r.json()["id"]
+        r = await c.get(f"{BASE}/marketplace/cases", headers=h)
+        row2 = next((x for x in r.json() if x["id"] == case2_id), None)
+        check("rasti i ri shënohet 'përputhet me profilin' (kategori+qytet)",
+              row2 is not None and row2.get("matches_profile") is True)
+        r = await c.post(f"{BASE}/marketplace/cases/{case2_id}/claim", headers=h)
+        check("claim bllokohet me 402 derisa fatura të paguhet",
+              r.status_code == 402)
+
+        # Operator records the bank transfer -> claiming resumes
+        async with _Session() as db:
+            await db.execute(
+                _sqltext("UPDATE platform_invoices SET status='paid', "
+                         "paid_on=CURRENT_DATE, payment_reference='transfer sim' "
+                         "WHERE id = :i"), {"i": inv["id"]})
+            await db.commit()
+        r = await c.post(f"{BASE}/marketplace/cases/{case2_id}/claim", headers=h)
+        check("pas pagesës claim funksionon prapë", r.status_code == 200
+              and r.json().get("claimed") is True)
+
+        r = await c.get(f"{BASE}/billing/subscription", headers=h)
+        sub = r.json() if r.status_code == 200 else {}
+        check("fatura shfaqet e paguar me referencë",
+              r.status_code == 200 and sub.get("invoices")
+              and sub["invoices"][0]["status"] == "paid"
+              and sub["invoices"][0]["payment_reference"] == "transfer sim")
 
     # ============ cleanup ============
     from sqlalchemy import text as sqltext

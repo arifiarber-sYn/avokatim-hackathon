@@ -554,7 +554,11 @@ async def create_invoice_payment_link(
 
 @public_router.post("/stripe/webhook", include_in_schema=False)
 async def stripe_webhook(request: Request, db: AsyncSession = Depends(get_db)):
-    """Stripe calls this when a checkout completes; marks the invoice paid."""
+    """Stripe calls this when a checkout completes; marks the invoice paid.
+    Handles both client invoices (invoice_id) and the tenant's own platform
+    subscription invoices (platform_invoice_id)."""
+    from app.models import PlatformInvoice
+
     payload = await request.body()
     signature = request.headers.get("stripe-signature", "")
     event = verify_webhook_signature(payload, signature)
@@ -562,16 +566,32 @@ async def stripe_webhook(request: Request, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid signature")
     if event.get("type") == "checkout.session.completed":
         session = event["data"]["object"]
-        invoice_id = (session.get("metadata") or {}).get("invoice_id")
+        metadata = session.get("metadata") or {}
+        reference = f"Stripe {session.get('payment_intent', '')}"[:128]
+        invoice_id = metadata.get("invoice_id")
+        platform_invoice_id = metadata.get("platform_invoice_id")
         if invoice_id:
             invoice = await db.get(Invoice, uuid.UUID(invoice_id))
             if invoice is not None and invoice.status != "paid":
                 invoice.status = "paid"
                 invoice.paid_on = date.today()
-                invoice.payment_reference = f"Stripe {session.get('payment_intent', '')}"[:128]
+                invoice.payment_reference = reference
                 await log_action(
                     db, tenant_id=invoice.tenant_id, user_id=None, action="invoice.paid_online",
                     entity_type="invoice", entity_id=str(invoice.id),
+                    details={"session": session.get("id")},
+                )
+                await db.commit()
+        elif platform_invoice_id:
+            pinv = await db.get(PlatformInvoice, uuid.UUID(platform_invoice_id))
+            if pinv is not None and pinv.status == "open":
+                pinv.status = "paid"
+                pinv.paid_on = date.today()
+                pinv.payment_reference = reference
+                await log_action(
+                    db, tenant_id=pinv.tenant_id, user_id=None,
+                    action="subscription.paid_online",
+                    entity_type="platform_invoice", entity_id=str(pinv.id),
                     details={"session": session.get("id")},
                 )
                 await db.commit()

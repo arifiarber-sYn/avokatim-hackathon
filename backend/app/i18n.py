@@ -102,6 +102,31 @@ _SQ = {
         "Një qytetar kërkon ndihmë urgjente ({city}). Ti je kujdestar SOS — "
         "hape Tregun dhe merre rastin sa më parë:\n{url}"
     ),
+    "case_match_subject": "AvokatIM — Rast i ri që përputhet me profilin tënd",
+    "case_match_body": (
+        "Në Treg sapo u postua një rast që përputhet me profilin tënd "
+        "({category}, {city}). Avokati i parë që e merr, e fiton:\n{url}"
+    ),
+    "platform_invoice_subject": "AvokatIM — Fatura e abonimit {number}",
+    "platform_invoice_body": (
+        "Fatura e abonimit {number} për periudhën {period}:\n"
+        "{seats} përdorues × {price} € = {amount} €\n"
+        "Afati i pagesës: {due}\n\n"
+        "Pagesa me transfer bankar (shëno numrin e faturës si referencë):\n{bank}\n\n"
+        "Detajet dhe pagesa me kartelë (nëse është aktive) te Cilësimet → Abonimi:\n{url}"
+    ),
+    "platform_overdue_subject": "AvokatIM — Fatura {number} ka kaluar afatin",
+    "platform_overdue_body": (
+        "Fatura e abonimit {number} ({amount} €) ka kaluar afatin {days} ditë. "
+        "Pas {grace} ditësh vonesë ndalen rastet e reja nga Tregu — të dhënat "
+        "tuaja mbeten gjithmonë të qasshme. Paguaje te Cilësimet → Abonimi:\n{url}"
+    ),
+    "trial_ending_subject": "AvokatIM — Prova falas përfundon për {days} ditë",
+    "trial_ending_body": (
+        "Prova juaj 3-mujore falas përfundon për {days} ditë. Kalo në planin "
+        "me pagesë ({price} €/përdorues/muaj — gjithçka brenda + raste pa "
+        "kufi nga Tregu) te Cilësimet → Abonimi:\n{url}"
+    ),
 }
 
 _SR = {
@@ -188,6 +213,31 @@ _SR = {
     "sos_alert_body": (
         "Građanin traži hitnu pomoć ({city}). Vi ste SOS dežurni — "
         "otvorite Tržište i preuzmite slučaj što pre:\n{url}"
+    ),
+    "case_match_subject": "AvokatIM — Novi slučaj koji odgovara vašem profilu",
+    "case_match_body": (
+        "Na Tržištu je upravo objavljen slučaj koji odgovara vašem profilu "
+        "({category}, {city}). Prvi advokat koji ga preuzme — dobija ga:\n{url}"
+    ),
+    "platform_invoice_subject": "AvokatIM — Faktura pretplate {number}",
+    "platform_invoice_body": (
+        "Faktura pretplate {number} za period {period}:\n"
+        "{seats} korisnika × {price} € = {amount} €\n"
+        "Rok plaćanja: {due}\n\n"
+        "Plaćanje bankovnim transferom (navedite broj fakture kao referencu):\n{bank}\n\n"
+        "Detalji i plaćanje karticom (ako je aktivno) u Podešavanja → Pretplata:\n{url}"
+    ),
+    "platform_overdue_subject": "AvokatIM — Faktura {number} je prekoračila rok",
+    "platform_overdue_body": (
+        "Faktura pretplate {number} ({amount} €) kasni {days} dana. "
+        "Nakon {grace} dana kašnjenja obustavljaju se novi slučajevi sa Tržišta — "
+        "vaši podaci ostaju uvek dostupni. Platite u Podešavanja → Pretplata:\n{url}"
+    ),
+    "trial_ending_subject": "AvokatIM — Besplatna proba ističe za {days} dana",
+    "trial_ending_body": (
+        "Vaša besplatna proba od 3 meseca ističe za {days} dana. Pređite na "
+        "plaćeni plan ({price} €/korisnik/mesečno — sve uključeno + neograničeni "
+        "slučajevi sa Tržišta) u Podešavanja → Pretplata:\n{url}"
     ),
 }
 
@@ -276,6 +326,31 @@ _TR = {
         "Bir vatandaş acil yardım istiyor ({city}). SOS nöbetçisisiniz — "
         "Pazar'ı açın ve davayı en kısa sürede üstlenin:\n{url}"
     ),
+    "case_match_subject": "AvokatIM — Profilinize uyan yeni bir dava",
+    "case_match_body": (
+        "Pazar'da profilinize uyan bir dava yayınlandı ({category}, {city}). "
+        "Davayı ilk üstlenen avukat kazanır:\n{url}"
+    ),
+    "platform_invoice_subject": "AvokatIM — Abonelik faturası {number}",
+    "platform_invoice_body": (
+        "{period} dönemi için abonelik faturası {number}:\n"
+        "{seats} kullanıcı × {price} € = {amount} €\n"
+        "Son ödeme tarihi: {due}\n\n"
+        "Banka havalesiyle ödeme (fatura numarasını referans olarak yazın):\n{bank}\n\n"
+        "Detaylar ve kartla ödeme (aktifse) Ayarlar → Abonelik bölümünde:\n{url}"
+    ),
+    "platform_overdue_subject": "AvokatIM — {number} numaralı fatura vadesini geçti",
+    "platform_overdue_body": (
+        "Abonelik faturası {number} ({amount} €) {days} gündür gecikmiş durumda. "
+        "{grace} gün gecikmeden sonra Pazar'dan yeni davalar durdurulur — "
+        "verileriniz her zaman erişilebilir kalır. Ayarlar → Abonelik'ten ödeyin:\n{url}"
+    ),
+    "trial_ending_subject": "AvokatIM — Ücretsiz deneme {days} gün içinde bitiyor",
+    "trial_ending_body": (
+        "3 aylık ücretsiz denemeniz {days} gün içinde bitiyor. Ücretli plana "
+        "geçin ({price} €/kullanıcı/ay — her şey dahil + Pazar'dan sınırsız "
+        "dava) Ayarlar → Abonelik:\n{url}"
+    ),
 }
 
 _BS = {
@@ -362,6 +437,31 @@ _BS = {
     "sos_alert_body": (
         "Građanin traži hitnu pomoć ({city}). Vi ste SOS dežurni — "
         "otvorite Tržište i preuzmite slučaj što prije:\n{url}"
+    ),
+    "case_match_subject": "AvokatIM — Novi slučaj koji odgovara vašem profilu",
+    "case_match_body": (
+        "Na Tržištu je upravo objavljen slučaj koji odgovara vašem profilu "
+        "({category}, {city}). Prvi advokat koji ga preuzme — dobija ga:\n{url}"
+    ),
+    "platform_invoice_subject": "AvokatIM — Faktura pretplate {number}",
+    "platform_invoice_body": (
+        "Faktura pretplate {number} za period {period}:\n"
+        "{seats} korisnika × {price} € = {amount} €\n"
+        "Rok plaćanja: {due}\n\n"
+        "Plaćanje bankovnim transferom (navedite broj fakture kao referencu):\n{bank}\n\n"
+        "Detalji i plaćanje karticom (ako je aktivno) u Postavke → Pretplata:\n{url}"
+    ),
+    "platform_overdue_subject": "AvokatIM — Faktura {number} je prekoračila rok",
+    "platform_overdue_body": (
+        "Faktura pretplate {number} ({amount} €) kasni {days} dana. "
+        "Nakon {grace} dana kašnjenja obustavljaju se novi slučajevi s Tržišta — "
+        "vaši podaci ostaju uvijek dostupni. Platite u Postavke → Pretplata:\n{url}"
+    ),
+    "trial_ending_subject": "AvokatIM — Besplatna proba ističe za {days} dana",
+    "trial_ending_body": (
+        "Vaša besplatna proba od 3 mjeseca ističe za {days} dana. Pređite na "
+        "plaćeni plan ({price} €/korisnik/mjesečno — sve uključeno + neograničeni "
+        "slučajevi s Tržišta) u Postavke → Pretplata:\n{url}"
     ),
 }
 
@@ -450,6 +550,31 @@ _EN = {
         "A citizen is asking for urgent help ({city}). You are on SOS duty — "
         "open the Marketplace and take the case as soon as possible:\n{url}"
     ),
+    "case_match_subject": "AvokatIM — New case matching your profile",
+    "case_match_body": (
+        "A case matching your profile was just posted on the Marketplace "
+        "({category}, {city}). The first lawyer to claim it wins:\n{url}"
+    ),
+    "platform_invoice_subject": "AvokatIM — Subscription invoice {number}",
+    "platform_invoice_body": (
+        "Subscription invoice {number} for {period}:\n"
+        "{seats} users × {price} € = {amount} €\n"
+        "Due date: {due}\n\n"
+        "Pay by bank transfer (use the invoice number as reference):\n{bank}\n\n"
+        "Details and card payment (when enabled) under Settings → Subscription:\n{url}"
+    ),
+    "platform_overdue_subject": "AvokatIM — Invoice {number} is overdue",
+    "platform_overdue_body": (
+        "Subscription invoice {number} ({amount} €) is {days} days overdue. "
+        "After {grace} days of delay new Marketplace cases are paused — your "
+        "data always stays accessible. Pay under Settings → Subscription:\n{url}"
+    ),
+    "trial_ending_subject": "AvokatIM — Your free trial ends in {days} days",
+    "trial_ending_body": (
+        "Your 3-month free trial ends in {days} days. Switch to the paid plan "
+        "({price} €/user/month — everything included + unlimited Marketplace "
+        "cases) under Settings → Subscription:\n{url}"
+    ),
 }
 
 _ZH = {
@@ -517,6 +642,14 @@ _ZH = {
     "case_portal_ready_body": "{firm} 已受理您的案件。您现在可以使用相同的邮箱和密码访问客户门户：\n{url}",
     "sos_alert_subject": "AvokatIM — SOS：一位公民需要紧急帮助",
     "sos_alert_body": "一位公民请求紧急帮助（{city}）。您是 SOS 值班律师——请尽快打开市场并接手案件：\n{url}",
+    "case_match_subject": "AvokatIM — 有一个与您的资料匹配的新案件",
+    "case_match_body": "市场上刚发布了一个与您的资料匹配的案件（{category}，{city}）。先接手的律师获得该案件：\n{url}",
+    "platform_invoice_subject": "AvokatIM — 订阅发票 {number}",
+    "platform_invoice_body": "订阅发票 {number}（账期 {period}）：\n{seats} 位用户 × {price} € = {amount} €\n付款截止日期：{due}\n\n银行转账付款（请以发票号作为备注）：\n{bank}\n\n详情及刷卡支付（如已启用）请见 设置 → 订阅：\n{url}",
+    "platform_overdue_subject": "AvokatIM — 发票 {number} 已逾期",
+    "platform_overdue_body": "订阅发票 {number}（{amount} €）已逾期 {days} 天。逾期超过 {grace} 天后，将暂停接收市场新案件——您的数据始终可以访问。请在 设置 → 订阅 中付款：\n{url}",
+    "trial_ending_subject": "AvokatIM — 免费试用将在 {days} 天后结束",
+    "trial_ending_body": "您的 3 个月免费试用将在 {days} 天后结束。请切换到付费方案（{price} €/用户/月——全部功能 + 市场案件不限量），路径：设置 → 订阅：\n{url}",
 }
 
 CATALOG: dict[str, dict[str, str]] = {

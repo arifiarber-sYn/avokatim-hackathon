@@ -40,10 +40,175 @@ export default function SettingsPage() {
       <TwoFASection />
       <CorpusSection />
       <PortalSection />
+      {isAdmin && <SubscriptionSection />}
       {isAdmin && <ComplianceSection />}
       {isAdmin && <AuditLogSection />}
       {isAdmin && <ExportSection />}
     </div>
+  );
+}
+
+/** Platform subscription: plan, price, invoices, upgrade from trial.
+    Citizens never pay; the lawyer pays per seat — never a fee share. */
+function SubscriptionSection() {
+  const { t } = useI18n();
+  const [sub, setSub] = useState<{
+    plan: string;
+    trial_ends_at: string | null;
+    price_eur: number;
+    seats: number;
+    monthly_total_eur: number;
+    free_forever: boolean;
+    past_due: boolean;
+    card_payments: boolean;
+    bank_details: string | null;
+    invoices: {
+      id: string;
+      number: string;
+      period_start: string;
+      seats: number;
+      amount_eur: number;
+      status: string;
+      due_on: string;
+      paid_on: string | null;
+      payment_link: string | null;
+    }[];
+  } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [upgraded, setUpgraded] = useState(false);
+  const [error, setError] = useState("");
+
+  const load = useCallback(() => {
+    apiGet<NonNullable<typeof sub>>("/billing/subscription").then(setSub).catch(() => {});
+  }, []);
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  if (sub === null) return null;
+
+  const statusLabel = (s: string) =>
+    s === "paid" ? t.subStatusPaid : s === "void" ? t.subStatusVoid : t.subStatusOpen;
+
+  async function upgrade() {
+    setBusy(true);
+    setError("");
+    try {
+      await apiPost("/billing/subscription/upgrade", {});
+      setUpgraded(true);
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function payCard(invoiceId: string) {
+    setBusy(true);
+    setError("");
+    try {
+      const inv = await apiPost<{ payment_link: string | null }>(
+        `/billing/subscription/invoices/${invoiceId}/payment-link`,
+        {}
+      );
+      if (inv.payment_link) window.open(inv.payment_link, "_blank");
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Card className="p-6 space-y-4">
+      <h2 className="text-lg font-semibold">{t.subTitle}</h2>
+      <ErrorNote message={error} />
+      {sub.past_due && (
+        <div className="rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-2">
+          {t.subPastDue}
+        </div>
+      )}
+      <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
+        <span>
+          {t.planLabel}: <b>{sub.plan}</b>
+          {sub.free_forever && <> — {t.subFreeForever}</>}
+        </span>
+        <span>
+          {sub.price_eur.toFixed(2)} {t.subPricePerUser} × {sub.seats}
+        </span>
+        <span>
+          {t.subTotalMonthly}: <b>{sub.monthly_total_eur.toFixed(2)} €</b>
+        </span>
+      </div>
+      {sub.plan === "trial" && (
+        <div className="space-y-2">
+          {sub.trial_ends_at && (
+            <p className="text-sm text-slate-600">
+              {t.subTrialUntil.replace(
+                "{date}",
+                new Date(sub.trial_ends_at).toLocaleDateString()
+              )}
+            </p>
+          )}
+          <p className="text-xs text-slate-500">
+            {t.subUpgradeHint.replace("{price}", sub.price_eur.toFixed(2))}
+          </p>
+          {upgraded ? (
+            <p className="text-sm text-emerald-700">{t.subUpgraded}</p>
+          ) : (
+            <Button onClick={upgrade} disabled={busy}>
+              {t.subUpgrade}
+            </Button>
+          )}
+        </div>
+      )}
+      <div>
+        <h3 className="text-sm font-semibold mb-2">{t.subInvoicesTitle}</h3>
+        {sub.invoices.length === 0 ? (
+          <p className="text-sm text-slate-500">{t.subNoInvoices}</p>
+        ) : (
+          <div className="space-y-2">
+            {sub.invoices.map((inv) => (
+              <div
+                key={inv.id}
+                className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm border border-slate-200 rounded-lg px-3 py-2"
+              >
+                <span className="font-mono">{inv.number}</span>
+                <span className="text-slate-500">
+                  {t.subPeriod}: {new Date(inv.period_start).toLocaleDateString(undefined, { month: "2-digit", year: "numeric" })}
+                </span>
+                <span>
+                  <b>{inv.amount_eur.toFixed(2)} €</b>
+                </span>
+                <span
+                  className={
+                    inv.status === "paid"
+                      ? "text-emerald-700"
+                      : inv.status === "void"
+                        ? "text-slate-400"
+                        : "text-amber-700"
+                  }
+                >
+                  {statusLabel(inv.status)}
+                </span>
+                {inv.status === "open" && sub.card_payments && (
+                  <Button variant="secondary" onClick={() => payCard(inv.id)} disabled={busy}>
+                    {t.subPayCard}
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+        {sub.bank_details && sub.invoices.some((i) => i.status === "open") && (
+          <p className="text-xs text-slate-500 mt-2 whitespace-pre-line">
+            {t.subBankHint} {sub.bank_details}
+          </p>
+        )}
+      </div>
+    </Card>
   );
 }
 
