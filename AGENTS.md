@@ -33,6 +33,11 @@ AI assistance → billing → client portal.
  `Contact.locale` → tenant default → sq.
 - **Privacy**: client documents are encrypted at rest and indexed with **local**
   embeddings — document text must never leave this machine for indexing.
+- **Compliance is a feature**: data protection per Kosovo Law 06/L-082
+  (consent records, erasure/anonymization, retention review, data export,
+  external-AI kill switch) and AML per Law 05/L-096 (KYC on contacts, source
+  of funds, checklist + suspicion reports). Compliance rules live as data and
+  explicit records, never hidden logic (see DECISIONS D-011).
 
 ## 2. Session protocol (MANDATORY)
 
@@ -57,12 +62,12 @@ AI assistance → billing → client portal.
 | `backend/app/api/` | REST routers, all mounted under `/api` |
 | `backend/app/services/` | Business logic: deadlines engine, conflicts check, RAG, assistant, storage |
 | `backend/app/llm/` | LLM provider abstraction: `base.py` → `deepseek.py`, `local.py`, `router.py` |
-| `backend/app/seeds/` | Jurisdiction data (Kosovo deadline rules, holidays, templates) |
+| `backend/app/seeds/` | Jurisdiction data (Kosovo deadline rules, holidays, fee tariff, templates, AML indicators) |
 | `backend/alembic/versions/` | DB migrations — append-only, never edit old ones |
 | `backend/tests/` | pytest suite |
 | `frontend/` | Next.js + TypeScript + Tailwind (see `frontend/AGENTS.md` for Next.js caveats) |
-| `frontend/src/app/(app)/` | Pages: dashboard, intake, matters, calendar, contacts, templates, assistant, billing, settings |
-| `frontend/src/lib/` | `api.ts` (API client), `types.ts`, `i18n.tsx`, `dictionaries.ts` (sq/en/zh) |
+| `frontend/src/app/(app)/` | Pages: dashboard, intake, matters, calendar, contacts, templates, assistant, billing, reports, settings |
+| `frontend/src/lib/` | `api.ts` (API client), `types.ts`, `i18n.tsx`, `dictionaries.ts` (sq/sr/tr/bs/en/zh), `legal.ts` (ToS/Privacy texts) |
 | `data/` | Runtime data: encrypted documents, legal corpus, logs — **git-ignored, never delete** |
 | `docs/agents/` | Agent management system (state, journal, decisions, roadmap) |
 | `docker-compose.yml` | Postgres 17 + pgvector (port 5433), Redis (6380), Caddy (8443 HTTPS) |
@@ -71,7 +76,8 @@ Key config: `backend/app/config.py` — every setting is overridable via `backen
 
 ## 4. Running, testing, deploying
 
-The stack runs on this machine via a **systemd user service** (starts on boot):
+The project lives at `~/AvokatIM` (a compat symlink `~/BoraLaw` points there).
+The stack runs on this machine via **systemd user services** (start on boot):
 
 ```bash
 systemctl --user status avokatim     # status
@@ -80,7 +86,14 @@ systemctl --user restart avokatim    # restart everything
 ./stop.sh                           # stop backend, frontend, containers
 ```
 
-URLs: local http://127.0.0.1:3000 · LAN https://<machine-ip>:8443 · API http://127.0.0.1:8000/api
+Related units: `avokatim-tunnel.service` (Cloudflare Tunnel for the public
+domain; the tunnel's internal name on Cloudflare is still `boralaw` — leave it)
+and `avokatim-backup.timer` (daily encrypted backup at 03:00 →
+`~/AvokatIMBackups`, key at `~/.config/avokatim/backup.key`).
+
+URLs: public https://avokatiim.ai · local http://127.0.0.1:3000 ·
+LAN https://<machine-ip>:8443 · API http://127.0.0.1:8000/api
+(the old domain boraarifi.ai serves only a static parking page)
 
 - Health check: `curl http://127.0.0.1:8000/api/health` → `{"status":"ok","app":"AvokatIM"}`
 - Logs: `data/backend.log`, `data/frontend.log`
@@ -88,12 +101,16 @@ URLs: local http://127.0.0.1:3000 · LAN https://<machine-ip>:8443 · API http:/
 - New migration: `cd backend && .venv/bin/alembic revision --autogenerate -m "..."`
   then `.venv/bin/alembic upgrade head`
 
-**IMPORTANT — frontend builds:** `start.sh` only builds the frontend if
-`frontend/.next` is missing. After changing frontend code you MUST rebuild:
+**IMPORTANT — frontend builds:** `start.sh` rebuilds the frontend automatically
+when anything under `frontend/src`/`public` is newer than `.next/BUILD_ID`, and
+kills the stale `next-server` first. So after changing frontend code:
 
 ```bash
-cd frontend && npm run build && systemctl --user restart avokatim
+systemctl --user restart avokatim
 ```
+
+(or run `cd frontend && npm run build` yourself first if you want to see build
+errors directly).
 
 ## 5. Hard rules
 
