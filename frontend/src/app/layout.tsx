@@ -1,6 +1,15 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/lib/i18n";
+
+// Self-hosted at build time by next/font — no runtime requests to Google.
+// latin-ext covers Albanian (ë, ç) and the Balkan languages.
+const inter = Inter({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "AvokatIM",
@@ -18,7 +27,7 @@ export const viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="sq">
+    <html lang="sq" className={inter.variable}>
       <body className="antialiased bg-slate-50 text-slate-900">
         <I18nProvider>{children}</I18nProvider>
       </body>

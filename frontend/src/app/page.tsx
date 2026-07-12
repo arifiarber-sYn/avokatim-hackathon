@@ -82,20 +82,31 @@ export default function Home() {
       )}
 
       {/* Hero: the whole project in one breath, then the audience split */}
-      <section className="bg-gradient-to-b from-indigo-50/80 via-white to-slate-50 border-b border-slate-100">
-        <div className="max-w-5xl mx-auto px-4 pt-12 pb-12 md:pt-20 md:pb-16 space-y-10">
-          <div className="max-w-3xl mx-auto text-center space-y-4 fade-in-up">
-            <h1 className="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight">
+      <section className="hero-backdrop bg-white border-b border-slate-100 overflow-hidden">
+        <div className="max-w-5xl mx-auto px-4 pt-14 pb-14 md:pt-24 md:pb-20 space-y-12">
+          <div className="max-w-3xl mx-auto text-center space-y-5">
+            <div className="fade-in-up inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-white/80 backdrop-blur px-4 py-1.5 shadow-sm">
+              <IconScale className="h-4 w-4 text-indigo-600" />
+              <span className="text-xs font-semibold tracking-wide text-indigo-700">
+                Avokat<span className="text-slate-900">IM</span> · Kosovë
+              </span>
+            </div>
+            <h1 className="fade-in-up text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.08] text-hero-gradient bg-clip-text text-transparent pb-1">
               {t.umbHeroT}
             </h1>
-            <p className="text-slate-600 md:text-lg leading-relaxed">{t.umbHeroSub}</p>
-            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-xs text-slate-500 pt-1">
+            <p className="fade-in-up-d1 text-slate-600 md:text-lg leading-relaxed max-w-2xl mx-auto">
+              {t.umbHeroSub}
+            </p>
+            <div className="fade-in-up-d1 flex flex-wrap items-center justify-center gap-2 pt-1">
               {[
                 { Icon: IconCheck, label: t.landTrust1 },
                 { Icon: IconGlobe, label: t.landTrust2 },
                 { Icon: IconLock, label: t.landTrust3 },
               ].map(({ Icon, label }) => (
-                <span key={label} className="inline-flex items-center gap-1.5">
+                <span
+                  key={label}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white/80 backdrop-blur border border-slate-200 px-3 py-1 text-xs text-slate-600 shadow-sm"
+                >
                   <Icon className="h-3.5 w-3.5 text-emerald-600" />
                   {label}
                 </span>
@@ -104,31 +115,33 @@ export default function Home() {
           </div>
 
           {/* The two doors */}
-          <div className="grid md:grid-cols-2 gap-5 max-w-4xl mx-auto">
+          <div className="fade-in-up-d2 grid md:grid-cols-2 gap-5 max-w-4xl mx-auto">
             <Link
               href="/per-qytetaret"
-              className="group bg-white rounded-2xl border-2 border-indigo-200 p-7 shadow-sm hover:shadow-md hover:border-indigo-400 transition flex flex-col gap-3"
+              className="group relative bg-white/90 backdrop-blur rounded-3xl ring-1 ring-slate-200 p-7 md:p-8 shadow-sm hover:shadow-xl hover:shadow-indigo-100 hover:ring-indigo-300 hover:-translate-y-1 transition-all duration-300 flex flex-col gap-3.5 overflow-hidden"
             >
-              <div className="rounded-2xl bg-indigo-50 text-indigo-600 p-3.5 w-fit">
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-emerald-400" />
+              <div className="rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 ring-1 ring-indigo-100 text-indigo-600 p-3.5 w-fit group-hover:scale-105 transition-transform">
                 <IconChat className="h-8 w-8" />
               </div>
               <h2 className="text-xl md:text-2xl font-bold text-slate-900">{t.umbCitizenT}</h2>
               <p className="text-sm text-slate-600 leading-relaxed flex-1">{t.umbCitizenB}</p>
-              <span className="inline-flex items-center gap-1.5 text-sm font-bold text-indigo-700 group-hover:gap-2.5 transition-all">
+              <span className="inline-flex items-center gap-1.5 text-sm font-bold text-indigo-700 group-hover:gap-3 transition-all">
                 {t.umbCitizenCta}
                 <IconArrowRight className="h-4 w-4" />
               </span>
             </Link>
             <Link
               href="/per-avokatet"
-              className="group bg-slate-900 rounded-2xl border-2 border-slate-700 p-7 shadow-sm hover:shadow-md hover:border-indigo-500 transition flex flex-col gap-3"
+              className="group relative bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 rounded-3xl ring-1 ring-slate-700 p-7 md:p-8 shadow-sm hover:shadow-xl hover:shadow-slate-300 hover:ring-indigo-500 hover:-translate-y-1 transition-all duration-300 flex flex-col gap-3.5 overflow-hidden"
             >
-              <div className="rounded-2xl bg-indigo-500/20 text-indigo-300 p-3.5 w-fit">
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-400 to-violet-500" />
+              <div className="rounded-2xl bg-indigo-500/15 ring-1 ring-indigo-400/30 text-indigo-300 p-3.5 w-fit group-hover:scale-105 transition-transform">
                 <IconScale className="h-8 w-8" />
               </div>
               <h2 className="text-xl md:text-2xl font-bold text-white">{t.umbLawyerT}</h2>
               <p className="text-sm text-slate-300 leading-relaxed flex-1">{t.umbLawyerB}</p>
-              <span className="inline-flex items-center gap-1.5 text-sm font-bold text-indigo-300 group-hover:gap-2.5 transition-all">
+              <span className="inline-flex items-center gap-1.5 text-sm font-bold text-indigo-300 group-hover:gap-3 transition-all">
                 {t.umbLawyerCta}
                 <IconArrowRight className="h-4 w-4" />
               </span>
@@ -137,14 +150,18 @@ export default function Home() {
         </div>
       </section>
 
-      <main className="w-full max-w-5xl mx-auto px-4 py-12 space-y-16">
+      <main className="w-full max-w-5xl mx-auto px-4 py-14 md:py-20 space-y-20">
         {/* What the system does — the full function list, side by side */}
-        <section className="space-y-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-slate-900 text-center">{t.umbFnT}</h2>
+        <section className="space-y-8">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 text-center">
+            {t.umbFnT}
+          </h2>
           <div className="grid md:grid-cols-2 gap-5">
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 md:p-7 space-y-4">
-              <div className="flex items-center gap-2.5">
-                <IconUsers className="h-6 w-6 text-emerald-600" />
+            <div className="bg-white rounded-3xl ring-1 ring-slate-200 shadow-sm p-6 md:p-8 space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="rounded-xl bg-emerald-50 ring-1 ring-emerald-100 p-2">
+                  <IconUsers className="h-6 w-6 text-emerald-600" />
+                </span>
                 <h3 className="text-lg font-bold text-slate-900">{t.umbFnCitT}</h3>
               </div>
               <ul className="space-y-2.5 text-sm text-slate-600">
@@ -165,9 +182,11 @@ export default function Home() {
                 <IconArrowRight className="h-4 w-4" />
               </Link>
             </div>
-            <div className="bg-slate-900 rounded-2xl p-6 md:p-7 space-y-4">
-              <div className="flex items-center gap-2.5">
-                <IconScale className="h-6 w-6 text-indigo-400" />
+            <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 rounded-3xl ring-1 ring-slate-700 shadow-sm p-6 md:p-8 space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="rounded-xl bg-indigo-500/15 ring-1 ring-indigo-400/30 p-2">
+                  <IconScale className="h-6 w-6 text-indigo-300" />
+                </span>
                 <h3 className="text-lg font-bold text-white">{t.umbFnLawT}</h3>
               </div>
               <ul className="space-y-2.5 text-sm text-slate-300">
@@ -190,8 +209,10 @@ export default function Home() {
         </section>
 
         {/* Why AvokatIM — the advantages */}
-        <section className="space-y-6">
-          <h2 className="text-2xl font-bold text-slate-900 text-center">{t.umbWhyT}</h2>
+        <section className="space-y-8">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 text-center">
+            {t.umbWhyT}
+          </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               { Icon: IconGlobe, text: t.umbWhy1 },
@@ -202,9 +223,9 @@ export default function Home() {
             ].map(({ Icon, text }) => (
               <div
                 key={text}
-                className="bg-white rounded-xl border border-slate-200 p-5 flex items-start gap-3"
+                className="bg-white rounded-2xl ring-1 ring-slate-200 p-5 flex items-start gap-3.5 hover:ring-indigo-200 hover:shadow-md hover:shadow-indigo-50 transition-all duration-300"
               >
-                <span className="rounded-lg bg-indigo-50 text-indigo-600 p-2 shrink-0">
+                <span className="rounded-xl bg-gradient-to-br from-indigo-50 to-violet-50 ring-1 ring-indigo-100 text-indigo-600 p-2 shrink-0">
                   <Icon className="h-5 w-5" />
                 </span>
                 <p className="text-sm text-slate-600 leading-relaxed">{text}</p>
@@ -222,18 +243,25 @@ export default function Home() {
               { value: stats.cases_taken, label: t.mkStatsTaken },
               { value: stats.laws_in_corpus, label: t.mkStatsLaws },
             ].map((s) => (
-              <div key={s.label} className="bg-white rounded-xl border border-slate-200 p-4">
-                <p className="text-2xl font-bold text-indigo-700">{s.value}</p>
-                <p className="text-xs text-slate-500 mt-1">{s.label}</p>
+              <div
+                key={s.label}
+                className="bg-white rounded-2xl ring-1 ring-slate-200 p-5 hover:ring-indigo-200 transition"
+              >
+                <p className="text-3xl font-extrabold tracking-tight bg-gradient-to-br from-indigo-700 to-violet-600 bg-clip-text text-transparent">
+                  {s.value}
+                </p>
+                <p className="text-xs text-slate-500 mt-1.5">{s.label}</p>
               </div>
             ))}
           </div>
         )}
 
         {/* Trust & privacy */}
-        <section className="max-w-3xl mx-auto bg-slate-900 rounded-2xl p-6 md:p-8 text-slate-200">
-          <div className="flex items-center gap-3 mb-4">
-            <IconLock className="h-6 w-6 text-indigo-400" />
+        <section className="max-w-3xl mx-auto bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 rounded-3xl ring-1 ring-slate-700 p-6 md:p-9 text-slate-200">
+          <div className="flex items-center gap-3 mb-5">
+            <span className="rounded-xl bg-indigo-500/15 ring-1 ring-indigo-400/30 p-2">
+              <IconLock className="h-6 w-6 text-indigo-300" />
+            </span>
             <h2 className="text-xl font-bold text-white">{t.landPrivT}</h2>
           </div>
           <ul className="grid sm:grid-cols-2 gap-3 text-sm">

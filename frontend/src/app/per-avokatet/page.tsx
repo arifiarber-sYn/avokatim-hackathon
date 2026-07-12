@@ -44,23 +44,25 @@ export default function ForLawyersPage() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-14 space-y-12">
-        <div className="text-center space-y-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-400">
+      <main className="max-w-4xl mx-auto px-4 py-14 md:py-18 space-y-12">
+        <div className="text-center space-y-5 fade-in-up">
+          <p className="inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-indigo-300">
             {t.mkForLawyersLink}
           </p>
-          <h1 className="text-3xl md:text-4xl font-bold text-white">{t.lpTitle}</h1>
-          <p className="text-slate-400 max-w-2xl mx-auto">{t.lpSubtitle}</p>
+          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-[1.1] bg-gradient-to-br from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent pb-1">
+            {t.lpTitle}
+          </h1>
+          <p className="text-slate-400 md:text-lg max-w-2xl mx-auto">{t.lpSubtitle}</p>
           <div className="flex items-center justify-center gap-3 pt-2">
             <Link
               href="/regjistrohu"
-              className="rounded-lg bg-indigo-600 text-white px-6 py-3 text-sm font-semibold hover:bg-indigo-500"
+              className="rounded-xl bg-indigo-600 text-white px-7 py-3 text-sm font-semibold hover:bg-indigo-500 shadow-lg shadow-indigo-950 hover:-translate-y-0.5 transition-all duration-300"
             >
               {t.lpCta}
             </Link>
             <Link
               href="/login"
-              className="rounded-lg border border-slate-700 text-slate-200 px-6 py-3 text-sm font-medium hover:bg-slate-800"
+              className="rounded-xl border border-slate-700 text-slate-200 px-7 py-3 text-sm font-medium hover:bg-slate-800 hover:border-slate-500 transition"
             >
               {t.login}
             </Link>
@@ -69,7 +71,10 @@ export default function ForLawyersPage() {
 
         <div className="grid md:grid-cols-2 gap-4">
           {features.map((f, i) => (
-            <div key={i} className="bg-slate-800/60 rounded-xl border border-slate-700/60 p-5 flex gap-3">
+            <div
+              key={i}
+              className="bg-slate-800/60 rounded-2xl border border-slate-700/60 p-5 flex gap-3 hover:border-indigo-500/50 hover:bg-slate-800 transition-colors duration-300"
+            >
               <span className="shrink-0 h-6 w-6 rounded-full bg-indigo-600/20 text-indigo-400 flex items-center justify-center text-xs font-bold">
                 {i + 1}
               </span>

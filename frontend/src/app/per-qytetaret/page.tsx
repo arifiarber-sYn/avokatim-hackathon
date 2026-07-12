@@ -34,16 +34,16 @@ export default function ForCitizensPage() {
   return (
     <PublicShell wide>
       {/* Hero: one primary action — ask Ava */}
-      <section className="bg-gradient-to-b from-indigo-50/80 via-white to-slate-50 border-b border-slate-100">
-        <div className="max-w-5xl mx-auto px-4 pt-12 pb-10 md:pt-16 md:pb-12">
+      <section className="hero-backdrop bg-white border-b border-slate-100">
+        <div className="max-w-5xl mx-auto px-4 pt-12 pb-10 md:pt-18 md:pb-14">
           <div className="max-w-2xl mx-auto text-center space-y-4 fade-in-up">
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-[1.1] text-hero-gradient bg-clip-text text-transparent pb-1">
               {t.mkHeroTitle}
             </h1>
             <p className="text-slate-500 md:text-lg">{t.mkHeroCitizen}</p>
             <form
               onSubmit={askAva}
-              className="bg-white rounded-2xl border border-slate-200 shadow-md p-3 space-y-2 text-left"
+              className="bg-white/90 backdrop-blur rounded-2xl ring-1 ring-slate-200 shadow-lg shadow-indigo-100/60 p-3 space-y-2 text-left focus-within:ring-indigo-300 transition"
             >
               <Textarea
                 rows={2}
@@ -70,10 +70,10 @@ export default function ForCitizensPage() {
           </div>
 
           {/* Secondary paths */}
-          <div className="grid sm:grid-cols-3 gap-4 max-w-3xl mx-auto mt-10">
+          <div className="fade-in-up-d1 grid sm:grid-cols-3 gap-4 max-w-3xl mx-auto mt-10">
             <Link
               href="/avokatet"
-              className="bg-white rounded-xl border border-slate-200 p-5 hover:border-indigo-300 hover:shadow-sm transition"
+              className="bg-white/90 backdrop-blur rounded-2xl ring-1 ring-slate-200 p-5 hover:ring-indigo-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
             >
               <IconUsers className="h-6 w-6 text-indigo-600 mb-2" />
               <p className="font-semibold text-slate-900">{t.mkFindLawyer}</p>
@@ -81,13 +81,16 @@ export default function ForCitizensPage() {
             </Link>
             <Link
               href="/posto-rastin"
-              className="bg-white rounded-xl border border-slate-200 p-5 hover:border-indigo-300 hover:shadow-sm transition"
+              className="bg-white/90 backdrop-blur rounded-2xl ring-1 ring-slate-200 p-5 hover:ring-indigo-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
             >
               <IconDoc className="h-6 w-6 text-indigo-600 mb-2" />
               <p className="font-semibold text-slate-900">{t.mkPostCase}</p>
               <p className="text-xs text-slate-500 mt-1">{t.mkHeroCitizen.split("—")[0]}</p>
             </Link>
-            <Link href="/rasti-im?sos=1" className="bg-red-600 rounded-xl p-5 hover:bg-red-700 transition">
+            <Link
+              href="/rasti-im?sos=1"
+              className="bg-gradient-to-br from-red-600 to-red-700 rounded-2xl p-5 shadow-md shadow-red-200 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+            >
               <IconShield className="h-6 w-6 text-red-100 mb-2" />
               <p className="font-bold text-white">{t.mkSos}</p>
               <p className="text-xs text-red-100 mt-1">{t.mkSosDutyHint}</p>

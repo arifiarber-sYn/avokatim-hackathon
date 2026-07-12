@@ -163,8 +163,16 @@ export default function PublicShell({
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <header className="bg-white/85 backdrop-blur border-b border-slate-200 sticky top-0 z-40">
         <div className={`${wide ? "max-w-5xl" : "max-w-2xl"} mx-auto px-4 py-3 flex items-center justify-between gap-3`}>
-          <Link href="/" className="text-lg font-bold text-indigo-700 shrink-0">
-            Avokat<span className="text-slate-900">IM</span>
+          <Link href="/" className="flex items-center gap-2 text-lg font-bold text-indigo-700 shrink-0">
+            <span className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                <path d="M12 3v18M5 21h14M12 6l6 2M12 6L6 8" strokeLinecap="round" />
+                <path d="M4 13l2-5 2 5a2.5 2.5 0 0 1-4 0zM16 13l2-5 2 5a2.5 2.5 0 0 1-4 0z" strokeLinejoin="round" />
+              </svg>
+            </span>
+            <span>
+              Avokat<span className="text-slate-900">IM</span>
+            </span>
           </Link>
           <nav className="hidden md:flex items-center gap-5">
             {NAV.map(({ href, label }) => (
