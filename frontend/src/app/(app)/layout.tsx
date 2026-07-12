@@ -100,7 +100,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </nav>
       <div className="p-4 border-t border-slate-800 space-y-3">
         <QuickTimer />
-        <LocaleSwitcher />
+        <LocaleSwitcher up />
         {me && <p className="text-xs text-slate-400 truncate">{me.full_name}</p>}
         <button
           onClick={() => {

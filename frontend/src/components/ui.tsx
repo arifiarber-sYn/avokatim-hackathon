@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { LOCALES } from "@/lib/dictionaries";
 import { useI18n } from "@/lib/i18n";
 
@@ -102,23 +103,73 @@ export function Badge({ status, label }: { status: string; label?: string }) {
   );
 }
 
-export function LocaleSwitcher() {
+/** Language picker as a compact dropdown (globe + current language) so all
+ * six languages fit on any screen — the old inline button row overflowed
+ * phone viewports. Menu is right-aligned to stay inside header edges. */
+export function LocaleSwitcher({ up = false }: { up?: boolean }) {
   const { locale, setLocale } = useI18n();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  const current = LOCALES.find((l) => l.code === locale);
+
   return (
-    <div className="flex flex-wrap gap-1">
-      {LOCALES.map((l) => (
-        <button
-          key={l.code}
-          onClick={() => setLocale(l.code)}
-          className={`px-2 py-1 rounded text-xs font-medium ${
-            locale === l.code
-              ? "bg-indigo-600 text-white"
-              : "text-slate-500 hover:bg-slate-100"
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white/90 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:border-indigo-300 hover:text-indigo-700 transition shadow-sm"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" />
+        </svg>
+        <span>{current?.label ?? locale}</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`}>
+          <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      {open && (
+        <div
+          role="listbox"
+          className={`absolute w-40 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 z-50 ${
+            up ? "left-0 bottom-full mb-2" : "right-0 top-full mt-2"
           }`}
         >
-          {l.label}
-        </button>
-      ))}
+          {LOCALES.map((l) => (
+            <button
+              key={l.code}
+              role="option"
+              aria-selected={locale === l.code}
+              onClick={() => {
+                setLocale(l.code);
+                setOpen(false);
+              }}
+              className={`flex w-full items-center justify-between px-3.5 py-2 text-sm text-left transition ${
+                locale === l.code
+                  ? "text-indigo-700 font-semibold bg-indigo-50"
+                  : "text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              {l.label}
+              {locale === l.code && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-4 w-4">
+                  <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
