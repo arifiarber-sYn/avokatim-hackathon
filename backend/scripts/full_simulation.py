@@ -899,6 +899,132 @@ async def main() -> None:
               and sub["invoices"][0]["status"] == "paid"
               and sub["invoices"][0]["payment_reference"] == "transfer sim")
 
+        print("\n=== 29. KASAFORTA E DËSHMIVE (SOS, hash-chain) ===")
+        r = await c.post(f"{BASE}/public/citizen/evidence/start", headers=ch, json={
+            "kind": "sos_audio", "mime": "audio/webm", "consent": True,
+            "case_request_id": sos_id,
+        })
+        ev = r.json() if r.status_code == 201 else {}
+        check("sesioni i dëshmisë hapet me pëlqim", r.status_code == 201, ev.get("id", ""))
+        ev_id = ev.get("id")
+        chunk1, chunk2 = b"SIM-AUDIO-CHUNK-1" * 40, b"SIM-AUDIO-CHUNK-2" * 40
+        r = await c.post(f"{BASE}/public/citizen/evidence/{ev_id}/chunks", headers=ch,
+                         data={"seq": "0"}, files={"chunk": ("c0.webm", chunk1, "audio/webm")})
+        ok1 = r.status_code == 201
+        r = await c.post(f"{BASE}/public/citizen/evidence/{ev_id}/chunks", headers=ch,
+                         data={"seq": "1"}, files={"chunk": ("c1.webm", chunk2, "audio/webm")})
+        check("copëzat ngarkohen të renditura (hash chain)", ok1 and r.status_code == 201,
+              f"chain={r.json().get('chain_hash', '')[:16]}…" if r.status_code == 201 else "")
+        r = await c.post(f"{BASE}/public/citizen/evidence/{ev_id}/chunks", headers=ch,
+                         data={"seq": "5"}, files={"chunk": ("c5.webm", chunk1, "audio/webm")})
+        check("copëza jashtë radhe REFUZOHET (integriteti)", r.status_code == 409)
+        r = await c.post(f"{BASE}/public/citizen/evidence/{ev_id}/finish", headers=ch, json={})
+        fin = r.json() if r.status_code == 200 else {}
+        check("sesioni mbyllet me zinxhir të verifikuar",
+              r.status_code == 200 and fin.get("chunk_count") == 2,
+              f"status={fin.get('status')}")
+        r = await c.get(f"{BASE}/public/citizen/evidence/{ev_id}/audio", headers=ch)
+        check("qytetari e shkarkon audion e plotë (e dekriptuar)",
+              r.status_code == 200 and r.content == chunk1 + chunk2)
+        r = await c.get(f"{BASE}/public/citizen/evidence/{ev_id}/package", headers=ch)
+        check("pako dëshmie PDF me regjistrin e hash-eve",
+              r.status_code == 200 and r.content[:5] == b"%PDF-")
+        r = await c.get(f"{BASE}/marketplace/cases/{sos_id}/evidence", headers=h)
+        rows = r.json() if r.status_code == 200 else []
+        check("avokati i rastit SOS e sheh dëshm",
+              r.status_code == 200 and any(x["id"] == ev_id for x in rows))
+        r = await c.get(f"{BASE}/marketplace/cases/{sos_id}/evidence/{ev_id}/audio", headers=h)
+        check("avokati e shkarkon audion e dëshmisë", r.status_code == 200
+              and r.content == chunk1 + chunk2)
+
+        print("\n=== 30. ZËRI (STT/TTS lokal) ===")
+        r = await c.get(f"{BASE}/public/voice/status")
+        vs = r.json() if r.status_code == 200 else {}
+        check("statusi i shërbimit të zërit", r.status_code == 200,
+              f"stt={vs.get('stt')} tts={vs.get('tts')}")
+        if vs.get("tts"):
+            r = await c.post(f"{BASE}/public/voice/tts",
+                             json={"text": "Mirëdita, unë jam Ava."})
+            check("TTS shqip kthen audio WAV", r.status_code == 200
+                  and r.content[:4] == b"RIFF", f"{len(r.content)} bytes")
+        else:
+            gap("TTS shqip (Piper sq_AL)", False, "modeli i zërit s'është aktiv")
+
+        print("\n=== 31. VEGLAT PUBLIKE (pa llogari) ===")
+        r = await c.get(f"{BASE}/public/tools/deadline-rules")
+        pub_rules = r.json() if r.status_code == 200 else []
+        check("rregullat e afateve publike (XK)", len(pub_rules) >= 5,
+              f"{len(pub_rules)} rregulla")
+        appeal = next((x for x in pub_rules if x["code"] == "civil.appeal_judgment"), None)
+        r = await c.post(f"{BASE}/public/tools/deadline-calc", json={
+            "rule_id": appeal["id"], "trigger_date": "2026-07-01",
+        })
+        calc = r.json() if r.status_code == 200 else {}
+        check("kalkulatori publik llogarit afatin e ankesës",
+              r.status_code == 200 and calc.get("due_date") == "2026-07-16",
+              f"due={calc.get('due_date')} ({calc.get('legal_basis')})")
+        r = await c.get(f"{BASE}/public/tools/documents")
+        docs = r.json() if r.status_code == 200 else []
+        check("shabllonet e dokumenteve për qytetarë (3+)", len(docs) >= 3,
+              ", ".join(x["code"] for x in docs))
+        r = await c.post(f"{BASE}/public/tools/documents/kerkese", json={"values": {
+            "sender_name": "Qytetari Sim", "sender_address": "Rr. Sim 1, Prishtinë",
+            "sender_phone": "044 000 000", "institution": "Komuna e Prishtinës",
+            "subject": "Qasje në dokumente publike",
+            "body": "Kërkoj kopjen e lejes së ndërtimit për parcelën 111-11.",
+            "city": "Prishtinë",
+        }})
+        check("letra e kërkesës gjenerohet si PDF",
+              r.status_code == 200 and r.content[:5] == b"%PDF-",
+              f"{len(r.content)} bytes")
+        r = await c.post(f"{BASE}/public/tools/documents/kerkese", json={"values": {}})
+        check("gjenerimi pa fusha REFUZOHET", r.status_code == 400)
+
+        print("\n=== 32. REZERVIMI I KONSULTAVE ===")
+        all_days = [{"day": d, "start": "00:00", "end": "23:30"} for d in range(7)]
+        r = await c.put(f"{BASE}/marketplace/booking-settings", headers=h,
+                        json={"enabled": True, "slots": all_days})
+        check("avokati cakton disponueshmërinë javore", r.status_code == 200)
+        r = await c.put(f"{BASE}/marketplace/booking-settings", headers=h,
+                        json={"enabled": True,
+                              "slots": [{"day": 9, "start": "25:00", "end": "09:00"}]})
+        ok_invalid = r.status_code == 400
+        await c.put(f"{BASE}/marketplace/booking-settings", headers=h,
+                    json={"enabled": True, "slots": all_days})
+        check("dritare e pavlefshme REFUZOHET", ok_invalid)
+        r = await c.get(f"{BASE}/public/lawyers")
+        prof = next((x for x in r.json() if x["firm_name"] == f"Zyra Sim {SUFFIX}"), None)
+        check("drejtoria e shënon avokatin me rezervim aktiv",
+              prof is not None and prof.get("booking") is True)
+        r = await c.get(f"{BASE}/public/lawyers/{prof['id']}/slots")
+        slots = r.json().get("slots", []) if r.status_code == 200 else []
+        check("terminet e lira kthehen (14 ditë)", len(slots) > 100, f"{len(slots)} termine")
+        r = await c.post(f"{BASE}/public/citizen/bookings", headers=ch, json={
+            "profile_id": prof["id"], "starts_at": slots[0],
+            "note": "Konsultë simulimi për kontratë pune.",
+        })
+        bk = r.json() if r.status_code == 201 else {}
+        check("qytetari rezervon terminin e parë", r.status_code == 201,
+              f"{bk.get('starts_at')} ({bk.get('status')})")
+        r = await c.post(f"{BASE}/public/citizen/bookings", headers=ch, json={
+            "profile_id": prof["id"], "starts_at": slots[0],
+        })
+        check("termini i zënë REFUZOHET (409)", r.status_code == 409)
+        r = await c.get(f"{BASE}/marketplace/bookings", headers=h)
+        mine = r.json() if r.status_code == 200 else []
+        check("avokati e sheh rezervimin në pritje",
+              any(x["id"] == bk.get("id") and x["status"] == "pending" for x in mine))
+        r = await c.post(f"{BASE}/marketplace/bookings/{bk['id']}/decide", headers=h,
+                         json={"action": "confirm"})
+        check("avokati e konfirmon konsultën", r.status_code == 200
+              and r.json().get("status") == "confirmed")
+        r = await c.get(f"{BASE}/public/citizen/bookings", headers=ch)
+        check("qytetari e sheh konsultën të konfirmuar",
+              any(x["id"] == bk["id"] and x["status"] == "confirmed" for x in r.json()))
+        r = await c.post(f"{BASE}/public/citizen/bookings/{bk['id']}/cancel", headers=ch)
+        check("qytetari mund ta anulojë", r.status_code == 200
+              and r.json().get("status") == "cancelled")
+
     # ============ cleanup ============
     from sqlalchemy import text as sqltext
     from app.database import SessionLocal

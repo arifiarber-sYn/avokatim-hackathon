@@ -31,9 +31,11 @@ from app.models.marketplace import (
     CaseRequestMessage,
     CaseReview,
     CitizenUser,
+    ConsultBooking,
     LawyerProfile,
 )
 from app.models.platform_billing import PlatformInvoice
+from app.models.evidence import EvidenceChunk, EvidenceSession
 
 __all__ = [
     "Base",
@@ -74,5 +76,8 @@ __all__ = [
     "CaseRequest",
     "CaseRequestMessage",
     "CaseReview",
+    "ConsultBooking",
+    "EvidenceChunk",
+    "EvidenceSession",
     "PlatformInvoice",
 ]

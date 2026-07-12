@@ -310,6 +310,33 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   tier then rating. UI: Settings license field + status pill + fee,
   /platform queue, /avokatet badge + stars + price, /rasti-im star form,
   /marketplace banner. Migration `16241f40c7cc`.
+- **AI protection by phone — local voice + evidence vault + SOS screen**
+  (2026-07-12, D-018): `app/services/voice.py` + `/api/public/voice/*` —
+  faster-whisper Albanian CT2 int8 (fallback turbo for other locales) +
+  Piper `sq_AL` subprocess TTS, all local (no audio leaves the machine),
+  rate-limited; models in `data/models/`, settings `voice_*` in config.
+  Evidence vault: `EvidenceSession`/`EvidenceChunk` — MediaRecorder chunks
+  every 5 s, SHA-256 + `prev_hash` chain, strict seq (409), Fernet
+  encryption, audit log, chain-of-custody PDF, background transcription;
+  citizen CRUD at `/api/public/citizen/evidence/*`, read-only lawyer access
+  on claimed cases. SOS screen (`sos-panel.tsx`): consent once → record
+  evidence / push-to-talk with Ava (live transcript + spoken reply) /
+  alert duty lawyers; dispatch attaches the recording to the case. Call
+  recording is client-side (Web Audio mix → same vault, kind `call`) with
+  a lawyer consent notice — LiveKit Egress deliberately not deployed.
+  Voice controls (`voice-controls.tsx`) also in /ava and the assistant.
+  Tests: `test_voice.py`, `test_evidence.py`; simulation sections 29–30.
+- **Public tools + consultation booking** (2026-07-12, Phase 4 of D-018
+  plan): deadline calculator `/afatet` (`/api/public/tools/deadline-rules`
+  + `deadline-calc`, engine + holidays, no account); citizen document
+  generator `/dokumentet` (deterministic Jinja→PDF templates in
+  `app/seeds/citizen_docs.py`: kerkese/ankese/autorizim, no LLM); both
+  linked from the landing. Booking: `ConsultBooking` +
+  `LawyerProfile.booking_enabled/booking_slots` (weekly windows, 30-min
+  slots, 14-day horizon; migration `51f3b67b1756`); lawyer sets hours in
+  Settings and confirms/declines in Tregu, citizen books from /avokatet
+  and manages in /rasti-im; notifications ×6 (`booking_*` i18n keys).
+  Tests: `test_bookings.py`; simulation sections 31–32.
 - **Public Ava — free legal-information chat** (2026-07-11, Phase 2 of
   D-013): `/api/public/ava/*` in `app/api/marketplace.py` — `ask` +
   `ask-stream` (SSE), grounded in the XK legal corpus via the existing RAG

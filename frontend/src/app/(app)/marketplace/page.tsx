@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { apiGet, apiPost, apiPut } from "@/lib/api";
+import { apiDownload, apiGet, apiPost, apiPut } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
 import { Button, Card, ErrorNote, Spinner, Textarea } from "@/components/ui";
@@ -206,6 +206,7 @@ export default function MarketplacePage() {
           </Link>
         </div>
       )}
+      <BookingsPanel />
       {claimResult && (
         <div
           className={`rounded-lg text-sm px-4 py-3 ${
@@ -332,6 +333,7 @@ export default function MarketplacePage() {
                   {t.mkGoToIntake}
                 </Link>
               </div>
+              <CaseEvidence caseId={c.id} />
               {openChat === c.id && (
                 <div className="border-t border-slate-100 pt-3 space-y-3">
                   <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -369,8 +371,160 @@ export default function MarketplacePage() {
         <VideoCall
           fetchGrant={() => apiPost<CallGrant>(`/marketplace/cases/${callCase}/call-token`)}
           onClose={() => setCallCase(null)}
+          showRecordNotice
         />
       )}
     </div>
+  );
+}
+
+interface EvidenceRow {
+  id: string;
+  started_at: string;
+  chunk_count: number;
+  total_bytes: number;
+  transcript: string | null;
+}
+
+/** Evidence recordings the citizen attached to this case (SOS vault). */
+function CaseEvidence({ caseId }: { caseId: string }) {
+  const { t } = useI18n();
+  const [rows, setRows] = useState<EvidenceRow[] | null>(null);
+
+  useEffect(() => {
+    apiGet<EvidenceRow[]>(`/marketplace/cases/${caseId}/evidence`)
+      .then(setRows)
+      .catch(() => setRows([]));
+  }, [caseId]);
+
+  if (!rows || rows.length === 0) return null;
+
+  return (
+    <div className="border-t border-slate-100 pt-3 space-y-2">
+      <p className="text-xs font-semibold text-slate-600">🔒 {t.mkEvidenceT}</p>
+      {rows.map((row) => (
+        <div key={row.id} className="space-y-1">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+            <span>{new Date(row.started_at).toLocaleString()}</span>
+            <span>
+              {row.chunk_count} {t.evChunksWord} · {(row.total_bytes / 1024).toFixed(0)} KB
+            </span>
+            <button
+              onClick={() =>
+                apiDownload(
+                  `/marketplace/cases/${caseId}/evidence/${row.id}/audio`,
+                  `deshmia-${row.id}.webm`
+                )
+              }
+              className="text-indigo-600 font-medium hover:underline"
+            >
+              ⬇ {t.evAudioBtn}
+            </button>
+            <button
+              onClick={() =>
+                apiDownload(
+                  `/marketplace/cases/${caseId}/evidence/${row.id}/package`,
+                  `pako-deshmie-${row.id}.pdf`
+                )
+              }
+              className="text-indigo-600 font-medium hover:underline"
+            >
+              ⬇ {t.evPdfBtn}
+            </button>
+          </div>
+          {row.transcript && (
+            <p className="text-xs text-slate-600 bg-slate-50 rounded p-2 line-clamp-3">
+              {row.transcript}
+            </p>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+interface LawyerBooking {
+  id: string;
+  starts_at: string;
+  status: string;
+  note: string | null;
+  with: string | null;
+  citizen_email: string;
+}
+
+/** Consultation reservations from the public directory (Phase 4 booking). */
+function BookingsPanel() {
+  const { t, locale } = useI18n();
+  const [bookings, setBookings] = useState<LawyerBooking[] | null>(null);
+
+  const load = useCallback(() => {
+    apiGet<LawyerBooking[]>("/marketplace/bookings").then(setBookings).catch(() => setBookings([]));
+  }, []);
+
+  useEffect(load, [load]);
+
+  if (!bookings || bookings.length === 0) return null;
+
+  const statusLabel: Record<string, string> = {
+    pending: t.bkStatusPending,
+    confirmed: t.bkStatusConfirmed,
+    declined: t.bkStatusDeclined,
+    cancelled: t.bkStatusCancelled,
+  };
+  const statusTone: Record<string, string> = {
+    pending: "bg-amber-50 text-amber-700",
+    confirmed: "bg-emerald-50 text-emerald-700",
+    declined: "bg-red-50 text-red-700",
+    cancelled: "bg-slate-100 text-slate-500",
+  };
+
+  async function decide(id: string, action: "confirm" | "decline") {
+    try {
+      await apiPost(`/marketplace/bookings/${id}/decide`, { action });
+      load();
+    } catch {}
+  }
+
+  return (
+    <Card className="p-5 space-y-3">
+      <h2 className="font-semibold">📅 {t.bkLawyerPanelT}</h2>
+      <div className="space-y-2">
+        {bookings.map((b) => (
+          <div key={b.id} className="flex items-start justify-between gap-3 flex-wrap text-sm border-b border-slate-50 pb-2 last:border-0 last:pb-0">
+            <div className="space-y-0.5 min-w-0">
+              <p className="font-medium text-slate-700">
+                {new Date(b.starts_at).toLocaleString(locale, {
+                  weekday: "short", day: "numeric", month: "short",
+                  hour: "2-digit", minute: "2-digit",
+                })}
+                <span className={`ml-2 text-xs rounded-full px-2 py-0.5 ${statusTone[b.status] || ""}`}>
+                  {statusLabel[b.status] || b.status}
+                </span>
+              </p>
+              <p className="text-xs text-slate-500">
+                {b.with} · {b.citizen_email}
+              </p>
+              {b.note && <p className="text-xs text-slate-600 bg-slate-50 rounded px-2 py-1">{b.note}</p>}
+            </div>
+            {b.status === "pending" && (
+              <div className="flex gap-2 shrink-0">
+                <button
+                  onClick={() => decide(b.id, "confirm")}
+                  className="text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg px-3 py-1.5"
+                >
+                  {t.bkConfirm}
+                </button>
+                <button
+                  onClick={() => decide(b.id, "decline")}
+                  className="text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg px-3 py-1.5"
+                >
+                  {t.bkDecline}
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </Card>
   );
 }

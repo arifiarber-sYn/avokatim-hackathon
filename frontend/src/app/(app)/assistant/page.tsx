@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { apiGet, apiStream } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
+import { MicButton, SpeakButton, useVoiceAvailable } from "@/components/voice-controls";
 import { Conversation, Matter, Message } from "@/lib/types";
 import { Button, Card, ErrorNote, Select, Textarea } from "@/components/ui";
 
@@ -13,7 +14,8 @@ interface Provider {
 }
 
 export default function AssistantPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const voice = useVoiceAvailable();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -215,25 +217,30 @@ export default function AssistantPage() {
           )}
           {messages.map((m, i) => (
             <div key={m.id + i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div
-                className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap leading-relaxed ${
-                  m.role === "user"
-                    ? "bg-indigo-600 text-white"
-                    : "bg-slate-100 text-slate-900"
-                }`}
-              >
-                {m.content}
-                {m.citations?.length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-slate-300/50 text-xs opacity-80">
-                    <p className="font-semibold">{t.citations}:</p>
-                    {m.citations.map((c, j) => (
-                      <p key={j}>
-                        • {c.title}
-                        {c.section ? `, ${c.section}` : ""}
-                        {c.reference ? ` (${c.reference})` : ""}
-                      </p>
-                    ))}
-                  </div>
+              <div className={`max-w-[80%] ${m.role === "user" ? "" : "space-y-1"}`}>
+                <div
+                  className={`rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap leading-relaxed ${
+                    m.role === "user"
+                      ? "bg-indigo-600 text-white"
+                      : "bg-slate-100 text-slate-900"
+                  }`}
+                >
+                  {m.content}
+                  {m.citations?.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-slate-300/50 text-xs opacity-80">
+                      <p className="font-semibold">{t.citations}:</p>
+                      {m.citations.map((c, j) => (
+                        <p key={j}>
+                          • {c.title}
+                          {c.section ? `, ${c.section}` : ""}
+                          {c.reference ? ` (${c.reference})` : ""}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {m.role === "assistant" && m.id !== "streaming" && m.content && (
+                  <SpeakButton text={m.content} locale={locale} serverTts={voice.tts} />
                 )}
               </div>
             </div>
@@ -259,6 +266,13 @@ export default function AssistantPage() {
                 }
               }}
             />
+            {voice.stt && (
+              <MicButton
+                locale={locale}
+                disabled={busy}
+                onText={(text) => setQuestion((q) => (q ? `${q} ${text}` : text))}
+              />
+            )}
             <Button type="submit" disabled={busy || !question.trim()}>
               {t.send}
             </Button>

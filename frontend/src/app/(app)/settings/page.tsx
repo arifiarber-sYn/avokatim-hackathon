@@ -38,6 +38,7 @@ export default function SettingsPage() {
       <CalendarFeedSection />
       <PublicIntakeSection />
       <PublicProfileSection />
+      <BookingSection />
       <ImportSection />
       <TwoFASection />
       <CorpusSection />
@@ -1506,6 +1507,138 @@ function PublicProfileSection() {
           {saved && <span className="text-sm text-emerald-600">{t.mkProfileSaved}</span>}
         </div>
       </form>
+    </Card>
+  );
+}
+
+interface BookingWindow {
+  day: number;
+  start: string;
+  end: string;
+}
+
+/** Consultation booking (Phase 4): weekly availability windows; citizens
+ * reserve 30-minute slots from the public directory. */
+function BookingSection() {
+  const { t, locale } = useI18n();
+  const [enabled, setEnabled] = useState(false);
+  const [hasProfile, setHasProfile] = useState(true);
+  const [windows, setWindows] = useState<BookingWindow[]>([]);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    apiGet<{ enabled: boolean; slots: BookingWindow[]; has_profile: boolean }>(
+      "/marketplace/booking-settings"
+    )
+      .then((r) => {
+        setEnabled(r.enabled);
+        setWindows(r.slots);
+        setHasProfile(r.has_profile);
+      })
+      .catch(() => {});
+  }, []);
+
+  // 2024-01-01 is a Monday; render localized weekday names
+  const dayName = (day: number) =>
+    new Date(Date.UTC(2024, 0, 1 + day)).toLocaleDateString(locale, {
+      weekday: "long",
+      timeZone: "UTC",
+    });
+
+  function windowFor(day: number): BookingWindow | undefined {
+    return windows.find((w) => w.day === day);
+  }
+
+  function toggleDay(day: number) {
+    setWindows((prev) =>
+      prev.some((w) => w.day === day)
+        ? prev.filter((w) => w.day !== day)
+        : [...prev, { day, start: "09:00", end: "16:00" }]
+    );
+  }
+
+  function setTime(day: number, field: "start" | "end", value: string) {
+    setWindows((prev) => prev.map((w) => (w.day === day ? { ...w, [field]: value } : w)));
+  }
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setSaved(false);
+    try {
+      await apiPut("/marketplace/booking-settings", { enabled, slots: windows });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  return (
+    <Card className="p-6 space-y-4">
+      <div>
+        <h2 className="font-semibold">{t.bkTitle}</h2>
+        <p className="text-xs text-slate-500 mt-1">{t.bkSettingsHint}</p>
+      </div>
+      {!hasProfile ? (
+        <p className="text-sm bg-amber-50 text-amber-800 rounded-lg p-3">{t.bkNeedProfile}</p>
+      ) : (
+        <form onSubmit={save} className="space-y-4">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={enabled}
+              onChange={(e) => setEnabled(e.target.checked)}
+              className="rounded border-slate-300"
+            />
+            {t.bkEnable}
+          </label>
+          {enabled && (
+            <div className="space-y-2">
+              {[0, 1, 2, 3, 4, 5, 6].map((day) => {
+                const w = windowFor(day);
+                return (
+                  <div key={day} className="flex items-center gap-3 flex-wrap">
+                    <label className="flex items-center gap-2 text-sm w-36">
+                      <input
+                        type="checkbox"
+                        checked={!!w}
+                        onChange={() => toggleDay(day)}
+                        className="rounded border-slate-300"
+                      />
+                      <span className="capitalize">{dayName(day)}</span>
+                    </label>
+                    {w && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-xs text-slate-400">{t.bkFrom}</span>
+                        <Input
+                          type="time"
+                          value={w.start}
+                          onChange={(e) => setTime(day, "start", e.target.value)}
+                          className="!w-28"
+                        />
+                        <span className="text-xs text-slate-400">{t.bkTo}</span>
+                        <Input
+                          type="time"
+                          value={w.end}
+                          onChange={(e) => setTime(day, "end", e.target.value)}
+                          className="!w-28"
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <ErrorNote message={error} />
+          <div className="flex items-center gap-3">
+            <Button type="submit">{t.save}</Button>
+            {saved && <span className="text-sm text-emerald-600">✓</span>}
+          </div>
+        </form>
+      )}
     </Card>
   );
 }

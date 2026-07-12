@@ -16,6 +16,8 @@ import { Button, Card, ErrorNote, Input, Label, Spinner, Textarea } from "@/comp
 import VideoCall, { CallGrant } from "@/components/video-call";
 import PublicShell from "@/components/public-shell";
 import PageIntro from "@/components/page-intro";
+import SosPanel from "@/components/sos-panel";
+import EvidenceVault from "@/components/evidence-vault";
 
 interface CaseMessage {
   id: string;
@@ -34,7 +36,7 @@ function statusStyle(status: string): string {
 }
 
 function MyCaseInner() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const params = useSearchParams();
   const verifyToken = params.get("verifiko");
 
@@ -49,10 +51,7 @@ function MyCaseInner() {
   const [messages, setMessages] = useState<CaseMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [sosOpen, setSosOpen] = useState(params.get("sos") === "1");
-  const [sos, setSos] = useState({ description: "", city: "" });
-  const [sosSent, setSosSent] = useState(false);
-  const [sosBusy, setSosBusy] = useState(false);
-  const [sosError, setSosError] = useState("");
+  const [vaultKey, setVaultKey] = useState(0);
   const [callCase, setCallCase] = useState<string | null>(null);
 
   useEffect(() => {
@@ -122,25 +121,6 @@ function MyCaseInner() {
     loadCases();
   }
 
-  async function sendSos(e: React.FormEvent) {
-    e.preventDefault();
-    setSosBusy(true);
-    setSosError("");
-    try {
-      await citizenPost("/citizen/sos", {
-        description: sos.description.trim(),
-        city: sos.city.trim() || null,
-      });
-      setSosSent(true);
-      setSosOpen(false);
-      loadCases();
-    } catch (err) {
-      setSosError(err instanceof Error ? err.message : t.error);
-    } finally {
-      setSosBusy(false);
-    }
-  }
-
   const statusLabel: Record<string, string> = {
     open: t.mkStatusOpen,
     claimed: t.mkStatusClaimed,
@@ -153,7 +133,7 @@ function MyCaseInner() {
       <main className="w-full max-w-2xl mx-auto px-4 py-8 space-y-4">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-2xl font-bold">{t.mkMyCases}</h1>
-          {citizen !== null && !sosSent && (
+          {citizen !== null && (
             <button
               onClick={() => setSosOpen((v) => !v)}
               className="text-sm font-bold bg-red-600 text-white rounded-lg px-4 py-2 hover:bg-red-700 shadow-sm"
@@ -167,36 +147,14 @@ function MyCaseInner() {
         {verified && (
           <p className="text-sm bg-emerald-50 text-emerald-700 rounded-lg p-3">{t.mkEmailVerified}</p>
         )}
-        {sosSent && (
-          <p className="text-sm bg-red-50 text-red-700 rounded-lg p-3">{t.mkSosSent}</p>
-        )}
-        {citizen !== null && sosOpen && !sosSent && (
-          <Card className="p-5 space-y-3 border-red-200">
-            <p className="text-xs text-slate-500">{t.mkSosHint}</p>
-            <form onSubmit={sendSos} className="space-y-3">
-              <div>
-                <Label>{t.mkSosDescribe}</Label>
-                <Textarea
-                  rows={3}
-                  value={sos.description}
-                  onChange={(e) => setSos({ ...sos, description: e.target.value })}
-                  required
-                  minLength={10}
-                />
-              </div>
-              <div>
-                <Label>{t.mkCity}</Label>
-                <Input
-                  value={sos.city}
-                  onChange={(e) => setSos({ ...sos, city: e.target.value })}
-                />
-              </div>
-              <ErrorNote message={sosError} />
-              <Button type="submit" disabled={sosBusy} className="w-full !bg-red-600 hover:!bg-red-700">
-                {sosBusy ? t.loading : t.mkSosSend}
-              </Button>
-            </form>
-          </Card>
+        {citizen !== null && sosOpen && (
+          <SosPanel
+            locale={locale}
+            onCaseCreated={() => {
+              loadCases();
+              setVaultKey((k) => k + 1);
+            }}
+          />
         )}
 
         {checking ? (
@@ -340,10 +298,18 @@ function MyCaseInner() {
           </div>
         )}
 
+        {citizen !== null && <MyBookings />}
+
+        {citizen !== null && <EvidenceVault refreshKey={vaultKey} />}
+
         {callCase && (
           <VideoCall
             fetchGrant={() => citizenPost<CallGrant>(`/citizen/cases/${callCase}/call-token`)}
-            onClose={() => setCallCase(null)}
+            onClose={() => {
+              setCallCase(null);
+              setVaultKey((k) => k + 1);
+            }}
+            recordCaseId={callCase}
           />
         )}
       </main>
@@ -447,5 +413,78 @@ export default function MyCasePage() {
     <Suspense fallback={<Spinner />}>
       <MyCaseInner />
     </Suspense>
+  );
+}
+
+interface MyBooking {
+  id: string;
+  starts_at: string;
+  status: string;
+  with: string | null;
+}
+
+/** The citizen's consultation reservations (Phase 4 booking). */
+function MyBookings() {
+  const { t, locale } = useI18n();
+  const [bookings, setBookings] = useState<MyBooking[] | null>(null);
+
+  const load = useCallback(() => {
+    citizenGet<MyBooking[]>("/citizen/bookings").then(setBookings).catch(() => setBookings([]));
+  }, []);
+
+  useEffect(load, [load]);
+
+  if (!bookings || bookings.length === 0) return null;
+
+  const statusLabel: Record<string, string> = {
+    pending: t.bkStatusPending,
+    confirmed: t.bkStatusConfirmed,
+    declined: t.bkStatusDeclined,
+    cancelled: t.bkStatusCancelled,
+  };
+  const statusTone: Record<string, string> = {
+    pending: "bg-amber-50 text-amber-700",
+    confirmed: "bg-emerald-50 text-emerald-700",
+    declined: "bg-red-50 text-red-700",
+    cancelled: "bg-slate-100 text-slate-500",
+  };
+
+  async function cancel(id: string) {
+    try {
+      await citizenPost(`/citizen/bookings/${id}/cancel`);
+      load();
+    } catch {}
+  }
+
+  return (
+    <Card className="p-5 space-y-3">
+      <h2 className="font-semibold">📅 {t.bkMyBookings}</h2>
+      <div className="space-y-2">
+        {bookings.map((b) => (
+          <div key={b.id} className="flex items-center justify-between gap-3 flex-wrap text-sm">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-medium text-slate-700">
+                {new Date(b.starts_at).toLocaleString(locale, {
+                  weekday: "short", day: "numeric", month: "short",
+                  hour: "2-digit", minute: "2-digit",
+                })}
+              </span>
+              {b.with && <span className="text-slate-500">— {b.with}</span>}
+              <span className={`text-xs rounded-full px-2 py-0.5 ${statusTone[b.status] || ""}`}>
+                {statusLabel[b.status] || b.status}
+              </span>
+            </div>
+            {(b.status === "pending" || b.status === "confirmed") && (
+              <button
+                onClick={() => cancel(b.id)}
+                className="text-xs text-slate-400 hover:text-red-600 hover:underline"
+              >
+                {t.bkCancelBooking}
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+    </Card>
   );
 }

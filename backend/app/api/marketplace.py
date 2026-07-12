@@ -303,6 +303,7 @@ async def public_lawyers(
                 "consult_fee_eur": profile.consult_fee_eur,
                 "rating": avg_rating,
                 "review_count": review_count,
+                "booking": profile.booking_enabled,
             }
         )
     # Within each placement tier, better-rated lawyers surface first
@@ -596,6 +597,9 @@ async def _notify_matching_lawyers(
 class SosIn(BaseModel):
     description: str = Field(min_length=10, max_length=4000)
     city: str | None = Field(default=None, max_length=120)
+    # Recording started before/while sending the SOS — attach it so the
+    # claiming lawyer arrives with the evidence already in hand
+    evidence_session_id: uuid.UUID | None = None
 
 
 async def _notify_on_duty_lawyers(case_id: uuid.UUID, city: str | None) -> None:
@@ -651,6 +655,16 @@ async def citizen_sos(
     )
     db.add(case)
     await db.flush()
+    if body.evidence_session_id is not None:
+        from app.models import EvidenceSession
+
+        session = await db.get(EvidenceSession, body.evidence_session_id)
+        if (
+            session is not None
+            and session.citizen_id == citizen.id
+            and session.case_request_id is None
+        ):
+            session.case_request_id = case.id
     await log_action(
         db, tenant_id=None, user_id=None, action="marketplace.sos_create",
         entity_type="case_request", entity_id=str(case.id),

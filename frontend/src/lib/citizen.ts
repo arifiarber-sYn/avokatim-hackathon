@@ -38,6 +38,41 @@ export async function citizenApi<T = unknown>(
 }
 
 export const citizenGet = <T = unknown>(path: string) => citizenApi<T>(path);
+
+/** Multipart upload with the citizen token (no JSON content-type). */
+export async function citizenUpload<T = unknown>(path: string, form: FormData): Promise<T> {
+  const headers: Record<string, string> = {};
+  const token = getCitizenToken();
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const res = await fetch(`/api/public${path}`, { method: "POST", headers, body: form });
+  if (!res.ok) {
+    let detail = res.statusText;
+    try {
+      detail = (await res.json()).detail || detail;
+    } catch {}
+    const err = new Error(detail) as Error & { status?: number };
+    err.status = res.status;
+    throw err;
+  }
+  return res.json();
+}
+
+/** Download an authenticated citizen file endpoint. */
+export async function citizenDownload(path: string, filename: string): Promise<boolean> {
+  const token = getCitizenToken();
+  const res = await fetch(`/api/public${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) return false;
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  return true;
+}
 export const citizenPost = <T = unknown>(path: string, body?: unknown) =>
   citizenApi<T>(path, {
     method: "POST",
@@ -87,4 +122,6 @@ export interface PublicLawyer {
   consult_fee_eur?: number | null;
   rating?: number | null;
   review_count?: number;
+  // Consultation booking enabled (Phase 4)
+  booking?: boolean;
 }

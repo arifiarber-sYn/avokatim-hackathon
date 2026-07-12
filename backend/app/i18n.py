@@ -97,6 +97,18 @@ _SQ = {
         "{firm} e pranoi rastin tënd. Tani ke qasje në portalin e klientit me "
         "të njëjtin email dhe fjalëkalim:\n{url}"
     ),
+    "booking_new_subject": "AvokatIM — Kërkesë e re për konsultë",
+    "booking_new_body": (
+        "{citizen} kërkoi një konsultë më {when}. Konfirmoje ose refuzoje "
+        "te Tregu → Konsultat:\n{url}"
+    ),
+    "booking_confirmed_subject": "AvokatIM — Konsulta u konfirmua",
+    "booking_confirmed_body": "{lawyer} e konfirmoi konsultën tënde më {when}.",
+    "booking_declined_subject": "AvokatIM — Konsulta nuk u konfirmua",
+    "booking_declined_body": (
+        "{lawyer} nuk mund ta mbajë konsultën më {when}. "
+        "Zgjidh një termin tjetër:\n{url}"
+    ),
     "sos_alert_subject": "AvokatIM — SOS: qytetar kërkon ndihmë URGJENTE",
     "sos_alert_body": (
         "Një qytetar kërkon ndihmë urgjente ({city}). Ti je kujdestar SOS — "
@@ -218,6 +230,18 @@ _SR = {
     "case_portal_ready_body": (
         "{firm} je prihvatila vaš slučaj. Sada imate pristup klijentskom "
         "portalu sa istim emailom i lozinkom:\n{url}"
+    ),
+    "booking_new_subject": "AvokatIM — Novi zahtev za konsultaciju",
+    "booking_new_body": (
+        "{citizen} je zatražio/la konsultaciju {when}. Potvrdite ili odbijte "
+        "u Tržištu → Konsultacije:\n{url}"
+    ),
+    "booking_confirmed_subject": "AvokatIM — Konsultacija je potvrđena",
+    "booking_confirmed_body": "{lawyer} je potvrdio/la vašu konsultaciju {when}.",
+    "booking_declined_subject": "AvokatIM — Konsultacija nije potvrđena",
+    "booking_declined_body": (
+        "{lawyer} ne može održati konsultaciju {when}. "
+        "Izaberite drugi termin:\n{url}"
     ),
     "sos_alert_subject": "AvokatIM — SOS: građanin traži HITNU pomoć",
     "sos_alert_body": (
@@ -341,6 +365,18 @@ _TR = {
         "{firm} davanızı kabul etti. Artık aynı e-posta ve şifreyle müvekkil "
         "portalına erişebilirsiniz:\n{url}"
     ),
+    "booking_new_subject": "AvokatIM — Yeni danışma talebi",
+    "booking_new_body": (
+        "{citizen}, {when} için danışma talep etti. Pazar → Danışmalar "
+        "bölümünden onaylayın veya reddedin:\n{url}"
+    ),
+    "booking_confirmed_subject": "AvokatIM — Danışma onaylandı",
+    "booking_confirmed_body": "{lawyer}, {when} tarihli danışmanızı onayladı.",
+    "booking_declined_subject": "AvokatIM — Danışma onaylanmadı",
+    "booking_declined_body": (
+        "{lawyer}, {when} tarihli danışmayı gerçekleştiremiyor. "
+        "Başka bir zaman seçin:\n{url}"
+    ),
     "sos_alert_subject": "AvokatIM — SOS: bir vatandaş ACİL yardım istiyor",
     "sos_alert_body": (
         "Bir vatandaş acil yardım istiyor ({city}). SOS nöbetçisisiniz — "
@@ -462,6 +498,18 @@ _BS = {
     "case_portal_ready_body": (
         "{firm} je prihvatila vaš slučaj. Sada imate pristup klijentskom "
         "portalu s istim emailom i lozinkom:\n{url}"
+    ),
+    "booking_new_subject": "AvokatIM — Novi zahtjev za konsultaciju",
+    "booking_new_body": (
+        "{citizen} je zatražio/la konsultaciju {when}. Potvrdite ili odbijte "
+        "u Tržištu → Konsultacije:\n{url}"
+    ),
+    "booking_confirmed_subject": "AvokatIM — Konsultacija je potvrđena",
+    "booking_confirmed_body": "{lawyer} je potvrdio/la vašu konsultaciju {when}.",
+    "booking_declined_subject": "AvokatIM — Konsultacija nije potvrđena",
+    "booking_declined_body": (
+        "{lawyer} ne može održati konsultaciju {when}. "
+        "Odaberite drugi termin:\n{url}"
     ),
     "sos_alert_subject": "AvokatIM — SOS: građanin traži HITNU pomoć",
     "sos_alert_body": (
@@ -585,6 +633,18 @@ _EN = {
         "{firm} accepted your case. You now have access to the client portal "
         "with the same email and password:\n{url}"
     ),
+    "booking_new_subject": "AvokatIM — New consultation request",
+    "booking_new_body": (
+        "{citizen} requested a consultation on {when}. Confirm or decline "
+        "in Marketplace → Consultations:\n{url}"
+    ),
+    "booking_confirmed_subject": "AvokatIM — Consultation confirmed",
+    "booking_confirmed_body": "{lawyer} confirmed your consultation on {when}.",
+    "booking_declined_subject": "AvokatIM — Consultation not confirmed",
+    "booking_declined_body": (
+        "{lawyer} cannot hold the consultation on {when}. "
+        "Pick another slot:\n{url}"
+    ),
     "sos_alert_subject": "AvokatIM — SOS: a citizen needs URGENT help",
     "sos_alert_body": (
         "A citizen is asking for urgent help ({city}). You are on SOS duty — "
@@ -690,6 +750,16 @@ _ZH = {
     "case_message_body": "您的案件收到新消息：\n{url}",
     "case_portal_ready_subject": "AvokatIM — 案件已受理，您的门户已就绪",
     "case_portal_ready_body": "{firm} 已受理您的案件。您现在可以使用相同的邮箱和密码访问客户门户：\n{url}",
+    "booking_new_subject": "AvokatIM — 新的咨询请求",
+    "booking_new_body": (
+        "{citizen} 请求于 {when} 进行咨询。请在市场 → 咨询中确认或拒绝：\n{url}"
+    ),
+    "booking_confirmed_subject": "AvokatIM — 咨询已确认",
+    "booking_confirmed_body": "{lawyer} 已确认您 {when} 的咨询。",
+    "booking_declined_subject": "AvokatIM — 咨询未确认",
+    "booking_declined_body": (
+        "{lawyer} 无法进行 {when} 的咨询。请选择其他时间：\n{url}"
+    ),
     "sos_alert_subject": "AvokatIM — SOS：一位公民需要紧急帮助",
     "sos_alert_body": "一位公民请求紧急帮助（{city}）。您是 SOS 值班律师——请尽快打开市场并接手案件：\n{url}",
     "case_match_subject": "AvokatIM — 有一个与您的资料匹配的新案件",

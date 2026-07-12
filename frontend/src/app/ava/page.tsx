@@ -8,6 +8,7 @@ import { getCitizenToken } from "@/lib/citizen";
 import { Button, Card, ErrorNote, Textarea } from "@/components/ui";
 import PublicShell from "@/components/public-shell";
 import PageIntro from "@/components/page-intro";
+import { MicButton, SpeakButton, useVoiceAvailable } from "@/components/voice-controls";
 
 interface ChatMsg {
   role: "user" | "assistant";
@@ -25,7 +26,8 @@ function sessionId(): string {
 }
 
 export default function PublicAvaPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const voice = useVoiceAvailable();
   const router = useRouter();
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [draft, setDraft] = useState("");
@@ -203,9 +205,12 @@ export default function PublicAvaPage() {
               >
                 {m.content || "…"}
               </div>
-              {m.role === "assistant" && m.citations && m.citations.length > 0 && (
-                <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  {m.citations.slice(0, 6).map((c, j) => (
+              {m.role === "assistant" && (m.content || (m.citations && m.citations.length > 0)) && (
+                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                  {m.content && !busy && (
+                    <SpeakButton text={m.content} locale={locale} serverTts={voice.tts} />
+                  )}
+                  {(m.citations || []).slice(0, 6).map((c, j) => (
                     <span key={j} className="text-[11px] bg-slate-100 text-slate-500 rounded-full px-2 py-0.5">
                       {c.title}{c.section ? `, ${c.section}` : ""}
                     </span>
@@ -240,6 +245,13 @@ export default function PublicAvaPage() {
               }
             }}
           />
+          {voice.stt && (
+            <MicButton
+              locale={locale}
+              disabled={busy}
+              onText={(text) => setDraft((d) => (d ? `${d} ${text}` : text))}
+            />
+          )}
           <Button type="submit" disabled={busy || !draft.trim()}>
             {busy ? t.loading : t.mkSend}
           </Button>

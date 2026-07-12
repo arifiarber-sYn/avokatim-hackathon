@@ -87,6 +87,40 @@ class LawyerProfile(Base, TimestampMixin):
     verification_note: Mapped[str | None] = mapped_column(String(255))
     # Transparent pricing (optional): consultation fee shown in the directory
     consult_fee_eur: Mapped[int | None] = mapped_column(Integer)
+    # Consultation booking (Phase 4): weekly recurring availability windows,
+    # e.g. [{"day": 0, "start": "09:00", "end": "12:00"}] (0 = Monday).
+    booking_enabled: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="false"
+    )
+    booking_slots: Mapped[list] = mapped_column(JSONB, default=list)
+
+
+BOOKING_STATUSES = ["pending", "confirmed", "declined", "cancelled"]
+
+
+class ConsultBooking(Base, TimestampMixin):
+    """A citizen's consultation reservation with a directory lawyer.
+
+    Created pending; the lawyer confirms or declines. Slots come from the
+    lawyer's weekly availability minus existing pending/confirmed bookings.
+    """
+
+    __tablename__ = "consult_bookings"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    citizen_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("citizen_users.id", ondelete="CASCADE"), index=True
+    )
+    tenant_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), index=True
+    )
+    lawyer_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL")
+    )
+    starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    duration_min: Mapped[int] = mapped_column(Integer, default=30)
+    status: Mapped[str] = mapped_column(String(16), default="pending", index=True)
+    note: Mapped[str | None] = mapped_column(Text)
 
 
 class CaseRequest(Base, TimestampMixin):

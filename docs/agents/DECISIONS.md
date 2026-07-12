@@ -327,3 +327,38 @@
   touches a citizen; the operator has a small recurring duty (verification
   queue is surfaced at the top of /platform and by email). When OAK offers
   an API or a data-sharing agreement, only the manual step is replaced.
+## D-018: "AI protection by phone" — local voice pipeline + evidence standard + client-side call recording (2026-07-12)
+
+- Context: the owner's core scenario — a citizen stopped by police opens the
+  app and from that second everything should work by voice (Albanian) and be
+  preserved as evidence in the citizen's favor. Research (plan
+  `mbrojtja_ai_+_backlog_i_plotë`): Albanian STT exists as a fine-tuned
+  Whisper large-v3-turbo (WER 6.98%) with a CTranslate2 int8 build that runs
+  on our CPU-only host; Piper gained an official `sq_AL` voice (April 2026);
+  the ACLU "Mobile Justice" apps validated the evidence pattern (upload
+  chunks *while* recording so the proof survives phone seizure).
+- Decision, three parts:
+  1. **Voice stays local** (`app/services/voice.py`): faster-whisper with the
+     Albanian CT2 model (fallback to base turbo for sr/tr/bs/en/zh) + Piper
+     `sq_AL` executed as a **subprocess** (GPL-3 isolated from our process;
+     no Docker container needed); browser `speechSynthesis` is the TTS
+     fallback for non-Albanian locales. Push-to-talk (2–4 s round trip), not
+     realtime duplex — duplex needs a GPU and moves to LiveKit Agents later.
+  2. **Evidence standard** (`EvidenceSession`/`EvidenceChunk`): MediaRecorder
+     chunks every ~5 s → serialized ordered upload → SHA-256 per chunk +
+     `prev_hash` chain + server timestamps + IP + audit log; encrypted at
+     rest with the existing document Fernet key; downloadable "evidence
+     package" PDF (chain of custody + transcript). Strict seq ordering
+     (409 on gaps) keeps the chain meaningful.
+  3. **Call recording without Egress**: recording a LiveKit call server-side
+     (Egress) needs a Chrome-compositing container — fragile on this host.
+     Instead the **citizen records client-side**: Web Audio mixes local +
+     remote audio into one MediaRecorder feeding the same evidence pipeline
+     (kind `call`); the lawyer must acknowledge a recording-consent notice
+     before joining. Egress can still be added later purely as infra.
+- Consequences: recording works even with zero LiveKit involvement (plain
+  SOS), evidence has one uniform format, and no audio ever leaves the
+  machine for transcription (D-002 privacy stance extends to voice). The
+  privacy policy gained an "SOS recordings and voice" section ×6; consent is
+  collected once in the SOS screen and per-session server-side
+  (`consent_at`). UI guidance stays "information, not advice".

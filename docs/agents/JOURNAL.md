@@ -10,6 +10,46 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-12 — AI protection by phone (voice + evidence + SOS) + public tools + booking (Cursor / Fable 5)
+
+- Context: phases 2–4 of the "Mbrojtja AI + backlog i plotë" plan (D-018).
+- Done (Phase 2 — voice): `app/services/voice.py` + `/api/public/voice/*`
+  (status, transcribe, tts) — faster-whisper Albanian CT2 int8 (fallback
+  turbo for sr/tr/bs/en/zh) + Piper `sq_AL` as subprocess; rate-limited.
+  Config keys `voice_*` in `config.py`; models under `data/models/`.
+- Done (Phase 2 — evidence vault): `EvidenceSession`/`EvidenceChunk`
+  (migration `5685c4b4cd3f`), 5 s chunked uploads with SHA-256 hash chain,
+  Fernet encryption, audit log, chain-of-custody PDF package, background
+  transcription; citizen endpoints + read-only lawyer endpoints on claimed
+  cases; `evidence-vault.tsx` list + downloads in /rasti-im, evidence block
+  in the lawyer's Tregu case cards.
+- Done (Phase 2 — SOS UI): `sos-panel.tsx` — one screen, three big actions
+  (record evidence / talk to Ava push-to-talk with live transcript + spoken
+  replies / alert duty lawyers), one-time consent, red "recording" banner;
+  SOS dispatch attaches the running evidence session to the case. Privacy
+  policy gained an "SOS recordings & voice" section ×6.
+- Done (Phase 2 — call recording, Egress replaced per D-018): `video-call.tsx`
+  mixes both audio sides via Web Audio into evidence chunks (kind `call`);
+  citizen gets a record button, lawyer must accept a consent notice to join.
+- Done (Phase 3): `voice-controls.tsx` (MicButton hold-to-talk + SpeakButton)
+  wired into public /ava and the lawyer assistant.
+- Done (Phase 4): public deadline calculator `/afatet` over
+  `GET/POST /api/public/tools/deadline-*`; citizen document generator
+  `/dokumentet` (3 deterministic Jinja→PDF templates in
+  `app/seeds/citizen_docs.py`: request letter, admin appeal, authorization);
+  consultation booking — `ConsultBooking` + `LawyerProfile.booking_enabled/
+  booking_slots` (migration `51f3b67b1756`), weekly-availability editor in
+  Settings, slot picker in /avokatet, my-bookings in /rasti-im, confirm/
+  decline panel in Tregu, emails ×6. Landing links both public tools.
+- Verified: pytest 50 passed (new `test_voice.py`, `test_evidence.py`,
+  `test_bookings.py`); `full_simulation.py` sections 29–32 (evidence chain +
+  tamper/order rejection, TTS WAV, calculator due-date, doc PDF, booking
+  lifecycle incl. double-book 409) — **163/163 PASS**; frontend build OK;
+  service restarted, health OK.
+- Left open: Egress container stays optional future infra (D-018); realtime
+  duplex voice waits for GPU (LiveKit Agents); STT model download happens on
+  first use if `data/models/` is empty.
+
 ## 2026-07-12 — OAK verification + client reviews + transparent pricing (Cursor / Fable 5)
 
 - Context: Phase 1 of the "Mbrojtja AI + backlog i plotë" plan — the trust

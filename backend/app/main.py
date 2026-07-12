@@ -11,12 +11,14 @@ from app.api import (
     assistant,
     auth,
     billing,
+    bookings,
     calendar_feed,
     collab,
     contacts,
     corpus,
     deadlines,
     documents,
+    evidence,
     firm,
     imports,
     intake,
@@ -25,6 +27,7 @@ from app.api import (
     platform,
     portal,
     privacy,
+    public_tools,
     push,
     reports,
     search,
@@ -32,6 +35,7 @@ from app.api import (
     tasks,
     team,
     templates,
+    voice,
 )
 from app.config import settings
 from app.database import SessionLocal
@@ -97,6 +101,12 @@ app.include_router(aml.router, prefix=api_prefix)
 app.include_router(marketplace.router, prefix=api_prefix)
 app.include_router(marketplace.public_router, prefix=api_prefix)
 app.include_router(subscription.router, prefix=api_prefix)
+app.include_router(voice.router, prefix=api_prefix)
+app.include_router(public_tools.router, prefix=api_prefix)
+app.include_router(bookings.router, prefix=api_prefix)
+app.include_router(bookings.public_router, prefix=api_prefix)
+app.include_router(evidence.router, prefix=api_prefix)
+app.include_router(evidence.lawyer_router, prefix=api_prefix)
 
 
 @app.get("/api/health")

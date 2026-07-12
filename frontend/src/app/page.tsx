@@ -113,6 +113,22 @@ export default function Home() {
           </Link>
         </div>
 
+        {/* Free public tools (Phase 4): deadline calculator + simple documents */}
+        <div className="flex flex-wrap items-center justify-center gap-3 max-w-3xl mx-auto text-sm">
+          <Link
+            href="/afatet"
+            className="inline-flex items-center gap-1.5 bg-white rounded-full border border-slate-200 px-4 py-2 text-slate-600 hover:border-indigo-300 hover:text-indigo-700 transition"
+          >
+            🗓 {t.dcTitle}
+          </Link>
+          <Link
+            href="/dokumentet"
+            className="inline-flex items-center gap-1.5 bg-white rounded-full border border-slate-200 px-4 py-2 text-slate-600 hover:border-indigo-300 hover:text-indigo-700 transition"
+          >
+            📄 {t.cdTitle}
+          </Link>
+        </div>
+
         {/* How it works: the presentation narrative — one platform, two worlds */}
         <section className="max-w-4xl mx-auto space-y-5 pt-2">
           <div className="text-center space-y-2">

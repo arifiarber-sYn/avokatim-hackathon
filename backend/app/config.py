@@ -101,6 +101,22 @@ class Settings(BaseSettings):
     # ws://127.0.0.1:7880 on localhost, wss://<host>:7443 (Caddy) on LAN.
     livekit_url: str = ""
 
+    # Voice (AI protection by phone): local STT/TTS — audio never leaves
+    # this machine. Models are downloaded once into data/models/ (git-ignored).
+    # Empty/missing model dirs = voice endpoints report enabled=false.
+    voice_stt_model_dir: Path = PROJECT_DIR / "data" / "models" / "whisper-sq-ct2"
+    # Fallback Whisper model for non-Albanian speech (downloaded on demand
+    # by faster-whisper into its cache); empty = Albanian model handles all.
+    voice_stt_fallback_model: str = "large-v3-turbo"
+    voice_tts_model: Path = (
+        PROJECT_DIR / "data" / "models" / "piper-sq" / "sq_AL-edon-medium.onnx"
+    )
+    # Piper runs as a subprocess (CLI) — GPL-3 isolation + no blocking imports
+    voice_piper_bin: Path = BASE_DIR / ".venv" / "bin" / "piper"
+    voice_stt_threads: int = 8
+    voice_max_audio_seconds: int = 120
+    voice_max_tts_chars: int = 900
+
     # Web Push (PWA notifications). Generated once; empty = push disabled.
     vapid_public_key: str = ""
     vapid_private_key: str = ""
