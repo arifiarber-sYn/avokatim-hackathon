@@ -64,6 +64,11 @@ export default function PublicFooter() {
       <div className="border-t border-slate-800">
         <div className="max-w-5xl mx-auto px-4 py-4 text-xs text-slate-500 flex flex-wrap items-center justify-between gap-2">
           <span>© {new Date().getFullYear()} AvokatIM</span>
+          <span className="text-slate-400">
+            Krijuar nga <span className="font-semibold text-slate-300">Arbër Arifi</span>
+            {" & "}
+            <span className="font-semibold text-slate-300">Fable 5</span>
+          </span>
           <span>Kosovë · avokatiim.ai</span>
         </div>
       </div>
