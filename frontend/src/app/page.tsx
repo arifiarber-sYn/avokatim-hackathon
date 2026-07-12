@@ -30,21 +30,26 @@ interface PublicStats {
 
 export default function Home() {
   const { t } = useI18n();
-  const [lawyerLogged, setLawyerLogged] = useState(false);
+  // null = not signed in; "lawyer" | "admin" pick the banner wording/target
+  const [staffRole, setStaffRole] = useState<"lawyer" | "admin" | null>(null);
   const [stats, setStats] = useState<PublicStats | null>(null);
 
   useEffect(() => {
-    // The landing always renders — even for a signed-in lawyer (they get a
-    // "continue to dashboard" banner instead of an auto-redirect, so the
+    // The landing always renders — even for a signed-in lawyer/administrator
+    // (they get a "continue" banner instead of an auto-redirect, so the
     // public presentation stays visible). Stale tokens are cleared here
     // (plain fetch: apiGet would hard-redirect to /login on 401).
     // Citizen tokens are recognized by the PublicShell header, not here.
     const token = getToken();
     if (!token) return;
     fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => {
-        if (res.ok) setLawyerLogged(true);
-        else setToken(null);
+      .then(async (res) => {
+        if (res.ok) {
+          const me = (await res.json()) as { is_superadmin?: boolean };
+          setStaffRole(me.is_superadmin ? "admin" : "lawyer");
+        } else {
+          setToken(null);
+        }
       })
       .catch(() => {});
   }, []);
@@ -58,16 +63,18 @@ export default function Home() {
 
   return (
     <PublicShell wide>
-      {/* Signed-in lawyer: one-click path back to work, no auto-redirect */}
-      {lawyerLogged && (
-        <div className="bg-indigo-700 text-white">
+      {/* Signed-in lawyer/administrator: one-click path back, no auto-redirect */}
+      {staffRole && (
+        <div className={staffRole === "admin" ? "bg-slate-900 text-white" : "bg-indigo-700 text-white"}>
           <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3 text-sm">
-            <span className="truncate">{t.umbLoggedLawyer}</span>
+            <span className="truncate">
+              {staffRole === "admin" ? t.umbLoggedAdmin : t.umbLoggedLawyer}
+            </span>
             <Link
-              href="/dashboard"
+              href={staffRole === "admin" ? "/platform" : "/dashboard"}
               className="shrink-0 inline-flex items-center gap-1.5 font-semibold bg-white/15 hover:bg-white/25 rounded-lg px-3 py-1.5 transition"
             >
-              {t.umbGoDash}
+              {staffRole === "admin" ? t.umbGoPlatform : t.umbGoDash}
               <IconArrowRight className="h-4 w-4" />
             </Link>
           </div>

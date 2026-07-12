@@ -10,6 +10,28 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-12 — Owner account becomes platform administrator + citizen (Cursor / Fable 5)
+
+- Context: the owner's login (superadmin inside tenant "BoraArifi") was
+  treated as a lawyer everywhere — /login sent them to /dashboard and the
+  landing banner said "Je i kyçur si avokat". They asked to be an
+  administrator + a citizen, not a lawyer.
+- Done (UX): /login now fetches /auth/me after login — `is_superadmin` →
+  /platform, else /dashboard (all 3 flows: setup, login, 2FA); the landing
+  banner distinguishes admin (dark, "administrator i platformës" →
+  /platform) from lawyer (indigo → /dashboard). `umbLoggedAdmin`/
+  `umbGoPlatform` ×6.
+- Done (data, one-off, owner-approved): deleted the synthetic test matter
+  "TEST-CERT lende sintetike" + 2 "Test Certifikata" contacts from the
+  owner tenant; renamed tenant "BoraArifi" → "AvokatIM Administrata"
+  (plan stays firm/0 € — never billable, no lawyer profile — never in
+  the directory). Seeded the owner's citizen account
+  (arifi.arber@gmail.com, verified, temp password shared privately).
+- Verified: build OK, restart, health OK, citizen login with the temp
+  password returns a token.
+- Left open / next: owner should change the temp citizen password in
+  /llogaria.
+
 ## 2026-07-12 — Two-surface restructure + citizen account (Cursor / Fable 5)
 
 - Context: "Ristrukturimi: dy botë + llogaria e qytetarit" plan — the owner

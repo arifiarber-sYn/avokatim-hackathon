@@ -33,6 +33,17 @@ export default function LoginPage() {
       .catch(() => {});
   }, []);
 
+  // The platform administrator lands on /platform, lawyers on /dashboard.
+  async function enter(accessToken: string) {
+    setToken(accessToken);
+    try {
+      const me = await apiGet<{ is_superadmin?: boolean }>("/auth/me");
+      router.push(me.is_superadmin ? "/platform" : "/dashboard");
+    } catch {
+      router.push("/dashboard");
+    }
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -45,16 +56,14 @@ export default function LoginPage() {
           email,
           password,
         });
-        setToken(r.access_token);
-        router.push("/dashboard");
+        await enter(r.access_token);
       } else if (mode === "login") {
         const r = await apiPost<TokenResponse>("/auth/login", { email, password });
         if (r.requires_2fa) {
           setPreToken(r.access_token);
           setMode("2fa");
         } else {
-          setToken(r.access_token);
-          router.push("/dashboard");
+          await enter(r.access_token);
         }
       } else {
         const res = await fetch(`/api/auth/2fa/verify`, {
@@ -67,8 +76,7 @@ export default function LoginPage() {
         });
         if (!res.ok) throw new Error(t.invalidCredentials);
         const r = (await res.json()) as TokenResponse;
-        setToken(r.access_token);
-        router.push("/dashboard");
+        await enter(r.access_token);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : t.invalidCredentials);
