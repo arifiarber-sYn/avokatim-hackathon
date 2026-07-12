@@ -10,6 +10,26 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-12 — Aesthetic refresh of the public surfaces (Cursor / Fable 5)
+
+- Context: the owner liked the new landing content but asked for a more
+  modern visual treatment ("jepi një frymë moderne").
+- Done: **Inter** via next/font (self-hosted woff2 at build, latin +
+  latin-ext for ë/ç; replaces Arial in globals.css). New CSS utilities:
+  `.hero-backdrop` (two soft radial glows + faint dot grid),
+  `.text-hero-gradient` (slate→indigo→violet headline), staggered
+  `fade-in-up-d1/d2`. Landing: hero badge pill, extrabold gradient
+  headline (up to text-6xl), trust chips as pills, audience cards with
+  gradient top border / ring / hover lift; function and privacy cards
+  rounded-3xl with slate→indigo-950 gradient; stats with gradient
+  numbers. /per-qytetaret: gradient headline, glassy Ava box, lifted
+  path cards, gradient SOS tile. /per-avokatet: badge pill, white→indigo
+  gradient headline, elevated CTAs, hover on feature cards. PublicShell
+  logo got a gradient scale-icon mark. SW cache v7.
+- Verified: build OK, restart, health OK, /, /per-qytetaret,
+  /per-avokatet all 200, Inter variable class present on <html>.
+- Left open / next: none.
+
 ## 2026-07-12 — Owner account becomes platform administrator + citizen (Cursor / Fable 5)
 
 - Context: the owner's login (superadmin inside tenant "BoraArifi") was
