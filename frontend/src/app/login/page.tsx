@@ -78,7 +78,15 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-50 via-slate-50 to-purple-50">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-indigo-50 via-slate-50 to-purple-50">
+      <div className="w-full max-w-md mb-3 text-center">
+        <Link
+          href="/kycu"
+          className="inline-block text-xs text-slate-500 bg-white/70 border border-slate-200 rounded-full px-4 py-1.5 hover:text-indigo-700 hover:border-indigo-200"
+        >
+          {t.acctIsCitizen}
+        </Link>
+      </div>
       <Card className="w-full max-w-md p-8">
         <div className="flex justify-between items-start mb-6">
           <div>

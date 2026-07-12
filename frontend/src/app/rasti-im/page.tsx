@@ -12,9 +12,10 @@ import {
   getCitizenToken,
   setCitizenToken,
 } from "@/lib/citizen";
-import { Button, Card, ErrorNote, Input, Label, Spinner, Textarea } from "@/components/ui";
+import { Button, Card, ErrorNote, Spinner, Textarea } from "@/components/ui";
 import VideoCall, { CallGrant } from "@/components/video-call";
 import PublicShell from "@/components/public-shell";
+import CitizenAuthForm from "@/components/citizen-auth";
 import PageIntro from "@/components/page-intro";
 import SosPanel from "@/components/sos-panel";
 import EvidenceVault from "@/components/evidence-vault";
@@ -71,9 +72,6 @@ function MyCaseInner() {
   const [checking, setChecking] = useState(true);
   const [verified, setVerified] = useState(false);
   const [cases, setCases] = useState<CitizenCase[] | null>(null);
-  const [login, setLogin] = useState({ email: "", password: "" });
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
   const [openCase, setOpenCase] = useState<string | null>(null);
   const [messages, setMessages] = useState<CaseMessage[]>([]);
   const [draft, setDraft] = useState("");
@@ -108,24 +106,6 @@ function MyCaseInner() {
       .catch(() => setCitizenToken(null))
       .finally(() => setChecking(false));
   }, [loadCases]);
-
-  async function doLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    setError("");
-    try {
-      const data = await citizenPost<{ access_token: string; citizen: CitizenInfo }>(
-        "/citizen/login", login
-      );
-      setCitizenToken(data.access_token);
-      setCitizen(data.citizen);
-      loadCases();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t.error);
-    } finally {
-      setBusy(false);
-    }
-  }
 
   async function toggleMessages(caseId: string) {
     if (openCase === caseId) {
@@ -188,35 +168,13 @@ function MyCaseInner() {
           <Spinner />
         ) : citizen === null ? (
           <Card className="p-6 space-y-4">
-            <form onSubmit={doLogin} className="space-y-4">
-              <div>
-                <Label>{t.email}</Label>
-                <Input
-                  type="email"
-                  value={login.email}
-                  onChange={(e) => setLogin({ ...login, email: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <Label>{t.password}</Label>
-                <Input
-                  type="password"
-                  value={login.password}
-                  onChange={(e) => setLogin({ ...login, password: e.target.value })}
-                  required
-                />
-              </div>
-              <ErrorNote message={error} />
-              <Button type="submit" disabled={busy} className="w-full">
-                {busy ? t.loading : t.login}
-              </Button>
-            </form>
-            <p className="text-sm text-center text-slate-500">
-              <Link href="/posto-rastin" className="text-indigo-600 hover:underline">
-                {t.mkNoAccount}
-              </Link>
-            </p>
+            <CitizenAuthForm
+              defaultMode="login"
+              onAuthed={(c) => {
+                setCitizen(c);
+                loadCases();
+              }}
+            />
           </Card>
         ) : cases === null ? (
           <Spinner />

@@ -80,6 +80,11 @@ _SQ = {
         "Konfirmo adresën tënde të email-it duke hapur këtë link:\n{url}\n\n"
         "Linku vlen 3 ditë."
     ),
+    "citizen_reset_subject": "AvokatIM — Rivendos fjalëkalimin",
+    "citizen_reset_body": (
+        "Ke kërkuar rivendosjen e fjalëkalimit. Hape këtë link për të vendosur një fjalëkalim të ri:\n{url}\n\n"
+        "Linku vlen 1 orë. Nëse s'e ke kërkuar ti, injoroje këtë email."
+    ),
     "case_claimed_subject": "AvokatIM — Një avokat e mori rastin tënd",
     "case_claimed_body": (
         "Rasti yt u mor nga {firm}. Avokati do të të kontaktojë së shpejti — "
@@ -213,6 +218,11 @@ _SR = {
     "citizen_verify_body": (
         "Potvrdite svoju email adresu otvaranjem ovog linka:\n{url}\n\n"
         "Link važi 3 dana."
+    ),
+    "citizen_reset_subject": "AvokatIM — Resetujte lozinku",
+    "citizen_reset_body": (
+        "Zatražili ste resetovanje lozinke. Otvorite ovaj link da postavite novu lozinku:\n{url}\n\n"
+        "Link važi 1 sat. Ako niste vi tražili, ignorišite ovaj email."
     ),
     "case_claimed_subject": "AvokatIM — Advokat je preuzeo vaš slučaj",
     "case_claimed_body": (
@@ -348,6 +358,11 @@ _TR = {
         "E-posta adresinizi bu bağlantıyı açarak doğrulayın:\n{url}\n\n"
         "Bağlantı 3 gün geçerlidir."
     ),
+    "citizen_reset_subject": "AvokatIM — Şifrenizi sıfırlayın",
+    "citizen_reset_body": (
+        "Şifre sıfırlama talebinde bulundunuz. Yeni bir şifre belirlemek için bu bağlantıyı açın:\n{url}\n\n"
+        "Bağlantı 1 saat geçerlidir. Siz talep etmediyseniz bu e-postayı yok sayın."
+    ),
     "case_claimed_subject": "AvokatIM — Bir avukat davanızı üstlendi",
     "case_claimed_body": (
         "Davanız {firm} tarafından üstlenildi. Avukat kısa süre içinde sizinle "
@@ -481,6 +496,11 @@ _BS = {
     "citizen_verify_body": (
         "Potvrdite svoju email adresu otvaranjem ovog linka:\n{url}\n\n"
         "Link vrijedi 3 dana."
+    ),
+    "citizen_reset_subject": "AvokatIM — Resetujte lozinku",
+    "citizen_reset_body": (
+        "Zatražili ste resetovanje lozinke. Otvorite ovaj link da postavite novu lozinku:\n{url}\n\n"
+        "Link vrijedi 1 sat. Ako niste vi tražili, ignorišite ovaj e-mail."
     ),
     "case_claimed_subject": "AvokatIM — Advokat je preuzeo vaš slučaj",
     "case_claimed_body": (
@@ -616,6 +636,11 @@ _EN = {
         "Confirm your email address by opening this link:\n{url}\n\n"
         "The link is valid for 3 days."
     ),
+    "citizen_reset_subject": "AvokatIM — Reset your password",
+    "citizen_reset_body": (
+        "You requested a password reset. Open this link to set a new password:\n{url}\n\n"
+        "The link is valid for 1 hour. If you did not request this, ignore this email."
+    ),
     "case_claimed_subject": "AvokatIM — A lawyer took your case",
     "case_claimed_body": (
         "Your case was taken by {firm}. The lawyer will contact you shortly — "
@@ -739,6 +764,8 @@ _ZH = {
     # Marketplace (citizens)
     "citizen_verify_subject": "AvokatIM — 确认您的邮箱",
     "citizen_verify_body": "请打开以下链接确认您的邮箱地址：\n{url}\n\n链接有效期为 3 天。",
+    "citizen_reset_subject": "AvokatIM — 重置密码",
+    "citizen_reset_body": "您请求了密码重置。请打开以下链接设置新密码：\n{url}\n\n链接有效期为 1 小时。如果不是您本人操作，请忽略此邮件。",
     "case_claimed_subject": "AvokatIM — 一位律师接受了您的案件",
     "case_claimed_body": (
         "您的案件已由 {firm} 接手。律师将很快与您联系——您也可以在"

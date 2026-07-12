@@ -32,12 +32,15 @@ export default function PublicFooter() {
           <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
             {t.ftCitizens}
           </div>
+          <Link href="/per-qytetaret" className={link}>{t.umbCitizenT}</Link>
           <Link href="/ava" className={link}>Ava</Link>
           <Link href="/avokatet" className={link}>{t.pnLawyers}</Link>
           <Link href="/posto-rastin" className={link}>{t.pnPost}</Link>
           <Link href="/rasti-im?sos=1" className={link}>SOS</Link>
           <Link href="/afatet" className={link}>{t.dcTitle}</Link>
           <Link href="/dokumentet" className={link}>{t.cdTitle}</Link>
+          <Link href="/kycu" className={link}>{t.acctLoginT}</Link>
+          <Link href="/llogaria" className={link}>{t.acctTitle}</Link>
         </div>
 
         <div className={col}>

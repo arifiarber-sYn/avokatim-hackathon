@@ -10,6 +10,41 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-12 — Two-surface restructure + citizen account (Cursor / Fable 5)
+
+- Context: "Ristrukturimi: dy botë + llogaria e qytetarit" plan — the owner
+  wanted the landing to present the WHOLE project, a clear split between the
+  two audiences, and a real "place" for citizens (their login used to be
+  hidden and every visible "Kyçu" led to the lawyer login).
+- Done (landing): `/` rebuilt as the umbrella presentation — mission hero,
+  two big audience cards (citizen → /per-qytetaret, lawyer → /per-avokatet),
+  side-by-side full function lists (7 citizen + 6 lawyer), "Pse AvokatIM"
+  advantage grid, stats, privacy card. New `umb*` strings ×6.
+- Done (story pages): new `/per-qytetaret` carries the citizen story (Ava
+  box hero, 3 quick paths, 4 alternating feature sections, how-it-works);
+  `/per-avokatet` gained a 3-step "how the marketplace works for you"
+  section (`lpHiw*` ×6).
+- Done (citizen account API): `PATCH /public/citizen/me` (name, phone,
+  locale), `POST /public/citizen/change-password` (rate-limited, audited),
+  `POST /public/citizen/forgot-password` (no account enumeration) +
+  `reset-password` with a `citizen_reset` purpose token (1h; also verifies
+  the email, since owning the link proves mailbox control). New
+  `citizen_reset_*` email strings ×6.
+- Done (citizen account UI): shared `citizen-auth.tsx` form (signup/login/
+  forgot) reused by `/posto-rastin`, `/rasti-im` and the new `/kycu` (which
+  also hosts the ?rivendos= reset form); new `/llogaria` page (profile,
+  language, password change, quick links, Dil); `PublicShell` header now
+  recognizes the citizen token — initials chip with menu (Rasti im,
+  Llogaria, Dil) — and shows "Kyçu" → /kycu otherwise; `/login` got a
+  "Je qytetar?" banner and /kycu the reverse link; footer links the new
+  pages. SW cache bumped to v5.
+- Verified: 60 pytest pass (new reset-token scope + validation tests),
+  `npm run build` OK, service restarted, health OK, full simulation
+  178 PASS / 0 FAIL (new: profile update, change-password wrong/right,
+  login with new pw, forgot without enumeration, reset with token,
+  invalid token rejected, login after reset).
+- Left open / next: none for this plan.
+
 ## 2026-07-12 — Public redesign + letters & complaints + platform contact channel (Cursor / Fable 5)
 
 - Context: "Ridizajni publik + shkresa e ankesa" plan — modern public UI,

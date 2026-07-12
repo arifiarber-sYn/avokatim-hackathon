@@ -78,6 +78,21 @@ export default function ForLawyersPage() {
           ))}
         </div>
 
+        {/* How the marketplace works for the lawyer */}
+        <div className="max-w-3xl mx-auto space-y-4">
+          <h2 className="text-xl font-bold text-white text-center">{t.lpHiwT}</h2>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {[t.lpHiw1, t.lpHiw2, t.lpHiw3].map((step, i) => (
+              <div key={i} className="bg-slate-800/60 rounded-xl border border-slate-700/60 p-5 space-y-2">
+                <span className="inline-flex h-7 w-7 rounded-full bg-indigo-600 text-white items-center justify-center text-xs font-bold">
+                  {i + 1}
+                </span>
+                <p className="text-sm text-slate-300 leading-relaxed">{step}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {stats && (
           <div className="grid grid-cols-2 gap-4 max-w-xl mx-auto text-center">
             <div className="bg-slate-800/60 rounded-xl border border-slate-700/60 p-4">

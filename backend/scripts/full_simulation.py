@@ -568,8 +568,10 @@ async def main() -> None:
         import redis.asyncio as aioredis
         from app.config import settings as app_settings
         rr = aioredis.from_url(app_settings.redis_url)
-        async for rkey in rr.scan_iter("avokatim:rl:citizen_signup:*"):
-            await rr.delete(rkey)
+        for pattern in ("avokatim:rl:citizen_signup:*", "avokatim:rl:citizen_login:*",
+                        "avokatim:rl:citizen_pw_forgot:*", "avokatim:rl:citizen_pw_change:*"):
+            async for rkey in rr.scan_iter(pattern):
+                await rr.delete(rkey)
         await rr.aclose()
 
         r = await c.put(f"{BASE}/marketplace/profile", headers=h, json={
@@ -639,6 +641,53 @@ async def main() -> None:
         r = await c.post(f"{BASE}/public/citizen/cases", headers=ch, json=case_body)
         check("qytetari poston rastin", r.status_code == 201)
         case_id = r.json()["id"]
+
+        # --- citizen account: profile update, change + reset password ---
+        r = await c.patch(f"{BASE}/public/citizen/me", headers=ch, json={
+            "full_name": "Qytetar I Përditësuar", "phone": "+383 45 111 222",
+            "locale": "en",
+        })
+        check("qytetari përditëson profilin (emri, telefoni, gjuha)",
+              r.status_code == 200 and r.json().get("full_name") == "Qytetar I Përditësuar"
+              and r.json().get("locale") == "en")
+        r = await c.patch(f"{BASE}/public/citizen/me", headers=ch, json={
+            "full_name": "Qytetar Simulues", "locale": "sq",
+        })
+        check("profili kthehet për vazhdimin e simulimit", r.status_code == 200)
+
+        r = await c.post(f"{BASE}/public/citizen/change-password", headers=ch, json={
+            "current_password": "gabim-fare", "new_password": "qytetari-pw-456",
+        })
+        check("ndryshimi i fjalëkalimit me fjalëkalim të gabuar REFUZOHET",
+              r.status_code == 400)
+        r = await c.post(f"{BASE}/public/citizen/change-password", headers=ch, json={
+            "current_password": "qytetari-pw-123", "new_password": "qytetari-pw-456",
+        })
+        check("qytetari ndryshon fjalëkalimin", r.status_code == 200)
+        r = await c.post(f"{BASE}/public/citizen/login", json={
+            "email": cit_email, "password": "qytetari-pw-456",
+        })
+        check("kyçja me fjalëkalimin e ri funksionon", r.status_code == 200)
+
+        r = await c.post(f"{BASE}/public/citizen/forgot-password", json={
+            "email": f"nuk.ekziston.{SUFFIX}@example.com",
+        })
+        check("forgot-password s'zbulon nëse email-i ekziston",
+              r.status_code == 200 and r.json().get("sent") is True)
+        rtoken = create_purpose_token("citizen_reset", uuid.UUID(cit_id), minutes=60)
+        r = await c.post(f"{BASE}/public/citizen/reset-password", json={
+            "token": rtoken, "new_password": "qytetari-pw-123",
+        })
+        check("rivendosja e fjalëkalimit me token nga email-i", r.status_code == 200)
+        r = await c.post(f"{BASE}/public/citizen/reset-password", json={
+            "token": "token-i-pavlefshem", "new_password": "qytetari-pw-999",
+        })
+        check("token i pavlefshëm rivendosjeje REFUZOHET", r.status_code == 400)
+        r = await c.post(f"{BASE}/public/citizen/login", json={
+            "email": cit_email, "password": "qytetari-pw-123",
+        })
+        check("kyçja pas rivendosjes funksionon", r.status_code == 200)
+        ch = {"Authorization": f"Bearer {r.json()['access_token']}"}
 
         r = await c.get(f"{BASE}/marketplace/cases", headers=h)
         browse = r.json() if r.status_code == 200 else []

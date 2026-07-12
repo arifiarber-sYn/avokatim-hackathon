@@ -14,6 +14,8 @@ ALL_LOCALES = ["sq", "sr", "tr", "bs", "en", "zh"]
 MARKETPLACE_KEYS = [
     "citizen_verify_subject",
     "citizen_verify_body",
+    "citizen_reset_subject",
+    "citizen_reset_body",
     "case_claimed_subject",
     "case_claimed_body",
     "case_directed_subject",
@@ -53,6 +55,37 @@ def test_citizen_verify_purpose_token():
     assert payload["sub"] == str(citizen_id)
     with pytest.raises(ValueError):
         decode_purpose_token(token, "verify_email")
+
+
+def test_citizen_reset_purpose_token_is_scoped():
+    """A reset token must not be usable as a verification token or vice versa."""
+    citizen_id = uuid.uuid4()
+    token = create_purpose_token("citizen_reset", citizen_id, minutes=60)
+    payload = decode_purpose_token(token, "citizen_reset")
+    assert payload["sub"] == str(citizen_id)
+    with pytest.raises(ValueError):
+        decode_purpose_token(token, "citizen_verify")
+
+
+def test_citizen_update_ignores_unknown_locale():
+    from app.api.marketplace import CitizenUpdateIn
+    from app.i18n import pick_locale
+
+    body = CitizenUpdateIn(locale="xx")
+    assert pick_locale(body.locale) == "sq"
+
+
+def test_citizen_password_min_length_enforced():
+    from pydantic import ValidationError
+
+    from app.api.marketplace import CitizenChangePasswordIn, CitizenResetPasswordIn
+
+    with pytest.raises(ValidationError):
+        CitizenChangePasswordIn(current_password="old", new_password="short")
+    with pytest.raises(ValidationError):
+        CitizenResetPasswordIn(token="x", new_password="short")
+    ok = CitizenChangePasswordIn(current_password="old", new_password="longenough1")
+    assert ok.new_password == "longenough1"
 
 
 def test_masked_name_hides_surname():

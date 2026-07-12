@@ -228,6 +228,112 @@ async def citizen_me(citizen: CitizenUser = Depends(_current_citizen)):
     return _citizen_out(citizen)
 
 
+# ---------- citizen account (profile + password) ----------
+
+class CitizenUpdateIn(BaseModel):
+    full_name: str | None = Field(default=None, min_length=2, max_length=200)
+    phone: str | None = Field(default=None, max_length=64)
+    locale: str | None = None
+
+
+@public_router.patch("/citizen/me")
+async def citizen_update_me(
+    body: CitizenUpdateIn,
+    citizen: CitizenUser = Depends(_current_citizen),
+    db: AsyncSession = Depends(get_db),
+):
+    if body.full_name is not None:
+        citizen.full_name = body.full_name.strip()
+    if body.phone is not None:
+        citizen.phone = body.phone.strip() or None
+    if body.locale is not None:
+        citizen.locale = pick_locale(body.locale)
+    await db.commit()
+    return _citizen_out(citizen)
+
+
+class CitizenChangePasswordIn(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=8, max_length=128)
+
+
+@public_router.post("/citizen/change-password")
+async def citizen_change_password(
+    body: CitizenChangePasswordIn,
+    request: Request,
+    citizen: CitizenUser = Depends(_current_citizen),
+    db: AsyncSession = Depends(get_db),
+):
+    await _rate_limit("citizen_pw_change", str(citizen.id), limit=5, window_seconds=3600)
+    if not verify_password(body.current_password, citizen.password_hash):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Current password is incorrect")
+    citizen.password_hash = hash_password(body.new_password)
+    await log_action(
+        db, tenant_id=None, user_id=None, action="citizen.change_password",
+        entity_type="citizen", entity_id=str(citizen.id), ip_address=_ip(request),
+    )
+    await db.commit()
+    return {"changed": True}
+
+
+async def _send_citizen_reset(citizen_id: uuid.UUID, email: str, locale: str) -> None:
+    token = create_purpose_token("citizen_reset", citizen_id, minutes=60)
+    url = f"{settings.public_base_url}/kycu?rivendos={token}"
+    loc = pick_locale(locale)
+    await send_email(
+        email, tr(loc, "citizen_reset_subject"), tr(loc, "citizen_reset_body", url=url)
+    )
+
+
+class CitizenForgotPasswordIn(BaseModel):
+    email: EmailStr
+
+
+@public_router.post("/citizen/forgot-password")
+async def citizen_forgot_password(
+    body: CitizenForgotPasswordIn,
+    request: Request,
+    background: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    await _rate_limit("citizen_pw_forgot", _ip(request), limit=5, window_seconds=3600)
+    citizen = (
+        await db.execute(select(CitizenUser).where(CitizenUser.email == body.email.lower()))
+    ).scalar_one_or_none()
+    # Same response whether the email exists or not (no account enumeration)
+    if citizen is not None and citizen.is_active:
+        background.add_task(_send_citizen_reset, citizen.id, citizen.email, citizen.locale)
+    return {"sent": True}
+
+
+class CitizenResetPasswordIn(BaseModel):
+    token: str
+    new_password: str = Field(min_length=8, max_length=128)
+
+
+@public_router.post("/citizen/reset-password")
+async def citizen_reset_password(
+    body: CitizenResetPasswordIn, request: Request, db: AsyncSession = Depends(get_db)
+):
+    try:
+        payload = decode_purpose_token(body.token, "citizen_reset")
+    except (pyjwt.PyJWTError, ValueError):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired link")
+    citizen = await db.get(CitizenUser, uuid.UUID(payload["sub"]))
+    if citizen is None or not citizen.is_active:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired link")
+    citizen.password_hash = hash_password(body.new_password)
+    if citizen.email_verified_at is None:
+        # Owning the reset link proves control of the mailbox
+        citizen.email_verified_at = datetime.now(UTC)
+    await log_action(
+        db, tenant_id=None, user_id=None, action="citizen.reset_password",
+        entity_type="citizen", entity_id=str(citizen.id), ip_address=_ip(request),
+    )
+    await db.commit()
+    return {"reset": True}
+
+
 # ---------- public lawyer directory ----------
 
 async def _tenant_ratings(db: AsyncSession) -> dict[uuid.UUID, tuple[float, int]]:

@@ -339,6 +339,24 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   Settings and confirms/declines in Tregu, citizen books from /avokatet
   and manages in /rasti-im; notifications ×6 (`booking_*` i18n keys).
   Tests: `test_bookings.py`; simulation sections 31–32.
+- **Two-surface restructure + citizen account** (2026-07-12, D-020):
+  landing `/` is now the umbrella presentation — mission hero, two big
+  audience cards, side-by-side full function lists (citizen ×7 / lawyer
+  ×6), "Pse AvokatIM" advantages, stats, privacy card (`umb*` keys ×6).
+  The citizen story moved to the new **`/per-qytetaret`** (Ava box hero,
+  quick paths, 4 feature sections, how-it-works); `/per-avokatet` gained
+  a 3-step marketplace walkthrough (`lpHiw*`). **Citizen account**:
+  `PATCH /api/public/citizen/me`, `POST .../change-password`,
+  `POST .../forgot-password` + `reset-password` (scoped `citizen_reset`
+  purpose token, 1h, doubles as email verification; `citizen_reset_*`
+  emails ×6). Frontend: shared `components/citizen-auth.tsx`
+  (signup/login/forgot, reused by /posto-rastin, /rasti-im, /kycu),
+  **`/kycu`** (citizen login + ?rivendos= reset form), **`/llogaria`**
+  (profile, language, password, quick links, Dil), `PublicShell` header
+  recognizes the citizen token (initials chip → Rasti im / Llogaria /
+  Dil; otherwise "Kyçu" → /kycu), `/login` ↔ /kycu cross-banners,
+  footer links. SW cache `avokatim-shell-v5`. Simulation includes the
+  account flows (178 PASS / 0 FAIL).
 - **Public redesign + platform feedback channel** (2026-07-12): shared
   public identity — `components/icons.tsx` (SVG set), `public-footer.tsx`
   (4 columns, mounted in `PublicShell`), shell header with backdrop-blur +

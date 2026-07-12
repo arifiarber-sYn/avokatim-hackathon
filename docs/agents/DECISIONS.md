@@ -378,3 +378,23 @@
 - Consequences: /kontakti is linked from the shared public footer on every
   public page; the generator and the contact channel stay clearly separated
   in the UI (documents = drejtuar të tretëve, kontakti = drejt platformës).
+
+## D-020: Two public surfaces + first-class citizen identity (2026-07-12)
+
+- Context: the landing mixed both audiences and citizens had no visible
+  account: their login was buried in /rasti-im and every "Kyçu" button led
+  to the lawyer login (`/login` → /dashboard), which confused non-lawyers.
+- Decision: follow the two-sided-marketplace pattern (Avvo-style): `/` is an
+  umbrella presentation of the whole project that segments immediately with
+  two audience cards; each audience gets its own story page
+  (`/per-qytetaret`, `/per-avokatet`) and its own login (`/kycu` vs
+  `/login`, each cross-linking the other). Citizens get a real account
+  surface: `/llogaria` (profile, language, password, sign-out) backed by
+  PATCH /citizen/me + change/forgot/reset-password endpoints, and the
+  public header recognizes the citizen token with an initials-chip menu.
+  Tabs were rejected: they hide half the content and half the visitors
+  never find themselves.
+- Consequences: citizen credentials can never land on the lawyer login;
+  password reset uses a scoped `citizen_reset` purpose token (1h) and
+  doubles as email verification; the shared `citizen-auth.tsx` form keeps
+  signup/login/forgot identical across /kycu, /posto-rastin and /rasti-im.
