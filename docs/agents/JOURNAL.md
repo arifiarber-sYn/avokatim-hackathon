@@ -43,6 +43,11 @@
   178 PASS / 0 FAIL (new: profile update, change-password wrong/right,
   login with new pw, forgot without enumeration, reset with token,
   invalid token rejected, login after reset).
+- Follow-up (same day): the owner, signed in as a lawyer, could never see
+  the new landing (valid lawyer token auto-redirected `/` → /dashboard).
+  Changed: `/` always renders; a signed-in lawyer gets an indigo banner
+  "Je i kyçur si avokat — Vazhdo te paneli" instead of a redirect
+  (`umbLoggedLawyer`/`umbGoDash` ×6, SW cache v6).
 - Left open / next: none for this plan.
 
 ## 2026-07-12 — Public redesign + letters & complaints + platform contact channel (Cursor / Fable 5)
