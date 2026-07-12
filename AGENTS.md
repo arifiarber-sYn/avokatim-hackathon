@@ -17,9 +17,20 @@
 
 ## 1. What AvokatIM is
 
-A legal practice management platform that lets **one lawyer work with the capacity
-of a whole firm**: case intake → digital matter files → deadlines → documents →
-AI assistance → billing → client portal.
+One platform, two sides (the bridge between Kosovo's citizens and lawyers):
+
+1. **For lawyers** — a legal practice management platform that lets **one lawyer
+   work with the capacity of a whole firm**: case intake → digital matter files →
+   deadlines → documents → AI assistance → billing → client portal.
+2. **For citizens** — a free "pocket lawyer": the public assistant **Ava** (cites
+   Kosovo law articles, works by voice), a **marketplace** (post a case, verified
+   lawyers claim it), **SOS — AI protection by phone** (police-stop scenario:
+   voice + encrypted hash-chained evidence recording, duty-lawyer alerts), and
+   free tools (deadline calculator, letter/complaint generator) plus a feedback
+   channel to the platform (/kontakti).
+
+Revenue model (D-016): citizens never pay; lawyers pay a flat per-seat monthly
+subscription after a 90-day trial. Never a percentage of lawyer fees.
 
 - **Jurisdictions**: Kosovo (XK) is active. GB, CN, INTL are prepared as data.
   Jurisdiction rules (deadlines, holidays, templates, legal corpus) are **data,
@@ -58,15 +69,16 @@ AI assistance → billing → client portal.
 | Path | What it is |
 |---|---|
 | `backend/` | Python 3 / FastAPI / SQLAlchemy 2 async / Alembic |
-| `backend/app/models/` | DB models: tenancy, matters, documents, billing, assistant, audit, jurisdiction |
+| `backend/app/models/` | DB models: tenancy, matters, documents, billing, assistant, audit, jurisdiction, marketplace (citizens/cases/bookings), evidence, platform billing, feedback |
 | `backend/app/api/` | REST routers, all mounted under `/api` |
 | `backend/app/services/` | Business logic: deadlines engine, conflicts check, RAG, assistant, storage |
 | `backend/app/llm/` | LLM provider abstraction: `base.py` → `deepseek.py`, `local.py`, `router.py` |
-| `backend/app/seeds/` | Jurisdiction data (Kosovo deadline rules, holidays, fee tariff, templates, AML indicators) |
+| `backend/app/seeds/` | Jurisdiction data (Kosovo deadline rules, holidays, fee tariff, templates, AML indicators, citizen letter/complaint templates) |
 | `backend/alembic/versions/` | DB migrations — append-only, never edit old ones |
 | `backend/tests/` | pytest suite |
 | `frontend/` | Next.js + TypeScript + Tailwind (see `frontend/AGENTS.md` for Next.js caveats) |
-| `frontend/src/app/(app)/` | Pages: dashboard, intake, matters, calendar, contacts, templates, assistant, billing, reports, settings |
+| `frontend/src/app/(app)/` | Lawyer pages: dashboard, intake, matters, calendar, contacts, templates, assistant, billing, reports, settings, marketplace, platform |
+| `frontend/src/app/` (top level) | Public citizen pages: `/` (landing), `/ava`, `/avokatet`, `/posto-rastin`, `/rasti-im` (+SOS), `/afatet`, `/dokumentet`, `/kontakti`, `/per-avokatet` — all wrapped in `PublicShell` (shared header/footer/bottom-nav) |
 | `frontend/src/lib/` | `api.ts` (API client), `types.ts`, `i18n.tsx`, `dictionaries.ts` (sq/sr/tr/bs/en/zh), `legal.ts` (ToS/Privacy texts) |
 | `data/` | Runtime data: encrypted documents, legal corpus, logs — **git-ignored, never delete** |
 | `docs/agents/` | Agent management system (state, journal, decisions, roadmap) |
