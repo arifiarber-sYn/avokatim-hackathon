@@ -213,26 +213,30 @@ export default function PublicShell({
               SOS
             </Link>
           </nav>
+          {/* Right side: account group first, then a divider, then the
+              language picker at the very edge — a page-wide utility that
+              must not read as part of the lawyer/account links. */}
           <div className="flex items-center gap-3 shrink-0">
-            {!citizen && (
-              <Link
-                href="/per-avokatet"
-                className="hidden sm:block text-xs text-slate-400 hover:text-slate-600 hover:underline"
-              >
-                {t.mkForLawyersLink}
-              </Link>
-            )}
-            <LocaleSwitcher />
             {citizen ? (
               <CitizenChip citizen={citizen} />
             ) : (
-              <Link
-                href="/kycu"
-                className="text-sm font-semibold text-indigo-700 hover:text-indigo-900"
-              >
-                {t.login}
-              </Link>
+              <>
+                <Link
+                  href="/per-avokatet"
+                  className="hidden sm:block text-xs text-slate-400 hover:text-slate-600 hover:underline"
+                >
+                  {t.mkForLawyersLink}
+                </Link>
+                <Link
+                  href="/kycu"
+                  className="text-sm font-semibold text-indigo-700 hover:text-indigo-900"
+                >
+                  {t.login}
+                </Link>
+              </>
             )}
+            <span aria-hidden="true" className="hidden sm:block h-5 w-px bg-slate-200" />
+            <LocaleSwitcher />
           </div>
         </div>
       </header>
