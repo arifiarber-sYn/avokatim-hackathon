@@ -28,6 +28,7 @@ from app.i18n import pick_locale, tr
 from app.models import (
     CaseRequest,
     CaseRequestMessage,
+    CaseReview,
     CitizenUser,
     Jurisdiction,
     LawyerProfile,
@@ -229,6 +230,29 @@ async def citizen_me(citizen: CitizenUser = Depends(_current_citizen)):
 
 # ---------- public lawyer directory ----------
 
+async def _tenant_ratings(db: AsyncSession) -> dict[uuid.UUID, tuple[float, int]]:
+    """tenant_id -> (average rating 1..5 across the three prompts, count)."""
+    from sqlalchemy import func
+
+    rows = (
+        await db.execute(
+            select(
+                CaseReview.tenant_id,
+                func.avg(
+                    (
+                        CaseReview.rating_communication
+                        + CaseReview.rating_speed
+                        + CaseReview.rating_clarity
+                    )
+                    / 3.0
+                ),
+                func.count(CaseReview.id),
+            ).group_by(CaseReview.tenant_id)
+        )
+    ).all()
+    return {tid: (round(float(avg), 1), int(cnt)) for tid, avg, cnt in rows}
+
+
 @public_router.get("/lawyers")
 async def public_lawyers(
     area: str | None = None,
@@ -243,6 +267,8 @@ async def public_lawyers(
             .join(Tenant, Tenant.id == LawyerProfile.tenant_id)
             .where(
                 LawyerProfile.is_visible.is_(True),
+                # Trust gate: only OAK-verified lawyers appear publicly
+                LawyerProfile.verification_status == "verified",
                 User.is_active.is_(True),
                 Tenant.status == "active",
             )
@@ -251,6 +277,7 @@ async def public_lawyers(
             .limit(500)
         )
     ).all()
+    ratings = await _tenant_ratings(db)
     result = []
     for profile, user, tenant in rows:
         if area and area not in (profile.practice_areas or []):
@@ -259,6 +286,7 @@ async def public_lawyers(
             continue
         if language and language not in (profile.languages or []):
             continue
+        avg_rating, review_count = ratings.get(tenant.id, (None, 0))
         result.append(
             {
                 "id": str(profile.id),
@@ -271,8 +299,17 @@ async def public_lawyers(
                 "languages": profile.languages or [],
                 "photo": profile.photo,
                 "highlighted": tenant.plan != "trial",
+                "verified": True,
+                "consult_fee_eur": profile.consult_fee_eur,
+                "rating": avg_rating,
+                "review_count": review_count,
             }
         )
+    # Within each placement tier, better-rated lawyers surface first
+    result.sort(
+        key=lambda r: (r["highlighted"], r["rating"] or 0.0, r["review_count"]),
+        reverse=True,
+    )
     return result
 
 
@@ -381,13 +418,27 @@ async def citizen_my_cases(
             .limit(100)
         )
     ).scalars().all()
+    reviewed_ids = {
+        rid
+        for (rid,) in (
+            await db.execute(
+                select(CaseReview.case_request_id).where(CaseReview.citizen_id == citizen.id)
+            )
+        ).all()
+    }
     result = []
     for case in cases:
         firm = None
         if case.claimed_by_tenant_id:
             tenant = await db.get(Tenant, case.claimed_by_tenant_id)
             firm = tenant.name if tenant else None
-        result.append(_case_out(case, firm))
+        result.append(
+            {
+                **_case_out(case, firm),
+                "reviewed": case.id in reviewed_ids,
+                "can_review": case.id not in reviewed_ids and _case_reviewable(case),
+            }
+        )
     return result
 
 
@@ -415,6 +466,88 @@ async def citizen_close_case(
     return {"closed": True}
 
 
+# ---------- client reviews (trust: rate the service, never the outcome) ----------
+
+def _case_reviewable(case: CaseRequest) -> bool:
+    """A case can be reviewed once a lawyer handled it and the engagement
+    concluded (converted to a matter or closed)."""
+    return case.claimed_by_tenant_id is not None and case.status in ("converted", "closed")
+
+
+class ReviewIn(BaseModel):
+    rating_communication: int = Field(ge=1, le=5)
+    rating_speed: int = Field(ge=1, le=5)
+    rating_clarity: int = Field(ge=1, le=5)
+    comment: str | None = Field(default=None, max_length=1000)
+
+
+def _review_out(review: CaseReview) -> dict:
+    return {
+        "id": str(review.id),
+        "case_request_id": str(review.case_request_id),
+        "rating_communication": review.rating_communication,
+        "rating_speed": review.rating_speed,
+        "rating_clarity": review.rating_clarity,
+        "comment": review.comment,
+        "created_at": review.created_at.isoformat(),
+    }
+
+
+@public_router.post("/citizen/cases/{case_id}/review", status_code=201)
+async def citizen_review_case(
+    case_id: uuid.UUID,
+    body: ReviewIn,
+    request: Request,
+    citizen: CitizenUser = Depends(_current_citizen),
+    db: AsyncSession = Depends(get_db),
+):
+    case = await _owned_case(db, citizen, case_id)
+    if not _case_reviewable(case):
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "Reviews open once a lawyer has handled the case and it is concluded",
+        )
+    existing = (
+        await db.execute(select(CaseReview).where(CaseReview.case_request_id == case.id))
+    ).scalar_one_or_none()
+    if existing is not None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Case already reviewed")
+    review = CaseReview(
+        case_request_id=case.id,
+        citizen_id=citizen.id,
+        tenant_id=case.claimed_by_tenant_id,
+        rating_communication=body.rating_communication,
+        rating_speed=body.rating_speed,
+        rating_clarity=body.rating_clarity,
+        comment=(body.comment or "").strip() or None,
+    )
+    db.add(review)
+    await db.flush()
+    await log_action(
+        db, tenant_id=case.claimed_by_tenant_id, user_id=None,
+        action="marketplace.case_review", entity_type="case_request",
+        entity_id=str(case.id), ip_address=_ip(request),
+    )
+    await db.commit()
+    return _review_out(review)
+
+
+@public_router.get("/citizen/cases/{case_id}/review")
+async def citizen_get_review(
+    case_id: uuid.UUID,
+    citizen: CitizenUser = Depends(_current_citizen),
+    db: AsyncSession = Depends(get_db),
+):
+    case = await _owned_case(db, citizen, case_id)
+    review = (
+        await db.execute(select(CaseReview).where(CaseReview.case_request_id == case.id))
+    ).scalar_one_or_none()
+    return {
+        "review": _review_out(review) if review else None,
+        "can_review": review is None and _case_reviewable(case),
+    }
+
+
 async def _notify_matching_lawyers(
     case_id: uuid.UUID, category: str, city: str | None
 ) -> None:
@@ -432,6 +565,7 @@ async def _notify_matching_lawyers(
                 .join(Tenant, Tenant.id == LawyerProfile.tenant_id)
                 .where(
                     LawyerProfile.is_visible.is_(True),
+                    LawyerProfile.verification_status == "verified",
                     User.is_active.is_(True),
                     Tenant.status == "active",
                 )
@@ -478,6 +612,7 @@ async def _notify_on_duty_lawyers(case_id: uuid.UUID, city: str | None) -> None:
                 .join(Tenant, Tenant.id == LawyerProfile.tenant_id)
                 .where(
                     LawyerProfile.sos_on_duty.is_(True),
+                    LawyerProfile.verification_status == "verified",
                     User.is_active.is_(True),
                     Tenant.status == "active",
                 )
@@ -618,7 +753,10 @@ async def public_stats(db: AsyncSession = Depends(get_db)):
 
     lawyers = (
         await db.execute(
-            select(func.count(LawyerProfile.id)).where(LawyerProfile.is_visible.is_(True))
+            select(func.count(LawyerProfile.id)).where(
+                LawyerProfile.is_visible.is_(True),
+                LawyerProfile.verification_status == "verified",
+            )
         )
     ).scalar_one()
     cases_total = (await db.execute(select(func.count(CaseRequest.id)))).scalar_one()
@@ -861,6 +999,8 @@ def _profile_out(profile: LawyerProfile | None) -> dict:
         return {
             "is_visible": False, "sos_on_duty": False, "bio": None,
             "practice_areas": [], "cities": [], "languages": [], "photo": None,
+            "oak_license_no": None, "verification_status": "none",
+            "verification_note": None, "consult_fee_eur": None,
         }
     return {
         "is_visible": profile.is_visible,
@@ -870,6 +1010,10 @@ def _profile_out(profile: LawyerProfile | None) -> dict:
         "cities": profile.cities or [],
         "languages": profile.languages or [],
         "photo": profile.photo,
+        "oak_license_no": profile.oak_license_no,
+        "verification_status": profile.verification_status,
+        "verification_note": profile.verification_note,
+        "consult_fee_eur": profile.consult_fee_eur,
     }
 
 
@@ -891,11 +1035,14 @@ class ProfileIn(BaseModel):
     cities: list[str] = []
     languages: list[str] = []
     photo: str | None = None
+    oak_license_no: str | None = Field(default=None, max_length=64)
+    consult_fee_eur: int | None = Field(default=None, ge=0, le=10000)
 
 
 @router.put("/profile")
 async def update_my_profile(
     body: ProfileIn,
+    background: BackgroundTasks,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -914,12 +1061,46 @@ async def update_my_profile(
         loc for loc in body.languages if loc in settings.supported_locales
     ]
     profile.photo = body.photo
+    profile.consult_fee_eur = body.consult_fee_eur
+
+    # Entering or changing the license number (re)starts verification; the
+    # status itself is never client-writable — only the platform operator
+    # flips it after checking the public OAK registry.
+    new_license = (body.oak_license_no or "").strip() or None
+    if new_license != profile.oak_license_no:
+        profile.oak_license_no = new_license
+        profile.verified_at = None
+        profile.verification_note = None
+        profile.verification_status = "pending" if new_license else "none"
+        if new_license:
+            background.add_task(_notify_operator_verification, user.full_name, new_license)
+
     await log_action(
         db, tenant_id=user.tenant_id, user_id=user.id, action="marketplace.profile_update",
         entity_type="lawyer_profile", details={"visible": body.is_visible},
     )
     await db.commit()
     return _profile_out(profile)
+
+
+async def _notify_operator_verification(lawyer_name: str, license_no: str) -> None:
+    """Tell the platform operator (superadmin) a verification is waiting."""
+    from app.database import SessionLocal
+
+    async with SessionLocal() as db:
+        operators = (
+            await db.execute(
+                select(User).where(User.is_superadmin.is_(True), User.is_active.is_(True))
+            )
+        ).scalars().all()
+        for op in operators:
+            await send_email(
+                op.email,
+                "AvokatIM — Verifikim OAK në pritje",
+                f"{lawyer_name} dërgoi licencën OAK nr. {license_no} për verifikim.\n"
+                f"Kontrolloje në regjistrin publik të OAK dhe aprovoje te "
+                f"{settings.public_base_url}/platform",
+            )
 
 
 def _masked_name(full_name: str) -> str:
@@ -1065,6 +1246,16 @@ async def lawyer_claim_case(
     """Take the case: conflict check + IntakeRequest(source=marketplace)."""
     from app.models import IntakeRequest
     from app.services.platform_billing import has_past_due
+
+    # Trust gate: only OAK-verified lawyers may take citizen cases
+    profile = (
+        await db.execute(select(LawyerProfile).where(LawyerProfile.user_id == user.id))
+    ).scalar_one_or_none()
+    if profile is None or profile.verification_status != "verified":
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "OAK license verification required before claiming cases",
+        )
 
     tenant = await db.get(Tenant, user.tenant_id)
     quota = await _lead_quota(db, tenant)

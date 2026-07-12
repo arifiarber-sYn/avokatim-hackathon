@@ -8,7 +8,15 @@ the same credentials.
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -16,6 +24,10 @@ from app.models.base import Base, TimestampMixin, uuid_pk
 
 CASE_REQUEST_STATUSES = ["open", "claimed", "converted", "closed"]
 CASE_URGENCIES = ["normal", "urgent", "sos"]
+# Bar-license verification lifecycle: none (no license entered) -> pending
+# (entered, awaiting operator check against the public OAK registry) ->
+# verified | rejected (with a note; editing the license resubmits).
+VERIFICATION_STATUSES = ["none", "pending", "verified", "rejected"]
 
 
 class CitizenUser(Base, TimestampMixin):
@@ -63,6 +75,18 @@ class LawyerProfile(Base, TimestampMixin):
     languages: Mapped[list] = mapped_column(JSONB, default=list)  # locale codes
     # Small photo as data URL (same convention as Tenant.logo)
     photo: Mapped[str | None] = mapped_column(Text)
+    # OAK (Kosovo Bar Association) license verification — the directory's
+    # trust gate: only verified lawyers are listed publicly or may claim
+    # marketplace cases. Verification is manual (superadmin checks the
+    # public OAK registry) because OAK has no lookup API.
+    oak_license_no: Mapped[str | None] = mapped_column(String(64))
+    verification_status: Mapped[str] = mapped_column(
+        String(16), default="none", server_default="none", index=True
+    )
+    verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    verification_note: Mapped[str | None] = mapped_column(String(255))
+    # Transparent pricing (optional): consultation fee shown in the directory
+    consult_fee_eur: Mapped[int | None] = mapped_column(Integer)
 
 
 class CaseRequest(Base, TimestampMixin):
@@ -97,6 +121,35 @@ class CaseRequest(Base, TimestampMixin):
         UUID(as_uuid=True), ForeignKey("contacts.id", ondelete="SET NULL")
     )
     closed_reason: Mapped[str | None] = mapped_column(String(255))
+
+
+class CaseReview(Base, TimestampMixin):
+    """Post-engagement review by the citizen who owned the case.
+
+    Only the citizen whose claimed case reached converted/closed may review,
+    exactly once. Prompts rate the service experience (communication, speed,
+    clarity) — never the legal outcome, which would create regulatory risk
+    for both the platform and the lawyer.
+    """
+
+    __tablename__ = "case_reviews"
+    __table_args__ = (UniqueConstraint("case_request_id"),)
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    case_request_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("case_requests.id", ondelete="CASCADE"), index=True
+    )
+    citizen_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("citizen_users.id", ondelete="CASCADE"), index=True
+    )
+    # The firm that handled the case (solo lawyer == their tenant)
+    tenant_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), index=True
+    )
+    rating_communication: Mapped[int] = mapped_column(Integer)  # 1..5
+    rating_speed: Mapped[int] = mapped_column(Integer)  # 1..5
+    rating_clarity: Mapped[int] = mapped_column(Integer)  # 1..5
+    comment: Mapped[str | None] = mapped_column(Text)
 
 
 class CaseRequestMessage(Base, TimestampMixin):

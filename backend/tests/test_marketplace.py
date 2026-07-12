@@ -24,6 +24,10 @@ MARKETPLACE_KEYS = [
     "case_portal_ready_body",
     "sos_alert_subject",
     "sos_alert_body",
+    "verify_approved_subject",
+    "verify_approved_body",
+    "verify_rejected_subject",
+    "verify_rejected_body",
 ]
 
 
@@ -137,6 +141,37 @@ def test_livekit_token_payload_grants_only_one_room(monkeypatch):
     assert payload["video"]["room"] == f"sos-{case_id}"
     assert payload["video"]["roomJoin"] is True
     assert payload["exp"] - payload["iat"] == livekit.TOKEN_TTL_MINUTES * 60
+
+
+def test_verification_statuses_cover_lifecycle():
+    from app.models.marketplace import VERIFICATION_STATUSES
+
+    assert VERIFICATION_STATUSES == ["none", "pending", "verified", "rejected"]
+
+
+def test_review_ratings_bounded_one_to_five():
+    from pydantic import ValidationError
+
+    from app.api.marketplace import ReviewIn
+
+    ok = ReviewIn(rating_communication=5, rating_speed=4, rating_clarity=3)
+    assert ok.comment is None
+    with pytest.raises(ValidationError):
+        ReviewIn(rating_communication=0, rating_speed=4, rating_clarity=3)
+    with pytest.raises(ValidationError):
+        ReviewIn(rating_communication=5, rating_speed=6, rating_clarity=3)
+
+
+def test_case_reviewable_only_after_engagement_concluded():
+    from types import SimpleNamespace
+
+    from app.api.marketplace import _case_reviewable
+
+    tenant = uuid.uuid4()
+    assert _case_reviewable(SimpleNamespace(claimed_by_tenant_id=tenant, status="closed"))
+    assert _case_reviewable(SimpleNamespace(claimed_by_tenant_id=tenant, status="converted"))
+    assert not _case_reviewable(SimpleNamespace(claimed_by_tenant_id=tenant, status="claimed"))
+    assert not _case_reviewable(SimpleNamespace(claimed_by_tenant_id=None, status="closed"))
 
 
 def test_marketplace_i18n_keys_in_all_languages():

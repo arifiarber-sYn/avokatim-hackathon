@@ -29,6 +29,7 @@ from app.models.tasks import Task
 from app.models.marketplace import (
     CaseRequest,
     CaseRequestMessage,
+    CaseReview,
     CitizenUser,
     LawyerProfile,
 )
@@ -72,5 +73,6 @@ __all__ = [
     "LawyerProfile",
     "CaseRequest",
     "CaseRequestMessage",
+    "CaseReview",
     "PlatformInvoice",
 ]

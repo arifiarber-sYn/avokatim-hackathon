@@ -297,6 +297,19 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   token kept in `localStorage.avokatim_citizen_token`
   (`frontend/src/lib/citizen.ts`). ~60 new UI keys ×6 languages.
   Tests: `tests/test_marketplace.py`; `full_simulation.py` section 24.
+- **Trust layer — OAK verification + reviews + transparent pricing**
+  (2026-07-12, D-017): `LawyerProfile.oak_license_no` +
+  `verification_status` (none/pending/verified/rejected) + `consult_fee_eur`;
+  entering the license → pending + email to superadmins; operator decides in
+  `/platform` (queue at top, `POST /platform/verifications/{id}/decide`,
+  decision emailed ×6 locales). Verified is a hard gate for directory
+  listing, match/SOS notifications, stats and claiming (403). `CaseReview`
+  (1:1 with concluded claimed case; communication/speed/clarity 1–5 +
+  comment; POST/GET `/public/citizen/cases/{id}/review`); directory returns
+  `verified`, `rating`, `review_count`, `consult_fee_eur`, ranked by plan
+  tier then rating. UI: Settings license field + status pill + fee,
+  /platform queue, /avokatet badge + stars + price, /rasti-im star form,
+  /marketplace banner. Migration `16241f40c7cc`.
 - **Public Ava — free legal-information chat** (2026-07-11, Phase 2 of
   D-013): `/api/public/ava/*` in `app/api/marketplace.py` — `ask` +
   `ask-stream` (SSE), grounded in the XK legal corpus via the existing RAG

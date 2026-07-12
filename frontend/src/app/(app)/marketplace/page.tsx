@@ -43,6 +43,10 @@ interface LawyerProfile {
   cities: string[];
   languages: string[];
   photo: string | null;
+  oak_license_no: string | null;
+  verification_status: string;
+  verification_note: string | null;
+  consult_fee_eur: number | null;
 }
 
 interface LeadQuota {
@@ -182,6 +186,18 @@ export default function MarketplacePage() {
       </div>
 
       <ErrorNote message={error} />
+      {profile && profile.verification_status !== "verified" && (
+        <div className="rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+          <span>
+            {profile.verification_status === "pending" ? t.mkVerifPendingNote : t.mkVerifyBanner}
+          </span>
+          {profile.verification_status !== "pending" && (
+            <Link href="/settings#public-profile" className="font-medium underline shrink-0">
+              {t.mkVerifyBannerCta}
+            </Link>
+          )}
+        </div>
+      )}
       {quota?.past_due && (
         <div className="rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-3">
           {t.subPastDue}{" "}

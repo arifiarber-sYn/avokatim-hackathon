@@ -65,6 +65,9 @@ export interface CitizenCase {
   claimed_at: string | null;
   closed_reason: string | null;
   created_at: string;
+  // Reviews: set by /citizen/cases once the engagement concluded
+  reviewed?: boolean;
+  can_review?: boolean;
 }
 
 export interface PublicLawyer {
@@ -79,4 +82,9 @@ export interface PublicLawyer {
   photo: string | null;
   // Paid-plan perk: sorted first and softly emphasized in the directory
   highlighted?: boolean;
+  // Trust signals: OAK verification, client reviews, transparent pricing
+  verified?: boolean;
+  consult_fee_eur?: number | null;
+  rating?: number | null;
+  review_count?: number;
 }

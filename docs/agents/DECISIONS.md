@@ -305,3 +305,25 @@
   STRIPE keys are configured; until then the invoice email carries
   `platform_bank_details` (backend/.env — must be set before the first
   real invoice). Trial length moved 30→90 days to match the market promise.
+## D-017: Trust layer — manual OAK verification gate + service-only reviews (2026-07-12)
+
+- Context: before promoting publicly, citizens must be able to trust that
+  every listed "lawyer" is a real licensed advocate, and lawyers need social
+  proof. OAK (Kosovo Bar Association) publishes its member registry on the
+  web but offers no lookup API.
+- Decision: verification is **manual by design**: the lawyer enters their
+  OAK license number (profile → status `pending`), the platform operator
+  checks the public registry and approves/rejects in `/platform` (decision
+  emailed in the lawyer's locale). The status is never client-writable and
+  editing the license resubmits. Being verified is a hard gate for: public
+  directory listing, case-match + SOS-duty notifications, public stats and
+  claiming marketplace cases (403). Reviews (`CaseReview`, 1:1 with a
+  concluded claimed case) rate only the service — communication, speed,
+  clarity (1–5) — **never the legal outcome**, mirroring how Avvo/lawyer
+  directories avoid regulatory trouble; the average and count rank the
+  directory within each plan tier. Transparent pricing (`consult_fee_eur`)
+  is optional and shown in the directory.
+- Consequences: a fake or unlicensed signup can browse the app but never
+  touches a citizen; the operator has a small recurring duty (verification
+  queue is surfaced at the top of /platform and by email). When OAK offers
+  an API or a data-sharing agreement, only the manual step is replaced.

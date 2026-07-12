@@ -8,9 +8,10 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.database import get_db
 from app.deps import require_superadmin
-from app.models import Matter, PlatformInvoice, Tenant, User
+from app.models import LawyerProfile, Matter, PlatformInvoice, Tenant, User
 from app.services.audit import log_action
 from app.services.platform_billing import generate_invoice, invoice_out
 
@@ -150,6 +151,86 @@ async def update_tenant(
     )
     await db.commit()
     return {"updated": True}
+
+
+# ---------- OAK license verification queue ----------
+# Manual by design: OAK (Kosovo Bar Association) publishes its member
+# registry but has no lookup API, so the operator checks it by hand.
+
+@router.get("/verifications")
+async def list_verifications(
+    status_filter: str = "pending",
+    admin: User = Depends(require_superadmin),
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = (
+        select(LawyerProfile, User, Tenant)
+        .join(User, User.id == LawyerProfile.user_id)
+        .join(Tenant, Tenant.id == LawyerProfile.tenant_id)
+        .order_by(LawyerProfile.updated_at.desc())
+        .limit(200)
+    )
+    if status_filter != "all":
+        stmt = stmt.where(LawyerProfile.verification_status == status_filter)
+    rows = (await db.execute(stmt)).all()
+    return [
+        {
+            "profile_id": str(profile.id),
+            "lawyer_name": user.full_name,
+            "lawyer_email": user.email,
+            "tenant_name": tenant.name,
+            "oak_license_no": profile.oak_license_no,
+            "verification_status": profile.verification_status,
+            "verification_note": profile.verification_note,
+            "verified_at": profile.verified_at.isoformat() if profile.verified_at else None,
+            "submitted_at": profile.updated_at.isoformat(),
+        }
+        for profile, user, tenant in rows
+    ]
+
+
+class VerifyDecisionIn(BaseModel):
+    approve: bool
+    note: str | None = Field(default=None, max_length=255)
+
+
+@router.post("/verifications/{profile_id}/decide")
+async def decide_verification(
+    profile_id: uuid.UUID,
+    body: VerifyDecisionIn,
+    admin: User = Depends(require_superadmin),
+    db: AsyncSession = Depends(get_db),
+):
+    profile = await db.get(LawyerProfile, profile_id)
+    if profile is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Profile not found")
+    if not profile.oak_license_no:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "No license number submitted")
+    profile.verification_status = "verified" if body.approve else "rejected"
+    profile.verified_at = datetime.now(UTC) if body.approve else None
+    profile.verification_note = body.note
+    await log_action(
+        db, tenant_id=profile.tenant_id, user_id=admin.id,
+        action="platform.verification_decide", entity_type="lawyer_profile",
+        entity_id=str(profile.id),
+        details={"approve": body.approve, "license": profile.oak_license_no},
+    )
+    lawyer = await db.get(User, profile.user_id)
+    await db.commit()
+
+    if lawyer is not None:
+        from app.i18n import pick_locale, tr
+        from app.services.notifications import send_email
+
+        loc = pick_locale(lawyer.locale)
+        key = "verify_approved" if body.approve else "verify_rejected"
+        await send_email(
+            lawyer.email,
+            tr(loc, f"{key}_subject"),
+            tr(loc, f"{key}_body", note=body.note or "-",
+               url=f"{settings.public_base_url}/settings"),
+        )
+    return {"verification_status": profile.verification_status}
 
 
 # ---------- platform subscription invoices ----------

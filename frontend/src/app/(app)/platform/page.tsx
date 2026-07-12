@@ -82,8 +82,97 @@ export default function PlatformPage() {
           <TenantCard key={tn.id} tenant={tn} onAct={act} onUpdate={update} />
         ))}
       </div>
+      <VerificationsSection />
       <PlatformInvoicesSection />
     </div>
+  );
+}
+
+interface VerificationRow {
+  profile_id: string;
+  lawyer_name: string;
+  lawyer_email: string;
+  tenant_name: string;
+  oak_license_no: string | null;
+  verification_status: string;
+  verification_note: string | null;
+  submitted_at: string;
+}
+
+function VerificationsSection() {
+  const { t } = useI18n();
+  const [rows, setRows] = useState<VerificationRow[] | null>(null);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(() => {
+    apiGet<VerificationRow[]>("/platform/verifications")
+      .then(setRows)
+      .catch((err) => setError(err instanceof Error ? err.message : "error"));
+  }, []);
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  async function decide(profileId: string, approve: boolean) {
+    let note: string | null = null;
+    if (!approve) {
+      note = window.prompt(t.platRejectNote) || null;
+      if (note === null) return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      await apiPost(`/platform/verifications/${profileId}/decide`, { approve, note });
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Card className="p-5 space-y-3">
+      <div>
+        <h2 className="text-lg font-semibold">{t.platVerifTitle}</h2>
+        <p className="text-xs text-slate-500 mt-0.5">{t.platVerifHint}</p>
+      </div>
+      <ErrorNote message={error} />
+      {rows === null ? (
+        <Spinner />
+      ) : rows.length === 0 ? (
+        <p className="text-sm text-slate-500">{t.platVerifEmpty}</p>
+      ) : (
+        <div className="space-y-2">
+          {rows.map((row) => (
+            <div
+              key={row.profile_id}
+              className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm border border-slate-200 rounded-lg px-3 py-2"
+            >
+              <span className="font-medium">{row.lawyer_name}</span>
+              <span className="text-slate-500">{row.lawyer_email}</span>
+              <span className="text-slate-500">{row.tenant_name}</span>
+              <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-amber-100 text-amber-800">
+                OAK {row.oak_license_no}
+              </span>
+              <span className="flex gap-2 ml-auto">
+                <Button disabled={busy} onClick={() => decide(row.profile_id, true)}>
+                  {t.platApprove}
+                </Button>
+                <Button
+                  variant="secondary"
+                  disabled={busy}
+                  onClick={() => decide(row.profile_id, false)}
+                >
+                  {t.platReject}
+                </Button>
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
   );
 }
 

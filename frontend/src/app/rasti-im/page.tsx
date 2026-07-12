@@ -300,6 +300,10 @@ function MyCaseInner() {
                     </Link>
                   )}
                 </div>
+                {c.reviewed && (
+                  <p className="text-xs text-emerald-600">{t.rvDone} ✓</p>
+                )}
+                {c.can_review && <ReviewForm caseId={c.id} onDone={loadCases} />}
                 {openCase === c.id && (
                   <div className="border-t border-slate-100 pt-3 space-y-3">
                     <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -344,6 +348,97 @@ function MyCaseInner() {
         )}
       </main>
     </PublicShell>
+  );
+}
+
+/** Three star-prompts about the service (never the legal outcome). */
+function ReviewForm({ caseId, onDone }: { caseId: string; onDone: () => void }) {
+  const { t } = useI18n();
+  const [open, setOpen] = useState(false);
+  const [ratings, setRatings] = useState({ communication: 0, speed: 0, clarity: 0 });
+  const [comment, setComment] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [sent, setSent] = useState(false);
+
+  const prompts: { key: keyof typeof ratings; label: string }[] = [
+    { key: "communication", label: t.rvCommunication },
+    { key: "speed", label: t.rvSpeed },
+    { key: "clarity", label: t.rvClarity },
+  ];
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!ratings.communication || !ratings.speed || !ratings.clarity) return;
+    setBusy(true);
+    setError("");
+    try {
+      await citizenPost(`/citizen/cases/${caseId}/review`, {
+        rating_communication: ratings.communication,
+        rating_speed: ratings.speed,
+        rating_clarity: ratings.clarity,
+        comment: comment.trim() || null,
+      });
+      setSent(true);
+      setTimeout(onDone, 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (sent) return <p className="text-sm text-emerald-600">{t.rvThanks}</p>;
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="text-sm font-medium text-amber-600 hover:underline"
+      >
+        ★ {t.rvTitle}
+      </button>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} className="border-t border-slate-100 pt-3 space-y-3">
+      <p className="text-xs text-slate-500">{t.rvHint}</p>
+      {prompts.map((p) => (
+        <div key={p.key} className="flex items-center justify-between gap-3">
+          <span className="text-sm text-slate-700">{p.label}</span>
+          <span className="flex gap-0.5">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setRatings({ ...ratings, [p.key]: n })}
+                className={`text-xl leading-none ${
+                  n <= ratings[p.key] ? "text-amber-500" : "text-slate-300"
+                }`}
+                aria-label={`${p.label}: ${n}/5`}
+              >
+                ★
+              </button>
+            ))}
+          </span>
+        </div>
+      ))}
+      <Textarea
+        rows={2}
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        placeholder={t.rvComment}
+        maxLength={1000}
+      />
+      <ErrorNote message={error} />
+      <Button
+        type="submit"
+        disabled={busy || !ratings.communication || !ratings.speed || !ratings.clarity}
+      >
+        {busy ? t.loading : t.rvSubmit}
+      </Button>
+    </form>
   );
 }
 

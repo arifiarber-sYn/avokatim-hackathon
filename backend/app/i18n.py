@@ -107,6 +107,16 @@ _SQ = {
         "Në Treg sapo u postua një rast që përputhet me profilin tënd "
         "({category}, {city}). Avokati i parë që e merr, e fiton:\n{url}"
     ),
+    "verify_approved_subject": "AvokatIM — Licenca juaj OAK u verifikua",
+    "verify_approved_body": (
+        "Licenca juaj OAK u verifikua me sukses. Profili juaj tani shfaqet "
+        "në drejtorinë publike dhe mund të merrni raste nga Tregu:\n{url}"
+    ),
+    "verify_rejected_subject": "AvokatIM — Verifikimi i licencës OAK nuk u aprovua",
+    "verify_rejected_body": (
+        "Verifikimi i licencës suaj OAK nuk u aprovua. Shënim: {note}\n"
+        "Korrigjoni numrin e licencës në Cilësimet për ta ridërguar:\n{url}"
+    ),
     "platform_invoice_subject": "AvokatIM — Fatura e abonimit {number}",
     "platform_invoice_body": (
         "Fatura e abonimit {number} për periudhën {period}:\n"
@@ -218,6 +228,16 @@ _SR = {
     "case_match_body": (
         "Na Tržištu je upravo objavljen slučaj koji odgovara vašem profilu "
         "({category}, {city}). Prvi advokat koji ga preuzme — dobija ga:\n{url}"
+    ),
+    "verify_approved_subject": "AvokatIM — Vaša AKK licenca je verifikovana",
+    "verify_approved_body": (
+        "Vaša advokatska licenca je uspešno verifikovana. Vaš profil je sada "
+        "vidljiv u javnom imeniku i možete preuzimati slučajeve sa Tržišta:\n{url}"
+    ),
+    "verify_rejected_subject": "AvokatIM — Verifikacija licence nije odobrena",
+    "verify_rejected_body": (
+        "Verifikacija vaše advokatske licence nije odobrena. Napomena: {note}\n"
+        "Ispravite broj licence u Podešavanjima da biste je ponovo poslali:\n{url}"
     ),
     "platform_invoice_subject": "AvokatIM — Faktura pretplate {number}",
     "platform_invoice_body": (
@@ -331,6 +351,16 @@ _TR = {
         "Pazar'da profilinize uyan bir dava yayınlandı ({category}, {city}). "
         "Davayı ilk üstlenen avukat kazanır:\n{url}"
     ),
+    "verify_approved_subject": "AvokatIM — Baro lisansınız doğrulandı",
+    "verify_approved_body": (
+        "Avukatlık lisansınız başarıyla doğrulandı. Profiliniz artık kamu "
+        "rehberinde görünüyor ve Pazar'dan dava üstlenebilirsiniz:\n{url}"
+    ),
+    "verify_rejected_subject": "AvokatIM — Lisans doğrulaması onaylanmadı",
+    "verify_rejected_body": (
+        "Avukatlık lisansınızın doğrulaması onaylanmadı. Not: {note}\n"
+        "Yeniden göndermek için Ayarlar'da lisans numarasını düzeltin:\n{url}"
+    ),
     "platform_invoice_subject": "AvokatIM — Abonelik faturası {number}",
     "platform_invoice_body": (
         "{period} dönemi için abonelik faturası {number}:\n"
@@ -442,6 +472,16 @@ _BS = {
     "case_match_body": (
         "Na Tržištu je upravo objavljen slučaj koji odgovara vašem profilu "
         "({category}, {city}). Prvi advokat koji ga preuzme — dobija ga:\n{url}"
+    ),
+    "verify_approved_subject": "AvokatIM — Vaša advokatska licenca je verificirana",
+    "verify_approved_body": (
+        "Vaša advokatska licenca je uspješno verificirana. Vaš profil je sada "
+        "vidljiv u javnom imeniku i možete preuzimati slučajeve s Tržišta:\n{url}"
+    ),
+    "verify_rejected_subject": "AvokatIM — Verifikacija licence nije odobrena",
+    "verify_rejected_body": (
+        "Verifikacija vaše advokatske licence nije odobrena. Napomena: {note}\n"
+        "Ispravite broj licence u Postavkama da biste je ponovo poslali:\n{url}"
     ),
     "platform_invoice_subject": "AvokatIM — Faktura pretplate {number}",
     "platform_invoice_body": (
@@ -555,6 +595,16 @@ _EN = {
         "A case matching your profile was just posted on the Marketplace "
         "({category}, {city}). The first lawyer to claim it wins:\n{url}"
     ),
+    "verify_approved_subject": "AvokatIM — Your OAK license is verified",
+    "verify_approved_body": (
+        "Your bar license was verified successfully. Your profile is now "
+        "listed in the public directory and you can claim Marketplace cases:\n{url}"
+    ),
+    "verify_rejected_subject": "AvokatIM — License verification not approved",
+    "verify_rejected_body": (
+        "Your bar license verification was not approved. Note: {note}\n"
+        "Correct the license number in Settings to resubmit:\n{url}"
+    ),
     "platform_invoice_subject": "AvokatIM — Subscription invoice {number}",
     "platform_invoice_body": (
         "Subscription invoice {number} for {period}:\n"
@@ -644,6 +694,10 @@ _ZH = {
     "sos_alert_body": "一位公民请求紧急帮助（{city}）。您是 SOS 值班律师——请尽快打开市场并接手案件：\n{url}",
     "case_match_subject": "AvokatIM — 有一个与您的资料匹配的新案件",
     "case_match_body": "市场上刚发布了一个与您的资料匹配的案件（{category}，{city}）。先接手的律师获得该案件：\n{url}",
+    "verify_approved_subject": "AvokatIM — 您的律师执照已通过验证",
+    "verify_approved_body": "您的律师执照已成功验证。您的资料现已列入公开名录，并可以从市场接手案件：\n{url}",
+    "verify_rejected_subject": "AvokatIM — 执照验证未通过",
+    "verify_rejected_body": "您的律师执照验证未通过。备注：{note}\n请在设置中更正执照号码后重新提交：\n{url}",
     "platform_invoice_subject": "AvokatIM — 订阅发票 {number}",
     "platform_invoice_body": "订阅发票 {number}（账期 {period}）：\n{seats} 位用户 × {price} € = {amount} €\n付款截止日期：{due}\n\n银行转账付款（请以发票号作为备注）：\n{bank}\n\n详情及刷卡支付（如已启用）请见 设置 → 订阅：\n{url}",
     "platform_overdue_subject": "AvokatIM — 发票 {number} 已逾期",

@@ -82,8 +82,32 @@ export default function LawyerDirectoryPage() {
                     </div>
                   )}
                   <div className="min-w-0">
-                    <p className="font-semibold truncate">{lawyer.full_name}</p>
+                    <p className="font-semibold truncate flex items-center gap-1.5">
+                      <span className="truncate">{lawyer.full_name}</span>
+                      {lawyer.verified && (
+                        <span
+                          className="inline-flex items-center gap-0.5 shrink-0 text-[11px] font-semibold text-emerald-700 bg-emerald-50 rounded-full px-1.5 py-0.5"
+                          title={t.lpVerified}
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-3 w-3">
+                            <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          {t.lpVerified}
+                        </span>
+                      )}
+                    </p>
                     <p className="text-xs text-slate-500 truncate">{lawyer.firm_name}</p>
+                    {lawyer.rating != null && (
+                      <p className="text-xs text-amber-600 mt-0.5">
+                        {"★".repeat(Math.round(lawyer.rating))}
+                        <span className="text-slate-400">
+                          {"★".repeat(5 - Math.round(lawyer.rating))}
+                        </span>{" "}
+                        <span className="text-slate-500">
+                          {lawyer.rating.toFixed(1)} · {lawyer.review_count} {t.lpReviewsWord}
+                        </span>
+                      </p>
+                    )}
                   </div>
                 </div>
                 {lawyer.bio && <p className="text-sm text-slate-600 line-clamp-3">{lawyer.bio}</p>}
@@ -99,12 +123,19 @@ export default function LawyerDirectoryPage() {
                     </span>
                   ))}
                 </div>
-                <Link
-                  href={`/posto-rastin?avokati=${lawyer.tenant_id}`}
-                  className="inline-block text-sm font-medium text-indigo-600 hover:underline"
-                >
-                  {t.mkContactLawyer} →
-                </Link>
+                <div className="flex items-center justify-between gap-3">
+                  <Link
+                    href={`/posto-rastin?avokati=${lawyer.tenant_id}`}
+                    className="inline-block text-sm font-medium text-indigo-600 hover:underline"
+                  >
+                    {t.mkContactLawyer} →
+                  </Link>
+                  {lawyer.consult_fee_eur != null && (
+                    <span className="text-xs text-slate-500">
+                      {t.lpConsultFrom} <b className="text-slate-700">{lawyer.consult_fee_eur} €</b>
+                    </span>
+                  )}
+                </div>
               </Card>
             ))}
           </div>

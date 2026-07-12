@@ -575,14 +575,35 @@ async def main() -> None:
         r = await c.put(f"{BASE}/marketplace/profile", headers=h, json={
             "is_visible": True, "bio": "Avokat me përvojë në të drejtën civile.",
             "practice_areas": ["civil", "commercial"], "cities": ["Prishtinë"],
-            "languages": ["sq", "en"],
+            "languages": ["sq", "en"], "oak_license_no": f"SIM-{SUFFIX}",
+            "consult_fee_eur": 30,
         })
-        check("avokati aktivizon profilin publik", r.status_code == 200
-              and r.json().get("is_visible") is True)
+        check("avokati aktivizon profilin publik (licenca OAK → në pritje)",
+              r.status_code == 200 and r.json().get("is_visible") is True
+              and r.json().get("verification_status") == "pending")
         r = await c.get(f"{BASE}/public/lawyers")
         directory = r.json() if r.status_code == 200 else []
-        check("drejtoria publike e avokatëve me filtra",
-              any(x["firm_name"] == f"Zyra Sim {SUFFIX}" for x in directory),
+        check("PA verifikim OAK avokati NUK del në drejtori",
+              not any(x["firm_name"] == f"Zyra Sim {SUFFIX}" for x in directory))
+
+        # The platform operator checks the public OAK registry and approves
+        # (same effect as the /platform panel decide endpoint)
+        from sqlalchemy import text as _vsql
+
+        from app.database import SessionLocal as _VSession
+        async with _VSession() as _vdb:
+            await _vdb.execute(_vsql(
+                "UPDATE lawyer_profiles SET verification_status='verified', "
+                "verified_at=now() WHERE oak_license_no = :lic"),
+                {"lic": f"SIM-{SUFFIX}"})
+            await _vdb.commit()
+        r = await c.get(f"{BASE}/public/lawyers")
+        directory = r.json() if r.status_code == 200 else []
+        sim_entry = next(
+            (x for x in directory if x["firm_name"] == f"Zyra Sim {SUFFIX}"), None)
+        check("pas verifikimit OAK del në drejtori me badge + çmim transparent",
+              sim_entry is not None and sim_entry.get("verified") is True
+              and sim_entry.get("consult_fee_eur") == 30,
               f"{len(directory)} profile")
 
         cit_email = f"qytetari.sim.{SUFFIX}@gmail.com"
@@ -657,6 +678,32 @@ async def main() -> None:
         check("qytetari kyçet në portal me TË NJËJTIN fjalëkalim",
               r.status_code == 200 and r.json().get("access_token"))
 
+        # Reviews: the citizen rates the service after the engagement
+        check("rasti i konvertuar lejohet për vlerësim",
+              conv is not None and conv.get("can_review") is True)
+        r = await c.post(f"{BASE}/public/citizen/cases/{case_id}/review",
+                         headers=ch, json={
+                             "rating_communication": 5, "rating_speed": 4,
+                             "rating_clarity": 5,
+                             "comment": "Përgjigje e shpejtë dhe shpjegim i qartë.",
+                         })
+        check("qytetari vlerëson shërbimin (komunikim/shpejtësi/qartësi)",
+              r.status_code == 201)
+        r = await c.post(f"{BASE}/public/citizen/cases/{case_id}/review",
+                         headers=ch, json={
+                             "rating_communication": 1, "rating_speed": 1,
+                             "rating_clarity": 1,
+                         })
+        check("vlerësimi i dytë për të njëjtin rast refuzohet (409)",
+              r.status_code == 409)
+        r = await c.get(f"{BASE}/public/lawyers")
+        sim_entry = next(
+            (x for x in r.json() if x["firm_name"] == f"Zyra Sim {SUFFIX}"), None)
+        check("mesatarja e vlerësimeve del në drejtori",
+              sim_entry is not None and sim_entry.get("rating") == 4.7
+              and sim_entry.get("review_count") == 1,
+              f"rating={sim_entry.get('rating') if sim_entry else None}")
+
         r = await c.get(f"{BASE}/public/stats")
         stats = r.json() if r.status_code == 200 else {}
         check("statistikat publike (qasje në drejtësi)",
@@ -708,7 +755,8 @@ async def main() -> None:
             "is_visible": True, "sos_on_duty": True,
             "bio": "Avokat me përvojë në të drejtën civile.",
             "practice_areas": ["civil", "commercial"], "cities": ["Prishtinë"],
-            "languages": ["sq", "en"],
+            "languages": ["sq", "en"], "oak_license_no": f"SIM-{SUFFIX}",
+            "consult_fee_eur": 30,
         })
         check("avokati bëhet kujdestar SOS", r.status_code == 200
               and r.json().get("sos_on_duty") is True)

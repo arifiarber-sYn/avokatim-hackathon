@@ -1265,7 +1265,13 @@ function PublicProfileSection() {
     cities: "",
     languages: [] as string[],
     photo: null as string | null,
+    oak_license_no: "",
+    consult_fee_eur: "" as string,
   });
+  const [verification, setVerification] = useState<{
+    status: string;
+    note: string | null;
+  }>({ status: "none", note: null });
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
 
@@ -1288,8 +1294,12 @@ function PublicProfileSection() {
       cities: string[];
       languages: string[];
       photo: string | null;
+      oak_license_no: string | null;
+      verification_status: string;
+      verification_note: string | null;
+      consult_fee_eur: number | null;
     }>("/marketplace/profile")
-      .then((p) =>
+      .then((p) => {
         setProfile({
           is_visible: p.is_visible,
           sos_on_duty: p.sos_on_duty,
@@ -1298,8 +1308,11 @@ function PublicProfileSection() {
           cities: p.cities.join(", "),
           languages: p.languages,
           photo: p.photo,
-        })
-      )
+          oak_license_no: p.oak_license_no || "",
+          consult_fee_eur: p.consult_fee_eur == null ? "" : String(p.consult_fee_eur),
+        });
+        setVerification({ status: p.verification_status, note: p.verification_note });
+      })
       .catch(() => {});
   }, []);
 
@@ -1312,15 +1325,21 @@ function PublicProfileSection() {
     setError("");
     setSaved(false);
     try {
-      await apiPut("/marketplace/profile", {
-        is_visible: profile.is_visible,
-        sos_on_duty: profile.sos_on_duty,
-        bio: profile.bio || null,
-        practice_areas: profile.practice_areas,
-        cities: profile.cities.split(",").map((c) => c.trim()).filter(Boolean),
-        languages: profile.languages,
-        photo: profile.photo,
-      });
+      const p = await apiPut<{ verification_status: string; verification_note: string | null }>(
+        "/marketplace/profile",
+        {
+          is_visible: profile.is_visible,
+          sos_on_duty: profile.sos_on_duty,
+          bio: profile.bio || null,
+          practice_areas: profile.practice_areas,
+          cities: profile.cities.split(",").map((c) => c.trim()).filter(Boolean),
+          languages: profile.languages,
+          photo: profile.photo,
+          oak_license_no: profile.oak_license_no.trim() || null,
+          consult_fee_eur: profile.consult_fee_eur === "" ? null : Number(profile.consult_fee_eur),
+        }
+      );
+      setVerification({ status: p.verification_status, note: p.verification_note });
       setSaved(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.error);
@@ -1336,7 +1355,6 @@ function PublicProfileSection() {
   }
 
   return (
-    <div id="public-profile" className="scroll-mt-20">
     <Card className="p-5 space-y-4">
       <div>
         <h2 className="font-semibold">{t.mkPublicProfile}</h2>
@@ -1361,6 +1379,58 @@ function PublicProfileSection() {
           />
           {t.mkSosDuty}
         </label>
+        <div>
+          <div className="flex items-center gap-2">
+            <Label>{t.mkOakLicense}</Label>
+            <span
+              className={`text-[11px] font-semibold rounded-full px-2 py-0.5 ${
+                verification.status === "verified"
+                  ? "bg-emerald-100 text-emerald-700"
+                  : verification.status === "pending"
+                    ? "bg-amber-100 text-amber-700"
+                    : verification.status === "rejected"
+                      ? "bg-red-100 text-red-700"
+                      : "bg-slate-100 text-slate-600"
+              }`}
+            >
+              {verification.status === "verified"
+                ? t.mkVerifVerified
+                : verification.status === "pending"
+                  ? t.mkVerifPending
+                  : verification.status === "rejected"
+                    ? t.mkVerifRejected
+                    : t.mkVerifNone}
+            </span>
+          </div>
+          <Input
+            value={profile.oak_license_no}
+            onChange={(e) => setProfile({ ...profile, oak_license_no: e.target.value })}
+            placeholder="p.sh. 1234"
+            maxLength={64}
+          />
+          <p className="text-xs text-slate-500 mt-1">{t.mkOakLicenseHint}</p>
+          {verification.status === "pending" && (
+            <p className="text-xs text-amber-700 mt-1">{t.mkVerifPendingNote}</p>
+          )}
+          {verification.status === "rejected" && (
+            <p className="text-xs text-red-700 mt-1">
+              {t.mkVerifRejectedNote}
+              {verification.note ? ` (${verification.note})` : ""}
+            </p>
+          )}
+        </div>
+        <div>
+          <Label>{t.mkConsultFee}</Label>
+          <Input
+            type="number"
+            min={0}
+            max={10000}
+            value={profile.consult_fee_eur}
+            onChange={(e) => setProfile({ ...profile, consult_fee_eur: e.target.value })}
+            placeholder="p.sh. 30"
+          />
+          <p className="text-xs text-slate-500 mt-1">{t.mkConsultFeeHint}</p>
+        </div>
         <div>
           <Label>{t.mkBio}</Label>
           <Textarea
@@ -1437,6 +1507,5 @@ function PublicProfileSection() {
         </div>
       </form>
     </Card>
-    </div>
   );
 }

@@ -10,24 +10,31 @@
 > - Left open / next: ...
 > ```
 
-## 2026-07-12 — First-user investigation, profile nudge, gap analysis vs 2026 market (Cursor / Fable 5)
+## 2026-07-12 — OAK verification + client reviews + transparent pricing (Cursor / Fable 5)
 
-- Context: first real lawyer signup (Jeton Shala, tenant "maka") didn't appear
-  in the public directory. Investigated: signup/verify/login all worked (8
-  logins); he never activated Settings → Public profile — and no lawyer had,
-  so the directory was empty. Traffic check: ~103 external IPs since Jul 6
-  (~25-30 real human visitors after removing bots), 4 public Ava questions,
-  no foreign brute-force (all 10 failed logins were the local simulation).
-- Done: dashboard onboarding banner (amber) when `is_visible` is false, CTA to
-  `/settings#public-profile` (anchor added). Strings `pubProfileNudge*` ×6.
-- Done: internet gap review vs 2026 standard → canvas
-  `mungesat-kunder-tregut-2026` + prioritized backlog in ROADMAP
-  ("Competitive gaps 2026-07-12"): P1 OAK license verification + client
-  reviews; P2 consultation booking, public deadline calculator, citizen doc
-  automation, transparent pricing; P3 passive time capture, voice Ava,
-  agentic intake, public API.
-- Verified: tsc + build OK, service restarted, health OK.
-- Left open: P1 items (license verification, reviews) are the next build.
+- Context: Phase 1 of the "Mbrojtja AI + backlog i plotë" plan — the trust
+  layer required before public promotion.
+- Done: `LawyerProfile` gained `oak_license_no`, `verification_status`
+  (none/pending/verified/rejected), `verified_at`, `verification_note`,
+  `consult_fee_eur`. Migration `16241f40c7cc`. Entering/changing the license
+  sets status to pending and emails superadmins; only `/platform` can decide
+  (`GET /platform/verifications`, `POST /platform/verifications/{id}/decide`,
+  approval/rejection emailed to the lawyer in their locale). Trust gate:
+  unverified lawyers are excluded from the public directory, case-match and
+  SOS-duty notifications, public stats, and get 403 on claim. New `CaseReview`
+  model (1:1 with concluded claimed cases; communication/speed/clarity 1–5 +
+  optional comment, never the legal outcome); citizen endpoints to post/read
+  the review; directory now returns `verified`, `rating`, `review_count`,
+  `consult_fee_eur` and sorts by plan tier then rating. UI: license field +
+  status pill + consult fee in Settings, verification queue in /platform,
+  verified badge + stars + price in /avokatet, star review form in /rasti-im,
+  "verification required" banner in /marketplace. Strings ×6 (frontend and
+  backend emails); added the previously missing `pubProfileNudge*` keys.
+- Verified: pytest 39 passed; full_simulation extended (pending→hidden,
+  verified→listed with badge/fee, review posted, duplicate 409, average in
+  directory) — 138/138 PASS; frontend build OK; health OK.
+- Left open: phases 2–4 of the plan (voice, evidence vault, SOS UI, egress,
+  voice Ava, deadline calculator, booking, citizen docs).
 
 ## 2026-07-11 — Per-page onboarding intros + "how it works" landing section (Cursor / Fable 5)
 
