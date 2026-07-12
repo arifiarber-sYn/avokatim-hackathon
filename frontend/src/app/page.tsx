@@ -7,7 +7,6 @@
  */
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { getToken, setToken } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import PublicShell from "@/components/public-shell";
@@ -30,45 +29,51 @@ interface PublicStats {
 }
 
 export default function Home() {
-  const router = useRouter();
   const { t } = useI18n();
-  const [ready, setReady] = useState(false);
+  const [lawyerLogged, setLawyerLogged] = useState(false);
   const [stats, setStats] = useState<PublicStats | null>(null);
 
   useEffect(() => {
-    // Lawyers with a VALID session go straight to their dashboard. A stale
-    // token must not trap visitors on the login page — validate it first
+    // The landing always renders — even for a signed-in lawyer (they get a
+    // "continue to dashboard" banner instead of an auto-redirect, so the
+    // public presentation stays visible). Stale tokens are cleared here
     // (plain fetch: apiGet would hard-redirect to /login on 401).
     // Citizen tokens are recognized by the PublicShell header, not here.
     const token = getToken();
-    if (!token) {
-      setReady(true);
-      return;
-    }
+    if (!token) return;
     fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => {
-        if (res.ok) {
-          router.replace("/dashboard");
-        } else {
-          setToken(null);
-          setReady(true);
-        }
+        if (res.ok) setLawyerLogged(true);
+        else setToken(null);
       })
-      .catch(() => setReady(true));
-  }, [router]);
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
-    if (!ready) return;
     fetch("/api/public/stats")
       .then((res) => res.json())
       .then(setStats)
       .catch(() => {});
-  }, [ready]);
-
-  if (!ready) return null;
+  }, []);
 
   return (
     <PublicShell wide>
+      {/* Signed-in lawyer: one-click path back to work, no auto-redirect */}
+      {lawyerLogged && (
+        <div className="bg-indigo-700 text-white">
+          <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3 text-sm">
+            <span className="truncate">{t.umbLoggedLawyer}</span>
+            <Link
+              href="/dashboard"
+              className="shrink-0 inline-flex items-center gap-1.5 font-semibold bg-white/15 hover:bg-white/25 rounded-lg px-3 py-1.5 transition"
+            >
+              {t.umbGoDash}
+              <IconArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Hero: the whole project in one breath, then the audience split */}
       <section className="bg-gradient-to-b from-indigo-50/80 via-white to-slate-50 border-b border-slate-100">
         <div className="max-w-5xl mx-auto px-4 pt-12 pb-12 md:pt-20 md:pb-16 space-y-10">
