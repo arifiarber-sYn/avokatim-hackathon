@@ -362,3 +362,19 @@
   privacy policy gained an "SOS recordings and voice" section ×6; consent is
   collected once in the SOS screen and per-session server-side
   (`consent_at`). UI guidance stays "information, not advice".
+
+## D-019: Platform feedback is anonymous-friendly and operator-reviewed (2026-07-12)
+
+- Context: the redesign plan required "vende për shkresa e ankesa". Two
+  distinct needs: official letters/complaints citizens send to third parties
+  (solved by the template generator, now 7 templates with categories) and
+  complaints/suggestions aimed at the platform itself, which had no channel.
+- Decision: a single `platform_feedback` table (kind ankesë/sugjerim/problem,
+  optional name+email, status new/handled) fed by a rate-limited public
+  endpoint (`POST /api/public/feedback`, 5/h/IP, no account required — a
+  complaints channel must not demand signup). Superadmins get an email per
+  entry and review it in /platform; "handled" is a status + optional note,
+  never deletion, so the trail stays auditable.
+- Consequences: /kontakti is linked from the shared public footer on every
+  public page; the generator and the contact channel stay clearly separated
+  in the UI (documents = drejtuar të tretëve, kontakti = drejt platformës).

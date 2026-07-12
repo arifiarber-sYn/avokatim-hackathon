@@ -75,7 +75,12 @@ async def public_deadline_calc(
 async def citizen_doc_templates():
     """Available self-service templates with their plain-language fields."""
     return [
-        {"code": tpl["code"], "name": tpl["name"], "fields": tpl["fields"]}
+        {
+            "code": tpl["code"],
+            "category": tpl["category"],
+            "name": tpl["name"],
+            "fields": tpl["fields"],
+        }
         for tpl in CITIZEN_DOC_TEMPLATES
     ]
 

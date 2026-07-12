@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/i18n";
 import PublicShell from "@/components/public-shell";
 import PageIntro from "@/components/page-intro";
 import { Button, Card, ErrorNote, Input, Label, Spinner, Textarea } from "@/components/ui";
+import { IconDoc } from "@/components/icons";
 
 interface DocField {
   key: string;
@@ -16,9 +17,12 @@ interface DocField {
 
 interface DocTemplate {
   code: string;
+  category: string;
   name: Record<string, string>;
   fields: DocField[];
 }
+
+const CATEGORY_ORDER = ["institucionet", "puna", "konsumatori", "te_pergjithshme"];
 
 export default function CitizenDocsPage() {
   const { t, locale } = useI18n();
@@ -65,27 +69,50 @@ export default function CitizenDocsPage() {
   return (
     <PublicShell>
       <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-6 space-y-4">
-        <h1 className="text-2xl font-bold">{t.cdTitle}</h1>
+        <div className="flex items-center gap-2.5">
+          <IconDoc className="h-6 w-6 text-indigo-600" />
+          <h1 className="text-2xl font-bold">{t.cdTitle}</h1>
+        </div>
 
         <PageIntro k="dokumentet" title={t.cdIntroT} body={t.cdIntro} />
 
         {templates === null ? (
           <Spinner />
         ) : !picked ? (
-          <div className="space-y-3">
+          <div className="space-y-5">
             <p className="text-sm font-semibold text-slate-600">{t.cdPick}</p>
-            {templates.map((tpl) => (
-              <button
-                key={tpl.code}
-                onClick={() => {
-                  setPicked(tpl);
-                  setValues({});
-                }}
-                className="w-full text-left bg-white rounded-xl border border-slate-200 p-4 hover:border-indigo-300 hover:shadow-sm transition"
-              >
-                <p className="font-semibold text-slate-900">📄 {loc(tpl.name)}</p>
-              </button>
-            ))}
+            {CATEGORY_ORDER.filter((cat) => templates.some((tpl) => tpl.category === cat)).map(
+              (cat) => {
+                const catLabel = {
+                  institucionet: t.cdCatInstitucionet,
+                  puna: t.cdCatPuna,
+                  konsumatori: t.cdCatKonsumatori,
+                  te_pergjithshme: t.cdCatTePergjithshme,
+                }[cat];
+                return (
+                  <div key={cat} className="space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                      {catLabel}
+                    </p>
+                    {templates
+                      .filter((tpl) => tpl.category === cat)
+                      .map((tpl) => (
+                        <button
+                          key={tpl.code}
+                          onClick={() => {
+                            setPicked(tpl);
+                            setValues({});
+                          }}
+                          className="w-full text-left bg-white rounded-xl border border-slate-200 p-4 hover:border-indigo-300 hover:shadow-sm transition flex items-center gap-3"
+                        >
+                          <IconDoc className="h-5 w-5 text-indigo-600 shrink-0" />
+                          <p className="font-semibold text-slate-900">{loc(tpl.name)}</p>
+                        </button>
+                      ))}
+                  </div>
+                );
+              }
+            )}
           </div>
         ) : (
           <Card className="p-5 space-y-4">

@@ -11,6 +11,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
 import { LocaleSwitcher } from "@/components/ui";
+import PublicFooter from "@/components/public-footer";
 
 function AvaIcon({ className }: { className?: string }) {
   return (
@@ -60,17 +61,20 @@ const NAV = [
 export default function PublicShell({
   children,
   wide = false,
+  footer = true,
 }: {
   children: ReactNode;
   wide?: boolean;
+  footer?: boolean;
 }) {
   const { t } = useI18n();
   const pathname = usePathname();
   const dict = t as unknown as Record<string, string>;
+  const toolsActive = pathname.startsWith("/afatet") || pathname.startsWith("/dokumentet");
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
+      <header className="bg-white/85 backdrop-blur border-b border-slate-200 sticky top-0 z-40">
         <div className={`${wide ? "max-w-5xl" : "max-w-2xl"} mx-auto px-4 py-3 flex items-center justify-between gap-3`}>
           <Link href="/" className="text-lg font-bold text-indigo-700 shrink-0">
             Avokat<span className="text-slate-900">IM</span>
@@ -87,6 +91,26 @@ export default function PublicShell({
                 {label(dict)}
               </Link>
             ))}
+            {/* Tools dropdown: deadline calculator + document generator */}
+            <div className="relative group">
+              <span
+                className={`text-sm cursor-default group-hover:text-indigo-700 ${
+                  toolsActive ? "text-indigo-700 font-semibold" : "text-slate-600"
+                }`}
+              >
+                {t.pnTools} ▾
+              </span>
+              <div className="absolute left-0 top-full pt-2 hidden group-hover:block">
+                <div className="bg-white border border-slate-200 rounded-xl shadow-lg py-2 w-64">
+                  <Link href="/afatet" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-700">
+                    {t.dcTitle}
+                  </Link>
+                  <Link href="/dokumentet" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-700">
+                    {t.cdTitle}
+                  </Link>
+                </div>
+              </div>
+            </div>
             <Link
               href="/rasti-im?sos=1"
               className="text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg px-3 py-1.5"
@@ -107,7 +131,10 @@ export default function PublicShell({
       </header>
 
       {/* pb keeps content clear of the fixed bottom nav on mobile */}
-      <div className="flex-1 flex flex-col pb-20 md:pb-0">{children}</div>
+      <div className="flex-1 flex flex-col pb-20 md:pb-0">
+        <div className="flex-1 flex flex-col">{children}</div>
+        {footer && <PublicFooter />}
+      </div>
 
       <nav
         className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200"

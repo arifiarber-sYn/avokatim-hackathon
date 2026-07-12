@@ -84,7 +84,119 @@ export default function PlatformPage() {
       </div>
       <VerificationsSection />
       <PlatformInvoicesSection />
+      <FeedbackSection />
     </div>
+  );
+}
+
+interface FeedbackRow {
+  id: string;
+  kind: string;
+  name: string | null;
+  email: string | null;
+  message: string;
+  status: string;
+  handled_note: string | null;
+  created_at: string;
+}
+
+function FeedbackSection() {
+  const { t } = useI18n();
+  const [tab, setTab] = useState<"new" | "handled">("new");
+  const [rows, setRows] = useState<FeedbackRow[] | null>(null);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(() => {
+    apiGet<FeedbackRow[]>(`/platform/feedback?status_filter=${tab}`)
+      .then(setRows)
+      .catch((err) => setError(err instanceof Error ? err.message : "error"));
+  }, [tab]);
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  async function handle(id: string) {
+    const note = window.prompt(t.pfHandle) || null;
+    setBusy(true);
+    setError("");
+    try {
+      await apiPost(`/platform/feedback/${id}/handle`, { note });
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const kindLabels: Record<string, string> = {
+    ankese: t.ctKindAnkese,
+    sugjerim: t.ctKindSugjerim,
+    problem: t.ctKindProblem,
+  };
+  const kindTone: Record<string, string> = {
+    ankese: "bg-red-100 text-red-800",
+    sugjerim: "bg-indigo-100 text-indigo-800",
+    problem: "bg-amber-100 text-amber-800",
+  };
+
+  return (
+    <Card className="p-5 space-y-3">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <h2 className="text-lg font-semibold">{t.pfTitle}</h2>
+        <div className="flex gap-1 text-sm">
+          {(["new", "handled"] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setTab(s)}
+              className={`px-3 py-1 rounded-lg ${
+                tab === s ? "bg-indigo-600 text-white" : "text-slate-500 hover:bg-slate-100"
+              }`}
+            >
+              {s === "new" ? t.pfNew : t.pfHandledTab}
+            </button>
+          ))}
+        </div>
+      </div>
+      <ErrorNote message={error} />
+      {rows === null ? (
+        <Spinner />
+      ) : rows.length === 0 ? (
+        <p className="text-sm text-slate-500">{t.pfEmpty}</p>
+      ) : (
+        <div className="space-y-2">
+          {rows.map((row) => (
+            <div key={row.id} className="border border-slate-200 rounded-lg px-3 py-2.5 space-y-1.5">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                <span className={`inline-flex px-2 py-0.5 rounded-full font-medium ${kindTone[row.kind] || ""}`}>
+                  {kindLabels[row.kind] || row.kind}
+                </span>
+                <span className="text-slate-500">
+                  {new Date(row.created_at).toLocaleString()}
+                </span>
+                {row.name && <span className="text-slate-600 font-medium">{row.name}</span>}
+                {row.email && <span className="text-slate-500">{row.email}</span>}
+                {row.status === "new" && (
+                  <Button
+                    variant="secondary"
+                    disabled={busy}
+                    onClick={() => handle(row.id)}
+                    className="ml-auto"
+                  >
+                    {t.pfHandle}
+                  </Button>
+                )}
+              </div>
+              <p className="text-sm text-slate-700 whitespace-pre-wrap">{row.message}</p>
+              {row.handled_note && (
+                <p className="text-xs text-slate-400 italic">{row.handled_note}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
   );
 }
 

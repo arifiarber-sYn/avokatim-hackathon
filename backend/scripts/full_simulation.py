@@ -965,8 +965,12 @@ async def main() -> None:
               f"due={calc.get('due_date')} ({calc.get('legal_basis')})")
         r = await c.get(f"{BASE}/public/tools/documents")
         docs = r.json() if r.status_code == 200 else []
-        check("shabllonet e dokumenteve për qytetarë (3+)", len(docs) >= 3,
+        check("shabllonet e shkresave e ankesave (7)", len(docs) >= 7,
               ", ".join(x["code"] for x in docs))
+        check("çdo shabllon ka kategori",
+              all(x.get("category") in
+                  {"institucionet", "puna", "konsumatori", "te_pergjithshme"}
+                  for x in docs))
         r = await c.post(f"{BASE}/public/tools/documents/kerkese", json={"values": {
             "sender_name": "Qytetari Sim", "sender_address": "Rr. Sim 1, Prishtinë",
             "sender_phone": "044 000 000", "institution": "Komuna e Prishtinës",
@@ -979,6 +983,36 @@ async def main() -> None:
               f"{len(r.content)} bytes")
         r = await c.post(f"{BASE}/public/tools/documents/kerkese", json={"values": {}})
         check("gjenerimi pa fusha REFUZOHET", r.status_code == 400)
+        r = await c.post(f"{BASE}/public/tools/documents/ankese_konsumatori", json={"values": {
+            "sender_name": "Qytetari Sim", "sender_address": "Rr. Sim 1, Prishtinë",
+            "sender_phone": "044 000 000", "business": "Elektro Sim SH.P.K., Prishtinë",
+            "purchase": "Frigorifer, 15.06.2026",
+            "complaint": "Frigoriferi ndaloi së punuari pas dy javësh.",
+            "demand": "Kërkoj ndërrimin e produktit ose kthimin e parave.",
+            "city": "Prishtinë",
+        }})
+        check("ankesa e konsumatorit gjenerohet si PDF",
+              r.status_code == 200 and r.content[:5] == b"%PDF-",
+              f"{len(r.content)} bytes")
+
+        print("\n=== 31b. FEEDBACK DREJT PLATFORMËS ===")
+        r = await c.post(f"{BASE}/public/feedback", json={
+            "kind": "sugjerim", "name": "Qytetari Sim",
+            "email": f"qytetari.sim.{SUFFIX}@gmail.com",
+            "message": "Sugjerim simulimi: shtoni edhe shabllon për kërkesë pensioni.",
+        })
+        check("qytetari dërgon sugjerim te platforma", r.status_code == 201)
+        r = await c.post(f"{BASE}/public/feedback", json={
+            "kind": "spam", "message": "mesazh me lloj të pavlefshëm .........",
+        })
+        check("lloj i pavlefshëm feedback-u REFUZOHET", r.status_code == 422)
+        r = await c.post(f"{BASE}/public/feedback", json={
+            "kind": "problem", "message": "shkurt",
+        })
+        check("mesazh shumë i shkurtër REFUZOHET", r.status_code == 422)
+        r = await c.get(f"{BASE}/platform/feedback", headers=h)
+        check("avokati i thjeshtë S'KA qasje te feedback-u i platformës",
+              r.status_code == 403)
 
         print("\n=== 32. REZERVIMI I KONSULTAVE ===")
         all_days = [{"day": d, "start": "00:00", "end": "23:30"} for d in range(7)]
@@ -1033,6 +1067,8 @@ async def main() -> None:
                          {"e": f"qytetari.sim.{SUFFIX}@gmail.com"})
         await db.execute(sqltext("DELETE FROM tenants WHERE name = :n"),
                          {"n": f"Zyra Sim {SUFFIX}"})
+        await db.execute(sqltext("DELETE FROM platform_feedback WHERE email = :e"),
+                         {"e": f"qytetari.sim.{SUFFIX}@gmail.com"})
         await db.commit()
     print("\ncleanup done")
 

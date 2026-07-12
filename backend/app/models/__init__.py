@@ -35,6 +35,7 @@ from app.models.marketplace import (
     LawyerProfile,
 )
 from app.models.platform_billing import PlatformInvoice
+from app.models.feedback import PlatformFeedback
 from app.models.evidence import EvidenceChunk, EvidenceSession
 
 __all__ = [
@@ -80,4 +81,5 @@ __all__ = [
     "EvidenceChunk",
     "EvidenceSession",
     "PlatformInvoice",
+    "PlatformFeedback",
 ]

@@ -9,6 +9,7 @@ import { Button, Card, ErrorNote, Textarea } from "@/components/ui";
 import PublicShell from "@/components/public-shell";
 import PageIntro from "@/components/page-intro";
 import { MicButton, SpeakButton, useVoiceAvailable } from "@/components/voice-controls";
+import { IconChat } from "@/components/icons";
 
 interface ChatMsg {
   role: "user" | "assistant";
@@ -193,9 +194,35 @@ export default function PublicAvaPage() {
           </p>
         )}
 
+        {/* Empty state: example questions to get started */}
+        {messages.length === 0 && !busy && (
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              {t.avaExamplesT}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {[t.avaEx1, t.avaEx2, t.avaEx3, t.avaEx4].map((q) => (
+                <button
+                  key={q}
+                  onClick={() => askQuestion(q)}
+                  className="text-left text-sm bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-600 hover:border-indigo-300 hover:text-indigo-700 transition"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="flex-1 space-y-3">
           {messages.map((m, i) => (
-            <div key={i}>
+            <div key={i} className={m.role === "assistant" ? "flex items-start gap-2.5" : ""}>
+              {m.role === "assistant" && (
+                <span className="h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <IconChat className="h-4 w-4" />
+                </span>
+              )}
+              <div className={m.role === "assistant" ? "min-w-0 flex-1" : ""}>
               <div
                 className={`text-sm rounded-xl px-4 py-3 whitespace-pre-wrap max-w-[90%] ${
                   m.role === "user"
@@ -217,6 +244,7 @@ export default function PublicAvaPage() {
                   ))}
                 </div>
               )}
+              </div>
             </div>
           ))}
           {thinking && <p className="text-xs text-slate-400 animate-pulse">…</p>}

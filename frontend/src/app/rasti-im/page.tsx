@@ -18,6 +18,7 @@ import PublicShell from "@/components/public-shell";
 import PageIntro from "@/components/page-intro";
 import SosPanel from "@/components/sos-panel";
 import EvidenceVault from "@/components/evidence-vault";
+import { IconCalendar } from "@/components/icons";
 
 interface CaseMessage {
   id: string;
@@ -33,6 +34,32 @@ function statusStyle(status: string): string {
     case "converted": return "bg-emerald-50 text-emerald-700";
     default: return "bg-slate-100 text-slate-600";
   }
+}
+
+/** Progress line for an active case: posted -> taken -> converted. */
+function CaseTimeline({ status, labels }: { status: string; labels: string[] }) {
+  const stage = status === "open" ? 0 : status === "claimed" ? 1 : 2;
+  return (
+    <ol className="flex items-center gap-1.5">
+      {labels.map((label, i) => (
+        <li key={label} className="flex items-center gap-1.5 flex-1 min-w-0">
+          <span
+            className={`h-2.5 w-2.5 rounded-full shrink-0 ${
+              i < stage ? "bg-emerald-500" : i === stage ? "bg-indigo-600 ring-2 ring-indigo-100" : "bg-slate-200"
+            }`}
+          />
+          <span
+            className={`text-[11px] truncate ${
+              i === stage ? "font-semibold text-slate-700" : "text-slate-400"
+            }`}
+          >
+            {label}
+          </span>
+          {i < labels.length - 1 && <span className="flex-1 h-px bg-slate-200 min-w-1.5" />}
+        </li>
+      ))}
+    </ol>
+  );
 }
 
 function MyCaseInner() {
@@ -224,6 +251,12 @@ function MyCaseInner() {
                     {statusLabel[c.status] || c.status}
                   </span>
                 </div>
+                {c.status !== "closed" && (
+                  <CaseTimeline
+                    status={c.status}
+                    labels={[t.mkStatusOpen, t.mkStatusClaimed, t.mkStatusConverted]}
+                  />
+                )}
                 <p className="text-sm text-slate-700 whitespace-pre-wrap">{c.description}</p>
                 {c.claimed_by && (
                   <p className="text-xs text-slate-500">
@@ -458,7 +491,10 @@ function MyBookings() {
 
   return (
     <Card className="p-5 space-y-3">
-      <h2 className="font-semibold">📅 {t.bkMyBookings}</h2>
+      <h2 className="font-semibold flex items-center gap-2">
+        <IconCalendar className="h-4 w-4 text-indigo-600" />
+        {t.bkMyBookings}
+      </h2>
       <div className="space-y-2">
         {bookings.map((b) => (
           <div key={b.id} className="flex items-center justify-between gap-3 flex-wrap text-sm">

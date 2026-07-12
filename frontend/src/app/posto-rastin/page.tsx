@@ -1,7 +1,6 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
 import {
@@ -14,8 +13,43 @@ import {
 import { Button, Card, ErrorNote, Input, Label, Select, Spinner, Textarea } from "@/components/ui";
 import PublicShell from "@/components/public-shell";
 import PageIntro from "@/components/page-intro";
+import { IconCheck } from "@/components/icons";
 
 const AREAS = ["civil", "criminal", "family", "commercial", "labor", "administrative", "other"] as const;
+
+function StepIndicator({ current, labels }: { current: number; labels: string[] }) {
+  return (
+    <ol className="flex items-center gap-2">
+      {labels.map((label, i) => {
+        const n = i + 1;
+        const state = n < current ? "done" : n === current ? "active" : "todo";
+        return (
+          <li key={label} className="flex items-center gap-2 flex-1 min-w-0">
+            <span
+              className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                state === "done"
+                  ? "bg-emerald-500 text-white"
+                  : state === "active"
+                    ? "bg-indigo-600 text-white"
+                    : "bg-slate-200 text-slate-500"
+              }`}
+            >
+              {state === "done" ? <IconCheck className="h-3.5 w-3.5" /> : n}
+            </span>
+            <span
+              className={`text-xs truncate ${
+                state === "active" ? "font-semibold text-slate-900" : "text-slate-500"
+              }`}
+            >
+              {label}
+            </span>
+            {i < labels.length - 1 && <span className="flex-1 h-px bg-slate-200 min-w-2" />}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
 
 function PostCaseInner() {
   const { t, locale } = useI18n();
@@ -41,6 +75,7 @@ function PostCaseInner() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [verifySent, setVerifySent] = useState(false);
+  const [posted, setPosted] = useState(false);
 
   useEffect(() => {
     if (!getCitizenToken()) {
@@ -86,7 +121,8 @@ function PostCaseInner() {
         urgency: form.urgency,
         directed_tenant_id: directedTenantId,
       });
-      router.push("/rasti-im");
+      setPosted(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       const status = (err as Error & { status?: number }).status;
       setError(status === 403 ? t.mkEmailNotVerified : err instanceof Error ? err.message : t.error);
@@ -112,8 +148,26 @@ function PostCaseInner() {
 
         <PageIntro k="posto-rastin" title={t.postIntroT} body={t.postIntro} />
 
+        {!checking && (
+          <StepIndicator
+            current={posted ? 3 : citizen !== null ? 2 : 1}
+            labels={[t.psStep1, t.psStep2, t.psStep3]}
+          />
+        )}
+
         {checking ? (
           <Spinner />
+        ) : posted ? (
+          <Card className="p-8 text-center space-y-4">
+            <div className="mx-auto h-14 w-14 rounded-full bg-emerald-50 flex items-center justify-center">
+              <IconCheck className="h-7 w-7 text-emerald-600" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900">{t.psSuccessT}</h2>
+            <p className="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">{t.psSuccess}</p>
+            <Button onClick={() => router.push("/rasti-im")} className="w-full sm:w-auto">
+              {t.psGoMyCase}
+            </Button>
+          </Card>
         ) : citizen === null ? (
           <Card className="p-6 space-y-4">
             <div className="flex gap-2 text-sm">

@@ -23,7 +23,10 @@ export default function ForLawyersPage() {
       .catch(() => {});
   }, []);
 
-  const features = [t.lpFeat1, t.lpFeat2, t.lpFeat3, t.lpFeat4, t.lpFeat5, t.lpFeat6];
+  const features = [
+    t.lpFeat1, t.lpFeat2, t.lpFeat3, t.lpFeat4,
+    t.lpFeat5, t.lpFeat6, t.lpFeat7, t.lpFeat8,
+  ];
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -113,6 +116,7 @@ export default function ForLawyersPage() {
           <Link href="/portal" className="hover:underline">{t.portalTitle}</Link>
           <Link href="/kushtet" className="hover:underline">{t.termsOfService}</Link>
           <Link href="/privatesia" className="hover:underline">{t.privacyPolicy}</Link>
+          <Link href="/kontakti" className="hover:underline">{t.ctTitle}</Link>
         </footer>
       </main>
     </div>

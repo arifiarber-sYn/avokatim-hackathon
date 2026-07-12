@@ -10,6 +10,38 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-12 — Public redesign + letters & complaints + platform contact channel (Cursor / Fable 5)
+
+- Context: "Ridizajni publik + shkresa e ankesa" plan — modern public UI,
+  full project story on the landing, richer document generator, and a
+  feedback channel to the platform operator.
+- Done (identity): `icons.tsx` (shared SVG icon set, replaces emoji),
+  `public-footer.tsx` (4-column footer mounted once in `PublicShell`),
+  shell header with backdrop-blur + "Vegla" dropdown (afatet/dokumentet),
+  `fade-in-up` CSS utility.
+- Done (landing): rebuilt `/` as a full story — hero + trust strip, "Çfarë
+  është AvokatIM" paragraphs, 4 alternating feature sections (Ava / SOS
+  mbrojtja AI / tregu & drejtoria / veglat falas), how-it-works, dark
+  trust-and-privacy card, stats, lawyer CTA. New `land*` strings ×6.
+- Done (documents): 4 new deterministic templates in `citizen_docs.py`
+  (qasje_dokumente 06/L-081, ankese_konsumatori 06/L-034, verejtje_pune
+  03/L-212, kundershtim_urdherpagese LPK) — 7 total, each with a
+  `category`; /dokumentet groups by category (Institucionet / Puna /
+  Konsumatori / Të përgjithshme).
+- Done (feedback): `PlatformFeedback` model (migration `391e7cf5703d`),
+  rate-limited `POST /api/public/feedback` + email to superadmins, public
+  page `/kontakti` (kind chips, optional identity), "Ankesat & sugjerimet"
+  review section in /platform (new/handled tabs, mark-handled).
+- Done (page polish): /ava avatar bubbles + 4 example-question chips;
+  /avokatet sticky filter bar + skeleton loading; /posto-rastin 3-step
+  indicator + success screen; /rasti-im case status timeline
+  (postuar→marrë→konvertuar); /afatet + /dokumentet icon headers;
+  /per-avokatet gained lpFeat7/8 (OAK badge + booking) and /kontakti link.
+- Verified: 57 pytest pass (new `test_feedback.py`), `npm run build` OK,
+  full simulation 169 PASS / 0 FAIL (7 templates, consumer-complaint PDF,
+  feedback accept/reject, 403 for non-superadmin), health OK, sw cache v4.
+- Left open: nothing blocking from this plan.
+
 ## 2026-07-12 — AI protection by phone (voice + evidence + SOS) + public tools + booking (Cursor / Fable 5)
 
 - Context: phases 2–4 of the "Mbrojtja AI + backlog i plotë" plan (D-018).

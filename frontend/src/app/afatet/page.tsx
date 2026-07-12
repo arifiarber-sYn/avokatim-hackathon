@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import PublicShell from "@/components/public-shell";
 import PageIntro from "@/components/page-intro";
 import { Button, Card, ErrorNote, Input, Label, Select, Spinner } from "@/components/ui";
+import { IconCalendar } from "@/components/icons";
 
 interface PublicRule {
   id: string;
@@ -73,7 +74,8 @@ export default function DeadlineCalcPage() {
   return (
     <PublicShell>
       <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-6 space-y-4">
-        <div>
+        <div className="flex items-center gap-2.5">
+          <IconCalendar className="h-6 w-6 text-indigo-600" />
           <h1 className="text-2xl font-bold">{t.dcTitle}</h1>
         </div>
 

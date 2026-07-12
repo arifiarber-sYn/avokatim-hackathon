@@ -19,6 +19,7 @@ from app.api import (
     deadlines,
     documents,
     evidence,
+    feedback,
     firm,
     imports,
     intake,
@@ -107,6 +108,8 @@ app.include_router(bookings.router, prefix=api_prefix)
 app.include_router(bookings.public_router, prefix=api_prefix)
 app.include_router(evidence.router, prefix=api_prefix)
 app.include_router(evidence.lawyer_router, prefix=api_prefix)
+app.include_router(feedback.public_router, prefix=api_prefix)
+app.include_router(feedback.admin_router, prefix=api_prefix)
 
 
 @app.get("/api/health")

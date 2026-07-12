@@ -330,13 +330,28 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   plan): deadline calculator `/afatet` (`/api/public/tools/deadline-rules`
   + `deadline-calc`, engine + holidays, no account); citizen document
   generator `/dokumentet` (deterministic Jinja→PDF templates in
-  `app/seeds/citizen_docs.py`: kerkese/ankese/autorizim, no LLM); both
-  linked from the landing. Booking: `ConsultBooking` +
+  `app/seeds/citizen_docs.py`, no LLM) — **7 templates** with categories
+  (Institucionet: kerkese/ankese/qasje_dokumente; Puna: verejtje_pune;
+  Konsumatori: ankese_konsumatori; Të përgjithshme: autorizim/
+  kundershtim_urdherpagese); both linked from the landing. Booking: `ConsultBooking` +
   `LawyerProfile.booking_enabled/booking_slots` (weekly windows, 30-min
   slots, 14-day horizon; migration `51f3b67b1756`); lawyer sets hours in
   Settings and confirms/declines in Tregu, citizen books from /avokatet
   and manages in /rasti-im; notifications ×6 (`booking_*` i18n keys).
   Tests: `test_bookings.py`; simulation sections 31–32.
+- **Public redesign + platform feedback channel** (2026-07-12): shared
+  public identity — `components/icons.tsx` (SVG set), `public-footer.tsx`
+  (4 columns, mounted in `PublicShell`), shell header with backdrop-blur +
+  "Vegla" dropdown. Landing `/` rebuilt as the full project story (hero +
+  trust strip, "Çfarë është AvokatIM", 4 feature sections, how-it-works,
+  privacy card, stats, lawyer CTA; `land*` i18n keys ×6). Page polish:
+  /ava avatar + example chips, /avokatet sticky filters + skeletons,
+  /posto-rastin step indicator + success screen, /rasti-im case timeline.
+  Feedback (D-019): `PlatformFeedback` model (migration `391e7cf5703d`),
+  `POST /api/public/feedback` (rate-limited 5/h/IP, anonymous OK, email to
+  superadmins), page `/kontakti`, review section in /platform
+  (`GET /platform/feedback`, `POST /platform/feedback/{id}/handle`).
+  Tests: `test_feedback.py`; simulation section 31b.
 - **Public Ava — free legal-information chat** (2026-07-11, Phase 2 of
   D-013): `/api/public/ava/*` in `app/api/marketplace.py` — `ask` +
   `ask-stream` (SSE), grounded in the XK legal corpus via the existing RAG
