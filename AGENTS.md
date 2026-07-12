@@ -17,9 +17,23 @@
 
 ## 1. What AvokatIM is
 
-A legal practice management platform that lets **one lawyer work with the capacity
-of a whole firm**: case intake → digital matter files → deadlines → documents →
-AI assistance → billing → client portal.
+A two-sided legal platform:
+
+1. **For lawyers** — practice management that lets **one lawyer work with the
+   capacity of a whole firm**: case intake → digital matter files → deadlines →
+   documents → AI assistance → billing → client portal.
+2. **For citizens** — a free "pocket lawyer" (`/`, `/ava`, `/avokatet`,
+   `/posto-rastin`, `/rasti-im`): public Ava (legal information with article
+   citations, rate-limited), lawyer directory, case marketplace (citizens post,
+   lawyers claim; identity protected until claim; automatic conflict check),
+   and SOS for emergencies (duty roster, push/email to on-duty lawyers,
+   LiveKit video calls).
+
+**Revenue model (D-016, never violate):** citizens pay nothing, ever. Lawyers
+pay a flat per-seat subscription (default €24/user/month, 90-day trial,
+`Tenant.plan_price_eur` overridable, 0 = free forever). The platform **never
+takes a percentage of legal fees** and never holds client money. Overdue
+platform invoices block only new marketplace claims — never data access.
 
 - **Jurisdictions**: Kosovo (XK) is active. GB, CN, INTL are prepared as data.
   Jurisdiction rules (deadlines, holidays, templates, legal corpus) are **data,
@@ -58,15 +72,16 @@ AI assistance → billing → client portal.
 | Path | What it is |
 |---|---|
 | `backend/` | Python 3 / FastAPI / SQLAlchemy 2 async / Alembic |
-| `backend/app/models/` | DB models: tenancy, matters, documents, billing, assistant, audit, jurisdiction |
+| `backend/app/models/` | DB models: tenancy, matters, documents, billing, assistant, audit, jurisdiction, marketplace (citizens/cases), platform_billing (subscription invoices) |
 | `backend/app/api/` | REST routers, all mounted under `/api` |
-| `backend/app/services/` | Business logic: deadlines engine, conflicts check, RAG, assistant, storage |
+| `backend/app/services/` | Business logic: deadlines engine, conflicts check, RAG, assistant, storage, platform_billing (subscription invoices + dunning loop), livekit (call tokens) |
 | `backend/app/llm/` | LLM provider abstraction: `base.py` → `deepseek.py`, `local.py`, `router.py` |
 | `backend/app/seeds/` | Jurisdiction data (Kosovo deadline rules, holidays, fee tariff, templates, AML indicators) |
 | `backend/alembic/versions/` | DB migrations — append-only, never edit old ones |
 | `backend/tests/` | pytest suite |
 | `frontend/` | Next.js + TypeScript + Tailwind (see `frontend/AGENTS.md` for Next.js caveats) |
-| `frontend/src/app/(app)/` | Pages: dashboard, intake, matters, calendar, contacts, templates, assistant, billing, reports, settings |
+| `frontend/src/app/(app)/` | Lawyer pages: dashboard, intake, matters, calendar, contacts, templates, assistant, billing, marketplace, reports, settings, platform (superadmin) |
+| `frontend/src/app/` (public) | Citizen pages: `/` (landing), `ava`, `avokatet`, `posto-rastin`, `rasti-im`, `per-avokatet` (lawyer marketing), `portal` (client portal) — wrapped in `components/public-shell.tsx`; per-page explainers via `components/page-intro.tsx` |
 | `frontend/src/lib/` | `api.ts` (API client), `types.ts`, `i18n.tsx`, `dictionaries.ts` (sq/sr/tr/bs/en/zh), `legal.ts` (ToS/Privacy texts) |
 | `data/` | Runtime data: encrypted documents, legal corpus, logs — **git-ignored, never delete** |
 | `docs/agents/` | Agent management system (state, journal, decisions, roadmap) |
@@ -98,6 +113,8 @@ LAN https://<machine-ip>:8443 · API http://127.0.0.1:8000/api
 - Health check: `curl http://127.0.0.1:8000/api/health` → `{"status":"ok","app":"AvokatIM"}`
 - Logs: `data/backend.log`, `data/frontend.log`
 - Backend tests: `cd backend && .venv/bin/python -m pytest tests/ -q`
+- End-to-end simulation (lawyer + citizen + billing flows, ~130 checks against
+  the live stack): `cd backend && .venv/bin/python scripts/full_simulation.py`
 - New migration: `cd backend && .venv/bin/alembic revision --autogenerate -m "..."`
   then `.venv/bin/alembic upgrade head`
 
