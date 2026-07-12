@@ -1336,6 +1336,7 @@ function PublicProfileSection() {
   }
 
   return (
+    <div id="public-profile" className="scroll-mt-20">
     <Card className="p-5 space-y-4">
       <div>
         <h2 className="font-semibold">{t.mkPublicProfile}</h2>
@@ -1436,5 +1437,6 @@ function PublicProfileSection() {
         </div>
       </form>
     </Card>
+    </div>
   );
 }

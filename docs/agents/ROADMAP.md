@@ -89,6 +89,38 @@ Long-term differentiation:
 - [x] Public intake form link ✅ (2026-07-07): /apliko/{token} public page,
       feeds intake funnel with source=web; link in Settings.
 
+## Competitive gaps (2026-07-12 internet review — marketplace/citizen era)
+
+Sources: 2026 legal-tech trend reports (Clio/ABA, NetDocuments, GOLT), legal
+marketplace build guides (license verification, reviews), consumer legal apps
+(Legaliam, Vikk AI, Start My Claim, Justivo, Legali). Canvas:
+`mungesat-kunder-tregut-2026`.
+
+P1 — trust layer (before promoting the directory publicly):
+- [ ] OAK bar-license verification: license number on lawyer profile →
+      "pending verification" → superadmin checks the public OAK registry and
+      approves → "Verified" badge in directory; unverified lawyers are not
+      publicly listed and cannot claim cases.
+- [ ] Client reviews: only citizens whose case was claimed+closed can review,
+      prompts about communication/responsiveness (never legal outcome —
+      regulatory risk), average shown in directory and used in ranking.
+- [x] Lawyer onboarding nudge ✅ (2026-07-12): dashboard banner when the public
+      profile is inactive (first real user got stuck here).
+
+P2 — demand growth:
+- [ ] Consultation booking: availability calendar on lawyer profile, citizens
+      book free/fixed-fee slots.
+- [ ] Public deadline calculator (engine exists — expose no-login page).
+- [ ] Citizen document automation: plain-language interview → simple documents
+      (complaint letter, request) — Start My Claim pattern.
+- [ ] Transparent pricing on public profiles ("from €X" / fixed-fee consult).
+
+P3 — office differentiation:
+- [ ] Passive time capture (suggest entries from activity).
+- [ ] Voice input for Ava (citizen accessibility + SOS hands-free).
+- [ ] Agentic intake triage (Ava proposes category/urgency/conflict facts).
+- [ ] Public API tokens for integrations.
+
 ## Phase 4 — More jurisdictions
 
 - [ ] GB seeds (deadline rules, holidays, templates, corpus).

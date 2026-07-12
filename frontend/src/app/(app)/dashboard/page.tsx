@@ -92,6 +92,7 @@ export default function DashboardPage() {
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [welcome, setWelcome] = useState(false);
+  const [profileVisible, setProfileVisible] = useState<boolean | null>(null);
 
   const loadTasks = useCallback(() => {
     apiGet<Task[]>("/tasks?mine=true&open_only=true").then(setTasks).catch(() => {});
@@ -100,6 +101,9 @@ export default function DashboardPage() {
   useEffect(() => {
     apiGet<Dashboard>("/reports/dashboard").then(setData).catch(() => {});
     apiGet<Deadline[]>("/deadlines/upcoming?days=30").then(setDeadlines).catch(() => {});
+    apiGet<{ is_visible: boolean }>("/marketplace/profile")
+      .then((p) => setProfileVisible(p.is_visible))
+      .catch(() => {});
     loadTasks();
     if (
       new URLSearchParams(window.location.search).get("welcome") &&
@@ -159,6 +163,23 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-bold">{t.dashboard}</h1>
 
       <PageIntro k="dashboard" title={t.dashIntroT} body={t.dashIntro} />
+
+      {profileVisible === false && (
+        <Card className="p-5 border-amber-300 bg-amber-50/60">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="font-semibold text-amber-900">{t.pubProfileNudgeT}</h2>
+              <p className="text-sm text-amber-800 mt-1">{t.pubProfileNudge}</p>
+            </div>
+            <Link
+              href="/settings#public-profile"
+              className="shrink-0 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold px-4 py-2"
+            >
+              {t.pubProfileNudgeCta}
+            </Link>
+          </div>
+        </Card>
+      )}
 
       {welcome && (
         <Card className="p-5 border-indigo-300 bg-indigo-50/50">

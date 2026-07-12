@@ -712,6 +712,9 @@ const sq = {
   hiw3T: "3. Ndiqe gjithçka në portal",
   hiw3: "Statusi i lëndës, seancat, mesazhet, dokumentet dhe faturat — gjithçka transparente, në një vend. Për urgjenca e ke butonin SOS me video-thirrje.",
   hiwFree: "Falas për qytetarët — përgjithmonë. Platforma mbahet nga abonimet e avokatëve dhe kurrë nuk merr përqindje nga honorarët.",
+  pubProfileNudgeT: "Profili yt publik është i çaktivizuar",
+  pubProfileNudge: "Nuk shfaqesh në drejtorinë publike të avokatëve dhe nuk njoftohesh për raste të reja nga Tregu. Zgjidh fushat e qytetet dhe ndize dukshmërinë — zgjat 1 minutë.",
+  pubProfileNudgeCta: "Aktivizo profilin publik",
 };
 
 const en: typeof sq = {
@@ -1371,6 +1374,9 @@ const en: typeof sq = {
   hiw3T: "3. Follow everything in your portal",
   hiw3: "Case status, hearings, messages, documents and invoices — everything transparent, in one place. For emergencies there's the SOS button with video calls.",
   hiwFree: "Free for citizens — forever. The platform is funded by lawyers' subscriptions and never takes a share of legal fees.",
+  pubProfileNudgeT: "Your public profile is inactive",
+  pubProfileNudge: "You don't appear in the public lawyer directory and won't be notified about new Marketplace cases. Pick your practice areas and cities and switch visibility on — it takes 1 minute.",
+  pubProfileNudgeCta: "Activate public profile",
 };
 
 const zh: typeof sq = {
@@ -2020,6 +2026,9 @@ const zh: typeof sq = {
   hiw3T: "3. 在门户中跟进一切",
   hiw3: "案件状态、庭审、消息、文件和发票——一切透明，集中一处。紧急情况可使用带视频通话的 SOS 按钮。",
   hiwFree: "对公民永久免费。平台由律师订阅支持，绝不从律师费中抽成。",
+  pubProfileNudgeT: "您的公开资料未激活",
+  pubProfileNudge: "您不会出现在公开律师名录中，也不会收到案件市场的新案件通知。选择执业领域和城市并开启可见性——只需 1 分钟。",
+  pubProfileNudgeCta: "激活公开资料",
 };
 
 const sr: typeof sq = {
@@ -2678,6 +2687,9 @@ const sr: typeof sq = {
   hiw3T: "3. Pratite sve u svom portalu",
   hiw3: "Status predmeta, ročišta, poruke, dokumenti i fakture — sve transparentno, na jednom mestu. Za hitne situacije tu je SOS dugme sa video-pozivom.",
   hiwFree: "Besplatno za građane — zauvek. Platformu finansiraju pretplate advokata i nikada ne uzima procenat od honorara.",
+  pubProfileNudgeT: "Vaš javni profil je deaktiviran",
+  pubProfileNudge: "Ne pojavljujete se u javnom imeniku advokata i ne dobijate obaveštenja o novim slučajevima sa Tržišta. Izaberite oblasti i gradove i uključite vidljivost — traje 1 minut.",
+  pubProfileNudgeCta: "Aktiviraj javni profil",
 };
 
 const tr: typeof sq = {
@@ -3336,6 +3348,9 @@ const tr: typeof sq = {
   hiw3T: "3. Her şeyi portalınızdan izleyin",
   hiw3: "Dava durumu, duruşmalar, mesajlar, belgeler ve faturalar — her şey şeffaf, tek yerde. Acil durumlar için görüntülü aramalı SOS düğmesi var.",
   hiwFree: "Vatandaşlar için sonsuza dek ücretsiz. Platform avukat abonelikleriyle finanse edilir ve vekalet ücretlerinden asla pay almaz.",
+  pubProfileNudgeT: "Genel profiliniz devre dışı",
+  pubProfileNudge: "Genel avukat rehberinde görünmüyorsunuz ve Pazardaki yeni davalardan haberdar edilmeyeceksiniz. Alanlarınızı ve şehirlerinizi seçip görünürlüğü açın — 1 dakika sürer.",
+  pubProfileNudgeCta: "Genel profili etkinleştir",
 };
 
 const bs: typeof sq = {
@@ -3994,6 +4009,9 @@ const bs: typeof sq = {
   hiw3T: "3. Pratite sve u svom portalu",
   hiw3: "Status predmeta, ročišta, poruke, dokumenti i fakture — sve transparentno, na jednom mjestu. Za hitne situacije tu je SOS dugme s video-pozivom.",
   hiwFree: "Besplatno za građane — zauvijek. Platformu finansiraju pretplate advokata i nikada ne uzima procenat od honorara.",
+  pubProfileNudgeT: "Vaš javni profil je deaktiviran",
+  pubProfileNudge: "Ne pojavljujete se u javnom imeniku advokata i ne dobijate obavijesti o novim slučajevima s Tržišta. Izaberite oblasti i gradove i uključite vidljivost — traje 1 minutu.",
+  pubProfileNudgeCta: "Aktiviraj javni profil",
 };
 
 export const dictionaries: Record<Locale, typeof sq> = { sq, sr, tr, bs, en, zh };

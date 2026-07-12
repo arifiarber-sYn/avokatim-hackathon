@@ -10,6 +10,25 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-12 — First-user investigation, profile nudge, gap analysis vs 2026 market (Cursor / Fable 5)
+
+- Context: first real lawyer signup (Jeton Shala, tenant "maka") didn't appear
+  in the public directory. Investigated: signup/verify/login all worked (8
+  logins); he never activated Settings → Public profile — and no lawyer had,
+  so the directory was empty. Traffic check: ~103 external IPs since Jul 6
+  (~25-30 real human visitors after removing bots), 4 public Ava questions,
+  no foreign brute-force (all 10 failed logins were the local simulation).
+- Done: dashboard onboarding banner (amber) when `is_visible` is false, CTA to
+  `/settings#public-profile` (anchor added). Strings `pubProfileNudge*` ×6.
+- Done: internet gap review vs 2026 standard → canvas
+  `mungesat-kunder-tregut-2026` + prioritized backlog in ROADMAP
+  ("Competitive gaps 2026-07-12"): P1 OAK license verification + client
+  reviews; P2 consultation booking, public deadline calculator, citizen doc
+  automation, transparent pricing; P3 passive time capture, voice Ava,
+  agentic intake, public API.
+- Verified: tsc + build OK, service restarted, health OK.
+- Left open: P1 items (license verification, reviews) are the next build.
+
 ## 2026-07-11 — Per-page onboarding intros + "how it works" landing section (Cursor / Fable 5)
 
 - Context: owner asked to enrich every page with explanations so both
