@@ -106,7 +106,14 @@ export function Badge({ status, label }: { status: string; label?: string }) {
 /** Language picker as a compact dropdown (globe + current language) so all
  * six languages fit on any screen — the old inline button row overflowed
  * phone viewports. Menu is right-aligned to stay inside header edges. */
-export function LocaleSwitcher({ up = false }: { up?: boolean }) {
+export function LocaleSwitcher({
+  up = false,
+  iconOnly = false,
+}: {
+  up?: boolean;
+  /** Globe-only trigger for tight headers; the menu still shows full names. */
+  iconOnly?: boolean;
+}) {
   const { locale, setLocale } = useI18n();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -127,16 +134,25 @@ export function LocaleSwitcher({ up = false }: { up?: boolean }) {
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white/90 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:border-indigo-300 hover:text-indigo-700 transition shadow-sm"
+        aria-label={current?.label ?? locale}
+        className={
+          iconOnly
+            ? "inline-flex items-center justify-center h-9 w-9 rounded-full text-slate-500 hover:text-indigo-700 hover:bg-slate-100 transition"
+            : "inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white/90 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:border-indigo-300 hover:text-indigo-700 transition shadow-sm"
+        }
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={iconOnly ? "h-5 w-5" : "h-4 w-4"}>
           <circle cx="12" cy="12" r="9" />
           <path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" />
         </svg>
-        <span>{current?.label ?? locale}</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`}>
-          <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        {!iconOnly && (
+          <>
+            <span>{current?.label ?? locale}</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`}>
+              <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </>
+        )}
       </button>
       {open && (
         <div
