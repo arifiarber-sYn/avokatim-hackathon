@@ -68,6 +68,8 @@ export default function PublicFooter() {
             Krijuar nga <span className="font-semibold text-slate-300">Arbër Arifi</span>
             {" & "}
             <span className="font-semibold text-slate-300">Fable 5</span>
+            {" · Kushtuar "}
+            <span className="font-semibold text-indigo-300">Borës</span>
           </span>
           <span>Kosovë · avokatiim.ai</span>
         </div>
