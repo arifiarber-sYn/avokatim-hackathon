@@ -10,6 +10,24 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-12 — First real-usage check + fake-signup cleanup (Cursor / Fable 5)
+
+- Context: the owner received Gmail bounce emails ("Address not found")
+  for verification mails; asked whether the service has problems and
+  whether people are using it.
+- Findings: service healthy (SMTP sends fine — bounces exist because the
+  recipients were fake); real usage in the last 24h: 430 audit actions
+  from 10 distinct public IPs (mostly Kosovo ISPs), 14 citizen accounts,
+  4 posted cases (incl. one SOS from Prishtina, one urgent from Peja) —
+  all still open, no verified lawyers claiming yet. One actor
+  ("leo frateli", US hosting IP 69.16.157.92, likely VPN) created 5
+  accounts with fake gmail addresses in ~70s; the 5/hour/IP signup rate
+  limit stopped them exactly at 5, and unverified accounts cannot post.
+- Done: deleted the 5 fake unverified `leof*@gmail.com` accounts after
+  confirming zero dependent rows (cases/bookings/evidence). 9 accounts
+  remain. No code changes; CAPTCHA noted as the next step only if VPN
+  abuse grows.
+
 ## 2026-07-12 — Aesthetic refresh of the public surfaces (Cursor / Fable 5)
 
 - Context: the owner liked the new landing content but asked for a more
