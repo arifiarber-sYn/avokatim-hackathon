@@ -44,7 +44,7 @@ from app.security import (
 )
 from app.services.audit import log_action
 from app.services.conflicts import check_conflicts
-from app.services.notifications import send_email
+from app.services.notifications import _is_test_recipient, send_email
 from app.services.sms import send_sms, sms_enabled
 
 logger = logging.getLogger(__name__)
@@ -1335,7 +1335,9 @@ async def update_my_profile(
         profile.verified_at = None
         profile.verification_note = None
         profile.verification_status = "pending" if new_license else "none"
-        if new_license:
+        # Simulation accounts (test emails) must not ping the operator —
+        # their tenants are deleted at cleanup, so there is nothing to verify
+        if new_license and not _is_test_recipient(user.email):
             background.add_task(_notify_operator_verification, user.full_name, new_license)
 
     await log_action(

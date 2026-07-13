@@ -14,7 +14,7 @@ from app.database import get_db
 from app.deps import require_superadmin
 from app.models import PlatformFeedback, User
 from app.services.audit import log_action
-from app.services.notifications import send_email
+from app.services.notifications import _is_test_recipient, send_email
 
 public_router = APIRouter(prefix="/public", tags=["public"])
 admin_router = APIRouter(prefix="/platform", tags=["platform"])
@@ -43,7 +43,10 @@ async def submit_feedback(
     )
     db.add(entry)
     await db.commit()
-    background.add_task(_notify_operators, body.kind, entry.message[:500])
+    # Simulation submissions (test emails) stay in the review queue but
+    # never ping the operator's inbox
+    if not (entry.email and _is_test_recipient(entry.email)):
+        background.add_task(_notify_operators, body.kind, entry.message[:500])
     return {"received": True}
 
 
