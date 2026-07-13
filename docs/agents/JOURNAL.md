@@ -10,6 +10,37 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-13 — Public presentation catch-up: marketing pages now cover every new feature (Cursor / Fable 5)
+
+- Context: an inventory of `/`, `/per-qytetaret` and `/per-avokatet` against
+  the current product showed the newest capabilities (deep research, AI
+  clause assist, doc summaries, paid consultations, onboarding wizard,
+  referrals, SMS alerts, Ava-intake, /siguria) were not presented anywhere
+  on the marketing pages. WhatsApp deliberately NOT advertised (no
+  credentials yet — don't promise what doesn't run).
+- Done (all strings ×6 locales):
+  - **Landing `/`**: lawyer function list 6→8 items (`umbFnL7` deep
+    research, `umbFnL8` paid consults; `umbFnL2` now mentions summaries +
+    "Përmirëso me AI" with risk flags); `umbFnC5` mentions online payment;
+    trust section gained a "Si i mbrojmë të dhënat →" link to `/siguria`
+    (`landPrivLink`).
+  - **`/per-avokatet`**: new "Ava — ekipi yt juridik me AI" section (4
+    cards: deep research, template AI assist, doc summaries, deadline
+    extraction; `lpAi*`); `lpFeat2`/`lpFeat8` rewritten, new `lpFeat9`
+    (instant push/email/SMS match alerts); onboarding hint under the hero
+    CTA (`lpOnboardHint`); referral sentence in the Founder card
+    (`lpReferralHint`).
+  - **`/per-qytetaret`**: `landAvaB` now tells that Ava structures the
+    case from the chat; `landMarketB` mentions paying the consult by card;
+    SOS section links to `/siguria` (`landSosSecLink`).
+  - **In-app intros**: `assistantIntro` (deep-research toggle),
+    `templatesIntro` ("Përmirëso me AI" flow), `mattersIntro` ("Nxirr
+    afatet" + "Përmbledh me AI") rewritten so the story continues from the
+    landing into actual usage.
+- Verified: build OK, restart OK, all new strings render on the three live
+  pages (curl grep); sw bumped to v15.
+- Left open / next: none for this task.
+
 ## 2026-07-13 — Improvement backlog Phase 3: agentic AI + trust pages (Cursor / Fable 5)
 
 - Done (points 11–15 of the 15-item plan — see D-022):

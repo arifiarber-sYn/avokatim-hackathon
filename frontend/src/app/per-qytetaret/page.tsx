@@ -15,6 +15,7 @@ import {
   IconCalendar,
   IconChat,
   IconDoc,
+  IconLock,
   IconShield,
   IconUsers,
 } from "@/components/icons";
@@ -117,7 +118,7 @@ export default function ForCitizensPage() {
               title: t.landSosT,
               body: t.landSosB,
               cta: { href: "/rasti-im?sos=1", label: t.landSosCta },
-              links: undefined,
+              links: [{ href: "/siguria", label: t.landSosSecLink, Icon: IconLock }],
             },
             {
               Icon: IconUsers,

@@ -25,7 +25,14 @@ export default function ForLawyersPage() {
 
   const features = [
     t.lpFeat1, t.lpFeat2, t.lpFeat3, t.lpFeat4,
-    t.lpFeat5, t.lpFeat6, t.lpFeat7, t.lpFeat8,
+    t.lpFeat5, t.lpFeat6, t.lpFeat7, t.lpFeat8, t.lpFeat9,
+  ];
+
+  const aiCards = [
+    { icon: "🔎", title: t.lpAi1T, body: t.lpAi1B },
+    { icon: "✍️", title: t.lpAi2T, body: t.lpAi2B },
+    { icon: "📄", title: t.lpAi3T, body: t.lpAi3B },
+    { icon: "⏱️", title: t.lpAi4T, body: t.lpAi4B },
   ];
 
   return (
@@ -66,6 +73,25 @@ export default function ForLawyersPage() {
             >
               {t.login}
             </Link>
+          </div>
+          <p className="text-xs text-slate-500">{t.lpOnboardHint}</p>
+        </div>
+
+        {/* The competitive differentiator: the agentic AI toolkit */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold text-white text-center">{t.lpAiT}</h2>
+          <p className="text-sm text-slate-400 text-center max-w-2xl mx-auto">{t.lpAiSub}</p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {aiCards.map((card) => (
+              <div
+                key={card.title}
+                className="bg-gradient-to-br from-indigo-600/10 to-slate-800/60 rounded-2xl border border-indigo-500/30 p-5 space-y-2 hover:border-indigo-400/60 transition-colors duration-300"
+              >
+                <p className="text-2xl">{card.icon}</p>
+                <h3 className="font-semibold text-white">{card.title}</h3>
+                <p className="text-sm text-slate-300 leading-relaxed">{card.body}</p>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -109,6 +135,7 @@ export default function ForLawyersPage() {
             </span>
             <h2 className="text-lg font-bold text-white">{t.lpFounderT}</h2>
             <p className="text-sm text-slate-300">{t.lpFounderB}</p>
+            <p className="text-xs text-slate-400">{t.lpReferralHint}</p>
           </div>
         </div>
 
