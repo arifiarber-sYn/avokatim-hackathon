@@ -269,3 +269,43 @@ async def document_text(
 ):
     doc = await _get_owned_document(db, user, document_id)
     return {"text": doc.text_content or "", "ocr_status": doc.ocr_status}
+
+
+@router.post("/documents/{document_id}/summarize")
+async def summarize_document(
+    document_id: uuid.UUID,
+    force: bool = False,
+    provider: str | None = None,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """AI summary of the extracted text (summary + key points + possible
+    deadlines). Cached in documents.ai_summary; force=true recomputes."""
+    import json as jsonlib
+
+    from app.api.assistant import _effective_provider
+    from app.services.assistant import summarize_document_text
+
+    doc = await _get_owned_document(db, user, document_id)
+    if doc.ai_summary and not force:
+        return jsonlib.loads(doc.ai_summary)
+    if not doc.text_content or len(doc.text_content.strip()) < 40:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "Document has no extracted text"
+        )
+    provider_name = await _effective_provider(db, user, provider)
+    try:
+        result = await summarize_document_text(doc.text_content, provider_name)
+    except RuntimeError as exc:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc))
+    if result is None:
+        raise HTTPException(
+            status.HTTP_502_BAD_GATEWAY, "AI reply could not be parsed; try again"
+        )
+    doc.ai_summary = jsonlib.dumps(result, ensure_ascii=False)
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="document.summarize",
+        entity_type="document", entity_id=str(doc.id),
+    )
+    await db.commit()
+    return result

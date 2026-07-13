@@ -398,3 +398,40 @@
   password reset uses a scoped `citizen_reset` purpose token (1h) and
   doubles as email verification; the shared `citizen-auth.tsx` form keeps
   signup/login/forgot identical across /kycu, /posto-rastin and /rasti-im.
+
+## D-021: Consultation payments run through the platform's Stripe (2026-07-13)
+
+- Context: point 10 of the improvement plan — citizens should be able to
+  pay a lawyer's published consultation fee online at booking time.
+  Per-lawyer Stripe accounts (Connect) would require every office to
+  onboard with Stripe before the feature works at all.
+- Decision: the checkout session is created on the platform's existing
+  Stripe account (same key/webhook as invoices and subscriptions), with
+  `metadata[booking_id]`. Booking status: `pending_payment` →(webhook)→
+  `pending` → confirm/decline by the lawyer. `pending_payment` holds the
+  slot; if Stripe errors at booking time, we fail open to the free flow so
+  a gateway hiccup never loses a client. The collected fee (stored in
+  `consult_bookings.fee_eur`) is passed on to the lawyer by the operator —
+  a transfer of the exact amount, NOT a percentage cut, so D-016
+  ("never fee splitting") stands. Stripe Connect per-office is the
+  designated follow-up once volume justifies it.
+- Consequences: without `STRIPE_SECRET_KEY` nothing changes (bookings go
+  straight to `pending`); the operator needs a simple monthly payout
+  routine to lawyers with online-paid consults (audit log records
+  `booking.paid_online` per booking).
+
+## D-022: Agentic AI features reuse the single LLM abstraction (2026-07-13)
+
+- Context: points 11–13 (deep research, clause assist, document
+  summaries) could each have pulled in agent frameworks or new providers.
+- Decision: all three are plain functions in `services/assistant.py` over
+  the existing `get_provider()` abstraction and the existing RAG search —
+  deep research is an async generator (decompose → search per sub-question
+  → synthesize) streamed as SSE `step`/`delta` events; ai-assist and
+  summaries are single JSON-returning calls. Summaries are cached in
+  `documents.ai_summary` (JSON text) so a document is summarized once per
+  version. All three respect the tenant's `allow_external_ai` switch via
+  `_effective_provider`.
+- Consequences: no new dependencies; local-only tenants get the same
+  features on the local provider; deep research cost is bounded (≤5
+  sub-questions, ≤4 corpus hits each, deduped citations).

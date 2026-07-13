@@ -10,6 +10,39 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-13 — Improvement backlog Phase 3: agentic AI + trust pages (Cursor / Fable 5)
+
+- Done (points 11–15 of the 15-item plan — see D-022):
+  11. **Deep research** (`deep_research_stream` in `services/assistant.py`,
+      `POST /assistant/deep-research` SSE): the question is decomposed into
+      3–5 sub-questions (LLM JSON), each searched in the corpus, then one
+      synthesis with merged deduped citations. UI: "Hulumtim i thelluar"
+      toggle in the assistant with a live step list (`deepResearch`/`dr*`
+      keys ×6).
+  12. **AI clause assist** (`POST /templates/ai-assist`): draft +
+      instruction → improved text + risk flags + change list (JSON).
+      "Përmirëso me AI" panel next to the template output with
+      accept/discard; respects `allow_external_ai`.
+  13. **Document AI summaries** (`POST /documents/{id}/summarize`):
+      summary + key points + possible deadlines (reuses the deadline
+      extractor); cached in new `documents.ai_summary` column (migration
+      `31de290208e7`); "Përmbledh me AI" button + modal in the matter
+      Documents tab.
+  14. **Public /siguria page** (×6, `sec*` keys): encryption at rest,
+      local embeddings, evidence hash chain, external-AI kill switch,
+      daily backups, 06/L-082 compliance; linked from the public footer
+      and a security card on /per-avokatet.
+  15. **e-Kosova readiness**: `docs/integrimet/e-kosova.md` (6 prepared
+      integration points: SMIL statuses, hearings, e-filing, eID login,
+      OAK registry, free legal aid) + new section in the government pitch
+      (`docs/pitch/qasje-ne-drejtesi.md`).
+- Verified: pytest 69 passed; full_simulation **188 checks / 0 FAIL**
+  (new: deep-research steps + citations, ai-assist, doc summary + cache
+  hit); build + restart OK; sw bumped to v14.
+- Left open / next: Stripe Connect per-office payouts when consult-payment
+  volume justifies it (D-021); WhatsApp/SMS/Stripe remain off until
+  credentials are configured.
+
 ## 2026-07-13 — Improvement backlog Phase 2: growth (founders, Ava-intake, WhatsApp, SMS, paid consults) (Cursor / Fable 5)
 
 - Done (points 6–10 of the 15-item plan):

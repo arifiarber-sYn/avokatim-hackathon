@@ -85,6 +85,20 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   citizen with unverified email after 24h (columns
   `users.profile_nudge_sent_at`, `citizen_users.verify_reminder_sent_at`;
   only accounts ≤14 days old are ever nudged).
+- **Agentic AI — Phase 3 of the improvement backlog** (2026-07-13, D-022):
+  **Deep research**: `POST /assistant/deep-research` (SSE) — LLM decomposes
+  the question into 3–5 sub-questions, each searched in the corpus, one
+  synthesis with merged deduped citations; assistant UI has a "Hulumtim i
+  thelluar" toggle with a live step list. **Clause assist**:
+  `POST /templates/ai-assist` (draft + instruction → improved text + risk
+  flags + changes) with an accept/discard panel on the templates page.
+  **Document summaries**: `POST /documents/{id}/summarize` (summary + key
+  points + possible deadlines), cached in `documents.ai_summary`
+  (migration `31de290208e7`), button + modal in the matter Documents tab.
+  All three go through `get_provider()` and respect `allow_external_ai`.
+  **Public /siguria** page (×6) linked in footer + /per-avokatet.
+  **e-Kosova readiness** doc: `docs/integrimet/e-kosova.md` + section in
+  the government pitch.
 - **Growth features — Phase 2 of the improvement backlog** (2026-07-13):
   **Founder badge**: `lawyer_profiles.is_founder` — auto-set for the first
   20 verified offices (`FOUNDER_LIMIT`), amber "Themelues" badge in

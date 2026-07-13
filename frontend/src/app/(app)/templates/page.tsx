@@ -6,6 +6,12 @@ import { apiDownload, apiGet, apiPost } from "@/lib/api";
 import { localized, useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
 import { Doc, Matter, Template } from "@/lib/types";
+
+interface AiAssistResult {
+  improved_text: string;
+  risk_flags: string[];
+  changes: string[];
+}
 import { Button, Card, ErrorNote, Input, Label, Select, Spinner, Textarea } from "@/components/ui";
 
 export default function TemplatesPage() {
@@ -21,6 +27,9 @@ export default function TemplatesPage() {
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const [savedDoc, setSavedDoc] = useState<Doc | null>(null);
+  const [aiInstruction, setAiInstruction] = useState("");
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiResult, setAiResult] = useState<AiAssistResult | null>(null);
 
   useEffect(() => {
     apiGet<Template[]>("/templates?jurisdiction_code=XK").then(setTemplates).catch(() => {});
@@ -45,6 +54,23 @@ export default function TemplatesPage() {
       setError(err instanceof Error ? err.message : t.error);
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function improveWithAi() {
+    if (!aiInstruction.trim() || !output) return;
+    setAiBusy(true);
+    setError("");
+    try {
+      const result = await apiPost<AiAssistResult>("/templates/ai-assist", {
+        draft: output,
+        instruction: aiInstruction.trim(),
+      });
+      setAiResult(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setAiBusy(false);
     }
   }
 
@@ -185,6 +211,74 @@ export default function TemplatesPage() {
                 }}
                 className="text-sm font-serif leading-relaxed bg-slate-50"
               />
+
+              {/* AI clause assist: instruction → improved draft + risk flags */}
+              <div className="border-t border-slate-100 pt-3 space-y-2">
+                <p className="text-sm font-semibold text-slate-700">✦ {t.aiAssistTitle}</p>
+                <div className="flex gap-2">
+                  <Input
+                    value={aiInstruction}
+                    onChange={(e) => setAiInstruction(e.target.value)}
+                    placeholder={t.aiAssistPlaceholder}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        improveWithAi();
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={improveWithAi}
+                    disabled={aiBusy || !aiInstruction.trim()}
+                  >
+                    {aiBusy ? t.loading : t.aiAssistRun}
+                  </Button>
+                </div>
+
+                {aiResult && (
+                  <div className="space-y-2 border border-indigo-200 bg-indigo-50/40 rounded-xl p-3">
+                    {aiResult.risk_flags.length > 0 && (
+                      <div className="text-xs bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 space-y-0.5">
+                        <p className="font-semibold text-amber-800">⚠ {t.aiAssistRisks}</p>
+                        {aiResult.risk_flags.map((f, i) => (
+                          <p key={i} className="text-amber-700">• {f}</p>
+                        ))}
+                      </div>
+                    )}
+                    {aiResult.changes.length > 0 && (
+                      <div className="text-xs text-slate-600 space-y-0.5">
+                        <p className="font-semibold text-slate-700">{t.aiAssistChanges}</p>
+                        {aiResult.changes.map((cItem, i) => (
+                          <p key={i}>• {cItem}</p>
+                        ))}
+                      </div>
+                    )}
+                    <Textarea
+                      rows={12}
+                      value={aiResult.improved_text}
+                      readOnly
+                      className="text-sm font-serif leading-relaxed bg-white"
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setOutput(aiResult.improved_text);
+                          setAiResult(null);
+                          setSavedDoc(null);
+                        }}
+                      >
+                        {t.aiAssistAccept}
+                      </Button>
+                      <Button type="button" variant="secondary" onClick={() => setAiResult(null)}>
+                        {t.aiAssistDiscard}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <p className="text-sm text-slate-400 py-16 text-center">{t.selectTemplate}</p>

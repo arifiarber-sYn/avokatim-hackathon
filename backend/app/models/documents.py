@@ -40,6 +40,9 @@ class Document(Base, TenantMixin, TimestampMixin):
     )
     # Extracted text (native PDF text or OCR), used for search and AI analysis
     text_content: Mapped[str | None] = mapped_column(Text)
+    # Cached AI summary as JSON {summary, key_points, deadlines} so it is
+    # computed once per document version
+    ai_summary: Mapped[str | None] = mapped_column(Text)
     ocr_status: Mapped[str] = mapped_column(String(16), default="none")
     # none | pending | done | failed
 

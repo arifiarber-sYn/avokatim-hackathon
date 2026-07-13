@@ -125,6 +125,22 @@ export default function ForLawyersPage() {
           </div>
         )}
 
+        {/* Security promise: links to the public /siguria page */}
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-slate-800/60 rounded-xl border border-slate-700/60 p-5 flex items-start gap-3">
+            <span className="text-xl">🔐</span>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-white">{t.secTitle}</p>
+              <p className="text-sm text-slate-400">
+                {t.secEncT} · {t.secLocalT} · {t.secBackupT}{" "}
+                <Link href="/siguria" className="text-indigo-400 hover:text-indigo-300 underline">
+                  {t.ftSecurity} →
+                </Link>
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="max-w-2xl mx-auto space-y-4">
           <h2 className="text-xl font-bold text-white text-center">{t.lpPlansTitle}</h2>
           <div className="grid sm:grid-cols-2 gap-4">
@@ -150,6 +166,7 @@ export default function ForLawyersPage() {
           <Link href="/portal" className="hover:underline">{t.portalTitle}</Link>
           <Link href="/kushtet" className="hover:underline">{t.termsOfService}</Link>
           <Link href="/privatesia" className="hover:underline">{t.privacyPolicy}</Link>
+          <Link href="/siguria" className="hover:underline">{t.ftSecurity}</Link>
           <Link href="/kontakti" className="hover:underline">{t.ctTitle}</Link>
         </footer>
       </main>

@@ -58,6 +58,7 @@ export default function PublicFooter() {
           </div>
           <Link href="/kushtet" className={link}>{t.termsOfService}</Link>
           <Link href="/privatesia" className={link}>{t.privacyPolicy}</Link>
+          <Link href="/siguria" className={link}>{t.ftSecurity}</Link>
           <Link href="/kontakti" className={link}>{t.ftContact}</Link>
         </div>
       </div>

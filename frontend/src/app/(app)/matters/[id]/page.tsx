@@ -55,6 +55,17 @@ interface ExtractedDeadline {
   confidence: string;
 }
 
+interface DocAiSummary {
+  summary: string;
+  key_points: string[];
+  deadlines: {
+    title: string;
+    date: string | null;
+    days: number | null;
+    legal_basis: string | null;
+  }[];
+}
+
 const PARTY_ROLES = ["client", "opposing_party", "opposing_counsel", "witness", "judge", "expert", "other"];
 
 export default function MatterDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -347,6 +358,8 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [me, setMe] = useState<{ id: string; role: string } | null>(null);
   const [previewDoc, setPreviewDoc] = useState<{ doc: Doc; url: string } | null>(null);
+  const [summarizingId, setSummarizingId] = useState<string | null>(null);
+  const [aiSummary, setAiSummary] = useState<{ doc: Doc; data: DocAiSummary } | null>(null);
 
   const load = useCallback(() => {
     apiGet<Doc[]>(`/matters/${matterId}/documents`).then(setDocs).catch(() => {});
@@ -456,6 +469,19 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
     await apiPost(`/matters/${matterId}/deadlines/bulk`, { deadlines: chosen });
     setProposals(null);
     setNotice(t.deadlinesAdded);
+  }
+
+  async function summarize(doc: Doc) {
+    setSummarizingId(doc.id);
+    setError("");
+    try {
+      const data = await apiPost<DocAiSummary>(`/documents/${doc.id}/summarize`);
+      setAiSummary({ doc, data });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setSummarizingId(null);
+    }
   }
 
   async function requestSignature(doc: Doc) {
@@ -709,6 +735,15 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
                         {t.extractDeadlines}
                       </button>
                     )}
+                    {d.has_text && (
+                      <button
+                        onClick={() => summarize(d)}
+                        disabled={summarizingId !== null}
+                        className="text-violet-600 hover:underline text-xs disabled:text-slate-300"
+                      >
+                        {summarizingId === d.id ? t.loading : t.docSummarize}
+                      </button>
+                    )}
                   </td>
                 </tr>
               );
@@ -717,6 +752,58 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
         </table>
         </div>
       </Card>
+
+      {aiSummary && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+          onClick={() => setAiSummary(null)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 sticky top-0 bg-white">
+              <p className="text-sm font-semibold truncate">
+                ✦ {t.docSummaryTitle} — {aiSummary.doc.filename}
+              </p>
+              <button
+                onClick={() => setAiSummary(null)}
+                className="text-slate-400 hover:text-slate-700 text-lg leading-none"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-5 space-y-4 text-sm">
+              <p className="leading-relaxed whitespace-pre-wrap">{aiSummary.data.summary}</p>
+              {aiSummary.data.key_points.length > 0 && (
+                <div>
+                  <p className="font-semibold text-slate-700 mb-1">{t.docKeyPoints}</p>
+                  <ul className="space-y-1 text-slate-600">
+                    {aiSummary.data.key_points.map((p, i) => (
+                      <li key={i}>• {p}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {aiSummary.data.deadlines.length > 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+                  <p className="font-semibold text-amber-800 mb-1">⚠ {t.docPossibleDeadlines}</p>
+                  <ul className="space-y-1 text-amber-700 text-xs">
+                    {aiSummary.data.deadlines.map((p, i) => (
+                      <li key={i}>
+                        • {p.title}
+                        {p.date ? ` — ${p.date}` : p.days ? ` — ${p.days} ${t.agingDays}` : ""}
+                        {p.legal_basis ? ` (${p.legal_basis})` : ""}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-amber-600 mt-2">{t.docDeadlinesHint}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {previewDoc && (
         <div

@@ -220,6 +220,163 @@ async def ask_bora_stream(
     return citations, provider.chat_stream(messages)
 
 
+SUBQUESTIONS_PROMPT = """Po përgatitim një hulumtim të thelluar juridik për pyetjen e avokatit.
+Zbërthe pyetjen në 3 deri 5 nën-pyetje kërkimi konkrete dhe të pavarura, të tilla që
+secila të gjejë dispozita ligjore relevante në korpusin e ligjeve të Kosovës
+(p.sh. baza ligjore, afatet, procedura, përjashtimet, praktika).
+Kthe VETËM JSON të vlefshëm: një listë stringjesh në gjuhën e pyetjes, pa asgjë tjetër.
+
+PYETJA E AVOKATIT:
+{question}"""
+
+DEEP_SYNTHESIS_INSTRUCTIONS = (
+    "Kjo është përgjigja e një HULUMTIMI TË THELLUAR: materialet më lart janë "
+    "mbledhur duke kërkuar çdo nën-pyetje veçmas në korpusin ligjor. Sintetizo "
+    "një analizë të plotë e të strukturuar: (1) përgjigja e drejtpërdrejtë, "
+    "(2) baza ligjore me citime të sakta (ligji + neni), (3) afatet dhe "
+    "procedura nëse janë relevante, (4) rreziqet/përjashtimet, (5) hapat "
+    "praktikë për avokatin. Cito vetëm nga materialet e dhëna."
+)
+
+
+def _extract_json_list(text: str) -> list | None:
+    match = re.search(r"\[.*\]", text, re.DOTALL)
+    if not match:
+        return None
+    try:
+        parsed = json.loads(match.group(0))
+        return parsed if isinstance(parsed, list) else None
+    except json.JSONDecodeError:
+        return None
+
+
+async def deep_research_stream(
+    db: AsyncSession,
+    *,
+    question: str,
+    matter_id: uuid.UUID | None,
+    jurisdiction_id: uuid.UUID | None,
+    provider_name: str | None = None,
+):
+    """CoCounsel-style deep research: decompose the question into sub-questions,
+    search the corpus for each one, then synthesize a cited answer.
+    Async generator of event dicts: step / thinking / delta / citations."""
+    provider = get_provider(provider_name)
+
+    yield {"type": "step", "step": "subquestions", "status": "start"}
+    subquestions = [question]
+    try:
+        result = await provider.chat(
+            [
+                ChatMessage(role="system", content=SYSTEM_PROMPT),
+                ChatMessage(
+                    role="user",
+                    content=SUBQUESTIONS_PROMPT.format(question=question[:4000]),
+                ),
+            ]
+        )
+        parsed = _extract_json_list(result.content)
+        if parsed:
+            subquestions = [str(s).strip() for s in parsed if str(s).strip()][:5]
+    except RuntimeError:
+        pass  # fall back to researching the original question directly
+    yield {
+        "type": "step", "step": "subquestions", "status": "done",
+        "subquestions": subquestions,
+    }
+
+    context_blocks: list[str] = []
+    citations: list[dict] = []
+    seen: set[tuple] = set()
+
+    if matter_id:
+        context_blocks.append(await build_matter_context(db, matter_id))
+        for hit in await rag.search_matter_documents(db, matter_id, question, limit=6):
+            context_blocks.append(f"[Nga dokumenti '{hit['doc_title']}']\n{hit['text']}")
+            citations.append({"type": "document", "title": hit["doc_title"]})
+
+    for index, subq in enumerate(subquestions, start=1):
+        yield {
+            "type": "step", "step": "search", "index": index,
+            "total": len(subquestions), "question": subq,
+        }
+        if not jurisdiction_id:
+            continue
+        for hit in await rag.search_corpus(db, jurisdiction_id, subq, limit=4):
+            key = (hit["doc_title"], hit["section"])
+            if key in seen:
+                continue
+            seen.add(key)
+            label = hit["doc_title"] + (f", {hit['section']}" if hit["section"] else "")
+            context_blocks.append(f"[Nga ligji: {label}]\n{hit['text']}")
+            citations.append(
+                {"type": "law", "title": hit["doc_title"], "section": hit["section"],
+                 "reference": hit["reference"]}
+            )
+
+    yield {"type": "step", "step": "synthesis", "status": "start"}
+    user_content = question
+    if context_blocks:
+        user_content = (
+            "MATERIALET E HULUMTIMIT (mbledhur për "
+            + f"{len(subquestions)} nën-pyetje):\n\n"
+            + "\n\n---\n\n".join(context_blocks)
+            + f"\n\n=== PYETJA E AVOKATIT ===\n{question}"
+            + f"\n\n{DEEP_SYNTHESIS_INSTRUCTIONS}"
+        )
+    messages = [
+        ChatMessage(role="system", content=SYSTEM_PROMPT),
+        ChatMessage(role="user", content=user_content),
+    ]
+    yield {"type": "citations", "citations": citations}
+    async for kind, text in provider.chat_stream(messages):
+        yield {"type": kind if kind == "thinking" else "delta", "text": text}
+
+
+AI_ASSIST_PROMPT = """Je duke ndihmuar një avokat të përmirësojë draftin e një shkrese/kontrate.
+
+UDHËZIMI I AVOKATIT:
+{instruction}
+
+Kthe VETËM JSON të vlefshëm me këto fusha:
+- improved_text: teksti i plotë i përmirësuar (i njëjti dokument, jo pjesë), në gjuhën e draftit
+- risk_flags: listë me maksimum 5 rreziqe juridike që vëren në draft (stringje të shkurtra në shqip, p.sh. "Mungon klauzola e juridiksionit"), [] nëse s'ka
+- changes: listë me maksimum 5 stringje që përmbledhin çfarë ndryshove
+
+Rregulla: mos shto fakte të reja, mos i ndrysho emrat/shifrat/datat ekzistuese,
+ruaj vendet bosh __________ siç janë. Mos shto shpjegime jashtë JSON-it.
+
+DRAFTI:
+{draft}"""
+
+
+async def ai_assist_template(
+    draft: str, instruction: str, provider_name: str | None = None
+) -> dict | None:
+    """Improve a document draft per the lawyer's instruction; returns
+    {improved_text, risk_flags, changes} or None if the LLM reply is unusable."""
+    provider = get_provider(provider_name)
+    result = await provider.chat(
+        [
+            ChatMessage(role="system", content=SYSTEM_PROMPT),
+            ChatMessage(
+                role="user",
+                content=AI_ASSIST_PROMPT.format(
+                    instruction=instruction[:2000], draft=draft[:24000]
+                ),
+            ),
+        ]
+    )
+    parsed = _extract_json(result.content)
+    if not parsed or not parsed.get("improved_text"):
+        return None
+    return {
+        "improved_text": str(parsed["improved_text"]),
+        "risk_flags": [str(f) for f in parsed.get("risk_flags") or []][:5],
+        "changes": [str(c) for c in parsed.get("changes") or []][:5],
+    }
+
+
 EXTRACT_DEADLINES_PROMPT = """Analizo këtë dokument gjyqësor dhe nxirr TË GJITHA datat
 dhe afatet procedurale që përmban ose që rrjedhin prej tij.
 
@@ -263,6 +420,40 @@ async def extract_deadlines_from_text(
         return parsed if isinstance(parsed, list) else []
     except json.JSONDecodeError:
         return []
+
+
+SUMMARIZE_DOC_PROMPT = """Përmblidh këtë dokument juridik për avokatin.
+Kthe VETËM JSON të vlefshëm me këto fusha:
+- summary: përmbledhje 3-5 fjalish në shqip (çfarë është dokumenti, palët, thelbi)
+- key_points: listë me maksimum 6 pika kyçe (stringje të shkurtra)
+
+DOKUMENTI:
+{text}"""
+
+
+async def summarize_document_text(
+    text: str, provider_name: str | None = None
+) -> dict | None:
+    """Summarize an extracted document text; returns {summary, key_points,
+    deadlines} (deadlines via the existing extractor) or None if unusable."""
+    provider = get_provider(provider_name)
+    result = await provider.chat(
+        [
+            ChatMessage(role="system", content=SYSTEM_PROMPT),
+            ChatMessage(
+                role="user", content=SUMMARIZE_DOC_PROMPT.format(text=text[:24000])
+            ),
+        ]
+    )
+    parsed = _extract_json(result.content)
+    if not parsed or not parsed.get("summary"):
+        return None
+    deadlines = await extract_deadlines_from_text(text, provider_name)
+    return {
+        "summary": str(parsed["summary"]),
+        "key_points": [str(p) for p in parsed.get("key_points") or []][:6],
+        "deadlines": deadlines[:10],
+    }
 
 
 CLIENT_UPDATE_PROMPT = """Drafto një njoftim të shkurtër profesional për klientin e kësaj

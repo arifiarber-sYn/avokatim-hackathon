@@ -22,7 +22,12 @@ from app.schemas.assistant import (
     MessageOut,
     SummarizeResponse,
 )
-from app.services.assistant import ask_bora, ask_bora_stream, hearing_prep
+from app.services.assistant import (
+    ask_bora,
+    ask_bora_stream,
+    deep_research_stream,
+    hearing_prep,
+)
 from app.services.audit import log_action
 
 logger = logging.getLogger(__name__)
@@ -233,6 +238,64 @@ async def ask_stream(body: AskRequest, user: User = Depends(get_current_user)):
                 return
 
             reply = await _save_exchange(db, user, body, conversation, "".join(parts), citations)
+            yield _sse(
+                {
+                    "type": "done",
+                    "conversation_id": str(conversation.id),
+                    "message": MessageOut.model_validate(reply).model_dump(mode="json"),
+                }
+            )
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@router.post("/deep-research")
+async def deep_research(body: AskRequest, user: User = Depends(get_current_user)):
+    """Deep research (SSE): sub-questions → per-question corpus search →
+    synthesized answer with merged citations. Progress is streamed as
+    'step' events so the lawyer sees what Ava is doing."""
+
+    async def event_stream():
+        async with SessionLocal() as db:
+            try:
+                conversation, _history, jurisdiction_id = await _prepare_ask(db, user, body)
+            except HTTPException as exc:
+                yield _sse({"type": "error", "detail": exc.detail})
+                return
+
+            yield _sse({"type": "meta", "conversation_id": str(conversation.id)})
+
+            provider_name = await _effective_provider(db, user, body.provider)
+            parts: list[str] = []
+            citations: list[dict] = []
+            try:
+                events = deep_research_stream(
+                    db,
+                    question=body.question,
+                    matter_id=body.matter_id or conversation.matter_id,
+                    jurisdiction_id=jurisdiction_id,
+                    provider_name=provider_name,
+                )
+                async for event in events:
+                    if event["type"] == "citations":
+                        citations = event["citations"]
+                        continue
+                    if event["type"] == "delta":
+                        parts.append(event["text"])
+                    yield _sse(event)
+            except Exception as exc:
+                logger.exception("deep-research failed")
+                await db.rollback()
+                yield _sse({"type": "error", "detail": str(exc)})
+                return
+
+            reply = await _save_exchange(
+                db, user, body, conversation, "".join(parts), citations
+            )
             yield _sse(
                 {
                     "type": "done",

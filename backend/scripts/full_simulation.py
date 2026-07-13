@@ -6,6 +6,7 @@ Cleans up the throwaway tenant at the end (keeps nothing).
 """
 import asyncio
 import io
+import json
 import sys
 import time
 import uuid
@@ -233,6 +234,59 @@ async def main() -> None:
         r = await c.post(f"{BASE}/assistant/matters/{mid}/summarize", headers=h)
         check("përmbledhja AI e lëndës", r.status_code == 200,
               r.text[:150] if r.status_code != 200 else "")
+
+        # Deep research (SSE): sub-questions → search steps → cited synthesis
+        step_kinds: set[str] = set()
+        dr_done = False
+        dr_citations = 0
+        async with c.stream(
+            "POST", f"{BASE}/assistant/deep-research", headers=h,
+            json={"question": "Cilat janë afatet dhe procedura e ankesës "
+                              "kundër aktgjykimit të shkallës së parë?",
+                  "provider": "deepseek"},
+            timeout=300,
+        ) as resp:
+            dr_status = resp.status_code
+            async for line in resp.aiter_lines():
+                if not line.startswith("data: "):
+                    continue
+                ev = json.loads(line[6:])
+                if ev.get("type") == "step":
+                    step_kinds.add(ev.get("step"))
+                elif ev.get("type") == "done":
+                    dr_done = True
+                    dr_citations = len(ev.get("message", {}).get("citations", []))
+        check("deep research: hapat raportohen (nën-pyetje + kërkim + sintezë)",
+              dr_status == 200 and {"subquestions", "search", "synthesis"} <= step_kinds,
+              f"hapa: {sorted(step_kinds)}")
+        check("deep research: përgjigje me citime të bashkuara",
+              dr_done and dr_citations > 0, f"{dr_citations} citime")
+
+        # AI clause assist on a draft
+        r = await c.post(f"{BASE}/templates/ai-assist", headers=h, json={
+            "draft": "MARRËVESHJE SHËRBIMI\nPorositësi paguan 1.000 EUR pas "
+                     "përfundimit të punës. Punët kryhen sa më shpejt që të "
+                     "jetë e mundur. Kontesti zgjidhet me mirëkuptim.",
+            "instruction": "Forco klauzolën e afatit të pagesës dhe shto afat konkret dorëzimi.",
+        })
+        ai_assist = r.json() if r.status_code == 200 else {}
+        check("ai-assist: teksti përmirësohet sipas udhëzimit",
+              r.status_code == 200 and len(ai_assist.get("improved_text", "")) > 50,
+              r.text[:150] if r.status_code != 200 else
+              f"{len(ai_assist.get('changes', []))} ndryshime, "
+              f"{len(ai_assist.get('risk_flags', []))} flamuj")
+
+        # Document AI summary (cached in ai_summary)
+        r = await c.post(f"{BASE}/documents/{doc_id}/summarize", headers=h)
+        doc_sum = r.json() if r.status_code == 200 else {}
+        check("përmbledhja AI e dokumentit (summary + pika kyçe)",
+              r.status_code == 200 and len(doc_sum.get("summary", "")) > 30,
+              f"{len(doc_sum.get('key_points', []))} pika, "
+              f"{len(doc_sum.get('deadlines', []))} afate" if r.status_code == 200
+              else r.text[:150])
+        r = await c.post(f"{BASE}/documents/{doc_id}/summarize", headers=h)
+        check("përmbledhja e dokumentit kthehet nga cache pa LLM",
+              r.status_code == 200 and r.json().get("summary") == doc_sum.get("summary"))
 
         # ============ billing ============
         print("\n=== 8. ZYRA: orët, fatura me TVSH, pagesa ===")

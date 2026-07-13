@@ -5,6 +5,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import Response
 from jinja2 import BaseLoader, Environment, Undefined
+from pydantic import BaseModel, Field
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -138,6 +139,41 @@ async def render_template(
     await db.commit()
     name = template.name.get("sq") or template.code
     return RenderTemplateOut(content=content, filename=f"{name}.txt")
+
+
+class AiAssistIn(BaseModel):
+    draft: str = Field(min_length=20, max_length=60000)
+    instruction: str = Field(min_length=3, max_length=2000)
+    provider: str | None = None
+
+
+@router.post("/ai-assist")
+async def ai_assist(
+    body: AiAssistIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Spellbook-style clause help: Ava rewrites the draft per the lawyer's
+    instruction and flags legal risks. Respects the tenant's external-AI gate."""
+    from app.api.assistant import _effective_provider
+    from app.services.assistant import ai_assist_template
+
+    provider_name = await _effective_provider(db, user, body.provider)
+    try:
+        result = await ai_assist_template(body.draft, body.instruction, provider_name)
+    except RuntimeError as exc:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc))
+    if result is None:
+        raise HTTPException(
+            status.HTTP_502_BAD_GATEWAY, "AI reply could not be parsed; try again"
+        )
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="template.ai_assist",
+        entity_type="template", entity_id=None,
+        details={"instruction": body.instruction[:200]},
+    )
+    await db.commit()
+    return result
 
 
 @router.post("/render-docx")

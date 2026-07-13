@@ -57,6 +57,27 @@ Kosovë, që i lidh qytetarët me avokatë të licencuar:
 | Grant për infrastrukturën SOS (server TURN/media) | Ndihma urgjente live në gjithë vendin |
 | Pilotim me ndihmën juridike falas shtetërore | Kanalizimi i rasteve që s'i mbulon tregu |
 
+## Gatishmëria për e-Kosova dhe gjykatat
+
+AvokatIM është ndërtuar që të integrohet me infrastrukturën shtetërore
+digjitale sapo ajo të hapet për palë të treta (detajet teknike:
+`docs/integrimet/e-kosova.md`):
+
+- **Statusi i lëndëve dhe oraret e seancave nga SMIL**: fushat e
+  strukturuara (gjykata, numri i lëndës) dhe kanali i njoftimeve
+  (email/push/SMS) ekzistojnë — sinkronizimi është shtresë e re, jo
+  rindërtim.
+- **Identifikimi eID përmes e-Kosova**: llogaria e qytetarit mund të
+  lidhet me eID si Identity Provider pa ndryshuar arkitekturën.
+- **Dorëzimi elektronik i shkresave**: dokumentet gjenerohen me metadata
+  të strukturuara dhe hash SHA-256, gati për nënshkrimin e kualifikuar
+  (Ligji 08/L-022) kur e-filing të mundësohet.
+- **Verifikimi automatik i licencave me regjistrin e OAK** dhe kanalizimi
+  i rasteve drejt ndihmës juridike falas shtetërore.
+
+Kjo gatishmëri e bën AvokatIM partner natyral pilot për digjitalizimin e
+qasjes në drejtësi — pa kosto zhvillimi për institucionet.
+
 ## Treguesit që raportojmë (live nga platforma)
 
 - Avokatë në drejtorinë publike

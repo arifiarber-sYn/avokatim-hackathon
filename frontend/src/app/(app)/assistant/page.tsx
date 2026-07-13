@@ -27,6 +27,8 @@ export default function AssistantPage() {
   const [question, setQuestion] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [deep, setDeep] = useState(false);
+  const [steps, setSteps] = useState<string[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -72,7 +74,7 @@ export default function AssistantPage() {
       let finalMessage: Message | null = null;
       let errorDetail: string | null = null;
       await apiStream(
-        "/assistant/ask-stream",
+        deep ? "/assistant/deep-research" : "/assistant/ask-stream",
         {
           question: q,
           matter_id: matterId || null,
@@ -82,6 +84,17 @@ export default function AssistantPage() {
         (ev) => {
           if (ev.type === "meta") {
             newConversationId = ev.conversation_id as string;
+          } else if (ev.type === "step") {
+            if (ev.step === "subquestions" && ev.status === "start") {
+              setSteps([t.drSubq]);
+            } else if (ev.step === "search") {
+              setSteps((prev) => [
+                ...prev,
+                `${t.drSearch} (${ev.index as number}/${ev.total as number}): ${ev.question as string}`,
+              ]);
+            } else if (ev.step === "synthesis") {
+              setSteps((prev) => [...prev, t.drSynth]);
+            }
           } else if (ev.type === "delta") {
             streamed += ev.text as string;
             const text = streamed;
@@ -113,6 +126,7 @@ export default function AssistantPage() {
       setQuestion(q);
     } finally {
       setBusy(false);
+      setSteps([]);
     }
   }
 
@@ -196,6 +210,27 @@ export default function AssistantPage() {
               ))}
             </Select>
           </div>
+          <label
+            className={`flex items-center gap-2 text-sm rounded-lg border px-3 py-2 cursor-pointer select-none ${
+              deep
+                ? "bg-indigo-50 border-indigo-300 text-indigo-800"
+                : "border-slate-200 text-slate-600 hover:bg-slate-50"
+            }`}
+            title={t.deepResearchHint}
+          >
+            <input
+              type="checkbox"
+              checked={deep}
+              onChange={(e) => setDeep(e.target.checked)}
+              className="accent-indigo-600"
+            />
+            🔎 {t.deepResearch}
+          </label>
+          {deep && (
+            <p className="w-full text-xs text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-2">
+              {t.deepResearchHint}
+            </p>
+          )}
           {/* International-transfer transparency (Law 06/L-082 art. 49) */}
           {!externalAllowed ? (
             <p className="w-full text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
@@ -245,7 +280,17 @@ export default function AssistantPage() {
               </div>
             </div>
           ))}
-          {busy && !messages.some((m) => m.id === "streaming") && (
+          {busy && steps.length > 0 && (
+            <div className="text-xs text-slate-500 bg-indigo-50/60 border border-indigo-100 rounded-xl px-4 py-3 space-y-1">
+              <p className="font-semibold text-indigo-700">{t.deepResearch}</p>
+              {steps.map((s, i) => (
+                <p key={i} className={i === steps.length - 1 ? "animate-pulse" : ""}>
+                  {i === steps.length - 1 ? "→" : "✓"} {s}
+                </p>
+              ))}
+            </div>
+          )}
+          {busy && steps.length === 0 && !messages.some((m) => m.id === "streaming") && (
             <p className="text-sm text-slate-400 animate-pulse">{t.thinking}</p>
           )}
           <div ref={bottomRef} />
