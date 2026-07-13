@@ -32,7 +32,11 @@ def smtp_enabled() -> bool:
 # Gmail return "Address not found" bounces to the owner's inbox and hurts
 # the sender reputation of the whole platform, so they are never sent.
 _TEST_RECIPIENT_RE = re.compile(
-    r"(\.sim\.\d+@gmail\.com$"
+    # Simulation suffixes are uuid hex (letters+digits), e.g. driton.sim.c9fcc8
+    r"(\.sim\.[0-9a-f]+@gmail\.com$"
+    # Non-".sim." throwaway identities used by full_simulation.py
+    r"|^kontakt\.ferro\.[0-9a-f]+@gmail\.com$"
+    r"|^skrap\.[0-9a-f]+@gmail\.com$"
     r"|@example\.(com|org|net)$"
     r"|@avokatim\.(local|app)$"
     r"|@gmail\.con$)",  # common .com typo — the domain does not exist

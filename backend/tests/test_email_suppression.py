@@ -7,6 +7,12 @@ def test_simulation_addresses_are_suppressed():
     assert _is_test_recipient("driton.sim.928866@gmail.com")
     assert _is_test_recipient("qytetari.sim.123456@gmail.com")
     assert _is_test_recipient("BLERTA.SIM.42@GMAIL.COM")
+    # Suffixes are uuid hex — letters must match too (the bug that leaked
+    # 22 bounces into the owner's inbox on 2026-07-13)
+    assert _is_test_recipient("noteri.sim.f16bc8@gmail.com")
+    assert _is_test_recipient("qytetari.sim.c9fcc8@gmail.com")
+    assert _is_test_recipient("kontakt.ferro.c9fcc8@gmail.com")
+    assert _is_test_recipient("skrap.b19b9c@gmail.com")
 
 
 def test_reserved_and_seed_domains_are_suppressed():
