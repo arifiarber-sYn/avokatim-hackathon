@@ -96,3 +96,14 @@ Krijuesi i AvokatIM · https://avokatiim.ai
   dhe shenja "Themelues". Nudge-u automatik 48h u shënua si i dërguar
   (`profile_nudge_sent_at`) që të mos marrë email të dyfishtë.
   Përgjigja: në pritje.
+- **2026-07-13 (vala 2)**: Email personal nga adresa e pronarit për të gjitha
+  regjistrimet e papërfunduara reale (`backend/scripts/send_incomplete_signup_emails.py`):
+  - Avokatë: Kujtim Gacaferri (email i paverifikuar → link i ri verifikimi),
+    Jeton Shala (i verifikuar, i mungon licenca OAK → hapat për drejtori).
+  - Qytetarë me email të paverifikuar (link i ri verifikimi, vlen 3 ditë):
+    gona_z@hotmail.com, bkrasniqi30@, arbesa_8@hotmail.com, gramosrrafshi97@,
+    sheqersherbeti@, rinorkoongjeli@.
+  - U anashkaluan: test@/test12345@ (teste), daaaaa@gmail.con (domen i
+    pasaktë), vegim.h@yopmail.com (adresë e përkohshme, sjellje e dyshimtë).
+  - Timestamp-at e nudge-ave u vendosën që përkujtuesit automatikë të mos
+    dërgojnë email të dyfishtë. Përgjigjet: në pritje.

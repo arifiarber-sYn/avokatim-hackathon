@@ -43,6 +43,13 @@
   seed/typo recipients via `_TEST_RECIPIENT_RE` (sim pattern, example.*,
   avokatim.local/app, gmail.con) and logs instead. New unit tests in
   tests/test_email_suppression.py; 73 passed, health OK after restart.
+- Follow-up 3: personal re-engagement emails sent from the owner's address
+  to every real incomplete signup (`scripts/send_incomplete_signup_emails.py`,
+  dry-run previewed first): 2 lawyers (Kujtim — unverified email, fresh
+  verify link; Jeton — missing OAK license) and 6 unverified citizens (fresh
+  3-day verify links). Skipped: obvious test accounts, gmail.con typo,
+  yopmail. Nudge timestamps set to prevent automated duplicates. Status
+  tracked in docs/rekrutimi/kontakt-oak-dhe-avokatet.md.
 - Left open / next: await Marigona's reply/activation; decide what to do
   with the Vegim tenant if it stays unverified past the invoice due date.
 
