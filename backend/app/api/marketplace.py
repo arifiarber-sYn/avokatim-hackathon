@@ -462,6 +462,16 @@ async def citizen_create_case(
     if body.urgency not in ("normal", "urgent"):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown urgency")
 
+    # Quality gate: junk posts waste the lawyers' attention (fail-open on LLM)
+    from app.services.case_quality import assess_case
+
+    useful, quality_flag = await assess_case(body.description, body.category)
+    if not useful:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            tr(pick_locale(citizen.locale), "case_quality_reject"),
+        )
+
     directed_tenant = None
     if body.directed_tenant_id is not None:
         directed_tenant = await db.get(Tenant, body.directed_tenant_id)
@@ -476,6 +486,7 @@ async def citizen_create_case(
         locale=citizen.locale,
         urgency=body.urgency,
         directed_tenant_id=body.directed_tenant_id,
+        quality_flag=quality_flag,
     )
     db.add(case)
     await db.flush()

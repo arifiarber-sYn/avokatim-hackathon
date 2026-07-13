@@ -10,6 +10,32 @@ for text generated on the server.
 from app.config import settings
 
 _SQ = {
+    "case_quality_reject": "Përshkrimi nuk duket i mjaftueshëm që një avokat ta kuptojë rastin. Shkruaj çfarë ka ndodhur, kur dhe ku — sa më shumë detaje, aq më shpejt e merr një avokat rastin.",
+    # Lawyer onboarding emails
+    "lawyer_verify_subject": "AvokatIM — Konfirmo email-in",
+    "lawyer_verify_body": (
+        "Përshëndetje,\n\nKonfirmo adresën tënde të email-it duke hapur këtë link:\n{url}\n\n"
+        "Linku vlen 3 ditë.\n\n— AvokatIM"
+    ),
+    "lawyer_welcome_subject": "Mirë se erdhe në AvokatIM, {name}!",
+    "lawyer_welcome_body": (
+        "Zyra jote digjitale është gati. Tri hapa për të nisur:\n\n"
+        "1. Aktivizo profilin publik — qytetarët të gjejnë në drejtori dhe merr raste nga tregu:\n{onboarding_url}\n\n"
+        "2. Shto numrin e licencës së OAK-së për shenjën e verifikimit — rastet u dërgohen vetëm avokatëve të verifikuar.\n\n"
+        "3. Krijo lëndën e parë dhe provo asistenten Ava.\n\n"
+        "Prova falas zgjat {trial_days} ditë — pa kartelë, pa detyrime.\n\n"
+        "Pyetje? Përgjigjemi te {contact_url}\n\n— Ekipi i AvokatIM"
+    ),
+    "lawyer_profile_nudge_subject": "AvokatIM — Profili yt publik ende s'është aktiv",
+    "lawyer_profile_nudge_body": (
+        "Qytetarët nuk mund të të gjejnë në drejtori dhe nuk merr raste nga tregu.\n\n"
+        "Aktivizimi zgjat 2 minuta:\n{url}\n\n— AvokatIM"
+    ),
+    "citizen_verify_reminder_subject": "AvokatIM — Kujtesë: konfirmo email-in",
+    "citizen_verify_reminder_body": (
+        "Llogaria jote është gati, por email-i ende s'është konfirmuar — pa të s'mund të postosh raste.\n\n"
+        "Konfirmo këtu:\n{url}\n\nLinku vlen 3 ditë.\n\n— AvokatIM"
+    ),
     # Deadline reminder (lawyer)
     "reminder_subject": "[AvokatIM] Afat pas {days} ditësh: {title}",
     "reminder_matter": "Lënda",
@@ -157,6 +183,32 @@ _SQ = {
 }
 
 _SR = {
+    "case_quality_reject": "Opis ne izgleda dovoljan da advokat razume slučaj. Napišite šta se dogodilo, kada i gde — što više detalja, to će advokat brže preuzeti slučaj.",
+    # Lawyer onboarding emails
+    "lawyer_verify_subject": "AvokatIM — Potvrdite email",
+    "lawyer_verify_body": (
+        "Poštovani,\n\nPotvrdite svoju email adresu otvaranjem ovog linka:\n{url}\n\n"
+        "Link važi 3 dana.\n\n— AvokatIM"
+    ),
+    "lawyer_welcome_subject": "Dobro došli u AvokatIM, {name}!",
+    "lawyer_welcome_body": (
+        "Vaša digitalna kancelarija je spremna. Tri koraka za početak:\n\n"
+        "1. Aktivirajte javni profil — građani vas pronalaze u imeniku i dobijate predmete sa tržišta:\n{onboarding_url}\n\n"
+        "2. Dodajte broj licence AKK za oznaku verifikacije — predmeti se šalju samo verifikovanim advokatima.\n\n"
+        "3. Kreirajte prvi predmet i isprobajte asistentkinju Avu.\n\n"
+        "Besplatni probni period traje {trial_days} dana — bez kartice, bez obaveza.\n\n"
+        "Pitanja? Odgovaramo na {contact_url}\n\n— Tim AvokatIM"
+    ),
+    "lawyer_profile_nudge_subject": "AvokatIM — Vaš javni profil još nije aktivan",
+    "lawyer_profile_nudge_body": (
+        "Građani ne mogu da vas pronađu u imeniku i ne dobijate predmete sa tržišta.\n\n"
+        "Aktivacija traje 2 minuta:\n{url}\n\n— AvokatIM"
+    ),
+    "citizen_verify_reminder_subject": "AvokatIM — Podsetnik: potvrdite email",
+    "citizen_verify_reminder_body": (
+        "Vaš nalog je spreman, ali email još nije potvrđen — bez toga ne možete objavljivati predmete.\n\n"
+        "Potvrdite ovde:\n{url}\n\nLink važi 3 dana.\n\n— AvokatIM"
+    ),
     "reminder_subject": "[AvokatIM] Rok za {days} dana: {title}",
     "reminder_matter": "Predmet",
     "reminder_deadline": "Rok",
@@ -296,6 +348,32 @@ _SR = {
 }
 
 _TR = {
+    "case_quality_reject": "Açıklama, bir avukatın davayı anlaması için yeterli görünmüyor. Ne olduğunu, ne zaman ve nerede olduğunu yazın — ne kadar çok ayrıntı, o kadar hızlı bir avukat davayı üstlenir.",
+    # Lawyer onboarding emails
+    "lawyer_verify_subject": "AvokatIM — E-postanızı doğrulayın",
+    "lawyer_verify_body": (
+        "Merhaba,\n\nBu bağlantıyı açarak e-posta adresinizi doğrulayın:\n{url}\n\n"
+        "Bağlantı 3 gün geçerlidir.\n\n— AvokatIM"
+    ),
+    "lawyer_welcome_subject": "AvokatIM'e hoş geldiniz, {name}!",
+    "lawyer_welcome_body": (
+        "Dijital ofisiniz hazır. Başlamak için üç adım:\n\n"
+        "1. Herkese açık profilinizi etkinleştirin — vatandaşlar sizi rehberde bulur ve pazar yerinden dosyalar alırsınız:\n{onboarding_url}\n\n"
+        "2. Doğrulama rozeti için KBB lisans numaranızı ekleyin — dosyalar yalnızca doğrulanmış avukatlara gönderilir.\n\n"
+        "3. İlk dosyanızı oluşturun ve asistan Ava'yı deneyin.\n\n"
+        "Ücretsiz deneme {trial_days} gün sürer — kart yok, taahhüt yok.\n\n"
+        "Sorular? {contact_url} adresinden yanıtlıyoruz\n\n— AvokatIM Ekibi"
+    ),
+    "lawyer_profile_nudge_subject": "AvokatIM — Herkese açık profiliniz hâlâ etkin değil",
+    "lawyer_profile_nudge_body": (
+        "Vatandaşlar sizi rehberde bulamıyor ve pazar yerinden dosya almıyorsunuz.\n\n"
+        "Etkinleştirme 2 dakika sürer:\n{url}\n\n— AvokatIM"
+    ),
+    "citizen_verify_reminder_subject": "AvokatIM — Hatırlatma: e-postanızı doğrulayın",
+    "citizen_verify_reminder_body": (
+        "Hesabınız hazır, ancak e-postanız henüz doğrulanmadı — doğrulamadan dosya yayınlayamazsınız.\n\n"
+        "Buradan doğrulayın:\n{url}\n\nBağlantı 3 gün geçerlidir.\n\n— AvokatIM"
+    ),
     "reminder_subject": "[AvokatIM] {days} gün sonra süre: {title}",
     "reminder_matter": "Dosya",
     "reminder_deadline": "Süre",
@@ -435,6 +513,32 @@ _TR = {
 }
 
 _BS = {
+    "case_quality_reject": "Opis ne izgleda dovoljan da advokat razumije slučaj. Napišite šta se dogodilo, kada i gdje — što više detalja, to će advokat brže preuzeti slučaj.",
+    # Lawyer onboarding emails
+    "lawyer_verify_subject": "AvokatIM — Potvrdite email",
+    "lawyer_verify_body": (
+        "Poštovani,\n\nPotvrdite svoju email adresu otvaranjem ovog linka:\n{url}\n\n"
+        "Link vrijedi 3 dana.\n\n— AvokatIM"
+    ),
+    "lawyer_welcome_subject": "Dobro došli u AvokatIM, {name}!",
+    "lawyer_welcome_body": (
+        "Vaš digitalni ured je spreman. Tri koraka za početak:\n\n"
+        "1. Aktivirajte javni profil — građani vas pronalaze u imeniku i dobijate predmete s tržišta:\n{onboarding_url}\n\n"
+        "2. Dodajte broj licence AKK za oznaku verifikacije — predmeti se šalju samo verificiranim advokatima.\n\n"
+        "3. Kreirajte prvi predmet i isprobajte asistenticu Avu.\n\n"
+        "Besplatni probni period traje {trial_days} dana — bez kartice, bez obaveza.\n\n"
+        "Pitanja? Odgovaramo na {contact_url}\n\n— Tim AvokatIM"
+    ),
+    "lawyer_profile_nudge_subject": "AvokatIM — Vaš javni profil još nije aktivan",
+    "lawyer_profile_nudge_body": (
+        "Građani vas ne mogu pronaći u imeniku i ne dobijate predmete s tržišta.\n\n"
+        "Aktivacija traje 2 minute:\n{url}\n\n— AvokatIM"
+    ),
+    "citizen_verify_reminder_subject": "AvokatIM — Podsjetnik: potvrdite email",
+    "citizen_verify_reminder_body": (
+        "Vaš račun je spreman, ali email još nije potvrđen — bez toga ne možete objavljivati predmete.\n\n"
+        "Potvrdite ovdje:\n{url}\n\nLink vrijedi 3 dana.\n\n— AvokatIM"
+    ),
     "reminder_subject": "[AvokatIM] Rok za {days} dana: {title}",
     "reminder_matter": "Predmet",
     "reminder_deadline": "Rok",
@@ -574,6 +678,32 @@ _BS = {
 }
 
 _EN = {
+    "case_quality_reject": "The description doesn't look sufficient for a lawyer to understand the case. Write what happened, when and where — the more detail, the faster a lawyer takes the case.",
+    # Lawyer onboarding emails
+    "lawyer_verify_subject": "AvokatIM — Confirm your email",
+    "lawyer_verify_body": (
+        "Hello,\n\nConfirm your email address by opening this link:\n{url}\n\n"
+        "The link is valid for 3 days.\n\n— AvokatIM"
+    ),
+    "lawyer_welcome_subject": "Welcome to AvokatIM, {name}!",
+    "lawyer_welcome_body": (
+        "Your digital office is ready. Three steps to get started:\n\n"
+        "1. Activate your public profile — citizens find you in the directory and you receive cases from the marketplace:\n{onboarding_url}\n\n"
+        "2. Add your KBA license number for the verification badge — cases are sent only to verified lawyers.\n\n"
+        "3. Create your first matter and try the Ava assistant.\n\n"
+        "The free trial lasts {trial_days} days — no card, no commitment.\n\n"
+        "Questions? We answer at {contact_url}\n\n— The AvokatIM Team"
+    ),
+    "lawyer_profile_nudge_subject": "AvokatIM — Your public profile is still not active",
+    "lawyer_profile_nudge_body": (
+        "Citizens cannot find you in the directory and you receive no cases from the marketplace.\n\n"
+        "Activation takes 2 minutes:\n{url}\n\n— AvokatIM"
+    ),
+    "citizen_verify_reminder_subject": "AvokatIM — Reminder: confirm your email",
+    "citizen_verify_reminder_body": (
+        "Your account is ready, but your email is not yet confirmed — without it you cannot post cases.\n\n"
+        "Confirm here:\n{url}\n\nThe link is valid for 3 days.\n\n— AvokatIM"
+    ),
     "reminder_subject": "[AvokatIM] Deadline in {days} days: {title}",
     "reminder_matter": "Matter",
     "reminder_deadline": "Deadline",
@@ -713,6 +843,23 @@ _EN = {
 }
 
 _ZH = {
+    "case_quality_reject": "描述似乎不足以让律师理解案件。请写明发生了什么、何时、何地——细节越多，律师接案越快。",
+    # Lawyer onboarding emails
+    "lawyer_verify_subject": "AvokatIM — 确认您的电子邮箱",
+    "lawyer_verify_body": "您好，\n\n请打开此链接确认您的电子邮箱地址：\n{url}\n\n链接有效期为3天。\n\n— AvokatIM",
+    "lawyer_welcome_subject": "欢迎来到 AvokatIM，{name}！",
+    "lawyer_welcome_body": (
+        "您的数字律所已就绪。三步开始：\n\n"
+        "1. 激活公开资料——公民可以在目录中找到您，您也能从市场接收案件：\n{onboarding_url}\n\n"
+        "2. 添加科索沃律师协会执照号码以获得验证徽章——案件仅发送给已验证的律师。\n\n"
+        "3. 创建第一个案件并试用助手 Ava。\n\n"
+        "免费试用期为 {trial_days} 天——无需银行卡，无任何承诺。\n\n"
+        "有问题？请访问 {contact_url}\n\n— AvokatIM 团队"
+    ),
+    "lawyer_profile_nudge_subject": "AvokatIM — 您的公开资料尚未激活",
+    "lawyer_profile_nudge_body": "公民无法在目录中找到您，您也无法从市场接收案件。\n\n激活只需2分钟：\n{url}\n\n— AvokatIM",
+    "citizen_verify_reminder_subject": "AvokatIM — 提醒：确认您的电子邮箱",
+    "citizen_verify_reminder_body": "您的账户已就绪，但电子邮箱尚未确认——未确认前无法发布案件。\n\n请在此确认：\n{url}\n\n链接有效期为3天。\n\n— AvokatIM",
     "reminder_subject": "[AvokatIM] {days} 天后到期：{title}",
     "reminder_matter": "案件",
     "reminder_deadline": "期限",

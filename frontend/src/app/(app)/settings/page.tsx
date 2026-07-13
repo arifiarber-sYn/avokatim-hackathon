@@ -1356,7 +1356,7 @@ function PublicProfileSection() {
   }
 
   return (
-    <Card className="p-5 space-y-4">
+    <Card id="public-profile" className="p-5 space-y-4 scroll-mt-4">
       <div>
         <h2 className="font-semibold">{t.mkPublicProfile}</h2>
         <p className="text-xs text-slate-500 mt-0.5">{t.mkPublicProfileHint}</p>

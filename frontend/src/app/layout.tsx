@@ -25,11 +25,19 @@ export const viewport = {
   viewportFit: "cover" as const,
 };
 
+// Privacy-friendly visit analytics (self-hosted Umami, no cookies).
+// Only rendered when both env vars are set at build time.
+const UMAMI_SRC = process.env.NEXT_PUBLIC_UMAMI_SRC;
+const UMAMI_ID = process.env.NEXT_PUBLIC_UMAMI_ID;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="sq" className={inter.variable}>
       <body className="antialiased bg-slate-50 text-slate-900">
         <I18nProvider>{children}</I18nProvider>
+        {UMAMI_SRC && UMAMI_ID && (
+          <script defer src={UMAMI_SRC} data-website-id={UMAMI_ID} />
+        )}
       </body>
     </html>
   );

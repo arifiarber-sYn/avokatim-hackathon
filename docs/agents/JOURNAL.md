@@ -10,6 +10,40 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-13 — Improvement backlog Phase 1: onboarding, emails, quality gate, analytics (Cursor / Fable 5)
+
+- Context: interest analysis showed real demand (79 Ava questions from 47
+  unique IPs, 13 citizen accounts, 5 cases) but both new lawyer signups
+  (incl. the first real one, Marigona Gashi) stopped before activating the
+  public profile, and all 4 real /kontakti attempts failed with 422.
+- Done (points 1–5 of the 15-item plan):
+  1. **Onboarding wizard** `/onboarding` (3 steps: public profile → OAK
+     license + fee → optional booking hours); signup now redirects there
+     instead of the dashboard. Fixed the broken `#public-profile` anchor
+     (Card now accepts `id`). New `ob*` strings ×6.
+  2. **Automatic emails**: lawyer welcome email with concrete next steps
+     (i18n ×6, `lawyer_welcome_*`); verification email moved from hardcoded
+     text to `tr()`. One-shot nudges in `reminder_loop`: lawyer with
+     inactive profile after 48h, citizen unverified after 24h (columns
+     `users.profile_nudge_sent_at`, `citizen_users.verify_reminder_sent_at`,
+     only accounts from the last 14 days).
+  3. **/kontakti fixed**: code-point character counter (emoji-safe, matches
+     Python len), inline email validation, friendly 422/429 messages ×6.
+  4. **Case quality gate** (`services/case_quality.py`): heuristics
+     (repetition/gibberish/too short) + LLM JSON classification, fail-open;
+     `case_requests.quality_flag` column; localized rejection message ×6.
+     The simulation's ad-spam case is now genuinely rejected by the LLM.
+  5. **Umami analytics** self-hosted: new compose service (port 3210,
+     own DB in the existing Postgres), public at https://stats.avokatiim.ai
+     via the Cloudflare tunnel, cookie-free script injected in layout via
+     `NEXT_PUBLIC_UMAMI_*` (frontend/.env.local). Admin password in `.env`.
+- Migrations: `35b967911198` (nudge timestamps), `709756624282` (quality_flag).
+- Verified: 65 backend tests pass, full simulation 180/180 PASS, health OK,
+  /onboarding 200, Umami script in HTML, stats subdomain live.
+- Next: Phase 2 (founder badge, Ava-intake, WhatsApp, iOS push + SMS, Stripe
+  consult payments) and Phase 3 (deep research, AI clauses, doc summaries,
+  /siguria, e-Kosova doc).
+
 ## 2026-07-12 — First real-usage check + fake-signup cleanup (Cursor / Fable 5)
 
 - Context: the owner received Gmail bounce emails ("Address not found")

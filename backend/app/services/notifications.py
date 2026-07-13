@@ -4,7 +4,7 @@ Disabled entirely when SMTP is not configured in backend/.env."""
 import asyncio
 import logging
 import smtplib
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from email.message import EmailMessage
 
 import redis.asyncio as aioredis
@@ -145,6 +145,79 @@ async def _check_deadline_reminders(redis: aioredis.Redis) -> None:
             logger.info("Reminder sent for deadline %s (%s days)", deadline.id, days_left)
 
 
+async def _check_onboarding_nudges() -> None:
+    """One-shot onboarding reminders (the gap seen with the first real signups):
+    - lawyer signed up >48h ago and public profile still not visible -> 1 email
+    - citizen signed up >24h ago and email still unverified -> 1 email
+    Only accounts from the last 14 days, so old/test accounts are never mailed.
+    """
+    from app.models import CitizenUser, LawyerProfile
+
+    now = datetime.now(UTC)
+    window_start = now - timedelta(days=14)
+
+    async with SessionLocal() as db:
+        # Lawyers without an active public profile, 48h after signup
+        visible_user_ids = select(LawyerProfile.user_id).where(
+            LawyerProfile.is_visible.is_(True)
+        )
+        lawyers = (
+            await db.execute(
+                select(User).where(
+                    User.is_active.is_(True),
+                    User.is_superadmin.is_(False),
+                    User.profile_nudge_sent_at.is_(None),
+                    User.created_at <= now - timedelta(hours=48),
+                    User.created_at >= window_start,
+                    User.id.not_in(visible_user_ids),
+                )
+            )
+        ).scalars().all()
+        for user in lawyers:
+            loc = pick_locale(user.locale)
+            sent = await send_email(
+                user.email,
+                tr(loc, "lawyer_profile_nudge_subject"),
+                tr(
+                    loc,
+                    "lawyer_profile_nudge_body",
+                    url=f"{settings.public_base_url}/onboarding",
+                ),
+            )
+            user.profile_nudge_sent_at = now
+            if sent:
+                logger.info("Profile nudge sent to lawyer %s", user.email)
+
+        # Citizens with unverified email, 24h after signup
+        from app.security import create_purpose_token
+
+        citizens = (
+            await db.execute(
+                select(CitizenUser).where(
+                    CitizenUser.is_active.is_(True),
+                    CitizenUser.email_verified_at.is_(None),
+                    CitizenUser.verify_reminder_sent_at.is_(None),
+                    CitizenUser.created_at <= now - timedelta(hours=24),
+                    CitizenUser.created_at >= window_start,
+                )
+            )
+        ).scalars().all()
+        for citizen in citizens:
+            loc = pick_locale(citizen.locale)
+            token = create_purpose_token("citizen_verify", citizen.id, minutes=60 * 24 * 3)
+            url = f"{settings.public_base_url}/rasti-im?verifiko={token}"
+            sent = await send_email(
+                citizen.email,
+                tr(loc, "citizen_verify_reminder_subject"),
+                tr(loc, "citizen_verify_reminder_body", url=url),
+            )
+            citizen.verify_reminder_sent_at = now
+            if sent:
+                logger.info("Verify reminder sent to citizen %s", citizen.email)
+
+        await db.commit()
+
+
 async def reminder_loop() -> None:
     """Background task started from the app lifespan."""
     if not smtp_enabled() and not push_enabled() and not sms_enabled():
@@ -157,4 +230,9 @@ async def reminder_loop() -> None:
             await _check_deadline_reminders(redis)
         except Exception as exc:
             logger.warning("Reminder check failed: %s", exc)
+        if smtp_enabled():
+            try:
+                await _check_onboarding_nudges()
+            except Exception as exc:
+                logger.warning("Onboarding nudge check failed: %s", exc)
         await asyncio.sleep(settings.reminder_check_minutes * 60)

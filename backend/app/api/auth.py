@@ -97,13 +97,34 @@ def _user_out(user: User, tenant: Tenant | None) -> UserOut:
 
 
 async def _send_verification_email(user_id: uuid.UUID, email: str, locale: str) -> None:
+    from app.i18n import pick_locale, tr
+
+    loc = pick_locale(locale)
     token = create_purpose_token("verify_email", user_id, minutes=60 * 24 * 3)
     url = f"{settings.public_base_url}/verifiko-email?token={token}"
     await send_email(
         email,
-        "AvokatIM — Konfirmo email-in / Confirm your email",
-        "Përshëndetje,\n\nKonfirmo adresën tënde të email-it duke hapur këtë link:\n"
-        f"{url}\n\nLinku vlen 3 ditë.\n\n— AvokatIM",
+        tr(loc, "lawyer_verify_subject"),
+        tr(loc, "lawyer_verify_body", url=url),
+    )
+
+
+async def _send_welcome_email(email: str, name: str, locale: str) -> None:
+    """Welcome email with the concrete next steps (activate public profile,
+    add the OAK license) — the onboarding gap seen with the first real signups."""
+    from app.i18n import pick_locale, tr
+
+    loc = pick_locale(locale)
+    await send_email(
+        email,
+        tr(loc, "lawyer_welcome_subject", name=name),
+        tr(
+            loc,
+            "lawyer_welcome_body",
+            onboarding_url=f"{settings.public_base_url}/onboarding",
+            trial_days=TRIAL_DAYS,
+            contact_url=f"{settings.public_base_url}/kontakti",
+        ),
     )
 
 
@@ -189,6 +210,7 @@ async def signup(
     )
     await db.commit()
     background.add_task(_send_verification_email, user.id, user.email, body.locale)
+    background.add_task(_send_welcome_email, user.email, user.full_name, body.locale)
     return TokenResponse(access_token=create_access_token(user.id, tenant.id))
 
 

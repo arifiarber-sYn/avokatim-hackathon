@@ -76,6 +76,20 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   (7-day signed token; the old add-with-password endpoint is gone). Pending
   invites show a badge + resend. New-tenant onboarding checklist appears on
   the dashboard after signup (`?welcome=1`).
+- **Lawyer onboarding funnel** (2026-07-13): signup redirects to the
+  `/onboarding` wizard (3 steps: public profile → OAK license + consult fee →
+  optional booking hours; skippable, saves via `PUT /marketplace/profile`).
+  Welcome email with next steps at signup (`lawyer_welcome_*` ×6); the
+  verification email now uses `tr()` too. One-shot email nudges from
+  `reminder_loop`: lawyer with inactive public profile 48h after signup,
+  citizen with unverified email after 24h (columns
+  `users.profile_nudge_sent_at`, `citizen_users.verify_reminder_sent_at`;
+  only accounts ≤14 days old are ever nudged).
+- **Marketplace case quality gate** (2026-07-13):
+  `services/case_quality.py` — heuristics (repetition, gibberish, too short)
+  + one fast LLM JSON classification (fail-open → `quality_flag="heuristic"`);
+  rejects junk with a localized 400 (`case_quality_reject` ×6); accepted
+  cases carry `case_requests.quality_flag` ("ok"/"heuristic").
 - **Intake**: new case registration, automatic conflict-of-interest check, AI
   classification, source tracking. **Public intake form** at `/apliko/{token}`
   (tenant token from Settings; submissions arrive with source=web).
@@ -480,7 +494,11 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - Containers (restart: unless-stopped): `avokatim-db` (pgvector/pg17, host port 5433),
   `avokatim-redis` (6380), `avokatim-caddy` (host network, HTTPS 8443 app +
   7443 LiveKit wss), `avokatim-livekit` (7880 localhost signaling,
-  7881/tcp + 7882/udp media).
+  7881/tcp + 7882/udp media), `avokatim-umami` (visit analytics, 127.0.0.1:3210,
+  own `umami` DB inside avokatim-db, public at https://stats.avokatiim.ai via
+  the tunnel; admin credentials noted in the compose `.env`; frontend loads the
+  cookie-free script when `NEXT_PUBLIC_UMAMI_SRC/ID` are set in
+  `frontend/.env.local` at build time).
 - Backend: uvicorn on 127.0.0.1:8000, venv at `backend/.venv`. Frontend: Next.js on :3000.
 - Secrets in `backend/.env` (git-ignored): DeepSeek key, doc encryption key, DB password.
 - **Optional integrations, off until configured in `backend/.env`** (all degrade

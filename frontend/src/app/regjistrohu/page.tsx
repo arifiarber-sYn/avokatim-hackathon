@@ -31,7 +31,7 @@ export default function SignupPage() {
         accept_tos: acceptTos,
       });
       setToken(r.access_token);
-      router.push("/dashboard?welcome=1");
+      router.push("/onboarding");
     } catch (err) {
       setError(err instanceof Error ? err.message : t.error);
     } finally {

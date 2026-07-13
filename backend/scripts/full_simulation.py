@@ -642,6 +642,15 @@ async def main() -> None:
         check("qytetari poston rastin", r.status_code == 201)
         case_id = r.json()["id"]
 
+        # Quality gate: junk/repetitive posts never reach the lawyers
+        r = await c.post(f"{BASE}/public/citizen/cases", headers=ch, json={
+            "category": "civil",
+            "description": "mkan rre,mkan rre,mkan rre,mkan rre,mkan rre,mkan rre,mkan rre",
+            "urgency": "normal",
+        })
+        check("rasti spam (përsëritje) REFUZOHET nga filtri i cilësisë",
+              r.status_code == 400, f"status={r.status_code}")
+
         # --- citizen account: profile update, change + reset password ---
         r = await c.patch(f"{BASE}/public/citizen/me", headers=ch, json={
             "full_name": "Qytetar I Përditësuar", "phone": "+383 45 111 222",
@@ -784,11 +793,21 @@ async def main() -> None:
               r.status_code == 200 and r.json().get("remaining") == 4,
               f"remaining={r.json().get('remaining')}")
 
-        # abuse protection: report a spammy case
+        # abuse protection: the LLM quality gate may already reject obvious ad
+        # spam; if it slips through (fail-open), the lawyer reports it instead.
         r = await c.post(f"{BASE}/public/citizen/cases", headers=ch, json={
             "category": "other",
             "description": "Blej ilaçe të lira online pa recetë — oferta më e mirë në treg!!!",
         })
+        if r.status_code == 400:
+            check("reklama refuzohet nga filtri i cilësisë (LLM)", True)
+            r = await c.post(f"{BASE}/public/citizen/cases", headers=ch, json={
+                "category": "other",
+                "description": "Kam nevojë për këshillë rreth një kontrate qiraje "
+                               "që përmban kushte të cilat më duken të padrejta.",
+            })
+        check("rasti për testin e raportimit u krijua", r.status_code == 201,
+              f"status={r.status_code}")
         spam_id = r.json()["id"]
         r = await c.post(f"{BASE}/marketplace/cases/{spam_id}/report", headers=h)
         check("avokati raporton rast abuziv (mbyllet + audit)",
@@ -796,8 +815,9 @@ async def main() -> None:
 
         print("\n=== 26. SOS + KUFIJTË E LEAD-EVE (Faza 3/4) ===")
         rr = aioredis.from_url(app_settings.redis_url)
-        async for rkey in rr.scan_iter("avokatim:rl:citizen_sos:*"):
-            await rr.delete(rkey)
+        for pattern in ("avokatim:rl:citizen_sos:*", "avokatim:rl:citizen_case:*"):
+            async for rkey in rr.scan_iter(pattern):
+                await rr.delete(rkey)
         await rr.aclose()
 
         r = await c.put(f"{BASE}/marketplace/profile", headers=h, json={

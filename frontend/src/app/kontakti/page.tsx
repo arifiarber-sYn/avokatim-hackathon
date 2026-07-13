@@ -26,10 +26,19 @@ export default function ContactPage() {
     problem: t.ctKindProblem,
   };
 
+  // Count Unicode code points (matches the backend's Python len()), so
+  // emoji-heavy messages don't pass client-side and then fail with 422.
+  const messageLen = [...message.trim()].length;
+  const emailOk = email.trim() === "" || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setBusy(true);
     setError("");
+    if (!emailOk) {
+      setError(t.ctErrEmail);
+      return;
+    }
+    setBusy(true);
     try {
       const res = await fetch("/api/public/feedback", {
         method: "POST",
@@ -41,7 +50,11 @@ export default function ContactPage() {
           message: message.trim(),
         }),
       });
-      if (!res.ok) throw new Error((await res.json()).detail || t.error);
+      if (!res.ok) {
+        if (res.status === 429) throw new Error(t.ctErrRate);
+        if (res.status === 422) throw new Error(t.ctErrInvalid);
+        throw new Error((await res.json()).detail || t.error);
+      }
       setSent(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.error);
@@ -101,7 +114,9 @@ export default function ContactPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     maxLength={255}
+                    className={!emailOk ? "!border-red-400" : undefined}
                   />
+                  {!emailOk && <p className="text-xs text-red-600 mt-1">{t.ctErrEmail}</p>}
                 </div>
               </div>
               <div>
@@ -111,12 +126,24 @@ export default function ContactPage() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   required
-                  minLength={10}
                   maxLength={5000}
                 />
+                <p
+                  className={`text-xs mt-1 ${
+                    messageLen > 0 && messageLen < 10 ? "text-amber-600" : "text-slate-400"
+                  }`}
+                >
+                  {messageLen < 10
+                    ? t.ctMsgMore.replace("{n}", String(10 - messageLen))
+                    : t.ctMsgOk.replace("{n}", String(messageLen))}
+                </p>
               </div>
               <ErrorNote message={error} />
-              <Button type="submit" disabled={busy || message.trim().length < 10} className="w-full">
+              <Button
+                type="submit"
+                disabled={busy || messageLen < 10 || !emailOk}
+                className="w-full"
+              >
                 {busy ? t.loading : t.ctSend}
               </Button>
             </form>

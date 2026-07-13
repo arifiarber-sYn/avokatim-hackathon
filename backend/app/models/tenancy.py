@@ -112,5 +112,8 @@ class User(Base, TimestampMixin):
     # Platform operator (cross-tenant admin panel); never set via API
     is_superadmin: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # One-shot onboarding nudge: set when the "activate your public profile"
+    # reminder email has been sent (48h after signup, only if still inactive)
+    profile_nudge_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     tenant: Mapped[Tenant] = relationship(back_populates="users", foreign_keys=[tenant_id])

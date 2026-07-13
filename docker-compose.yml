@@ -55,6 +55,23 @@ services:
       - avokatim_redis:/data
     command: ["redis-server", "--appendonly", "yes"]
 
+  # Privacy-friendly visit analytics (no cookies, GDPR-safe). Uses its own
+  # database inside the existing Postgres container. Public via the
+  # Cloudflare tunnel at stats.avokatiim.ai.
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    container_name: avokatim-umami
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://avokatim:${DB_PASSWORD:-avokatim-dev-password}@db:5432/umami
+      DATABASE_TYPE: postgresql
+      APP_SECRET: ${UMAMI_APP_SECRET:-umami-dev-secret-change-me}
+    ports:
+      - "127.0.0.1:3210:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   avokatim_pgdata:
   avokatim_redis:

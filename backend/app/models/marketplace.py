@@ -50,6 +50,9 @@ class CitizenUser(Base, TimestampMixin):
     email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     # Privacy-policy acceptance at signup (Law 06/L-082, demonstrable consent)
     privacy_accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # One-shot reminder: set when the "confirm your email" nudge has been sent
+    # (24h after signup, only if still unverified)
+    verify_reminder_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class LawyerProfile(Base, TimestampMixin):
@@ -155,6 +158,9 @@ class CaseRequest(Base, TimestampMixin):
         UUID(as_uuid=True), ForeignKey("contacts.id", ondelete="SET NULL")
     )
     closed_reason: Mapped[str | None] = mapped_column(String(255))
+    # Pre-publication quality assessment: "ok" (LLM approved),
+    # "heuristic" (LLM unavailable, heuristics passed), NULL (legacy rows)
+    quality_flag: Mapped[str | None] = mapped_column(String(16))
 
 
 class CaseReview(Base, TimestampMixin):
