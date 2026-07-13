@@ -30,9 +30,13 @@
   email, self-upgraded to solo → invoice P-2026-0001 €24 open, created 107
   contacts in ~1/sec scripted bursts — watch this tenant).
 - Verified: py_compile OK, live directory/stats clean after deletion.
-- Left open / next: personal outreach to Marigona (draft in
-  docs/rekrutimi/), decide what to do with the Vegim tenant if it stays
-  unverified past due date.
+- Follow-up same day: personal email SENT to Marigona Gashi from the owner's
+  address (script `backend/scripts/send_marigona_email.py`, SMTP OK) with the
+  remaining onboarding steps; her `profile_nudge_sent_at` was set so the
+  automated 48h nudge won't duplicate it. Status tracked in
+  docs/rekrutimi/kontakt-oak-dhe-avokatet.md.
+- Left open / next: await Marigona's reply/activation; decide what to do
+  with the Vegim tenant if it stays unverified past the invoice due date.
 
 ## 2026-07-13 — Public presentation catch-up: marketing pages now cover every new feature (Cursor / Fable 5)
 

@@ -86,3 +86,13 @@ Krijuesi i AvokatIM · https://avokatiim.ai
   (llogaria e krijuar më 2026-07-11).
 - Pas dërgimit: shëno përgjigjet këtu ose në JOURNAL, që agjentët e ardhshëm
   ta dinë statusin.
+
+## Statusi
+
+- **2026-07-13**: Email-i personal iu dërgua Marigona Gashit
+  (marigonagashi.law@gmail.com) nga adresa e pronarit përmes SMTP
+  (`backend/scripts/send_marigona_email.py`). Përmbajtja: hapat e mbetur të
+  onboarding-ut (aktivizimi i profilit publik, fushat/qytetet, licenca OAK)
+  dhe shenja "Themelues". Nudge-u automatik 48h u shënua si i dërguar
+  (`profile_nudge_sent_at`) që të mos marrë email të dyfishtë.
+  Përgjigja: në pritje.
