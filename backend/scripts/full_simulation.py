@@ -52,6 +52,25 @@ def make_pdf(text: str) -> bytes:
     return buf.getvalue()
 
 
+async def cleanup() -> None:
+    """Remove every simulation artifact. Must run even when the run crashes:
+    real citizens browse the live directory, so leaked 'Zyra Sim' lawyers
+    would show up as fake verified offices."""
+    from sqlalchemy import text as sqltext
+
+    from app.database import SessionLocal
+
+    async with SessionLocal() as db:
+        await db.execute(sqltext(
+            "DELETE FROM citizen_users WHERE email LIKE 'qytetari.sim.%@gmail.com'"))
+        await db.execute(sqltext(
+            "DELETE FROM tenants WHERE name LIKE 'Zyra Sim %'"))
+        await db.execute(sqltext(
+            "DELETE FROM platform_feedback WHERE email LIKE 'qytetari.sim.%@gmail.com'"))
+        await db.commit()
+    print("\ncleanup done")
+
+
 async def main() -> None:
     t0 = time.time()
     async with httpx.AsyncClient(timeout=180) as c:
@@ -1203,19 +1222,6 @@ async def main() -> None:
         check("qytetari mund ta anulojë", r.status_code == 200
               and r.json().get("status") == "cancelled")
 
-    # ============ cleanup ============
-    from sqlalchemy import text as sqltext
-    from app.database import SessionLocal
-    async with SessionLocal() as db:
-        await db.execute(sqltext("DELETE FROM citizen_users WHERE email = :e"),
-                         {"e": f"qytetari.sim.{SUFFIX}@gmail.com"})
-        await db.execute(sqltext("DELETE FROM tenants WHERE name = :n"),
-                         {"n": f"Zyra Sim {SUFFIX}"})
-        await db.execute(sqltext("DELETE FROM platform_feedback WHERE email = :e"),
-                         {"e": f"qytetari.sim.{SUFFIX}@gmail.com"})
-        await db.commit()
-    print("\ncleanup done")
-
     fails = [x for x in results if x[0] == "FAIL"]
     gaps = [x for x in results if x[0] == "GAP"]
     passes = [x for x in results if x[0] == "PASS"]
@@ -1228,4 +1234,11 @@ async def main() -> None:
         print(f"  GAP:  {n} {d}")
 
 
-asyncio.run(main())
+async def run() -> None:
+    try:
+        await main()
+    finally:
+        await cleanup()
+
+
+asyncio.run(run())

@@ -10,6 +10,30 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-13 — Leaked simulation lawyer removed from live directory; sim cleanup made crash-proof (Cursor / Fable 5)
+
+- Context: the owner celebrated "the first lawyer in the directory" — but the
+  entry was **"Zyra Sim 928866 / Av. Driton Sim"**, a leftover from a
+  `full_simulation.py` run whose cleanup never executed (the run aborted after
+  a FAIL path). A fake verified lawyer (license SIM-928866, rating 4.7) was
+  publicly visible on avokatiim.ai.
+- Done:
+  - Deleted the leaked sim tenant, its citizen and its case from prod DB;
+    `/public/lawyers` now returns [] and stats show 0 lawyers in directory.
+  - `full_simulation.py`: cleanup moved to a `cleanup()` coroutine that runs
+    in `finally` (always executes even on crash) and deletes by pattern
+    (`Zyra Sim %`, `qytetari.sim.%@gmail.com`) instead of the exact suffix,
+    so it also sweeps residue from older crashed runs.
+- Also investigated for the owner: real first-lawyer candidates are Marigona
+  Gashi (signed up, verified email, 1 login, no public profile yet — nudge
+  email fires at +48h) and "Vegim H" (disposable yopmail address, unverified
+  email, self-upgraded to solo → invoice P-2026-0001 €24 open, created 107
+  contacts in ~1/sec scripted bursts — watch this tenant).
+- Verified: py_compile OK, live directory/stats clean after deletion.
+- Left open / next: personal outreach to Marigona (draft in
+  docs/rekrutimi/), decide what to do with the Vegim tenant if it stays
+  unverified past due date.
+
 ## 2026-07-13 — Public presentation catch-up: marketing pages now cover every new feature (Cursor / Fable 5)
 
 - Context: an inventory of `/`, `/per-qytetaret` and `/per-avokatet` against
