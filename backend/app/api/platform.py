@@ -15,6 +15,10 @@ from app.models import LawyerProfile, Matter, PlatformInvoice, Tenant, User
 from app.services.audit import log_action
 from app.services.platform_billing import generate_invoice, invoice_out
 
+# The first N OAK-verified offices get the permanent "Founder" badge —
+# a marketing lever for early lawyer recruitment.
+FOUNDER_LIMIT = 20
+
 router = APIRouter(prefix="/platform", tags=["platform"])
 
 
@@ -209,6 +213,18 @@ async def decide_verification(
     profile.verification_status = "verified" if body.approve else "rejected"
     profile.verified_at = datetime.now(UTC) if body.approve else None
     profile.verification_note = body.note
+    # Founder badge: the first FOUNDER_LIMIT verified offices keep it forever
+    if body.approve and not profile.is_founder:
+        verified_count = (
+            await db.execute(
+                select(func.count(LawyerProfile.id)).where(
+                    LawyerProfile.verification_status == "verified",
+                    LawyerProfile.id != profile.id,
+                )
+            )
+        ).scalar_one()
+        if verified_count < FOUNDER_LIMIT:
+            profile.is_founder = True
     await log_action(
         db, tenant_id=profile.tenant_id, user_id=admin.id,
         action="platform.verification_decide", entity_type="lawyer_profile",

@@ -122,6 +122,15 @@ class Settings(BaseSettings):
     vapid_private_key: str = ""
     vapid_subject: str = "mailto:noreply@avokatim.local"
 
+    # WhatsApp Business Cloud API (Ava over WhatsApp). Empty token = the
+    # webhook accepts but does not reply (buildable/testable without a Meta
+    # business account; see docs/integrimet/whatsapp.md).
+    whatsapp_token: str = ""
+    whatsapp_phone_id: str = ""
+    whatsapp_verify_token: str = ""
+    whatsapp_api_base: str = "https://graph.facebook.com/v21.0"
+    whatsapp_daily_limit: int = 20
+
 
 @lru_cache
 def get_settings() -> Settings:

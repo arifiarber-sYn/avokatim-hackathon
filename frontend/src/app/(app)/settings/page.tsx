@@ -39,6 +39,7 @@ export default function SettingsPage() {
       <PublicIntakeSection />
       <PublicProfileSection />
       <BookingSection />
+      <ReferralSection />
       <ImportSection />
       <TwoFASection />
       <CorpusSection />
@@ -749,11 +750,24 @@ function PushSection() {
     }
   }
 
+  // iOS supports web push only from an installed PWA (iOS 16.4+): show the
+  // "Add to Home Screen" guide instead of a dead "not supported" message.
+  const isIos =
+    typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isStandalone =
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(display-mode: standalone)").matches;
+
   return (
     <Card className="p-5 space-y-3">
       <h2 className="font-semibold">{t.pushNotifications}</h2>
       <p className="text-sm text-slate-500">{t.pushHint}</p>
-      {!supported || !serverEnabled ? (
+      {isIos && !isStandalone && !supported ? (
+        <div className="text-sm bg-sky-50 text-sky-800 rounded-lg p-3 space-y-1">
+          <p className="font-semibold">{t.pushIosT}</p>
+          <p>{t.pushIosGuide}</p>
+        </div>
+      ) : !supported || !serverEnabled ? (
         <p className="text-sm text-slate-400">{t.pushNotSupported}</p>
       ) : subscribed ? (
         <div className="flex items-center gap-3">
@@ -1268,6 +1282,8 @@ function PublicProfileSection() {
     photo: null as string | null,
     oak_license_no: "",
     consult_fee_eur: "" as string,
+    phone: "",
+    sms_case_alerts: false,
   });
   const [verification, setVerification] = useState<{
     status: string;
@@ -1299,6 +1315,8 @@ function PublicProfileSection() {
       verification_status: string;
       verification_note: string | null;
       consult_fee_eur: number | null;
+      phone: string | null;
+      sms_case_alerts: boolean;
     }>("/marketplace/profile")
       .then((p) => {
         setProfile({
@@ -1311,6 +1329,8 @@ function PublicProfileSection() {
           photo: p.photo,
           oak_license_no: p.oak_license_no || "",
           consult_fee_eur: p.consult_fee_eur == null ? "" : String(p.consult_fee_eur),
+          phone: p.phone || "",
+          sms_case_alerts: p.sms_case_alerts,
         });
         setVerification({ status: p.verification_status, note: p.verification_note });
       })
@@ -1338,6 +1358,8 @@ function PublicProfileSection() {
           photo: profile.photo,
           oak_license_no: profile.oak_license_no.trim() || null,
           consult_fee_eur: profile.consult_fee_eur === "" ? null : Number(profile.consult_fee_eur),
+          phone: profile.phone.trim() || null,
+          sms_case_alerts: profile.sms_case_alerts,
         }
       );
       setVerification({ status: p.verification_status, note: p.verification_note });
@@ -1433,6 +1455,26 @@ function PublicProfileSection() {
           <p className="text-xs text-slate-500 mt-1">{t.mkConsultFeeHint}</p>
         </div>
         <div>
+          <Label>{t.mkSmsPhone}</Label>
+          <Input
+            type="tel"
+            value={profile.phone}
+            onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+            placeholder="+383 44 000 000"
+            maxLength={64}
+          />
+          <label className="flex items-center gap-2 text-sm cursor-pointer mt-2">
+            <input
+              type="checkbox"
+              checked={profile.sms_case_alerts}
+              onChange={(e) => setProfile({ ...profile, sms_case_alerts: e.target.checked })}
+              className="accent-indigo-600"
+            />
+            {t.mkSmsAlerts}
+          </label>
+          <p className="text-xs text-slate-500 mt-1">{t.mkSmsHint}</p>
+        </div>
+        <div>
           <Label>{t.mkBio}</Label>
           <Textarea
             rows={3}
@@ -1507,6 +1549,48 @@ function PublicProfileSection() {
           {saved && <span className="text-sm text-emerald-600">{t.mkProfileSaved}</span>}
         </div>
       </form>
+    </Card>
+  );
+}
+
+/** Lawyer-brings-lawyer program: share link + count of referred offices. */
+function ReferralSection() {
+  const { t } = useI18n();
+  const [data, setData] = useState<{ code: string; url: string; referred_count: number } | null>(
+    null
+  );
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    apiGet<{ code: string; url: string; referred_count: number }>("/marketplace/referral")
+      .then(setData)
+      .catch(() => {});
+  }, []);
+
+  if (!data) return null;
+  return (
+    <Card className="p-5 space-y-3">
+      <div>
+        <h2 className="font-semibold">{t.refTitle}</h2>
+        <p className="text-xs text-slate-500 mt-0.5">{t.refHint}</p>
+      </div>
+      <div className="flex items-center gap-2 flex-wrap">
+        <code className="text-sm bg-slate-100 rounded-lg px-3 py-2 break-all">{data.url}</code>
+        <Button
+          type="button"
+          onClick={() => {
+            navigator.clipboard.writeText(data.url).then(() => {
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            });
+          }}
+        >
+          {copied ? t.refCopied : t.refCopy}
+        </Button>
+      </div>
+      <p className="text-sm text-slate-600">
+        {t.refCount.replace("{n}", String(data.referred_count))}
+      </p>
     </Card>
   );
 }

@@ -1,15 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { apiPost, setToken } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { Button, Card, ErrorNote, Input, Label, LocaleSwitcher } from "@/components/ui";
 
 export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupInner />
+    </Suspense>
+  );
+}
+
+function SignupInner() {
   const { t, locale } = useI18n();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // Lawyer-brings-lawyer program: ?ref=<code> from a colleague's share link
+  const referralCode = searchParams.get("ref");
   const [form, setForm] = useState({
     practice_name: "",
     full_name: "",
@@ -29,6 +40,7 @@ export default function SignupPage() {
         ...form,
         locale,
         accept_tos: acceptTos,
+        referral_code: referralCode,
       });
       setToken(r.access_token);
       router.push("/onboarding");

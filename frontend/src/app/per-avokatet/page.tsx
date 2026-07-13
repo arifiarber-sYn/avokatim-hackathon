@@ -98,6 +98,20 @@ export default function ForLawyersPage() {
           </div>
         </div>
 
+        {/* Early-adopter recruitment: the founder badge */}
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-gradient-to-br from-amber-500/10 to-indigo-600/10 rounded-xl border border-amber-500/30 p-6 text-center space-y-2">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-300 bg-amber-500/10 rounded-full px-3 py-1">
+              <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
+                <path d="M12 2l2.9 6.26L21 9.27l-4.5 4.38L17.8 21 12 17.77 6.2 21l1.3-7.35L3 9.27l6.1-1.01L12 2z" />
+              </svg>
+              {t.mkFounder}
+            </span>
+            <h2 className="text-lg font-bold text-white">{t.lpFounderT}</h2>
+            <p className="text-sm text-slate-300">{t.lpFounderB}</p>
+          </div>
+        </div>
+
         {stats && (
           <div className="grid grid-cols-2 gap-4 max-w-xl mx-auto text-center">
             <div className="bg-slate-800/60 rounded-xl border border-slate-700/60 p-4">

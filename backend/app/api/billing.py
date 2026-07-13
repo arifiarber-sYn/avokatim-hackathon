@@ -2,7 +2,7 @@ import uuid
 from datetime import date
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from fastapi.responses import Response
 from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -553,11 +553,16 @@ async def create_invoice_payment_link(
 
 
 @public_router.post("/stripe/webhook", include_in_schema=False)
-async def stripe_webhook(request: Request, db: AsyncSession = Depends(get_db)):
+async def stripe_webhook(
+    request: Request,
+    background: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
     """Stripe calls this when a checkout completes; marks the invoice paid.
-    Handles both client invoices (invoice_id) and the tenant's own platform
-    subscription invoices (platform_invoice_id)."""
-    from app.models import PlatformInvoice
+    Handles client invoices (invoice_id), the tenant's own platform
+    subscription invoices (platform_invoice_id) and consultation bookings
+    (booking_id)."""
+    from app.models import ConsultBooking, PlatformInvoice
 
     payload = await request.body()
     signature = request.headers.get("stripe-signature", "")
@@ -570,6 +575,22 @@ async def stripe_webhook(request: Request, db: AsyncSession = Depends(get_db)):
         reference = f"Stripe {session.get('payment_intent', '')}"[:128]
         invoice_id = metadata.get("invoice_id")
         platform_invoice_id = metadata.get("platform_invoice_id")
+        booking_id = metadata.get("booking_id")
+        if booking_id:
+            from app.api.bookings import _notify_lawyer_new_booking
+
+            booking = await db.get(ConsultBooking, uuid.UUID(booking_id))
+            if booking is not None and booking.status == "pending_payment":
+                booking.status = "pending"
+                await log_action(
+                    db, tenant_id=booking.tenant_id, user_id=None,
+                    action="booking.paid_online",
+                    entity_type="consult_booking", entity_id=str(booking.id),
+                    details={"session": session.get("id"), "reference": reference},
+                )
+                await db.commit()
+                background.add_task(_notify_lawyer_new_booking, booking.id)
+            return {"received": True}
         if invoice_id:
             invoice = await db.get(Invoice, uuid.UUID(invoice_id))
             if invoice is not None and invoice.status != "paid":

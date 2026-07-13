@@ -10,6 +10,44 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-13 — Improvement backlog Phase 2: growth (founders, Ava-intake, WhatsApp, SMS, paid consults) (Cursor / Fable 5)
+
+- Done (points 6–10 of the 15-item plan):
+  6. **Founder badge + referrals**: `lawyer_profiles.is_founder` set
+     automatically for the first 20 verified offices (`FOUNDER_LIMIT` in
+     `api/platform.py`); "Themelues" badge in the directory and a section on
+     `/per-avokatet`. Referral program: `tenants.referral_code` /
+     `referred_by_code`, `?ref=` accepted at `/regjistrohu`, lazy code +
+     referred-count via `GET /marketplace/referral`, section in settings.
+     Draft outreach emails for OAK and Marigona in
+     `docs/rekrutimi/kontakt-oak-dhe-avokatet.md`.
+  7. **Ava-intake**: `POST /public/ava/structure-case` turns the chat
+     history into a clean JSON draft `{category, description, city,
+     urgency}` via the LLM abstraction (rate-limited); "Më lidh me avokat"
+     on `/ava` now prefills `/posto-rastin` with the structured case.
+  8. **WhatsApp webhook stub** (`api/whatsapp.py`): Meta verification
+     handshake + inbound text → Ava reply via Graph API (httpx); logs
+     instead of sending when `whatsapp_*` credentials are unset; daily
+     quota per phone number. Activation guide in
+     `docs/integrimet/whatsapp.md`.
+  9. **iOS push + SMS**: "Add to Home Screen" PWA guide for Safari in
+     settings; `lawyer_profiles.phone` + `sms_case_alerts` columns; new-case
+     and SOS notifications also go out via the existing Twilio-compatible
+     SMS service when enabled.
+  10. **Paid consultations**: when the lawyer has `consult_fee_eur` and
+     Stripe is configured, bookings are created as `pending_payment` with a
+     Stripe Checkout link (`metadata[booking_id]`); the webhook flips them
+     to `pending` and only then notifies the lawyer; `pending_payment`
+     holds the slot; fail-open to the free flow if Stripe errors. New
+     status shown at /rasti-im (`bkStatusAwaitingPay` ×6).
+- Migrations: `c3a3e4c5a37f` (founder + referral codes), `8fc9637a45d9`
+  (lawyer phone/SMS), `e0c562b27017` (booking fee_eur).
+- Verified: pytest 69 passed; full_simulation 183 checks (incl. spam-case
+  LLM rejection, structure-case, no-Stripe booking flow); health OK; build
+  + restart OK; sw bumped to v13.
+- Left open / next: Phase 3 (deep research, AI clause assist, doc
+  summaries, /siguria page, e-Kosova readiness doc).
+
 ## 2026-07-13 — Improvement backlog Phase 1: onboarding, emails, quality gate, analytics (Cursor / Fable 5)
 
 - Context: interest analysis showed real demand (79 Ava questions from 47

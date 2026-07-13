@@ -119,6 +119,8 @@ export interface PublicLawyer {
   highlighted?: boolean;
   // Trust signals: OAK verification, client reviews, transparent pricing
   verified?: boolean;
+  // One of the first verified offices (permanent early-adopter badge)
+  founder?: boolean;
   consult_fee_eur?: number | null;
   rating?: number | null;
   review_count?: number;

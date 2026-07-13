@@ -57,6 +57,10 @@ class Tenant(Base, TimestampMixin):
     )
     # Free-form notes for the platform operator (payment references etc.)
     billing_notes: Mapped[str | None] = mapped_column(Text)
+    # Referral program: this tenant's own share code, and the code that
+    # brought them here (recorded at signup for the lawyer-brings-lawyer program)
+    referral_code: Mapped[str | None] = mapped_column(String(16), unique=True)
+    referred_by_code: Mapped[str | None] = mapped_column(String(16))
     # Firm-wide security policy: force every member to enable TOTP
     require_2fa: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     # Small logo (data URL) shown in the client portal and public intake form

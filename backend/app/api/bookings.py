@@ -65,7 +65,7 @@ async def _taken_starts(db: AsyncSession, tenant_id: uuid.UUID) -> set[datetime]
     rows = await db.execute(
         select(ConsultBooking.starts_at).where(
             ConsultBooking.tenant_id == tenant_id,
-            ConsultBooking.status.in_(["pending", "confirmed"]),
+            ConsultBooking.status.in_(["pending_payment", "pending", "confirmed"]),
             ConsultBooking.starts_at >= datetime.now(UTC),
         )
     )
@@ -80,6 +80,7 @@ def _booking_out(booking: ConsultBooking, other_party: str | None = None) -> dic
         "status": booking.status,
         "note": booking.note,
         "with": other_party,
+        "fee_eur": booking.fee_eur,
         "created_at": booking.created_at.isoformat(),
     }
 
@@ -301,6 +302,13 @@ async def citizen_create_booking(
     starts_local = body.starts_at.astimezone(datetime.now(UTC).astimezone().tzinfo)
     if starts_local not in set(_free_slots(profile, taken)):
         raise HTTPException(status.HTTP_409_CONFLICT, "Slot no longer available")
+    # Online consultation payment: when the lawyer set a fee and Stripe is
+    # configured, the booking waits for checkout to complete (webhook flips
+    # it to pending and only then notifies the lawyer). Without Stripe the
+    # fee is transparent info only and the flow is unchanged.
+    from app.services.payments import create_payment_link, payments_enabled
+
+    charge_online = bool(profile.consult_fee_eur) and payments_enabled()
     booking = ConsultBooking(
         citizen_id=citizen.id,
         tenant_id=profile.tenant_id,
@@ -308,17 +316,42 @@ async def citizen_create_booking(
         starts_at=starts_local,
         duration_min=SLOT_MINUTES,
         note=body.note,
+        status="pending_payment" if charge_online else "pending",
+        fee_eur=profile.consult_fee_eur if charge_online else None,
     )
     db.add(booking)
     await db.flush()
+
+    checkout_url: str | None = None
+    if charge_online:
+        try:
+            checkout_url, _session_id = await create_payment_link(
+                invoice_id=str(booking.id),
+                invoice_number=f"KONSULTA-{str(booking.id)[:8]}",
+                amount_cents=int(profile.consult_fee_eur) * 100,
+                currency="eur",
+                description=f"Konsultë ligjore — {lawyer.full_name}",
+                customer_email=citizen.email,
+                metadata_key="booking_id",
+                return_path="/rasti-im",
+            )
+        except RuntimeError as exc:
+            logger.warning("Stripe checkout for booking failed: %s", exc)
+            # Fail-open: don't lose the booking because the gateway hiccuped
+            booking.status = "pending"
+            booking.fee_eur = None
+            charge_online = False
+
     await log_action(
         db, tenant_id=profile.tenant_id, user_id=None, action="booking.create",
         entity_type="consult_booking", entity_id=str(booking.id),
-        details={"starts_at": starts_local.isoformat()}, ip_address=_ip(request),
+        details={"starts_at": starts_local.isoformat(),
+                 "paid_online": charge_online}, ip_address=_ip(request),
     )
     await db.commit()
-    background.add_task(_notify_lawyer_new_booking, booking.id)
-    return _booking_out(booking, lawyer.full_name)
+    if not charge_online:
+        background.add_task(_notify_lawyer_new_booking, booking.id)
+    return {**_booking_out(booking, lawyer.full_name), "checkout_url": checkout_url}
 
 
 @public_router.get("/citizen/bookings")
@@ -345,7 +378,7 @@ async def citizen_cancel_booking(
     booking = await db.get(ConsultBooking, booking_id)
     if booking is None or booking.citizen_id != citizen.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Booking not found")
-    if booking.status not in ("pending", "confirmed"):
+    if booking.status not in ("pending_payment", "pending", "confirmed"):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot cancel")
     booking.status = "cancelled"
     await log_action(

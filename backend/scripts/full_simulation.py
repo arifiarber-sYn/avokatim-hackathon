@@ -569,7 +569,8 @@ async def main() -> None:
         from app.config import settings as app_settings
         rr = aioredis.from_url(app_settings.redis_url)
         for pattern in ("avokatim:rl:citizen_signup:*", "avokatim:rl:citizen_login:*",
-                        "avokatim:rl:citizen_pw_forgot:*", "avokatim:rl:citizen_pw_change:*"):
+                        "avokatim:rl:citizen_pw_forgot:*", "avokatim:rl:citizen_pw_change:*",
+                        "avokatim:rl:ava_structure:*"):
             async for rkey in rr.scan_iter(pattern):
                 await rr.delete(rkey)
         await rr.aclose()
@@ -792,6 +793,22 @@ async def main() -> None:
         check("kuota zbritet pas pyetjes",
               r.status_code == 200 and r.json().get("remaining") == 4,
               f"remaining={r.json().get('remaining')}")
+
+        # Ava-intake: the conversation becomes a structured case draft
+        r = await c.post(f"{BASE}/public/ava/structure-case", json={
+            "history": [
+                {"role": "user", "content": "Punëdhënësi nuk m'i ka paguar tri "
+                 "pagat e fundit dhe tash më ka larguar nga puna pa paralajmërim. "
+                 "Punoj në Prizren."},
+                {"role": "assistant", "content": "Sipas Ligjit të Punës keni të "
+                 "drejtë në pagat e papaguara dhe në afat paralajmërimi..."},
+            ],
+        })
+        sc = r.json() if r.status_code == 200 else {}
+        check("Ava strukturon rastin nga biseda (kategori + përshkrim)",
+              r.status_code == 200 and sc.get("category") == "labor"
+              and len(sc.get("description", "")) >= 20,
+              f"category={sc.get('category')}, city={sc.get('city')}")
 
         # abuse protection: the LLM quality gate may already reject obvious ad
         # spam; if it slips through (fail-open), the lawyer reports it instead.
@@ -1109,6 +1126,10 @@ async def main() -> None:
         bk = r.json() if r.status_code == 201 else {}
         check("qytetari rezervon terminin e parë", r.status_code == 201,
               f"{bk.get('starts_at')} ({bk.get('status')})")
+        # Without Stripe keys the paid-consult flow must not activate:
+        # booking goes straight to 'pending' and no checkout URL is returned.
+        check("pa Stripe: rezervimi mbetet 'pending' pa checkout_url",
+              bk.get("status") == "pending" and not bk.get("checkout_url"))
         r = await c.post(f"{BASE}/public/citizen/bookings", headers=ch, json={
             "profile_id": prof["id"], "starts_at": slots[0],
         })

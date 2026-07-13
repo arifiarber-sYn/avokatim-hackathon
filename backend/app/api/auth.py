@@ -182,6 +182,17 @@ async def signup(
             status.HTTP_400_BAD_REQUEST, "Terms of service must be accepted"
         )
 
+    # Referral program: record who brought this office (only valid codes)
+    referred_by = None
+    if body.referral_code:
+        referrer = (
+            await db.execute(
+                select(Tenant).where(Tenant.referral_code == body.referral_code.strip().upper())
+            )
+        ).scalar_one_or_none()
+        if referrer is not None:
+            referred_by = referrer.referral_code
+
     tenant = Tenant(
         name=body.practice_name,
         kind="solo",
@@ -191,6 +202,7 @@ async def signup(
         seats_limit=3,
         trial_ends_at=datetime.now(UTC) + timedelta(days=TRIAL_DAYS),
         tos_accepted_at=datetime.now(UTC),
+        referred_by_code=referred_by,
     )
     db.add(tenant)
     await db.flush()
@@ -206,6 +218,7 @@ async def signup(
     await db.flush()
     await log_action(
         db, tenant_id=tenant.id, user_id=user.id, action="auth.signup",
+        details={"referred_by": referred_by} if referred_by else None,
         ip_address=request.client.host if request.client else None,
     )
     await db.commit()

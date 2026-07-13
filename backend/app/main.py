@@ -37,6 +37,7 @@ from app.api import (
     team,
     templates,
     voice,
+    whatsapp,
 )
 from app.config import settings
 from app.database import SessionLocal
@@ -103,6 +104,7 @@ app.include_router(marketplace.router, prefix=api_prefix)
 app.include_router(marketplace.public_router, prefix=api_prefix)
 app.include_router(subscription.router, prefix=api_prefix)
 app.include_router(voice.router, prefix=api_prefix)
+app.include_router(whatsapp.router, prefix=api_prefix)
 app.include_router(public_tools.router, prefix=api_prefix)
 app.include_router(bookings.router, prefix=api_prefix)
 app.include_router(bookings.public_router, prefix=api_prefix)

@@ -68,6 +68,8 @@ class SignupRequest(BaseModel):
     locale: str = "sq"
     # ToS/Privacy checkbox (Law 06/L-082) — must be true
     accept_tos: bool = False
+    # Lawyer-brings-lawyer program: the referrer's share code (?ref=)
+    referral_code: str | None = Field(default=None, max_length=16)
 
 
 class ForgotPasswordRequest(BaseModel):

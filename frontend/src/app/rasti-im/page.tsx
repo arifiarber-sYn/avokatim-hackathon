@@ -428,12 +428,14 @@ function MyBookings() {
   if (!bookings || bookings.length === 0) return null;
 
   const statusLabel: Record<string, string> = {
+    pending_payment: t.bkStatusAwaitingPay,
     pending: t.bkStatusPending,
     confirmed: t.bkStatusConfirmed,
     declined: t.bkStatusDeclined,
     cancelled: t.bkStatusCancelled,
   };
   const statusTone: Record<string, string> = {
+    pending_payment: "bg-violet-50 text-violet-700",
     pending: "bg-amber-50 text-amber-700",
     confirmed: "bg-emerald-50 text-emerald-700",
     declined: "bg-red-50 text-red-700",
@@ -468,7 +470,7 @@ function MyBookings() {
                 {statusLabel[b.status] || b.status}
               </span>
             </div>
-            {(b.status === "pending" || b.status === "confirmed") && (
+            {(b.status === "pending_payment" || b.status === "pending" || b.status === "confirmed") && (
               <button
                 onClick={() => cancel(b.id)}
                 className="text-xs text-slate-400 hover:text-red-600 hover:underline"

@@ -62,13 +62,28 @@ function PostCaseInner() {
   const [checking, setChecking] = useState(true);
   const [form, setForm] = useState({ category: "civil", description: "", city: "", urgency: "normal" });
 
-  // Prefill from a public Ava conversation ("Më lidh me avokat")
+  // Prefill from a public Ava conversation ("Më lidh me avokat"): either the
+  // structured JSON draft from /ava/structure-case, or a plain-text fallback.
   useEffect(() => {
     const draft = localStorage.getItem("avokatim_case_draft");
-    if (draft) {
-      setForm((f) => ({ ...f, description: draft }));
-      localStorage.removeItem("avokatim_case_draft");
+    if (!draft) return;
+    localStorage.removeItem("avokatim_case_draft");
+    try {
+      const parsed = JSON.parse(draft);
+      if (parsed && typeof parsed === "object" && parsed.description) {
+        setForm((f) => ({
+          ...f,
+          category: typeof parsed.category === "string" ? parsed.category : f.category,
+          description: String(parsed.description),
+          city: typeof parsed.city === "string" ? parsed.city : f.city,
+          urgency: parsed.urgency === "urgent" ? "urgent" : f.urgency,
+        }));
+        return;
+      }
+    } catch {
+      // not JSON — legacy plain-text draft
     }
+    setForm((f) => ({ ...f, description: draft }));
   }, []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");

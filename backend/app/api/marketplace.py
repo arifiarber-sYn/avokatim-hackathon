@@ -18,7 +18,7 @@ import redis.asyncio as aioredis
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, EmailStr, Field
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -45,6 +45,7 @@ from app.security import (
 from app.services.audit import log_action
 from app.services.conflicts import check_conflicts
 from app.services.notifications import send_email
+from app.services.sms import send_sms, sms_enabled
 
 logger = logging.getLogger(__name__)
 
@@ -406,6 +407,7 @@ async def public_lawyers(
                 "photo": profile.photo,
                 "highlighted": tenant.plan != "trial",
                 "verified": True,
+                "founder": profile.is_founder,
                 "consult_fee_eur": profile.consult_fee_eur,
                 "rating": avg_rating,
                 "review_count": review_count,
@@ -705,6 +707,11 @@ async def _notify_matching_lawyers(
                 db, lawyer.id, title=subject, body=body, url="/marketplace"
             )
             await send_email(lawyer.email, subject, body)
+            if sms_enabled() and profile.sms_case_alerts and profile.phone:
+                await send_sms(
+                    profile.phone,
+                    tr(loc, "sms_case_match", category=category, city=city or "-"),
+                )
             notified += 1
         logger.info("Case %s: alerted %d matching lawyers", case_id, notified)
 
@@ -728,7 +735,7 @@ async def _notify_on_duty_lawyers(case_id: uuid.UUID, city: str | None) -> None:
     async with SessionLocal() as db:
         rows = (
             await db.execute(
-                select(User)
+                select(User, LawyerProfile)
                 .join(LawyerProfile, LawyerProfile.user_id == User.id)
                 .join(Tenant, Tenant.id == LawyerProfile.tenant_id)
                 .where(
@@ -738,8 +745,8 @@ async def _notify_on_duty_lawyers(case_id: uuid.UUID, city: str | None) -> None:
                     Tenant.status == "active",
                 )
             )
-        ).scalars().all()
-        for lawyer in rows:
+        ).all()
+        for lawyer, profile in rows:
             loc = pick_locale(lawyer.locale)
             subject = tr(loc, "sos_alert_subject")
             body = tr(loc, "sos_alert_body", city=city or "-",
@@ -748,6 +755,8 @@ async def _notify_on_duty_lawyers(case_id: uuid.UUID, city: str | None) -> None:
                 db, lawyer.id, title=subject, body=body, url="/marketplace"
             )
             await send_email(lawyer.email, subject, body)
+            if sms_enabled() and profile.sms_case_alerts and profile.phone:
+                await send_sms(profile.phone, tr(loc, "sms_sos_alert", city=city or "-"))
         logger.info("SOS %s: alerted %d on-duty lawyers", case_id, len(rows))
 
 
@@ -1123,6 +1132,71 @@ async def ava_ask_stream(
     )
 
 
+class StructureCaseIn(BaseModel):
+    # [{role: "user"|"assistant", content: str}] — the Ava conversation so far
+    history: list[dict] = Field(min_length=1, max_length=40)
+
+
+_STRUCTURE_CASE_PROMPT = (
+    "Nga biseda e mëposhtme mes një qytetari dhe asistentes ligjore Ava, "
+    "përgatit rastin që qytetari do t'ua postojë avokatëve. Shkruaje "
+    "përshkrimin në vetën e parë, qartë dhe me faktet kryesore (çfarë ndodhi, "
+    "kur, ku, çfarë kërkon qytetari) — pa këshilla ligjore dhe pa tekst të "
+    "Avës. Kthe VETËM JSON:\n"
+    '{{"category": "civil|criminal|family|commercial|labor|administrative|other", '
+    '"description": "përshkrimi i rastit në gjuhën e qytetarit", '
+    '"city": "qyteti nëse përmendet, ndryshe null", '
+    '"urgency": "normal|urgent"}}\n\n'
+    "BISEDA:\n{conversation}"
+)
+
+
+@public_router.post("/ava/structure-case")
+async def ava_structure_case(body: StructureCaseIn, request: Request):
+    """Turn an Ava conversation into a clean, prefillable case draft
+    (category, first-person description, city, urgency) — so cases arriving
+    from the assistant are well-structured instead of raw chat fragments."""
+    import json as jsonlib
+    import re as relib
+
+    from app.llm import get_provider
+    from app.llm.base import ChatMessage
+
+    await _rate_limit("ava_structure", _ip(request), limit=10, window_seconds=3600)
+
+    lines = []
+    for m in body.history[-AVA_HISTORY_MAX:]:
+        role, content = m.get("role"), str(m.get("content", ""))[:4000]
+        if role in ("user", "assistant") and content:
+            speaker = "QYTETARI" if role == "user" else "AVA"
+            lines.append(f"{speaker}: {content}")
+    if not lines:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Empty conversation")
+
+    provider = get_provider(None)
+    try:
+        result = await provider.chat(
+            [ChatMessage(
+                role="user",
+                content=_STRUCTURE_CASE_PROMPT.format(conversation="\n\n".join(lines)[:12000]),
+            )]
+        )
+        match = relib.search(r"\{.*\}", result.content, flags=relib.DOTALL)
+        data = jsonlib.loads(match.group(0)) if match else {}
+    except Exception as exc:
+        logger.warning("structure-case LLM failed: %s", exc)
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Assistant unavailable")
+
+    category = data.get("category")
+    urgency = data.get("urgency")
+    return {
+        "category": category if category in PRACTICE_AREAS else "other",
+        "description": str(data.get("description") or "")[:8000],
+        "city": (str(data["city"])[:120] if data.get("city") else None),
+        "urgency": urgency if urgency in ("normal", "urgent") else "normal",
+    }
+
+
 # ---------- lawyer side ----------
 
 def _profile_out(profile: LawyerProfile | None) -> dict:
@@ -1132,6 +1206,7 @@ def _profile_out(profile: LawyerProfile | None) -> dict:
             "practice_areas": [], "cities": [], "languages": [], "photo": None,
             "oak_license_no": None, "verification_status": "none",
             "verification_note": None, "consult_fee_eur": None,
+            "phone": None, "sms_case_alerts": False, "is_founder": False,
         }
     return {
         "is_visible": profile.is_visible,
@@ -1145,6 +1220,9 @@ def _profile_out(profile: LawyerProfile | None) -> dict:
         "verification_status": profile.verification_status,
         "verification_note": profile.verification_note,
         "consult_fee_eur": profile.consult_fee_eur,
+        "phone": profile.phone,
+        "sms_case_alerts": profile.sms_case_alerts,
+        "is_founder": profile.is_founder,
     }
 
 
@@ -1158,6 +1236,39 @@ async def get_my_profile(
     return _profile_out(profile)
 
 
+@router.get("/referral")
+async def my_referral(
+    user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
+    """Lawyer-brings-lawyer program: the tenant's share code and how many
+    offices signed up with it. The code is generated lazily on first request."""
+    import secrets as _secrets
+
+    tenant = await db.get(Tenant, user.tenant_id)
+    if tenant.referral_code is None:
+        for _ in range(5):
+            code = _secrets.token_hex(4).upper()
+            exists = (
+                await db.execute(select(Tenant.id).where(Tenant.referral_code == code))
+            ).scalar_one_or_none()
+            if exists is None:
+                tenant.referral_code = code
+                break
+        await db.commit()
+    referred = (
+        await db.execute(
+            select(func.count(Tenant.id)).where(
+                Tenant.referred_by_code == tenant.referral_code
+            )
+        )
+    ).scalar_one()
+    return {
+        "code": tenant.referral_code,
+        "url": f"{settings.public_base_url}/regjistrohu?ref={tenant.referral_code}",
+        "referred_count": referred,
+    }
+
+
 class ProfileIn(BaseModel):
     is_visible: bool = False
     sos_on_duty: bool = False
@@ -1168,6 +1279,8 @@ class ProfileIn(BaseModel):
     photo: str | None = None
     oak_license_no: str | None = Field(default=None, max_length=64)
     consult_fee_eur: int | None = Field(default=None, ge=0, le=10000)
+    phone: str | None = Field(default=None, max_length=64)
+    sms_case_alerts: bool = False
 
 
 @router.put("/profile")
@@ -1193,6 +1306,8 @@ async def update_my_profile(
     ]
     profile.photo = body.photo
     profile.consult_fee_eur = body.consult_fee_eur
+    profile.phone = (body.phone or "").strip() or None
+    profile.sms_case_alerts = body.sms_case_alerts
 
     # Entering or changing the license number (re)starts verification; the
     # status itself is never client-writable — only the platform operator

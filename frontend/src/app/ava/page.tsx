@@ -38,6 +38,7 @@ export default function PublicAvaPage() {
   const [remaining, setRemaining] = useState<number | null>(null);
   const [limit, setLimit] = useState<number | null>(null);
   const [isCitizen, setIsCitizen] = useState(false);
+  const [structuring, setStructuring] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const busyRef = useRef(false);
   const messagesRef = useRef<ChatMsg[]>([]);
@@ -159,11 +160,31 @@ export default function PublicAvaPage() {
     askQuestion(draft.trim());
   }
 
-  function connectToLawyer() {
-    // Prefill the case form from the conversation
-    const userLines = messages.filter((m) => m.role === "user").map((m) => m.content);
-    if (userLines.length > 0) {
-      localStorage.setItem("avokatim_case_draft", userLines.join("\n\n").slice(0, 7000));
+  async function connectToLawyer() {
+    // Ava-intake: let the LLM turn the conversation into a structured case
+    // draft (category, first-person description, city, urgency). Fall back
+    // to the raw user messages if the endpoint is unavailable.
+    const history = messages.map((m) => ({ role: m.role, content: m.content }));
+    if (history.length > 0) {
+      setStructuring(true);
+      try {
+        const res = await fetch("/api/public/ava/structure-case", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ history }),
+        });
+        if (res.ok) {
+          const draft = await res.json();
+          localStorage.setItem("avokatim_case_draft", JSON.stringify(draft));
+        } else {
+          throw new Error("structure failed");
+        }
+      } catch {
+        const userLines = messages.filter((m) => m.role === "user").map((m) => m.content);
+        localStorage.setItem("avokatim_case_draft", userLines.join("\n\n").slice(0, 7000));
+      } finally {
+        setStructuring(false);
+      }
     }
     router.push("/posto-rastin");
   }
@@ -254,7 +275,9 @@ export default function PublicAvaPage() {
         {messages.length > 0 && (
           <Card className="p-4 flex items-center justify-between gap-3 flex-wrap">
             <p className="text-sm text-slate-600">{t.mkAvaConnectHint}</p>
-            <Button onClick={connectToLawyer}>{t.mkAvaConnectLawyer}</Button>
+            <Button onClick={connectToLawyer} disabled={structuring}>
+              {structuring ? t.loading : t.mkAvaConnectLawyer}
+            </Button>
           </Card>
         )}
 

@@ -3,7 +3,7 @@
 > Update this file whenever the state changes (new module, dependency, behavior,
 > known issue). Keep it a snapshot, not a history — history lives in JOURNAL.md.
 
-**Last updated:** 2026-07-11
+**Last updated:** 2026-07-13
 
 ## Status: demo-ready — P0/P1/P2 closed + full Kosovo-law compliance layer (6 languages, data protection 06/L-082, AML 05/L-096) + public citizen marketplace (Phase 1 of the citizen-bridge vision); zero known feature gaps
 
@@ -85,6 +85,32 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   citizen with unverified email after 24h (columns
   `users.profile_nudge_sent_at`, `citizen_users.verify_reminder_sent_at`;
   only accounts ≤14 days old are ever nudged).
+- **Growth features — Phase 2 of the improvement backlog** (2026-07-13):
+  **Founder badge**: `lawyer_profiles.is_founder` — auto-set for the first
+  20 verified offices (`FOUNDER_LIMIT`), amber "Themelues" badge in
+  `/avokatet` + program section on `/per-avokatet`. **Referrals**:
+  `tenants.referral_code`/`referred_by_code`, `?ref=` on `/regjistrohu`
+  (recorded in audit), `GET /marketplace/referral` (lazy code + referred
+  count), share section in Settings; outreach drafts in
+  `docs/rekrutimi/kontakt-oak-dhe-avokatet.md`. **Ava-intake**:
+  `POST /api/public/ava/structure-case` (LLM → JSON
+  `{category, description, city, urgency}`, rate-limited); "Më lidh me
+  avokat" on `/ava` stores the structured draft and `/posto-rastin`
+  prefills form fields from it (legacy plain-text drafts still work).
+  **WhatsApp stub** (`app/api/whatsapp.py`, `docs/integrimet/whatsapp.md`):
+  `GET/POST /api/public/whatsapp/webhook` — Meta handshake, inbound text →
+  Ava answer via Graph API; logs-only until `WHATSAPP_TOKEN/PHONE_ID/
+  VERIFY_TOKEN` are set; daily per-number quota. **iOS push guide + SMS
+  alerts**: Safari "Add to Home Screen" instructions in Settings → push;
+  `lawyer_profiles.phone` + `sms_case_alerts` — matching new-case and SOS
+  notifications also via the Twilio-compatible SMS service when configured.
+  **Paid consultations**: lawyer with `consult_fee_eur` + Stripe configured
+  ⇒ booking created as `pending_payment` (+ `fee_eur`) with a Stripe
+  Checkout link (`metadata[booking_id]`, return to `/rasti-im`); the
+  existing `/api/stripe/webhook` flips it to `pending` and only then
+  notifies the lawyer; `pending_payment` holds the slot; Stripe error or no
+  key ⇒ free flow unchanged. Migrations `c3a3e4c5a37f`, `8fc9637a45d9`,
+  `e0c562b27017`.
 - **Marketplace case quality gate** (2026-07-13):
   `services/case_quality.py` — heuristics (repetition, gibberish, too short)
   + one fast LLM JSON classification (fail-open → `quality_flag="heuristic"`);

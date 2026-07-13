@@ -83,6 +83,13 @@ class LawyerProfile(Base, TimestampMixin):
     # marketplace cases. Verification is manual (superadmin checks the
     # public OAK registry) because OAK has no lookup API.
     oak_license_no: Mapped[str | None] = mapped_column(String(64))
+    # Founder badge: granted automatically to the first verified offices
+    # (marketing lever for early recruitment; see FOUNDER_LIMIT in api/platform.py)
+    is_founder: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    # SMS alerts for new marketplace/SOS cases (needs Twilio-compatible
+    # credentials in backend/.env; silently skipped otherwise)
+    phone: Mapped[str | None] = mapped_column(String(64))
+    sms_case_alerts: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     verification_status: Mapped[str] = mapped_column(
         String(16), default="none", server_default="none", index=True
     )
@@ -122,8 +129,12 @@ class ConsultBooking(Base, TimestampMixin):
     )
     starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     duration_min: Mapped[int] = mapped_column(Integer, default=30)
+    # pending_payment (Stripe checkout open) -> pending -> confirmed/declined;
+    # citizens may cancel while pending_payment/pending/confirmed
     status: Mapped[str] = mapped_column(String(16), default="pending", index=True)
     note: Mapped[str | None] = mapped_column(Text)
+    # Consultation fee charged online (EUR); null = free/offline booking
+    fee_eur: Mapped[int | None] = mapped_column(Integer)
 
 
 class CaseRequest(Base, TimestampMixin):

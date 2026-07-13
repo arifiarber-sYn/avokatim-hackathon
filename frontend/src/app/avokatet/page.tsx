@@ -116,6 +116,17 @@ export default function LawyerDirectoryPage() {
                           {t.lpVerified}
                         </span>
                       )}
+                      {lawyer.founder && (
+                        <span
+                          className="inline-flex items-center gap-0.5 shrink-0 text-[11px] font-semibold text-amber-700 bg-amber-50 rounded-full px-1.5 py-0.5"
+                          title={t.mkFounder}
+                        >
+                          <svg viewBox="0 0 24 24" fill="currentColor" className="h-3 w-3">
+                            <path d="M12 2l2.9 6.26L21 9.27l-4.5 4.38L17.8 21 12 17.77 6.2 21l1.3-7.35L3 9.27l6.1-1.01L12 2z" />
+                          </svg>
+                          {t.mkFounder}
+                        </span>
+                      )}
                     </p>
                     <p className="text-xs text-slate-500 truncate">{lawyer.firm_name}</p>
                     {lawyer.rating != null && (
@@ -195,11 +206,16 @@ function BookingWidget({ profileId }: { profileId: string }) {
     setBusy(true);
     setError("");
     try {
-      await citizenPost("/citizen/bookings", {
+      const res = await citizenPost<{ checkout_url?: string | null }>("/citizen/bookings", {
         profile_id: profileId,
         starts_at: picked,
         note: note.trim() || null,
       });
+      if (res.checkout_url) {
+        // Paid consultation: finish the booking on Stripe Checkout
+        window.location.href = res.checkout_url;
+        return;
+      }
       setSent(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.error);

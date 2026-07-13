@@ -10,6 +10,8 @@ for text generated on the server.
 from app.config import settings
 
 _SQ = {
+    "sms_case_match": "AvokatIM: Rast i ri ({category}, {city}) që përputhet me profilin tënd. Shiko te Tregu: avokatiim.ai/marketplace",
+    "sms_sos_alert": "AvokatIM SOS: Rast urgjent ({city})! Hyr menjëherë: avokatiim.ai/marketplace",
     "case_quality_reject": "Përshkrimi nuk duket i mjaftueshëm që një avokat ta kuptojë rastin. Shkruaj çfarë ka ndodhur, kur dhe ku — sa më shumë detaje, aq më shpejt e merr një avokat rastin.",
     # Lawyer onboarding emails
     "lawyer_verify_subject": "AvokatIM — Konfirmo email-in",
@@ -183,6 +185,8 @@ _SQ = {
 }
 
 _SR = {
+    "sms_case_match": "AvokatIM: Novi predmet ({category}, {city}) koji odgovara vašem profilu. Pogledajte: avokatiim.ai/marketplace",
+    "sms_sos_alert": "AvokatIM SOS: Hitan slučaj ({city})! Prijavite se odmah: avokatiim.ai/marketplace",
     "case_quality_reject": "Opis ne izgleda dovoljan da advokat razume slučaj. Napišite šta se dogodilo, kada i gde — što više detalja, to će advokat brže preuzeti slučaj.",
     # Lawyer onboarding emails
     "lawyer_verify_subject": "AvokatIM — Potvrdite email",
@@ -348,6 +352,8 @@ _SR = {
 }
 
 _TR = {
+    "sms_case_match": "AvokatIM: Profilinize uyan yeni dosya ({category}, {city}). Görüntüleyin: avokatiim.ai/marketplace",
+    "sms_sos_alert": "AvokatIM SOS: Acil dosya ({city})! Hemen giriş yapın: avokatiim.ai/marketplace",
     "case_quality_reject": "Açıklama, bir avukatın davayı anlaması için yeterli görünmüyor. Ne olduğunu, ne zaman ve nerede olduğunu yazın — ne kadar çok ayrıntı, o kadar hızlı bir avukat davayı üstlenir.",
     # Lawyer onboarding emails
     "lawyer_verify_subject": "AvokatIM — E-postanızı doğrulayın",
@@ -513,6 +519,8 @@ _TR = {
 }
 
 _BS = {
+    "sms_case_match": "AvokatIM: Novi predmet ({category}, {city}) koji odgovara vašem profilu. Pogledajte: avokatiim.ai/marketplace",
+    "sms_sos_alert": "AvokatIM SOS: Hitan slučaj ({city})! Prijavite se odmah: avokatiim.ai/marketplace",
     "case_quality_reject": "Opis ne izgleda dovoljan da advokat razumije slučaj. Napišite šta se dogodilo, kada i gdje — što više detalja, to će advokat brže preuzeti slučaj.",
     # Lawyer onboarding emails
     "lawyer_verify_subject": "AvokatIM — Potvrdite email",
@@ -678,6 +686,8 @@ _BS = {
 }
 
 _EN = {
+    "sms_case_match": "AvokatIM: New case ({category}, {city}) matching your profile. View it: avokatiim.ai/marketplace",
+    "sms_sos_alert": "AvokatIM SOS: Urgent case ({city})! Log in now: avokatiim.ai/marketplace",
     "case_quality_reject": "The description doesn't look sufficient for a lawyer to understand the case. Write what happened, when and where — the more detail, the faster a lawyer takes the case.",
     # Lawyer onboarding emails
     "lawyer_verify_subject": "AvokatIM — Confirm your email",
@@ -843,6 +853,8 @@ _EN = {
 }
 
 _ZH = {
+    "sms_case_match": "AvokatIM：有与您资料匹配的新案件（{category}，{city}）。查看：avokatiim.ai/marketplace",
+    "sms_sos_alert": "AvokatIM SOS：紧急案件（{city}）！立即登录：avokatiim.ai/marketplace",
     "case_quality_reject": "描述似乎不足以让律师理解案件。请写明发生了什么、何时、何地——细节越多，律师接案越快。",
     # Lawyer onboarding emails
     "lawyer_verify_subject": "AvokatIM — 确认您的电子邮箱",
