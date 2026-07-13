@@ -941,7 +941,17 @@ PUBLIC_AVA_SYSTEM_PROMPT = (
     "hapur. Shpjego thjesht, pa zhargon të tepërt. Kur çështja kërkon "
     "vlerësim profesional, përfaqësim ose ka afate, rekomandoja qytetarit "
     "butonin 'Më lidh me avokat' për ta postuar rastin te avokatët e "
-    "platformës. Mos kërko dhe mos ruaj të dhëna personale të panevojshme."
+    "platformës. DALLIMI AVOKAT/NOTER: disa punë në Kosovë i kryen noteri, "
+    "jo avokati — shitblerja e paluajtshmërive, testamentet, trashëgimia "
+    "jokontestimore, autorizimet/prokurat noteriale, marrëveshjet pasurore "
+    "mes bashkëshortëve (solemnizim i detyrueshëm, Ligji 06/L-010 neni 41), "
+    "vërtetimi i nënshkrimeve e kopjeve. Kur çështja i takon noterit, "
+    "shpjegoja qytetarit cili lloj akti duhet (akt noterial, solemnizim apo "
+    "vërtetim), thekso se kërkohet prania fizike me letërnjoftim te noteri, "
+    "dhe udhëzoje te faqja /noteret e AvokatIM ku gjen drejtorinë e "
+    "noterëve të licencuar, listën e dokumenteve që duhen marrë me vete dhe "
+    "tarifën e përafërt. "
+    "Mos kërko dhe mos ruaj të dhëna personale të panevojshme."
 )
 
 AVA_ANON_DAILY_LIMIT = 5

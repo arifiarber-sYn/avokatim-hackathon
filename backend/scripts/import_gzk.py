@@ -47,6 +47,23 @@ LAWS = [
     ("Ligji për Shoqëritë Tregtare", "06/L-016", "law", [16426]),
     ("Ligji për Familjen i Kosovës", "2004/32", "law", [111755, 2410]),
     ("Ligji për Mbrojtjen e të Dhënave Personale", "06/L-082", "law", [18616]),
+    ("Ligji për Noterinë", "06/L-010", "law", [18334]),
+    # Amendment laws are only a few articles long, hence the low min_chars.
+    (
+        "Ligji për ndryshimin e Ligjit për Noterinë (kompetenca territoriale)",
+        "08/L-149",
+        "law",
+        # GZK hosts this amendment only as a PDF behind a postback; the
+        # Ministry of Justice mirror serves the same official text directly.
+        [
+            66879,
+            "https://md.rks-gov.net/wp-content/uploads/2024/06/15BB1CC5-280D-4269-8A2E-A2EE7CAC8D8F.pdf",
+        ],
+        1000,
+    ),
+    # NOTE: amendment 08/L-272 (e-signature arts. 31A/31B, discipline moved to
+    # MoJ) has no machine-readable text online yet (GZK span is empty, gazette
+    # PDF behind postback, Assembly site behind Cloudflare). Re-try later.
 ]
 
 _SPAN_RE = re.compile(
@@ -99,7 +116,9 @@ async def main() -> None:
             d.get("reference")
             for d in (await api.get(f"{API}/corpus?jurisdiction_code=XK")).json()
         }
-        for title, reference, doc_type, act_ids in LAWS:
+        for entry in LAWS:
+            title, reference, doc_type, act_ids = entry[:4]
+            min_chars = entry[4] if len(entry) > 4 else 5000
             if reference in existing:
                 print(f"SKIP  {reference}  {title} (already in corpus)")
                 continue
@@ -122,7 +141,7 @@ async def main() -> None:
                     candidate = _extract_pdf_text(r.content)
                 else:
                     candidate = _extract_text(r.text)
-                if candidate and len(candidate) > 5000 and "Neni" in candidate:
+                if candidate and len(candidate) > min_chars and "Neni" in candidate:
                     text, source_url = candidate, url
                     break
             if text is None:

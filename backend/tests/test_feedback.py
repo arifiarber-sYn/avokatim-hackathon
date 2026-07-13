@@ -8,7 +8,7 @@ from app.models.feedback import FEEDBACK_KINDS, FEEDBACK_STATUSES
 from app.seeds.citizen_docs import CITIZEN_DOC_TEMPLATES
 
 ALL_LOCALES = ["sq", "sr", "tr", "bs", "en", "zh"]
-CATEGORIES = {"institucionet", "puna", "konsumatori", "te_pergjithshme"}
+CATEGORIES = {"institucionet", "puna", "konsumatori", "te_pergjithshme", "noteria"}
 
 
 def test_feedback_in_accepts_valid_payload():
@@ -36,9 +36,9 @@ def test_feedback_constants():
     assert FEEDBACK_STATUSES == ["new", "handled"]
 
 
-def test_seven_templates_with_valid_categories():
+def test_templates_unique_with_valid_categories():
     codes = [tpl["code"] for tpl in CITIZEN_DOC_TEMPLATES]
-    assert len(codes) == len(set(codes)) == 7
+    assert len(codes) == len(set(codes)) == 11  # 7 letters + 4 notary-pack drafts
     for tpl in CITIZEN_DOC_TEMPLATES:
         assert tpl["category"] in CATEGORIES, tpl["code"]
 

@@ -3,6 +3,7 @@
 // Public self-service document generator (no account needed): plain-language
 // fields -> formal letter PDF from deterministic templates. Not legal advice.
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 import PublicShell from "@/components/public-shell";
 import PageIntro from "@/components/page-intro";
@@ -20,9 +21,11 @@ interface DocTemplate {
   category: string;
   name: Record<string, string>;
   fields: DocField[];
+  requires_notary: boolean;
+  notary_act: string | null;
 }
 
-const CATEGORY_ORDER = ["institucionet", "puna", "konsumatori", "te_pergjithshme"];
+const CATEGORY_ORDER = ["institucionet", "puna", "konsumatori", "te_pergjithshme", "noteria"];
 
 export default function CitizenDocsPage() {
   const { t, locale } = useI18n();
@@ -88,6 +91,7 @@ export default function CitizenDocsPage() {
                   puna: t.cdCatPuna,
                   konsumatori: t.cdCatKonsumatori,
                   te_pergjithshme: t.cdCatTePergjithshme,
+                  noteria: t.cdCatNoteria,
                 }[cat];
                 return (
                   <div key={cat} className="space-y-2">
@@ -106,7 +110,12 @@ export default function CitizenDocsPage() {
                           className="w-full text-left bg-white rounded-xl border border-slate-200 p-4 hover:border-indigo-300 hover:shadow-sm transition flex items-center gap-3"
                         >
                           <IconDoc className="h-5 w-5 text-indigo-600 shrink-0" />
-                          <p className="font-semibold text-slate-900">{loc(tpl.name)}</p>
+                          <p className="font-semibold text-slate-900 flex-1">{loc(tpl.name)}</p>
+                          {tpl.requires_notary && (
+                            <span className="text-[10px] font-semibold bg-amber-100 text-amber-800 rounded-full px-2 py-0.5 shrink-0">
+                              {t.pnNotaries}
+                            </span>
+                          )}
                         </button>
                       ))}
                   </div>
@@ -125,6 +134,14 @@ export default function CitizenDocsPage() {
                 {t.cdOther}
               </button>
             </div>
+            {picked.requires_notary && (
+              <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 space-y-1.5">
+                <p className="text-xs text-amber-800">⚠ {t.cdNotaryFlag}</p>
+                <Link href="/noteret" className="block text-xs font-semibold text-indigo-600 hover:underline">
+                  {t.cdNotaryLink} →
+                </Link>
+              </div>
+            )}
             <form onSubmit={generate} className="space-y-3">
               {picked.fields.map((field) => (
                 <div key={field.key}>

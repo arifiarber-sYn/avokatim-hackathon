@@ -10,6 +10,52 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-13 — Notary integration: third bridge citizen → lawyer → notary (Cursor / Fable 5)
+
+- Done (plan "Integrimi i noterisë", phases 1+2+3):
+  - **Corpus**: Law 06/L-010 on Notary (80 chunks, GZK ActID 18334) and
+    amendment 08/L-149 (4 chunks, MoJ PDF mirror — GZK page has no inline
+    text) indexed via `import_gzk.py` (now supports per-law `min_chars` and
+    PDF candidates). Amendment 08/L-272 (e-signature arts. 31A/31B) has NO
+    machine-readable text online (empty GZK span, gazette PDF behind ASP.NET
+    postback, Assembly site behind Cloudflare) — noted in the script, retry
+    later.
+  - **Directory**: `scripts/scrape_onk_registry.py` scrapes
+    noteria-ks.org/noteret (141 notaries, all 141 Cloudflare-obfuscated
+    emails decoded) → `data/notaries.json` (git-ignored, like the OAK
+    registry). Served by `GET /public/tools/notaries?city=` (mtime-cached).
+  - **Tariffs**: AI 02/2012 on provisional notary fees (found on ONK site)
+    seeded as data in `backend/app/seeds/notary.py`: Annex-1 value brackets,
+    +20€/20k over 100k capped at 1000€ (art. 21.2), 80% solemnization factor
+    (art. 23), fixed fees (testament 50€, PoA 20€, founding act 100€,
+    signature/copy 1€). `POST /public/tools/notary-fee` estimates.
+  - **Public page `/noteret`** (×6 locales): act picker → act-type badge
+    (akt/solemnizim/vërtetim), fee estimate, document checklist ("bring with
+    you"), directory with city filter (38 cities), physical-presence
+    disclaimer. Linked from the Vegla dropdown in the public shell.
+  - **Notary pack at `/dokumentet`**: 4 new templates in category "noteria"
+    (vehicle sale contract, power of attorney, spousal property agreement
+    draft, inheritance-opening request), each flagged `requires_notary` —
+    amber banner + link to /noteret in the picker and the form; PDF bodies
+    carry a VËREJTJE that notarization is required.
+  - **Ava public prompt** now distinguishes notary matters (property sales,
+    wills, inheritance, PoA, spousal agreements per art. 41), explains which
+    act type is needed and points to /noteret. Live-tested: apartment-sale
+    question correctly answered "needs a notary" with law citations and the
+    /noteret link.
+  - **Docs**: `docs/rekrutimi/kontakt-onk.md` (draft ONK partnership email,
+    owner sends when ready) and `docs/integrimet/e-noteria.md` (remote
+    notarization readiness: legal gap analysis, Estonian/US RON models, why
+    our LiveKit + evidence-vault + hash-chain stack is the ready
+    infrastructure).
+- Verified: 77/77 backend tests (new `tests/test_notary.py` locks fee
+  brackets; template-count test updated 7→11), frontend build OK
+  (sw cache → v16), /noteret 200, fee API returns 120€/96€ for an
+  85k€ sale/solemnization, notary-pack PDF generates correctly.
+- Left open: 08/L-272 full text ingestion (no source yet); ONK email is a
+  draft — the owner decides when to send; Phase-3 notary-office accounts
+  only if ONK shows interest.
+
 ## 2026-07-13 — Leaked simulation lawyer removed from live directory; sim cleanup made crash-proof (Cursor / Fable 5)
 
 - Context: the owner celebrated "the first lawyer in the directory" — but the

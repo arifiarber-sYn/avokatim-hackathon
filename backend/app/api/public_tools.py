@@ -1,7 +1,9 @@
 """Public tools for citizens (no account needed): the deadline calculator
-over the existing deadline engine, and simple document generation from
-deterministic templates. Jurisdiction rules and templates stay data-driven."""
+over the existing deadline engine, simple document generation from
+deterministic templates, and the notary helper (directory + fee estimate).
+Jurisdiction rules and templates stay data-driven."""
 import html
+import json
 import uuid
 from datetime import date, datetime
 
@@ -12,9 +14,16 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.marketplace import _ip, _rate_limit
+from app.config import PROJECT_DIR
 from app.database import get_db
 from app.models import DeadlineRule, Jurisdiction
 from app.seeds.citizen_docs import CITIZEN_DOC_TEMPLATES
+from app.seeds.notary import (
+    NOTARY_ACTS,
+    NOTARY_CHECKLIST_LABELS,
+    SOLEMNIZATION_FACTOR,
+    annex1_fee,
+)
 from app.services.deadlines import compute_due_date
 
 router = APIRouter(prefix="/public/tools", tags=["public-tools"])
@@ -69,6 +78,94 @@ async def public_deadline_calc(
     }
 
 
+# ---------- notary helper ----------
+
+NOTARIES_FILE = PROJECT_DIR / "data" / "notaries.json"
+_notaries_cache: dict = {"mtime": None, "data": None}
+
+
+def _load_notaries() -> dict:
+    """Directory scraped from the public ONK registry (scrape_onk_registry.py);
+    cached in memory and reloaded when the file changes."""
+    try:
+        mtime = NOTARIES_FILE.stat().st_mtime
+    except FileNotFoundError:
+        return {"notaries": [], "fetched_at": None}
+    if _notaries_cache["mtime"] != mtime:
+        _notaries_cache["data"] = json.loads(NOTARIES_FILE.read_text(encoding="utf-8"))
+        _notaries_cache["mtime"] = mtime
+    return _notaries_cache["data"]
+
+
+@router.get("/notaries")
+async def public_notaries(city: str | None = None):
+    data = _load_notaries()
+    notaries = data.get("notaries", [])
+    if city:
+        needle = city.strip().lower()
+        notaries = [n for n in notaries if needle in n.get("city", "").lower()]
+    cities = sorted({n["city"] for n in data.get("notaries", []) if n.get("city")})
+    return {
+        "notaries": notaries,
+        "cities": cities,
+        "total": len(data.get("notaries", [])),
+        "source": data.get("source"),
+        "fetched_at": data.get("fetched_at"),
+    }
+
+
+@router.get("/notary-acts")
+async def notary_acts():
+    """Common notarial matters: act type, document checklist, fee model."""
+    return {
+        "acts": [
+            {
+                "code": a["code"],
+                "act_type": a["act_type"],
+                "value_based": a["value_based"],
+                "per_unit": a.get("per_unit"),
+                "mandatory_solemnization": a.get("mandatory_solemnization", False),
+                "name": a["name"],
+                "checklist": [
+                    {"key": k, "label": NOTARY_CHECKLIST_LABELS[k]}
+                    for k in a["checklist"]
+                ],
+            }
+            for a in NOTARY_ACTS
+        ],
+    }
+
+
+class NotaryFeeIn(BaseModel):
+    act_code: str
+    value_eur: float | None = Field(default=None, ge=0, le=100_000_000)
+    units: int = Field(default=1, ge=1, le=500)
+
+
+@router.post("/notary-fee")
+async def notary_fee_estimate(body: NotaryFeeIn, request: Request):
+    """Estimate per AI 02/2012: Annex 1 brackets, 80% for solemnization of
+    party-drafted documents (art. 23), fixed fees otherwise. Informative only."""
+    await _rate_limit("public_notary_fee", _ip(request), limit=60, window_seconds=3600)
+    act = next((a for a in NOTARY_ACTS if a["code"] == body.act_code), None)
+    if act is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Unknown act")
+    if act["value_based"]:
+        if body.value_eur is None:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "value_eur required")
+        base = annex1_fee(body.value_eur)
+        fee = round(base * SOLEMNIZATION_FACTOR) if act["fee"] == "solemnizim" else base
+    else:
+        fee = act["fee"]["fixed"] * (body.units if act.get("per_unit") else 1)
+    return {
+        "act_code": act["code"],
+        "act_type": act["act_type"],
+        "fee_eur": fee,
+        "legal_basis": "UA nr. 02/2012 për tarifat e përkohshme noteriale",
+        "estimate": True,
+    }
+
+
 # ---------- simple citizen documents ----------
 
 @router.get("/documents")
@@ -80,6 +177,8 @@ async def citizen_doc_templates():
             "category": tpl["category"],
             "name": tpl["name"],
             "fields": tpl["fields"],
+            "requires_notary": tpl.get("requires_notary", False),
+            "notary_act": tpl.get("notary_act"),
         }
         for tpl in CITIZEN_DOC_TEMPLATES
     ]

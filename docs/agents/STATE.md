@@ -189,6 +189,9 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   Disputes 08/L-182, Business Organizations 06/L-016, Family Law 2004/32,
   Data Protection 06/L-082. Re-runnable importer: `backend/scripts/import_gzk.py`
   (skips laws already present; add new laws to its `LAWS` list).
+  **Notary laws added** (2026-07-13): Law on Notary 06/L-010 (80 chunks) +
+  amendment 08/L-149 (MoJ PDF mirror). Amendment 08/L-272 (e-signature)
+  has no machine-readable text online yet — see the note in `import_gzk.py`.
 - **Billing**: time entries, **matter expenses/disbursements** (categories:
   court fee, bailiff, expert, travel, notary, translation; billing tab), invoices
   generated from unbilled hours **and unbilled expenses** plus **manual flat-fee
@@ -384,15 +387,32 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   plan): deadline calculator `/afatet` (`/api/public/tools/deadline-rules`
   + `deadline-calc`, engine + holidays, no account); citizen document
   generator `/dokumentet` (deterministic Jinja→PDF templates in
-  `app/seeds/citizen_docs.py`, no LLM) — **7 templates** with categories
+  `app/seeds/citizen_docs.py`, no LLM) — **11 templates** with categories
   (Institucionet: kerkese/ankese/qasje_dokumente; Puna: verejtje_pune;
   Konsumatori: ankese_konsumatori; Të përgjithshme: autorizim/
-  kundershtim_urdherpagese); both linked from the landing. Booking: `ConsultBooking` +
+  kundershtim_urdherpagese; Noteria: kontrate_veture/prokure/
+  marreveshje_bashkeshortore/kerkese_trashegimie — flagged
+  `requires_notary`, amber banner + /noteret link); both linked from the
+  landing. Booking: `ConsultBooking` +
   `LawyerProfile.booking_enabled/booking_slots` (weekly windows, 30-min
   slots, 14-day horizon; migration `51f3b67b1756`); lawyer sets hours in
   Settings and confirms/declines in Tregu, citizen books from /avokatet
   and manages in /rasti-im; notifications ×6 (`booking_*` i18n keys).
   Tests: `test_bookings.py`; simulation sections 31–32.
+- **Notary integration** (2026-07-13): the third bridge citizen → lawyer →
+  notary, all informational (Law 06/L-010 requires physical presence — the
+  platform never notarizes). Public page **`/noteret`** (×6 locales): act
+  picker with type badge (akt noterial / solemnizim / vërtetim), fee
+  estimate per AI 02/2012, "bring with you" document checklist, directory
+  of 141 licensed notaries with city filter. Data: `app/seeds/notary.py`
+  (fee brackets, acts, checklists — data not code) +
+  `data/notaries.json` from `scripts/scrape_onk_registry.py` (public ONK
+  registry, Cloudflare emails decoded; git-ignored, re-run to refresh).
+  API: `GET /public/tools/notaries`, `GET .../notary-acts`,
+  `POST .../notary-fee`. Public Ava routes notary matters and links
+  /noteret. Strategic docs: `docs/rekrutimi/kontakt-onk.md` (draft ONK
+  email), `docs/integrimet/e-noteria.md` (remote-notarization readiness).
+  Tests: `tests/test_notary.py`.
 - **Two-surface restructure + citizen account** (2026-07-12, D-020):
   landing `/` is now the umbrella presentation — mission hero, two big
   audience cards, side-by-side full function lists (citizen ×7 / lawyer

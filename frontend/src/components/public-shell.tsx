@@ -145,7 +145,10 @@ export default function PublicShell({
   const { t } = useI18n();
   const pathname = usePathname();
   const dict = t as unknown as Record<string, string>;
-  const toolsActive = pathname.startsWith("/afatet") || pathname.startsWith("/dokumentet");
+  const toolsActive =
+    pathname.startsWith("/afatet") ||
+    pathname.startsWith("/dokumentet") ||
+    pathname.startsWith("/noteret");
 
   // Recognize a signed-in citizen so their credentials never lead them to
   // the lawyer login: valid token -> chip menu, stale token -> cleared.
@@ -202,6 +205,9 @@ export default function PublicShell({
                   </Link>
                   <Link href="/dokumentet" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-700">
                     {t.cdTitle}
+                  </Link>
+                  <Link href="/noteret" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-700">
+                    {t.pnNotaries}
                   </Link>
                 </div>
               </div>

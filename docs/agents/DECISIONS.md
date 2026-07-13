@@ -435,3 +435,23 @@
 - Consequences: no new dependencies; local-only tenants get the same
   features on the local provider; deep research cost is bounded (≤5
   sub-questions, ≤4 corpus hits each, deduped citations).
+
+## D-023: Notary integration is information-only, backed by data files (2026-07-13)
+
+- Context: extending the platform to Kosovo's second legal profession
+  (144 notaries). Law 06/L-010 requires the party's physical presence
+  before the notary and bans combining the lawyer/notary roles, so online
+  notarization or notary marketplace accounts are legally impossible today.
+- Decision: the notary bridge is purely preparatory — the corpus knows the
+  notary law, Ava routes notary matters, `/noteret` gives directory + act
+  type + document checklist + fee estimate, and `/dokumentet` produces
+  party-drafted documents for solemnization (art. 41 lets the party draft;
+  the notary solemnizes). All notary knowledge lives as data:
+  `app/seeds/notary.py` (acts, checklists, AI 02/2012 fee brackets) and
+  `data/notaries.json` (scraped ONK registry, git-ignored like the OAK
+  CSV). No new DB tables, no notary accounts.
+- Consequences: zero legal risk (information, not legal service); refresh
+  is one script re-run; if remote notarization becomes law (see
+  `docs/integrimet/e-noteria.md`) the LiveKit + evidence-vault stack is the
+  upgrade path; notary-office accounts (law art. 50 registers) start only
+  on explicit ONK interest.

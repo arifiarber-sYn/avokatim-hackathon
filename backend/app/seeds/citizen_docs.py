@@ -7,7 +7,10 @@ No LLM involved — output is predictable and reviewable.
 """
 
 # Categories group templates in the UI: institucionet / puna / konsumatori /
-# te_pergjithshme. Category labels are localized on the frontend.
+# te_pergjithshme / noteria. Category labels are localized on the frontend.
+# Templates with "requires_notary" gain full legal force only after
+# certification/solemnization before a notary; "notary_act" links them to the
+# matching act in seeds/notary.py (checklist + fee on /noteret).
 CITIZEN_DOC_TEMPLATES: list[dict] = [
     {
         "code": "kerkese",
@@ -429,6 +432,302 @@ CITIZEN_DOC_TEMPLATES: list[dict] = [
             "Kontestimore që rregullojnë procedurën e urdhërpagesës, kërkoj që "
             "urdhërpagesa të shfuqizohet dhe procedura të vazhdojë sipas rregullave "
             "të procedurës kontestimore, ku do të paraqes provat e mia.\n\n"
+            "{{ city }}, më {{ date }}\n\n"
+            "Me respekt,\n\n_____________________\n{{ sender_name }}"
+        ),
+    },
+    # ---------- notary pack: drafts the citizen takes to the notary ----------
+    {
+        "code": "kontrate_veture",
+        "category": "noteria",
+        "requires_notary": True,
+        "notary_act": "kontrate_veture",
+        "name": {
+            "sq": "Kontratë për shitblerje të veturës",
+            "sr": "Ugovor o kupoprodaji vozila",
+            "tr": "Araç satış sözleşmesi",
+            "bs": "Ugovor o kupoprodaji vozila",
+            "en": "Vehicle sale contract",
+            "zh": "车辆买卖合同",
+        },
+        "fields": [
+            {"key": "seller_name", "type": "text", "label": {
+                "sq": "Shitësi — emri dhe mbiemri", "sr": "Prodavac — ime i prezime",
+                "tr": "Satıcı — ad ve soyad", "bs": "Prodavac — ime i prezime",
+                "en": "Seller — full name", "zh": "卖方——全名"}},
+            {"key": "seller_id", "type": "text", "label": {
+                "sq": "Numri personal i shitësit", "sr": "Lični broj prodavca",
+                "tr": "Satıcının kişisel numarası", "bs": "Lični broj prodavca",
+                "en": "Seller's personal ID number", "zh": "卖方身份证号"}},
+            {"key": "buyer_name", "type": "text", "label": {
+                "sq": "Blerësi — emri dhe mbiemri", "sr": "Kupac — ime i prezime",
+                "tr": "Alıcı — ad ve soyad", "bs": "Kupac — ime i prezime",
+                "en": "Buyer — full name", "zh": "买方——全名"}},
+            {"key": "buyer_id", "type": "text", "label": {
+                "sq": "Numri personal i blerësit", "sr": "Lični broj kupca",
+                "tr": "Alıcının kişisel numarası", "bs": "Lični broj kupca",
+                "en": "Buyer's personal ID number", "zh": "买方身份证号"}},
+            {"key": "vehicle", "type": "text", "label": {
+                "sq": "Vetura (marka, modeli, viti, ngjyra)",
+                "sr": "Vozilo (marka, model, godina, boja)",
+                "tr": "Araç (marka, model, yıl, renk)",
+                "bs": "Vozilo (marka, model, godina, boja)",
+                "en": "Vehicle (make, model, year, color)",
+                "zh": "车辆（品牌、型号、年份、颜色）"}},
+            {"key": "chassis_no", "type": "text", "label": {
+                "sq": "Numri i shasisë (VIN) dhe i targave",
+                "sr": "Broj šasije (VIN) i registarske tablice",
+                "tr": "Şasi numarası (VIN) ve plaka",
+                "bs": "Broj šasije (VIN) i registarske tablice",
+                "en": "Chassis number (VIN) and plates", "zh": "车架号（VIN）和车牌"}},
+            {"key": "price", "type": "text", "label": {
+                "sq": "Çmimi i dakorduar në euro",
+                "sr": "Ugovorena cena u evrima", "tr": "Anlaşılan fiyat (euro)",
+                "bs": "Ugovorena cijena u evrima", "en": "Agreed price in euros",
+                "zh": "约定价格（欧元）"}},
+            {"key": "city", "type": "text", "label": {
+                "sq": "Qyteti", "sr": "Grad", "tr": "Şehir", "bs": "Grad",
+                "en": "City", "zh": "城市"}},
+        ],
+        "body_sq": (
+            "KONTRATË PËR SHITBLERJEN E VETURËS\n\n"
+            "E lidhur më {{ date }} në {{ city }}, ndërmjet:\n\n"
+            "SHITËSI: {{ seller_name }}, numër personal {{ seller_id }}\n"
+            "BLERËSI: {{ buyer_name }}, numër personal {{ buyer_id }}\n\n"
+            "Neni 1 — Objekti\n"
+            "Shitësi ia shet blerësit veturën: {{ vehicle }}, me numër shasie "
+            "dhe targa: {{ chassis_no }}.\n\n"
+            "Neni 2 — Çmimi\n"
+            "Çmimi i dakorduar është {{ price }} euro, të cilin blerësi ia "
+            "paguan shitësit me rastin e nënshkrimit të kësaj kontrate.\n\n"
+            "Neni 3 — Deklarimet e shitësit\n"
+            "Shitësi deklaron se vetura është pronë e tij, e lirë nga barrët, "
+            "pengjet dhe të drejtat e personave të tretë.\n\n"
+            "Neni 4 — Dorëzimi dhe rreziku\n"
+            "Vetura, çelësat dhe dokumentacioni i dorëzohen blerësit me "
+            "nënshkrimin e kontratës; nga ai moment rreziku dhe shpenzimet "
+            "kalojnë te blerësi, i cili detyrohet ta regjistrojë veturën në "
+            "emrin e tij brenda afatit ligjor.\n\n"
+            "Neni 5 — E drejta e zbatueshme\n"
+            "Për çka nuk është paraparë me këtë kontratë zbatohet Ligji "
+            "Nr. 04/L-077 për Marrëdhëniet e Detyrimeve.\n\n"
+            "{{ city }}, më {{ date }}\n\n"
+            "SHITËSI                                    BLERËSI\n\n"
+            "_____________________          _____________________\n"
+            "{{ seller_name }}                  {{ buyer_name }}\n\n"
+            "VËREJTJE: Nënshkrimet vërtetohen te noteri — kontrata pa "
+            "vërtetim noterial nuk mund të përdoret për regjistrimin e "
+            "veturës."
+        ),
+    },
+    {
+        "code": "prokure",
+        "category": "noteria",
+        "requires_notary": True,
+        "notary_act": "autorizim_noterial",
+        "name": {
+            "sq": "Prokurë / autorizim për te noteri",
+            "sr": "Punomoćje za notara",
+            "tr": "Noter için vekaletname",
+            "bs": "Punomoć za notara",
+            "en": "Power of attorney (for the notary)",
+            "zh": "授权书（公证用）",
+        },
+        "fields": [
+            {"key": "sender_name", "type": "text", "label": {
+                "sq": "Autorizuesi — emri dhe mbiemri", "sr": "Davalac punomoćja — ime i prezime",
+                "tr": "Vekalet veren — ad ve soyad", "bs": "Davalac punomoći — ime i prezime",
+                "en": "Principal — full name", "zh": "委托人——全名"}},
+            {"key": "sender_id", "type": "text", "label": {
+                "sq": "Numri personal dhe adresa e autorizuesit",
+                "sr": "Lični broj i adresa davaoca",
+                "tr": "Vekalet verenin kişisel numarası ve adresi",
+                "bs": "Lični broj i adresa davaoca",
+                "en": "Principal's ID number and address", "zh": "委托人身份证号和地址"}},
+            {"key": "agent_name", "type": "text", "label": {
+                "sq": "I autorizuari — emri dhe mbiemri", "sr": "Punomoćnik — ime i prezime",
+                "tr": "Vekil — ad ve soyad", "bs": "Punomoćnik — ime i prezime",
+                "en": "Agent — full name", "zh": "受托人——全名"}},
+            {"key": "agent_id", "type": "text", "label": {
+                "sq": "Numri personal dhe adresa e të autorizuarit",
+                "sr": "Lični broj i adresa punomoćnika",
+                "tr": "Vekilin kişisel numarası ve adresi",
+                "bs": "Lični broj i adresa punomoćnika",
+                "en": "Agent's ID number and address", "zh": "受托人身份证号和地址"}},
+            {"key": "powers", "type": "textarea", "label": {
+                "sq": "Veprimet për të cilat e autorizon (sa më saktë: p.sh. "
+                      "të nënshkruajë kontratën e shitjes së banesës në adresën X)",
+                "sr": "Radnje za koje ga/je ovlašćujete (što preciznije)",
+                "tr": "Yetki verilen işlemler (mümkün olduğunca kesin)",
+                "bs": "Radnje za koje ga/je ovlašćujete (što preciznije)",
+                "en": "The powers granted (as precisely as possible)",
+                "zh": "授权事项（尽量具体）"}},
+            {"key": "duration", "type": "text", "label": {
+                "sq": "Afati i vlefshmërisë (p.sh. 6 muaj, deri më 31.12.2026)",
+                "sr": "Rok važenja (npr. 6 meseci)", "tr": "Geçerlilik süresi (örn. 6 ay)",
+                "bs": "Rok važenja (npr. 6 mjeseci)", "en": "Validity period (e.g. 6 months)",
+                "zh": "有效期（例如6个月）"}},
+            {"key": "city", "type": "text", "label": {
+                "sq": "Qyteti", "sr": "Grad", "tr": "Şehir", "bs": "Grad",
+                "en": "City", "zh": "城市"}},
+        ],
+        "body_sq": (
+            "PROKURË (AUTORIZIM)\n\n"
+            "Unë, {{ sender_name }}, {{ sender_id }} (në vijim: Autorizuesi), "
+            "me vullnetin tim të lirë autorizoj\n\n"
+            "{{ agent_name }}, {{ agent_id }} (në vijim: I Autorizuari),\n\n"
+            "që në emrin tim dhe për llogarinë time të ndërmarrë veprimet "
+            "si në vijim:\n\n"
+            "{{ powers }}\n\n"
+            "I Autorizuari ka të drejtë të nënshkruajë dokumentet dhe të "
+            "ndërmarrë veprimet e nevojshme brenda kufijve të këtij "
+            "autorizimi. Kjo prokurë vlen: {{ duration }}, dhe mund të "
+            "revokohet në çdo kohë me deklaratë me shkrim.\n\n"
+            "{{ city }}, më {{ date }}\n\n"
+            "Autorizuesi,\n\n_____________________\n{{ sender_name }}\n\n"
+            "VËREJTJE: Për punët për të cilat ligji kërkon formën e aktit "
+            "noterial (p.sh. shitja e paluajtshmërisë), kjo prokurë duhet "
+            "të përpilohet ose vërtetohet te noteri."
+        ),
+    },
+    {
+        "code": "marreveshje_bashkeshortore",
+        "category": "noteria",
+        "requires_notary": True,
+        "notary_act": "marreveshje_bashkeshortore",
+        "name": {
+            "sq": "Marrëveshje pasurore mes bashkëshortëve (draft)",
+            "sr": "Imovinski sporazum između supružnika (nacrt)",
+            "tr": "Eşler arası mal rejimi sözleşmesi (taslak)",
+            "bs": "Imovinski sporazum između supružnika (nacrt)",
+            "en": "Spousal property agreement (draft)",
+            "zh": "夫妻财产协议（草案）",
+        },
+        "fields": [
+            {"key": "spouse1", "type": "text", "label": {
+                "sq": "Bashkëshorti/ja I — emri dhe numri personal",
+                "sr": "Supružnik I — ime i lični broj",
+                "tr": "Eş I — ad ve kimlik numarası",
+                "bs": "Supružnik I — ime i lični broj",
+                "en": "Spouse I — name and ID number", "zh": "配偶一——姓名及身份证号"}},
+            {"key": "spouse2", "type": "text", "label": {
+                "sq": "Bashkëshorti/ja II — emri dhe numri personal",
+                "sr": "Supružnik II — ime i lični broj",
+                "tr": "Eş II — ad ve kimlik numarası",
+                "bs": "Supružnik II — ime i lični broj",
+                "en": "Spouse II — name and ID number", "zh": "配偶二——姓名及身份证号"}},
+            {"key": "marriage", "type": "text", "label": {
+                "sq": "Data dhe vendi i lidhjes së martesës",
+                "sr": "Datum i mesto zaključenja braka",
+                "tr": "Evliliğin tarihi ve yeri",
+                "bs": "Datum i mjesto zaključenja braka",
+                "en": "Date and place of marriage", "zh": "结婚日期和地点"}},
+            {"key": "arrangement", "type": "textarea", "label": {
+                "sq": "Si dëshironi ta rregulloni pasurinë (p.sh. banesa në "
+                      "adresën X mbetet pronë e veçantë e..., të ardhurat...)",
+                "sr": "Kako želite urediti imovinu (jednostavnim rečima)",
+                "tr": "Mal varlığını nasıl düzenlemek istiyorsunuz",
+                "bs": "Kako želite urediti imovinu (jednostavnim riječima)",
+                "en": "How you want to arrange the property (in plain words)",
+                "zh": "您希望如何安排财产（用简单的话）"}},
+            {"key": "city", "type": "text", "label": {
+                "sq": "Qyteti", "sr": "Grad", "tr": "Şehir", "bs": "Grad",
+                "en": "City", "zh": "城市"}},
+        ],
+        "body_sq": (
+            "MARRËVESHJE PËR RREGULLIMIN E MARRËDHËNIEVE PASURORE\n"
+            "NDËRMJET BASHKËSHORTËVE (DRAFT PËR SOLEMNIZIM TE NOTERI)\n\n"
+            "E lidhur më {{ date }} në {{ city }}, ndërmjet:\n\n"
+            "1. {{ spouse1 }}\n2. {{ spouse2 }}\n\n"
+            "të cilët kanë lidhur martesë më: {{ marriage }}.\n\n"
+            "Neni 1 — Qëllimi\n"
+            "Me këtë marrëveshje palët i rregullojnë me vullnet të lirë "
+            "marrëdhëniet e tyre pasurore, në pajtim me Ligjin Nr. 2004/32 "
+            "për Familjen e Kosovës.\n\n"
+            "Neni 2 — Rregullimi i pasurisë\n"
+            "{{ arrangement }}\n\n"
+            "Neni 3 — Dispozita të fundit\n"
+            "Palët deklarojnë se e kanë lexuar marrëveshjen, e kuptojnë "
+            "përmbajtjen dhe pasojat e saj dhe e nënshkruajnë me vullnet "
+            "të lirë, pa mashtrim a shtrëngim.\n\n"
+            "{{ city }}, më {{ date }}\n\n"
+            "Bashkëshorti/ja I                     Bashkëshorti/ja II\n\n"
+            "_____________________          _____________________\n\n"
+            "VËREJTJE E RËNDËSISHME: Sipas Ligjit Nr. 06/L-010 për Noterinë "
+            "(neni 41), kjo marrëveshje është e vlefshme VETËM pasi të "
+            "solemnizohet te noteri, me praninë personale të të dy "
+            "bashkëshortëve."
+        ),
+    },
+    {
+        "code": "kerkese_trashegimie",
+        "category": "noteria",
+        "requires_notary": True,
+        "notary_act": "trashegimi",
+        "name": {
+            "sq": "Kërkesë për fillimin e procedurës së trashëgimisë",
+            "sr": "Zahtev za pokretanje ostavinskog postupka",
+            "tr": "Miras işleminin başlatılması talebi",
+            "bs": "Zahtjev za pokretanje ostavinskog postupka",
+            "en": "Request to open the inheritance procedure",
+            "zh": "启动继承程序申请",
+        },
+        "fields": [
+            {"key": "sender_name", "type": "text", "label": {
+                "sq": "Emri dhe mbiemri yt", "sr": "Vaše ime i prezime",
+                "tr": "Adınız ve soyadınız", "bs": "Vaše ime i prezime",
+                "en": "Your full name", "zh": "您的全名"}},
+            {"key": "sender_id", "type": "text", "label": {
+                "sq": "Numri personal dhe adresa jote",
+                "sr": "Vaš lični broj i adresa",
+                "tr": "Kişisel numaranız ve adresiniz",
+                "bs": "Vaš lični broj i adresa",
+                "en": "Your ID number and address", "zh": "您的身份证号和地址"}},
+            {"key": "deceased", "type": "text", "label": {
+                "sq": "Trashëgimlënësi — emri, data e vdekjes, vendbanimi i fundit",
+                "sr": "Ostavilac — ime, datum smrti, poslednje prebivalište",
+                "tr": "Miras bırakan — adı, ölüm tarihi, son ikametgahı",
+                "bs": "Ostavilac — ime, datum smrti, posljednje prebivalište",
+                "en": "Deceased — name, date of death, last residence",
+                "zh": "被继承人——姓名、死亡日期、最后居住地"}},
+            {"key": "relation", "type": "text", "label": {
+                "sq": "Lidhja jote me trashëgimlënësin (p.sh. bir/bijë, bashkëshort/e)",
+                "sr": "Vaš odnos sa ostaviocem (npr. sin/ćerka, supružnik)",
+                "tr": "Miras bırakanla ilişkiniz (örn. oğlu/kızı, eşi)",
+                "bs": "Vaš odnos s ostaviocem (npr. sin/kćerka, supružnik)",
+                "en": "Your relation to the deceased (e.g. son/daughter, spouse)",
+                "zh": "您与被继承人的关系（例如子女、配偶）"}},
+            {"key": "heirs", "type": "textarea", "label": {
+                "sq": "Trashëgimtarët e tjerë të njohur (emrat dhe lidhja)",
+                "sr": "Ostali poznati naslednici (imena i srodstvo)",
+                "tr": "Bilinen diğer mirasçılar (adlar ve yakınlık)",
+                "bs": "Ostali poznati nasljednici (imena i srodstvo)",
+                "en": "Other known heirs (names and relation)",
+                "zh": "其他已知继承人（姓名和关系）"}},
+            {"key": "estate", "type": "textarea", "label": {
+                "sq": "Pasuria e trashëgimlënësit që e njeh (prona, llogari, vetura...)",
+                "sr": "Imovina ostavioca koju poznajete (nepokretnosti, računi, vozila...)",
+                "tr": "Bildiğiniz tereke (taşınmazlar, hesaplar, araçlar...)",
+                "bs": "Imovina ostavioca koju poznajete (nekretnine, računi, vozila...)",
+                "en": "The estate you know of (properties, accounts, vehicles...)",
+                "zh": "您所知的遗产（不动产、账户、车辆等）"}},
+            {"key": "city", "type": "text", "label": {
+                "sq": "Qyteti", "sr": "Grad", "tr": "Şehir", "bs": "Grad",
+                "en": "City", "zh": "城市"}},
+        ],
+        "body_sq": (
+            "{{ sender_name }}\n{{ sender_id }}\n\n"
+            "PËR: Noterin kompetent\n\n"
+            "LËNDA: Kërkesë për fillimin e procedurës trashëgimore\n\n"
+            "I/E nderuar,\n\n"
+            "Unë {{ sender_name }}, në cilësinë e trashëgimtarit "
+            "({{ relation }}), kërkoj fillimin e procedurës së trashëgimisë "
+            "pas vdekjes së trashëgimlënësit:\n\n{{ deceased }}\n\n"
+            "Trashëgimtarët e tjerë të njohur:\n{{ heirs }}\n\n"
+            "Pasuria trashëgimore sipas njohurive të mia:\n{{ estate }}\n\n"
+            "Bashkëngjitur do të dorëzoj certifikatën e vdekjes, certifikatën "
+            "familjare dhe dëshmitë e pronësisë me rastin e paraqitjes te "
+            "noteri.\n\n"
             "{{ city }}, më {{ date }}\n\n"
             "Me respekt,\n\n_____________________\n{{ sender_name }}"
         ),
