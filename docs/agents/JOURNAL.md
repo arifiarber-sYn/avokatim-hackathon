@@ -50,8 +50,20 @@
   3-day verify links). Skipped: obvious test accounts, gmail.con typo,
   yopmail. Nudge timestamps set to prevent automated duplicates. Status
   tracked in docs/rekrutimi/kontakt-oak-dhe-avokatet.md.
-- Left open / next: await Marigona's reply/activation; decide what to do
-  with the Vegim tenant if it stays unverified past the invoice due date.
+- Follow-up 4 — OAK-wide outreach campaign started: scraped the public OAK
+  registry (oak-ks.org/avokatet, polite sequential fetch) into
+  data/oak_registry.csv — 1457 lawyers, 1456 with email (Prishtinë 771).
+  New `scripts/oak_outreach_campaign.py` sends personalized batches (default
+  30/run, 8s apart, Prishtinë first) from the owner's Gmail with dedup log
+  in data/oak_outreach_log.csv, opt-out via "STOP", source of address
+  disclosed. Batch 1 (30 Prishtina lawyers) sent successfully. Rationale
+  for the small batch: same Gmail account carries transactional email, so
+  sender reputation is protected. Full list coverage at this pace ≈ 7 weeks;
+  a dedicated sending domain would allow faster ramp.
+- Left open / next: run the next OAK batch daily (script is idempotent);
+  add "STOP" repliers to SUPPRESS; await Marigona's reply/activation; decide
+  what to do with the Vegim tenant if it stays unverified past the invoice
+  due date.
 
 ## 2026-07-13 — Public presentation catch-up: marketing pages now cover every new feature (Cursor / Fable 5)
 

@@ -107,3 +107,29 @@ Krijuesi i AvokatIM · https://avokatiim.ai
     pasaktë), vegim.h@yopmail.com (adresë e përkohshme, sjellje e dyshimtë).
   - Timestamp-at e nudge-ave u vendosën që përkujtuesit automatikë të mos
     dërgojnë email të dyfishtë. Përgjigjet: në pritje.
+
+## Fushata OAK — kontaktimi i të gjithë avokatëve të Kosovës
+
+- **Burimi**: regjistri publik i OAK-së (oak-ks.org/avokatet), i mbledhur me
+  `backend/scripts/scrape_oak_registry.py` → `data/oak_registry.csv`
+  (git-ignored). **1457 avokatë, 1456 me email.** Sipas regjionit:
+  Prishtinë 771, Pejë 161, Prizren 132, Gjilan 121, Mitrovicë 102,
+  Ferizaj 96, Gjakovë 74.
+- **Dërgimi**: `backend/scripts/oak_outreach_campaign.py` — valë nga 30
+  email/ditë nga adresa e pronarit (Gmail), 8 s ndërmjet dërgimeve, log në
+  `data/oak_outreach_log.csv` (askush s'kontaktohet dy herë). Prioritet:
+  Prishtina e para. Email-i përmban: përfitimet, 3 muaj falas, shenjën
+  "Themelues", burimin e adresës (regjistri publik OAK) dhe opt-out me
+  "STOP".
+- **Pse 30/ditë**: e njëjta llogari Gmail dërgon edhe email-et
+  transaksionale të platformës (linqet e verifikimit) — reputacioni i saj
+  duhet mbrojtur. Me 30/ditë lista mbulohet për ~7 javë; nëse hapet një
+  llogari e dedikuar (p.sh. Google Workspace me domenin avokatiim.ai),
+  ritmi mund të rritet ndjeshëm.
+- **Statusi**:
+  - 2026-07-13: vala 1 — 30 avokatë të Prishtinës (Abit Asllani → Agron
+    Kajtazi), të gjitha dërgimet OK. Përgjigjet: në pritje.
+  - Për valën e radhës: `cd backend && .venv/bin/python
+    scripts/oak_outreach_campaign.py` (opsionale `--dry-run` më parë).
+- **Kujdes**: kush përgjigjet me "STOP" shtohet manualisht te `SUPPRESS` në
+  skript (ose i shtohet email-i te data/oak_outreach_log.csv).
