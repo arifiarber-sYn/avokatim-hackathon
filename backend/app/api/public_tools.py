@@ -97,18 +97,66 @@ def _load_notaries() -> dict:
     return _notaries_cache["data"]
 
 
+def _norm(name: str) -> str:
+    return " ".join(name.lower().replace("ë", "e").replace("ç", "c").split())
+
+
+async def _registered_notaries(db: AsyncSession) -> list[dict]:
+    """Verified notary offices registered on the platform. They appear in the
+    directory like everyone else (equal listing — no promoted placement),
+    but with a verification badge and, when enabled, an online booking button."""
+    from app.models import LawyerProfile, Tenant, User
+
+    rows = (
+        await db.execute(
+            select(LawyerProfile, User, Tenant)
+            .join(User, User.id == LawyerProfile.user_id)
+            .join(Tenant, Tenant.id == LawyerProfile.tenant_id)
+            .where(
+                Tenant.profession == "notary",
+                Tenant.status == "active",
+                LawyerProfile.is_visible.is_(True),
+                LawyerProfile.verification_status == "verified",
+                User.is_active.is_(True),
+            )
+            .order_by(LawyerProfile.created_at)
+        )
+    ).all()
+    return [
+        {
+            "name": user.full_name,
+            "phone": profile.phone or "",
+            "email": user.email,
+            "address": tenant.address or "",
+            "city": (profile.cities or [""])[0],
+            "registered": True,
+            "profile_id": str(profile.id),
+            "booking": bool(profile.booking_enabled),
+            "bio": profile.bio,
+        }
+        for profile, user, tenant in rows
+    ]
+
+
 @router.get("/notaries")
-async def public_notaries(city: str | None = None):
+async def public_notaries(city: str | None = None, db: AsyncSession = Depends(get_db)):
     data = _load_notaries()
-    notaries = data.get("notaries", [])
+    registered = await _registered_notaries(db)
+    # Registered offices replace their scraped registry entry (name match)
+    registered_names = {_norm(n["name"]) for n in registered}
+    scraped = [
+        n for n in data.get("notaries", [])
+        if _norm(n.get("name", "")) not in registered_names
+    ]
+    notaries = registered + scraped
     if city:
         needle = city.strip().lower()
         notaries = [n for n in notaries if needle in n.get("city", "").lower()]
-    cities = sorted({n["city"] for n in data.get("notaries", []) if n.get("city")})
+    cities = sorted({n["city"] for n in (registered + scraped) if n.get("city")})
     return {
         "notaries": notaries,
         "cities": cities,
-        "total": len(data.get("notaries", [])),
+        "total": len(registered) + len(scraped),
         "source": data.get("source"),
         "fetched_at": data.get("fetched_at"),
     }

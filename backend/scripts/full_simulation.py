@@ -1128,7 +1128,7 @@ async def main() -> None:
               ", ".join(x["code"] for x in docs))
         check("çdo shabllon ka kategori",
               all(x.get("category") in
-                  {"institucionet", "puna", "konsumatori", "te_pergjithshme"}
+                  {"institucionet", "puna", "konsumatori", "te_pergjithshme", "noteria"}
                   for x in docs))
         r = await c.post(f"{BASE}/public/tools/documents/kerkese", json={"values": {
             "sender_name": "Qytetari Sim", "sender_address": "Rr. Sim 1, Prishtinë",

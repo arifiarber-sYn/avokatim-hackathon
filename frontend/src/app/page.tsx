@@ -204,6 +204,13 @@ export default function Home() {
                 {t.umbLawyerCta}
                 <IconArrowRight className="h-4 w-4" />
               </Link>
+              {/* Second paying profession: the notary's digital office */}
+              <Link
+                href="/per-noteret"
+                className="block text-xs text-violet-300/90 hover:text-violet-200 underline underline-offset-2"
+              >
+                {t.umbFnL9}
+              </Link>
             </div>
           </div>
         </section>

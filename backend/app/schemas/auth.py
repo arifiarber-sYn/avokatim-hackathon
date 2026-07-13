@@ -49,6 +49,8 @@ class UserOut(BaseModel):
     tenant_status: str | None = None
     tenant_trial_ends_at: str | None = None
     tenant_require_2fa: bool = False
+    # Drives profession-conditional UI (notary offices see no marketplace)
+    tenant_profession: str = "lawyer"
 
     model_config = {"from_attributes": True}
 
@@ -66,6 +68,8 @@ class SignupRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=10)
     locale: str = "sq"
+    # Which legal profession the office practices: lawyer (default) or notary
+    profession: str = Field(default="lawyer", pattern="^(lawyer|notary)$")
     # ToS/Privacy checkbox (Law 06/L-082) — must be true
     accept_tos: bool = False
     # Lawyer-brings-lawyer program: the referrer's share code (?ref=)

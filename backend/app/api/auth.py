@@ -93,6 +93,7 @@ def _user_out(user: User, tenant: Tenant | None) -> UserOut:
             tenant.trial_ends_at.isoformat() if tenant.trial_ends_at else None
         )
         out.tenant_require_2fa = tenant.require_2fa
+        out.tenant_profession = tenant.profession
     return out
 
 
@@ -109,18 +110,22 @@ async def _send_verification_email(user_id: uuid.UUID, email: str, locale: str) 
     )
 
 
-async def _send_welcome_email(email: str, name: str, locale: str) -> None:
+async def _send_welcome_email(
+    email: str, name: str, locale: str, profession: str = "lawyer"
+) -> None:
     """Welcome email with the concrete next steps (activate public profile,
-    add the OAK license) — the onboarding gap seen with the first real signups."""
+    add the license) — the onboarding gap seen with the first real signups.
+    Notary offices get their own variant (no OAK, no marketplace)."""
     from app.i18n import pick_locale, tr
 
     loc = pick_locale(locale)
+    key = "notary_welcome" if profession == "notary" else "lawyer_welcome"
     await send_email(
         email,
-        tr(loc, "lawyer_welcome_subject", name=name),
+        tr(loc, f"{key}_subject", name=name),
         tr(
             loc,
-            "lawyer_welcome_body",
+            f"{key}_body",
             onboarding_url=f"{settings.public_base_url}/onboarding",
             trial_days=TRIAL_DAYS,
             contact_url=f"{settings.public_base_url}/kontakti",
@@ -196,6 +201,7 @@ async def signup(
     tenant = Tenant(
         name=body.practice_name,
         kind="solo",
+        profession=body.profession,
         default_locale=body.locale,
         plan="trial",
         status="active",
@@ -218,12 +224,17 @@ async def signup(
     await db.flush()
     await log_action(
         db, tenant_id=tenant.id, user_id=user.id, action="auth.signup",
-        details={"referred_by": referred_by} if referred_by else None,
+        details={
+            **({"referred_by": referred_by} if referred_by else {}),
+            "profession": body.profession,
+        },
         ip_address=request.client.host if request.client else None,
     )
     await db.commit()
     background.add_task(_send_verification_email, user.id, user.email, body.locale)
-    background.add_task(_send_welcome_email, user.email, user.full_name, body.locale)
+    background.add_task(
+        _send_welcome_email, user.email, user.full_name, body.locale, body.profession
+    )
     return TokenResponse(access_token=create_access_token(user.id, tenant.id))
 
 

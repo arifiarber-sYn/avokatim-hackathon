@@ -135,6 +135,10 @@ class ConsultBooking(Base, TimestampMixin):
     note: Mapped[str | None] = mapped_column(Text)
     # Consultation fee charged online (EUR); null = free/offline booking
     fee_eur: Mapped[int | None] = mapped_column(Integer)
+    # Prepared dossier (notary flow): the citizen attaches the draft they
+    # generated at /dokumentet so the professional sees it before the meeting
+    attachment_name: Mapped[str | None] = mapped_column(String(200))
+    attachment_b64: Mapped[str | None] = mapped_column(Text)
 
 
 class CaseRequest(Base, TimestampMixin):

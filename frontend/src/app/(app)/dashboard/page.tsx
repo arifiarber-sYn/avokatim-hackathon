@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { apiGet, apiPatch } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
+import BookingsPanel from "@/components/bookings-panel";
 import { Task } from "@/lib/types";
 import { Badge, Card, Spinner } from "@/components/ui";
 
@@ -93,6 +94,7 @@ export default function DashboardPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [welcome, setWelcome] = useState(false);
   const [profileVisible, setProfileVisible] = useState<boolean | null>(null);
+  const [profession, setProfession] = useState<string>("lawyer");
 
   const loadTasks = useCallback(() => {
     apiGet<Task[]>("/tasks?mine=true&open_only=true").then(setTasks).catch(() => {});
@@ -103,6 +105,9 @@ export default function DashboardPage() {
     apiGet<Deadline[]>("/deadlines/upcoming?days=30").then(setDeadlines).catch(() => {});
     apiGet<{ is_visible: boolean }>("/marketplace/profile")
       .then((p) => setProfileVisible(p.is_visible))
+      .catch(() => {});
+    apiGet<{ tenant_profession?: string }>("/auth/me")
+      .then((m) => setProfession(m.tenant_profession || "lawyer"))
       .catch(() => {});
     loadTasks();
     if (
@@ -164,7 +169,11 @@ export default function DashboardPage() {
 
       <PageIntro k="dashboard" title={t.dashIntroT} body={t.dashIntro} />
 
-      {profileVisible === false && (
+      {/* Notary offices have no marketplace page, so their appointment
+          requests from /noteret surface here on the dashboard */}
+      {profession === "notary" && <BookingsPanel />}
+
+      {profileVisible === false && profession !== "notary" && (
         <Card className="p-5 border-amber-300 bg-amber-50/60">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">

@@ -28,6 +28,16 @@ _SQ = {
         "Prova falas zgjat {trial_days} ditë — pa kartelë, pa detyrime.\n\n"
         "Pyetje? Përgjigjemi te {contact_url}\n\n— Ekipi i AvokatIM"
     ),
+    "notary_welcome_subject": "Mirë se erdhe në AvokatIM, {name}!",
+    "notary_welcome_body": (
+        "Zyra jote noteriale digjitale është gati. Tri hapa për të nisur:\n\n"
+        "1. Plotëso profilin e zyrës dhe orarin e termineve:\n{onboarding_url}\n\n"
+        "2. Provo asistenten Ava — e njeh Ligjin për Noterinë dhe tarifat zyrtare, "
+        "të ndihmon me hartimin e akteve dhe përmbledhjen e dokumenteve.\n\n"
+        "3. Krijo lëndën e parë noteriale dhe fto stafin e zyrës.\n\n"
+        "Prova falas zgjat {trial_days} ditë — pa kartelë, pa detyrime.\n\n"
+        "Pyetje? Përgjigjemi te {contact_url}\n\n— Ekipi i AvokatIM"
+    ),
     "lawyer_profile_nudge_subject": "AvokatIM — Profili yt publik ende s'është aktiv",
     "lawyer_profile_nudge_body": (
         "Qytetarët nuk mund të të gjejnë në drejtori dhe nuk merr raste nga tregu.\n\n"
@@ -203,6 +213,16 @@ _SR = {
         "Besplatni probni period traje {trial_days} dana — bez kartice, bez obaveza.\n\n"
         "Pitanja? Odgovaramo na {contact_url}\n\n— Tim AvokatIM"
     ),
+    "notary_welcome_subject": "Dobro došli u AvokatIM, {name}!",
+    "notary_welcome_body": (
+        "Vaša digitalna notarska kancelarija je spremna. Tri koraka za početak:\n\n"
+        "1. Popunite profil kancelarije i raspored termina:\n{onboarding_url}\n\n"
+        "2. Isprobajte asistentkinju Avu — poznaje Zakon o javnom beležništvu i "
+        "zvanične tarife, pomaže u izradi akata i sažimanju dokumenata.\n\n"
+        "3. Otvorite prvi predmet i pozovite osoblje kancelarije.\n\n"
+        "Besplatan probni period traje {trial_days} dana — bez kartice, bez obaveza.\n\n"
+        "Pitanja? Odgovaramo na {contact_url}\n\n— Tim AvokatIM"
+    ),
     "lawyer_profile_nudge_subject": "AvokatIM — Vaš javni profil još nije aktivan",
     "lawyer_profile_nudge_body": (
         "Građani ne mogu da vas pronađu u imeniku i ne dobijate predmete sa tržišta.\n\n"
@@ -367,6 +387,16 @@ _TR = {
         "1. Herkese açık profilinizi etkinleştirin — vatandaşlar sizi rehberde bulur ve pazar yerinden dosyalar alırsınız:\n{onboarding_url}\n\n"
         "2. Doğrulama rozeti için KBB lisans numaranızı ekleyin — dosyalar yalnızca doğrulanmış avukatlara gönderilir.\n\n"
         "3. İlk dosyanızı oluşturun ve asistan Ava'yı deneyin.\n\n"
+        "Ücretsiz deneme {trial_days} gün sürer — kart yok, taahhüt yok.\n\n"
+        "Sorular? {contact_url} adresinden yanıtlıyoruz\n\n— AvokatIM Ekibi"
+    ),
+    "notary_welcome_subject": "AvokatIM'e hoş geldiniz, {name}!",
+    "notary_welcome_body": (
+        "Dijital noterlik ofisiniz hazır. Başlamak için üç adım:\n\n"
+        "1. Ofis profilini ve randevu takvimini doldurun:\n{onboarding_url}\n\n"
+        "2. Asistan Ava'yı deneyin — Noterlik Kanunu'nu ve resmi tarifeleri bilir, "
+        "senet hazırlamada ve belge özetlemede yardımcı olur.\n\n"
+        "3. İlk noterlik dosyanızı açın ve ofis personelini davet edin.\n\n"
         "Ücretsiz deneme {trial_days} gün sürer — kart yok, taahhüt yok.\n\n"
         "Sorular? {contact_url} adresinden yanıtlıyoruz\n\n— AvokatIM Ekibi"
     ),
@@ -537,6 +567,16 @@ _BS = {
         "Besplatni probni period traje {trial_days} dana — bez kartice, bez obaveza.\n\n"
         "Pitanja? Odgovaramo na {contact_url}\n\n— Tim AvokatIM"
     ),
+    "notary_welcome_subject": "Dobro došli u AvokatIM, {name}!",
+    "notary_welcome_body": (
+        "Vaša digitalna notarska kancelarija je spremna. Tri koraka za početak:\n\n"
+        "1. Popunite profil kancelarije i raspored termina:\n{onboarding_url}\n\n"
+        "2. Isprobajte asistenticu Avu — poznaje Zakon o notarima i zvanične "
+        "tarife, pomaže u izradi akata i sažimanju dokumenata.\n\n"
+        "3. Otvorite prvi predmet i pozovite osoblje kancelarije.\n\n"
+        "Besplatni probni period traje {trial_days} dana — bez kartice, bez obaveza.\n\n"
+        "Pitanja? Odgovaramo na {contact_url}\n\n— Tim AvokatIM"
+    ),
     "lawyer_profile_nudge_subject": "AvokatIM — Vaš javni profil još nije aktivan",
     "lawyer_profile_nudge_body": (
         "Građani vas ne mogu pronaći u imeniku i ne dobijate predmete s tržišta.\n\n"
@@ -704,6 +744,16 @@ _EN = {
         "The free trial lasts {trial_days} days — no card, no commitment.\n\n"
         "Questions? We answer at {contact_url}\n\n— The AvokatIM Team"
     ),
+    "notary_welcome_subject": "Welcome to AvokatIM, {name}!",
+    "notary_welcome_body": (
+        "Your digital notary office is ready. Three steps to get started:\n\n"
+        "1. Complete your office profile and appointment schedule:\n{onboarding_url}\n\n"
+        "2. Try the assistant Ava — she knows the Law on Notary and the official "
+        "tariffs, and helps with drafting acts and summarizing documents.\n\n"
+        "3. Open your first notarial matter and invite your office staff.\n\n"
+        "The free trial lasts {trial_days} days — no card, no obligations.\n\n"
+        "Questions? We answer at {contact_url}\n\n— The AvokatIM team"
+    ),
     "lawyer_profile_nudge_subject": "AvokatIM — Your public profile is still not active",
     "lawyer_profile_nudge_body": (
         "Citizens cannot find you in the directory and you receive no cases from the marketplace.\n\n"
@@ -866,6 +916,15 @@ _ZH = {
         "2. 添加科索沃律师协会执照号码以获得验证徽章——案件仅发送给已验证的律师。\n\n"
         "3. 创建第一个案件并试用助手 Ava。\n\n"
         "免费试用期为 {trial_days} 天——无需银行卡，无任何承诺。\n\n"
+        "有问题？请访问 {contact_url}\n\n— AvokatIM 团队"
+    ),
+    "notary_welcome_subject": "欢迎来到 AvokatIM，{name}！",
+    "notary_welcome_body": (
+        "您的数字公证处已就绪。三步开始使用：\n\n"
+        "1. 完善公证处资料和预约时间表：\n{onboarding_url}\n\n"
+        "2. 试用助手 Ava——她熟悉《公证法》和官方收费标准，可协助起草公证文书和总结文件。\n\n"
+        "3. 创建第一个公证案卷并邀请公证处工作人员。\n\n"
+        "免费试用期为 {trial_days} 天——无需银行卡，无任何义务。\n\n"
         "有问题？请访问 {contact_url}\n\n— AvokatIM 团队"
     ),
     "lawyer_profile_nudge_subject": "AvokatIM — 您的公开资料尚未激活",

@@ -455,3 +455,33 @@
   `docs/integrimet/e-noteria.md`) the LiveKit + evidence-vault stack is the
   upgrade path; notary-office accounts (law art. 50 registers) start only
   on explicit ONK interest.
+
+## D-024: Profession is a tenant field, not a fork — notaries pay like lawyers (2026-07-13)
+
+- Context: the owner wants notaries as the second paying profession ("Jam
+  noter" next to "Jam avokat"): the same AI office and direct demand, paid
+  like lawyers. Worldwide, civil-law notary software (TriNotar/DE,
+  Septeo/FR, NoRA/AT) is subscription office software; nobody runs a case
+  marketplace for notaries because they are impartial public officers with
+  fixed tariffs (AI 02/2012) and territorial competence — competing for
+  cases conflicts with the office.
+- Decision: one codebase, one `Tenant.profession` column ("lawyer" |
+  "notary", default "lawyer"). Notary tenants get the identical stack
+  (matters, documents, Ava, calendar, billing, per-seat subscription with
+  the same 90-day trial — `platform_billing` needed zero changes) with the
+  marketplace surgically removed: no marketplace nav, 403 on case claims,
+  excluded from /public/lawyers and public stats. Their "market" is the
+  adapted demand channel: equal listing in /noteret (never promoted),
+  online appointment slots (reusing `ConsultBooking`), and the prepared
+  dossier (citizen attaches the /dokumentet draft to the booking).
+  Verification reuses the OAK queue; `LawyerProfile.oak_license_no` holds
+  the ONK number for notaries, and the platform panel auto-matches
+  signups against the scraped `data/notaries.json` (email → name).
+  This narrows D-023: notary *accounts* now exist, but notarization
+  remains strictly offline/in-person.
+- Consequences: adding a third profession later (përmbarues, ndërmjetësues)
+  is a column value + conditional UI, not a fork. The `LawyerProfile` model
+  name is now slightly misleading (it backs any professional's public
+  profile) — renaming was skipped deliberately to avoid a risky migration;
+  revisit only if a third profession lands. Art. 50 notary registers stay
+  out of scope until ONK shows interest.

@@ -35,6 +35,9 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  // Notary offices get a shorter variant: no practice areas, no custom
+  // consultation fee (fixed tariffs), ONK license instead of OAK
+  const [isNotary, setIsNotary] = useState(false);
   const [profile, setProfile] = useState({
     is_visible: true,
     sos_on_duty: false,
@@ -54,6 +57,9 @@ export default function OnboardingPage() {
       router.replace("/login");
       return;
     }
+    apiGet<{ tenant_profession?: string }>("/auth/me")
+      .then((m) => setIsNotary(m.tenant_profession === "notary"))
+      .catch(() => {});
     apiGet<{
       is_visible: boolean;
       bio: string | null;
@@ -144,7 +150,9 @@ export default function OnboardingPage() {
       <div className="max-w-2xl mx-auto space-y-5">
         <div className="text-center space-y-1.5">
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900">{t.obTitle}</h1>
-          <p className="text-sm text-slate-500 max-w-lg mx-auto">{t.obSubtitle}</p>
+          <p className="text-sm text-slate-500 max-w-lg mx-auto">
+            {isNotary ? t.obSubtitleNotary : t.obSubtitle}
+          </p>
         </div>
 
         {step <= 3 && (
@@ -184,8 +192,9 @@ export default function OnboardingPage() {
                 onChange={(e) => setProfile({ ...profile, is_visible: e.target.checked })}
                 className="accent-indigo-600"
               />
-              {t.mkVisibleInDirectory}
+              {isNotary ? t.mkVisibleInNotaryDirectory : t.mkVisibleInDirectory}
             </label>
+            {!isNotary && (
             <div>
               <Label>{t.practiceArea}</Label>
               <div className="flex flex-wrap gap-2">
@@ -207,6 +216,7 @@ export default function OnboardingPage() {
                 ))}
               </div>
             </div>
+            )}
             <div>
               <Label>{t.mkCities}</Label>
               <Input
@@ -260,15 +270,18 @@ export default function OnboardingPage() {
         {step === 2 && (
           <Card className="p-6 space-y-4">
             <div>
-              <Label>{t.mkOakLicense}</Label>
+              <Label>{isNotary ? t.mkOnkLicense : t.mkOakLicense}</Label>
               <Input
                 value={profile.oak_license_no}
                 onChange={(e) => setProfile({ ...profile, oak_license_no: e.target.value })}
                 placeholder="p.sh. 1234"
                 maxLength={64}
               />
-              <p className="text-xs text-slate-500 mt-1">{t.mkOakLicenseHint}</p>
+              <p className="text-xs text-slate-500 mt-1">
+                {isNotary ? t.mkOnkLicenseHint : t.mkOakLicenseHint}
+              </p>
             </div>
+            {!isNotary && (
             <div>
               <Label>{t.mkConsultFee}</Label>
               <Input
@@ -281,6 +294,7 @@ export default function OnboardingPage() {
               />
               <p className="text-xs text-slate-500 mt-1">{t.mkConsultFeeHint}</p>
             </div>
+            )}
             <ErrorNote message={error} />
             <div className="flex items-center justify-between pt-1">
               <button

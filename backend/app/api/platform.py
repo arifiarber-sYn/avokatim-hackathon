@@ -157,9 +157,32 @@ async def update_tenant(
     return {"updated": True}
 
 
-# ---------- OAK license verification queue ----------
+# ---------- license verification queue (OAK lawyers + ONK notaries) ----------
 # Manual by design: OAK (Kosovo Bar Association) publishes its member
 # registry but has no lookup API, so the operator checks it by hand.
+# For notaries we do have the scraped ONK registry (data/notaries.json),
+# so the queue suggests an automatic match to verify with one click.
+
+
+def _norm_name(name: str) -> str:
+    return " ".join(name.lower().replace("ë", "e").replace("ç", "c").split())
+
+
+def _onk_match(full_name: str, email: str) -> dict | None:
+    """Best-effort match of a signup against the public ONK registry:
+    exact email first, then normalized full-name equality."""
+    from app.api.public_tools import _load_notaries
+
+    email = email.strip().lower()
+    name = _norm_name(full_name)
+    for n in _load_notaries().get("notaries", []):
+        if email and n.get("email", "").strip().lower() == email:
+            return {"name": n["name"], "city": n.get("city"), "matched_by": "email"}
+    for n in _load_notaries().get("notaries", []):
+        if name and _norm_name(n.get("name", "")) == name:
+            return {"name": n["name"], "city": n.get("city"), "matched_by": "name"}
+    return None
+
 
 @router.get("/verifications")
 async def list_verifications(
@@ -183,11 +206,17 @@ async def list_verifications(
             "lawyer_name": user.full_name,
             "lawyer_email": user.email,
             "tenant_name": tenant.name,
+            "profession": tenant.profession,
             "oak_license_no": profile.oak_license_no,
             "verification_status": profile.verification_status,
             "verification_note": profile.verification_note,
             "verified_at": profile.verified_at.isoformat() if profile.verified_at else None,
             "submitted_at": profile.updated_at.isoformat(),
+            "onk_match": (
+                _onk_match(user.full_name, user.email)
+                if tenant.profession == "notary"
+                else None
+            ),
         }
         for profile, user, tenant in rows
     ]
@@ -213,8 +242,10 @@ async def decide_verification(
     profile.verification_status = "verified" if body.approve else "rejected"
     profile.verified_at = datetime.now(UTC) if body.approve else None
     profile.verification_note = body.note
-    # Founder badge: the first FOUNDER_LIMIT verified offices keep it forever
-    if body.approve and not profile.is_founder:
+    tenant = await db.get(Tenant, profile.tenant_id)
+    # Founder badge: the first FOUNDER_LIMIT verified law offices keep it
+    # forever (a marketplace perk — notary offices are outside the marketplace)
+    if body.approve and not profile.is_founder and tenant.profession == "lawyer":
         verified_count = (
             await db.execute(
                 select(func.count(LawyerProfile.id)).where(

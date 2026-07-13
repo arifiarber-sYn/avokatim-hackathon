@@ -22,9 +22,15 @@ interface CorpusDoc {
 export default function SettingsPage() {
   const { t } = useI18n();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isNotary, setIsNotary] = useState(false);
 
   useEffect(() => {
-    apiGet<{ role: string }>("/auth/me").then((me) => setIsAdmin(me.role === "admin")).catch(() => {});
+    apiGet<{ role: string; tenant_profession?: string }>("/auth/me")
+      .then((me) => {
+        setIsAdmin(me.role === "admin");
+        setIsNotary(me.tenant_profession === "notary");
+      })
+      .catch(() => {});
   }, []);
 
   return (
@@ -37,9 +43,9 @@ export default function SettingsPage() {
       <TeamSection />
       <CalendarFeedSection />
       <PublicIntakeSection />
-      <PublicProfileSection />
+      <PublicProfileSection isNotary={isNotary} />
       <BookingSection />
-      <ReferralSection />
+      {!isNotary && <ReferralSection />}
       <ImportSection />
       <TwoFASection />
       <CorpusSection />
@@ -1270,7 +1276,7 @@ function PortalSection() {
 }
 
 /** Public marketplace directory profile: opt-in visibility, bio, areas. */
-function PublicProfileSection() {
+function PublicProfileSection({ isNotary = false }: { isNotary?: boolean }) {
   const { t } = useI18n();
   const [profile, setProfile] = useState({
     is_visible: false,
@@ -1381,7 +1387,9 @@ function PublicProfileSection() {
     <Card id="public-profile" className="p-5 space-y-4 scroll-mt-4">
       <div>
         <h2 className="font-semibold">{t.mkPublicProfile}</h2>
-        <p className="text-xs text-slate-500 mt-0.5">{t.mkPublicProfileHint}</p>
+        <p className="text-xs text-slate-500 mt-0.5">
+          {isNotary ? t.mkPublicProfileHintNotary : t.mkPublicProfileHint}
+        </p>
       </div>
       <form onSubmit={save} className="space-y-4">
         <label className="flex items-center gap-2 text-sm cursor-pointer">
@@ -1391,8 +1399,9 @@ function PublicProfileSection() {
             onChange={(e) => setProfile({ ...profile, is_visible: e.target.checked })}
             className="accent-indigo-600"
           />
-          {t.mkVisibleInDirectory}
+          {isNotary ? t.mkVisibleInNotaryDirectory : t.mkVisibleInDirectory}
         </label>
+        {!isNotary && (
         <label className="flex items-center gap-2 text-sm cursor-pointer" title={t.mkSosDutyHint}>
           <input
             type="checkbox"
@@ -1402,9 +1411,10 @@ function PublicProfileSection() {
           />
           {t.mkSosDuty}
         </label>
+        )}
         <div>
           <div className="flex items-center gap-2">
-            <Label>{t.mkOakLicense}</Label>
+            <Label>{isNotary ? t.mkOnkLicense : t.mkOakLicense}</Label>
             <span
               className={`text-[11px] font-semibold rounded-full px-2 py-0.5 ${
                 verification.status === "verified"
@@ -1431,7 +1441,9 @@ function PublicProfileSection() {
             placeholder="p.sh. 1234"
             maxLength={64}
           />
-          <p className="text-xs text-slate-500 mt-1">{t.mkOakLicenseHint}</p>
+          <p className="text-xs text-slate-500 mt-1">
+            {isNotary ? t.mkOnkLicenseHint : t.mkOakLicenseHint}
+          </p>
           {verification.status === "pending" && (
             <p className="text-xs text-amber-700 mt-1">{t.mkVerifPendingNote}</p>
           )}
@@ -1442,6 +1454,9 @@ function PublicProfileSection() {
             </p>
           )}
         </div>
+        {/* Notary fees are fixed by administrative instruction (UA 02/2012) —
+            no custom consultation fee, no marketplace SMS alerts */}
+        {!isNotary && (
         <div>
           <Label>{t.mkConsultFee}</Label>
           <Input
@@ -1454,6 +1469,7 @@ function PublicProfileSection() {
           />
           <p className="text-xs text-slate-500 mt-1">{t.mkConsultFeeHint}</p>
         </div>
+        )}
         <div>
           <Label>{t.mkSmsPhone}</Label>
           <Input
@@ -1463,16 +1479,20 @@ function PublicProfileSection() {
             placeholder="+383 44 000 000"
             maxLength={64}
           />
-          <label className="flex items-center gap-2 text-sm cursor-pointer mt-2">
-            <input
-              type="checkbox"
-              checked={profile.sms_case_alerts}
-              onChange={(e) => setProfile({ ...profile, sms_case_alerts: e.target.checked })}
-              className="accent-indigo-600"
-            />
-            {t.mkSmsAlerts}
-          </label>
-          <p className="text-xs text-slate-500 mt-1">{t.mkSmsHint}</p>
+          {!isNotary && (
+            <>
+              <label className="flex items-center gap-2 text-sm cursor-pointer mt-2">
+                <input
+                  type="checkbox"
+                  checked={profile.sms_case_alerts}
+                  onChange={(e) => setProfile({ ...profile, sms_case_alerts: e.target.checked })}
+                  className="accent-indigo-600"
+                />
+                {t.mkSmsAlerts}
+              </label>
+              <p className="text-xs text-slate-500 mt-1">{t.mkSmsHint}</p>
+            </>
+          )}
         </div>
         <div>
           <Label>{t.mkBio}</Label>
@@ -1483,6 +1503,7 @@ function PublicProfileSection() {
             maxLength={4000}
           />
         </div>
+        {!isNotary && (
         <div>
           <Label>{t.practiceArea}</Label>
           <div className="flex flex-wrap gap-2">
@@ -1504,6 +1525,7 @@ function PublicProfileSection() {
             ))}
           </div>
         </div>
+        )}
         <div>
           <Label>{t.mkCities}</Label>
           <Input

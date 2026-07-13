@@ -378,6 +378,8 @@ async def public_lawyers(
                 LawyerProfile.verification_status == "verified",
                 User.is_active.is_(True),
                 Tenant.status == "active",
+                # Notary offices are listed in /noteret, never here
+                Tenant.profession == "lawyer",
             )
             # Highlighted directory placement is a paid-plan perk (lpPlanPaid)
             .order_by((Tenant.plan != "trial").desc(), LawyerProfile.created_at)
@@ -688,6 +690,7 @@ async def _notify_matching_lawyers(
                     LawyerProfile.verification_status == "verified",
                     User.is_active.is_(True),
                     Tenant.status == "active",
+                    Tenant.profession == "lawyer",
                 )
             )
         ).all()
@@ -893,9 +896,13 @@ async def public_stats(db: AsyncSession = Depends(get_db)):
 
     lawyers = (
         await db.execute(
-            select(func.count(LawyerProfile.id)).where(
+            select(func.count(LawyerProfile.id))
+            .select_from(LawyerProfile)
+            .join(Tenant, Tenant.id == LawyerProfile.tenant_id)
+            .where(
                 LawyerProfile.is_visible.is_(True),
                 LawyerProfile.verification_status == "verified",
+                Tenant.profession == "lawyer",
             )
         )
     ).scalar_one()
@@ -1514,6 +1521,12 @@ async def lawyer_claim_case(
         )
 
     tenant = await db.get(Tenant, user.tenant_id)
+    # Notaries are impartial public officers — competing for cases would
+    # conflict with their duty, so the marketplace is lawyers-only
+    if tenant.profession == "notary":
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, "The case marketplace is for law offices only"
+        )
     quota = await _lead_quota(db, tenant)
     if quota["remaining"] == 0:
         raise HTTPException(

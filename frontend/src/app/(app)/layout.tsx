@@ -16,6 +16,7 @@ interface Me {
   email_verified?: boolean;
   tenant_plan?: string | null;
   tenant_trial_ends_at?: string | null;
+  tenant_profession?: string;
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -41,11 +42,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     setDrawerOpen(false);
   }, [pathname]);
 
+  // Notary offices are impartial public officers: no case marketplace for them
+  const isNotary = me?.tenant_profession === "notary";
   const nav = [
     { href: "/dashboard", label: t.dashboard, icon: "▦" },
     { href: "/matters", label: t.matters, icon: "▤" },
     { href: "/intake", label: t.intake, icon: "▷" },
-    { href: "/marketplace", label: t.marketplace, icon: "◇" },
+    ...(isNotary ? [] : [{ href: "/marketplace", label: t.marketplace, icon: "◇" }]),
     { href: "/calendar", label: t.calendar, icon: "▧" },
     { href: "/contacts", label: t.contacts, icon: "◉" },
     { href: "/templates", label: t.templates, icon: "▣" },
@@ -80,7 +83,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <h1 className="text-xl font-bold text-white">
           Avokat<span className="text-indigo-400">IM</span>
         </h1>
-        <p className="text-xs text-slate-400 mt-0.5">{t.tagline}</p>
+        <p className="text-xs text-slate-400 mt-0.5">{isNotary ? t.taglineNotary : t.tagline}</p>
       </div>
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {nav.map((item) => (

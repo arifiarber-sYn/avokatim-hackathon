@@ -417,6 +417,31 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   citizen column, `umbFnC8` bullet on `/`, fifth story section on
   `/per-qytetaret`, notary example chip on `/ava` (mobile bottom nav
   intentionally unchanged).
+- **Notaries as the second paying profession** (2026-07-13, D-024):
+  `Tenant.profession` ("lawyer" | "notary", migration `d4761aba9c68`) —
+  same digital office + Ava + billing (per-seat, 90-day trial), no case
+  marketplace (impartial public officer, fixed AI 02/2012 tariffs). Signup
+  has "Jam avokat / Jam noter" cards (`/regjistrohu?profesioni=noter`
+  preselects); notary welcome email variant (`notary_welcome_*` ×6);
+  `/auth/me` exposes `tenant_profession`. Conditional UI: marketplace nav
+  hidden, tagline "Zyra juaj noteriale moderne", settings/onboarding show
+  ONK license instead of OAK and hide SOS/practice-areas/consult-fee/
+  referral; matter detail says "Përgjegjësi". Marketing page
+  **`/per-noteret`** (×6, violet), linked from `/` (umbFnL9) and a banner
+  on `/noteret`. Verification: same queue; for notaries the platform panel
+  shows an automatic match against `data/notaries.json` (email, then
+  normalized name — `_onk_match` in `api/platform.py`). Directory merge:
+  `/public/tools/notaries` lists registered verified notary offices first
+  (badge "I verifikuar në AvokatIM", equal listing — no promoted placement)
+  and dedupes their scraped registry entry. Bookings: `/noteret` shows a
+  slot picker for registered offices; the citizen can attach a prepared
+  dossier (PDF ≤2 MB, `consult_bookings.attachment_name/attachment_b64`,
+  migration `c24b4c54ac8f`; download via
+  `GET /marketplace/bookings/{id}/attachment`); the notary sees requests in
+  a shared `BookingsPanel` on the dashboard (no marketplace page). Claim
+  guard: notary tenants get 403 on marketplace claims; excluded from
+  /public/lawyers and public stats. Tests: `tests/test_profession.py`;
+  simulation: `scripts/notary_simulation.py` (16 checks).
 - **Two-surface restructure + citizen account** (2026-07-12, D-020):
   landing `/` is now the umbrella presentation — mission hero, two big
   audience cards, side-by-side full function lists (citizen ×7 / lawyer

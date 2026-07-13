@@ -137,8 +137,12 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
     const [accessSaved, setAccessSaved] = useState(false);
     const [inboundEmail, setInboundEmail] = useState<string | null>(null);
     const [emailCopied, setEmailCopied] = useState(false);
+    const [isNotary, setIsNotary] = useState(false);
 
     useEffect(() => {
+      apiGet<{ tenant_profession?: string }>("/auth/me")
+        .then((m) => setIsNotary(m.tenant_profession === "notary"))
+        .catch(() => {});
       // 404 when IMAP ingestion is not configured — then simply hide the row
       apiGet<{ address: string }>(`/matters/${matter.id}/email-address`)
         .then((r) => setInboundEmail(r.address))
@@ -220,7 +224,9 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           </div>
         )}
         <div className="flex text-sm items-center">
-          <span className="w-48 text-slate-500 shrink-0">{t.responsibleLawyer}</span>
+          <span className="w-48 text-slate-500 shrink-0">
+            {isNotary ? t.responsiblePerson : t.responsibleLawyer}
+          </span>
           {team.length > 1 ? (
             <Select
               value={matter.responsible_user_id || ""}

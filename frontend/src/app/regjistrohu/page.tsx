@@ -27,6 +27,10 @@ function SignupInner() {
     email: "",
     password: "",
   });
+  // /per-noteret links here with ?profesioni=noter to preselect the notary card
+  const [profession, setProfession] = useState<"lawyer" | "notary">(
+    searchParams.get("profesioni") === "noter" ? "notary" : "lawyer"
+  );
   const [acceptTos, setAcceptTos] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -39,6 +43,7 @@ function SignupInner() {
       const r = await apiPost<{ access_token: string }>("/auth/signup", {
         ...form,
         locale,
+        profession,
         accept_tos: acceptTos,
         referral_code: referralCode,
       });
@@ -62,6 +67,31 @@ function SignupInner() {
           <LocaleSwitcher />
         </div>
         <form onSubmit={submit} className="space-y-4">
+          <div>
+            <Label>{t.signupProfession}</Label>
+            <div className="grid grid-cols-2 gap-2 mt-1">
+              {(
+                [
+                  { key: "lawyer", label: t.signupProfLawyer, hint: t.signupProfLawyerHint },
+                  { key: "notary", label: t.signupProfNotary, hint: t.signupProfNotaryHint },
+                ] as const
+              ).map((opt) => (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => setProfession(opt.key)}
+                  className={`rounded-xl border p-3 text-left transition ${
+                    profession === opt.key
+                      ? "border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500"
+                      : "border-slate-200 hover:border-slate-300"
+                  }`}
+                >
+                  <span className="block text-sm font-semibold text-slate-800">{opt.label}</span>
+                  <span className="block text-xs text-slate-500 mt-0.5">{opt.hint}</span>
+                </button>
+              ))}
+            </div>
+          </div>
           <div>
             <Label>{t.practiceName}</Label>
             <Input

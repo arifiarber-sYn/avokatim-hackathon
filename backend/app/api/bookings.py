@@ -81,6 +81,7 @@ def _booking_out(booking: ConsultBooking, other_party: str | None = None) -> dic
         "note": booking.note,
         "with": other_party,
         "fee_eur": booking.fee_eur,
+        "attachment_name": booking.attachment_name,
         "created_at": booking.created_at.isoformat(),
     }
 
@@ -162,6 +163,35 @@ async def lawyer_bookings(
         {**_booking_out(b, citizen.full_name), "citizen_email": citizen.email}
         for b, citizen in rows
     ]
+
+
+@router.get("/bookings/{booking_id}/attachment")
+async def booking_attachment(
+    booking_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """The prepared dossier the citizen attached when booking (PDF draft
+    from /dokumentet) — the professional reviews it before the meeting."""
+    import base64
+
+    from fastapi.responses import Response
+
+    booking = await db.get(ConsultBooking, booking_id)
+    if booking is None or booking.tenant_id != user.tenant_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Booking not found")
+    if not booking.attachment_b64:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No attachment")
+    try:
+        content = base64.b64decode(booking.attachment_b64)
+    except Exception:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Corrupt attachment")
+    name = booking.attachment_name or "dosja.pdf"
+    return Response(
+        content,
+        media_type="application/pdf" if name.lower().endswith(".pdf") else "application/octet-stream",
+        headers={"Content-Disposition": f'attachment; filename="{name}"'},
+    )
 
 
 class DecideIn(BaseModel):
@@ -264,6 +294,10 @@ class BookIn(BaseModel):
     profile_id: uuid.UUID
     starts_at: datetime
     note: str | None = Field(default=None, max_length=1000)
+    # Prepared dossier (notary flow): draft PDF generated at /dokumentet,
+    # base64-encoded; ~2 MB file limit keeps rows small
+    attachment_name: str | None = Field(default=None, max_length=200)
+    attachment_b64: str | None = Field(default=None, max_length=3_000_000)
 
 
 async def _notify_lawyer_new_booking(booking_id: uuid.UUID) -> None:
@@ -318,6 +352,8 @@ async def citizen_create_booking(
         note=body.note,
         status="pending_payment" if charge_online else "pending",
         fee_eur=profile.consult_fee_eur if charge_online else None,
+        attachment_name=body.attachment_name if body.attachment_b64 else None,
+        attachment_b64=body.attachment_b64,
     )
     db.add(booking)
     await db.flush()

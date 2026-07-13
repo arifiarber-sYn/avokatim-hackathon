@@ -19,13 +19,20 @@ from app.models.base import Base, TimestampMixin, uuid_pk
 
 
 class Tenant(Base, TimestampMixin):
-    """A law practice: starts as a solo lawyer, can grow into a firm."""
+    """A legal office: a law practice or a notary office. Starts solo,
+    can grow into a firm."""
 
     __tablename__ = "tenants"
 
     id: Mapped[uuid.UUID] = uuid_pk()
     name: Mapped[str] = mapped_column(String(200))
     kind: Mapped[str] = mapped_column(String(20), default="solo")  # solo | firm
+    # Which legal profession this office practices. Notary offices get the
+    # same digital office + AI but no case marketplace (notaries are impartial
+    # public officers with fixed tariffs — competing for cases is off-limits).
+    profession: Mapped[str] = mapped_column(
+        String(20), default="lawyer", server_default="lawyer"
+    )  # lawyer | notary
     default_locale: Mapped[str] = mapped_column(String(8), default="sq")
     default_jurisdiction_code: Mapped[str] = mapped_column(String(8), default="XK")
     # Opaque token for the public intake form URL; null = form disabled

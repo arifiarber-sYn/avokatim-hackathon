@@ -10,6 +10,39 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-13 — "Jam noter": notaries become the second paying profession (Cursor / Fable 5)
+
+- Done (plan "Jam noter", all 6 todos; decision D-024):
+  - `Tenant.profession` (lawyer|notary, migration `d4761aba9c68`); signup
+    with "Jam avokat / Jam noter" cards (`?profesioni=noter` preselects);
+    notary welcome email ×6 (`notary_welcome_*`); `/auth/me` returns
+    `tenant_profession`.
+  - Conditional app: marketplace nav hidden for notaries, notary tagline,
+    settings/onboarding show ONK license (no OAK, no SOS, no practice
+    areas, no consult fee, no referral), "Përgjegjësi" label in matters.
+    Claim endpoint 403 for notary tenants; excluded from /public/lawyers,
+    matching alerts and public stats.
+  - `/per-noteret` marketing page ×6 (violet), linked from `/` (umbFnL9)
+    and a CTA banner on `/noteret`.
+  - Verification: platform queue shows profession badge (ONK/OAK) and an
+    automatic registry match (`_onk_match`: email, then normalized name
+    against `data/notaries.json`); founder badge stays lawyer-only.
+  - Adapted market: `/public/tools/notaries` merges registered verified
+    notary offices (listed equally, deduped from the scraped registry)
+    with a booking widget on /noteret; the citizen attaches a prepared
+    dossier (PDF ≤2 MB) to the booking (migration `c24b4c54ac8f`), the
+    notary downloads it (`GET /marketplace/bookings/{id}/attachment`) and
+    confirms from a shared BookingsPanel now also on the dashboard.
+- Verified: pytest 83/83 (new `test_profession.py`);
+  `scripts/notary_simulation.py` 16/16 (signup → profile → verify →
+  /noteret listing → 403 claim guard → citizen books with PDF dossier →
+  notary downloads + confirms → Ava answers a notary tariff question);
+  `full_simulation.py` 187 PASS / 1 stale check (template category list
+  missing "noteria" — fixed in the script); frontend build OK, health OK.
+- Left open / next: notary-specific matter templates in the app,
+  art. 50 registers on ONK interest, rename of `LawyerProfile` if a third
+  profession ever lands.
+
 ## 2026-07-13 — Notary surfaced as the visible third pillar (Cursor / Fable 5)
 
 - Context: after building /noteret, the owner asked where notary services

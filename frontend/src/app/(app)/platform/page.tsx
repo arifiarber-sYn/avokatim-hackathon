@@ -205,10 +205,12 @@ interface VerificationRow {
   lawyer_name: string;
   lawyer_email: string;
   tenant_name: string;
+  profession?: string;
   oak_license_no: string | null;
   verification_status: string;
   verification_note: string | null;
   submitted_at: string;
+  onk_match?: { name: string; city: string | null; matched_by: string } | null;
 }
 
 function VerificationsSection() {
@@ -265,9 +267,27 @@ function VerificationsSection() {
               <span className="font-medium">{row.lawyer_name}</span>
               <span className="text-slate-500">{row.lawyer_email}</span>
               <span className="text-slate-500">{row.tenant_name}</span>
-              <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-amber-100 text-amber-800">
-                OAK {row.oak_license_no}
+              <span
+                className={`inline-flex px-2 py-0.5 rounded-full text-xs font-mono font-medium ${
+                  row.profession === "notary"
+                    ? "bg-violet-100 text-violet-800"
+                    : "bg-amber-100 text-amber-800"
+                }`}
+              >
+                {row.profession === "notary" ? "ONK" : "OAK"} {row.oak_license_no}
               </span>
+              {row.profession === "notary" && (
+                <span
+                  className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+                    row.onk_match
+                      ? "bg-emerald-100 text-emerald-800"
+                      : "bg-slate-100 text-slate-600"
+                  }`}
+                  title={row.onk_match ? `${row.onk_match.name} (${row.onk_match.city || "?"})` : undefined}
+                >
+                  {row.onk_match ? t.platOnkMatch : t.platOnkNoMatch}
+                </span>
+              )}
               <span className="flex gap-2 ml-auto">
                 <Button disabled={busy} onClick={() => decide(row.profile_id, true)}>
                   {t.platApprove}
