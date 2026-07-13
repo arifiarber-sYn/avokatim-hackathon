@@ -3,6 +3,7 @@ remind_days_before offsets. Redis SETNX guards against duplicate sends.
 Disabled entirely when SMTP is not configured in backend/.env."""
 import asyncio
 import logging
+import re
 import smtplib
 from datetime import UTC, datetime, timedelta
 from email.message import EmailMessage
@@ -25,6 +26,22 @@ DEDUP_TTL_SECONDS = 3 * 24 * 3600
 
 def smtp_enabled() -> bool:
     return bool(settings.smtp_host)
+
+
+# Addresses used by the test simulation and demo seeds. Mailing them makes
+# Gmail return "Address not found" bounces to the owner's inbox and hurts
+# the sender reputation of the whole platform, so they are never sent.
+_TEST_RECIPIENT_RE = re.compile(
+    r"(\.sim\.\d+@gmail\.com$"
+    r"|@example\.(com|org|net)$"
+    r"|@avokatim\.(local|app)$"
+    r"|@gmail\.con$)",  # common .com typo — the domain does not exist
+    re.IGNORECASE,
+)
+
+
+def _is_test_recipient(to: str) -> bool:
+    return bool(_TEST_RECIPIENT_RE.search(to.strip()))
 
 
 def _send_email_sync(
@@ -59,6 +76,9 @@ async def send_email(
 ) -> bool:
     if not smtp_enabled():
         return False
+    if _is_test_recipient(to):
+        logger.info("Suppressed email to test address %s (%s)", to, subject)
+        return True
     try:
         await asyncio.to_thread(_send_email_sync, to, subject, body, attachments)
         return True

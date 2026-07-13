@@ -35,6 +35,14 @@
   remaining onboarding steps; her `profile_nudge_sent_at` was set so the
   automated 48h nudge won't duplicate it. Status tracked in
   docs/rekrutimi/kontakt-oak-dhe-avokatet.md.
+- Follow-up 2: the owner's Gmail inbox was full of "Address not found"
+  bounces. Cause: SMTP_FROM is his personal Gmail, and the platform mailed
+  nonexistent addresses — simulation accounts (`*.sim.*@gmail.com`), fake
+  signups (`daaaaa@gmail.con`, earlier `leof*@gmail.com` wave) — so Gmail
+  returned an NDR per message. Fix: `send_email()` now suppresses test/
+  seed/typo recipients via `_TEST_RECIPIENT_RE` (sim pattern, example.*,
+  avokatim.local/app, gmail.con) and logs instead. New unit tests in
+  tests/test_email_suppression.py; 73 passed, health OK after restart.
 - Left open / next: await Marigona's reply/activation; decide what to do
   with the Vegim tenant if it stays unverified past the invoice due date.
 
