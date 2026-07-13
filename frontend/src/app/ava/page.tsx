@@ -222,7 +222,7 @@ export default function PublicAvaPage() {
               {t.avaExamplesT}
             </p>
             <div className="flex flex-wrap gap-2">
-              {[t.avaEx1, t.avaEx2, t.avaEx3, t.avaEx4].map((q) => (
+              {[t.avaEx1, t.avaEx2, t.avaEx3, t.avaEx4, t.avaEx5].map((q) => (
                 <button
                   key={q}
                   onClick={() => askQuestion(q)}

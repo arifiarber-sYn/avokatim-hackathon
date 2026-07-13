@@ -145,10 +145,7 @@ export default function PublicShell({
   const { t } = useI18n();
   const pathname = usePathname();
   const dict = t as unknown as Record<string, string>;
-  const toolsActive =
-    pathname.startsWith("/afatet") ||
-    pathname.startsWith("/dokumentet") ||
-    pathname.startsWith("/noteret");
+  const toolsActive = pathname.startsWith("/afatet") || pathname.startsWith("/dokumentet");
 
   // Recognize a signed-in citizen so their credentials never lead them to
   // the lawyer login: valid token -> chip menu, stale token -> cleared.
@@ -178,7 +175,14 @@ export default function PublicShell({
             </span>
           </Link>
           <nav className="hidden md:flex items-center gap-5">
-            {NAV.map(({ href, label }) => (
+            {/* Desktop shows the full legal chain (Ava · Avokatët · Noterët ·
+                Posto · Rasti im); the notary link stays desktop-only so the
+                mobile bottom nav keeps its four core actions + SOS. */}
+            {[
+              ...NAV.slice(0, 2),
+              { href: "/noteret", label: (d: Record<string, string>) => d.pnNotaries },
+              ...NAV.slice(2),
+            ].map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
@@ -205,9 +209,6 @@ export default function PublicShell({
                   </Link>
                   <Link href="/dokumentet" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-700">
                     {t.cdTitle}
-                  </Link>
-                  <Link href="/noteret" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-700">
-                    {t.pnNotaries}
                   </Link>
                 </div>
               </div>

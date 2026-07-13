@@ -16,6 +16,7 @@ import {
   IconChat,
   IconDoc,
   IconLock,
+  IconScale,
   IconShield,
   IconUsers,
 } from "@/components/icons";
@@ -139,12 +140,21 @@ export default function ForCitizensPage() {
                 { href: "/dokumentet", label: t.landToolsDocs, Icon: IconDoc },
               ],
             },
+            {
+              Icon: IconScale,
+              tone: "violet",
+              title: t.landNotaryT,
+              body: t.landNotaryB,
+              cta: { href: "/noteret", label: t.landNotaryCta },
+              links: [{ href: "/dokumentet", label: t.landNotaryDocsLink, Icon: IconDoc }],
+            },
           ].map((f, i) => {
             const tones: Record<string, string> = {
               indigo: "bg-indigo-50 text-indigo-600",
               red: "bg-red-50 text-red-600",
               emerald: "bg-emerald-50 text-emerald-600",
               amber: "bg-amber-50 text-amber-600",
+              violet: "bg-violet-50 text-violet-600",
             };
             return (
               <div

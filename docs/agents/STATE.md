@@ -412,7 +412,11 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   `POST .../notary-fee`. Public Ava routes notary matters and links
   /noteret. Strategic docs: `docs/rekrutimi/kontakt-onk.md` (draft ONK
   email), `docs/integrimet/e-noteria.md` (remote-notarization readiness).
-  Tests: `tests/test_notary.py`.
+  Tests: `tests/test_notary.py`. **Surfaced as third pillar** (same day):
+  top-level "Noterët" link in the desktop header (after Avokatët), footer
+  citizen column, `umbFnC8` bullet on `/`, fifth story section on
+  `/per-qytetaret`, notary example chip on `/ava` (mobile bottom nav
+  intentionally unchanged).
 - **Two-surface restructure + citizen account** (2026-07-12, D-020):
   landing `/` is now the umbrella presentation — mission hero, two big
   audience cards, side-by-side full function lists (citizen ×7 / lawyer

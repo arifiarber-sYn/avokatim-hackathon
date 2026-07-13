@@ -165,7 +165,7 @@ export default function Home() {
                 <h3 className="text-lg font-bold text-slate-900">{t.umbFnCitT}</h3>
               </div>
               <ul className="space-y-2.5 text-sm text-slate-600">
-                {[t.umbFnC1, t.umbFnC2, t.umbFnC3, t.umbFnC4, t.umbFnC5, t.umbFnC6, t.umbFnC7].map(
+                {[t.umbFnC1, t.umbFnC2, t.umbFnC3, t.umbFnC4, t.umbFnC8, t.umbFnC5, t.umbFnC6, t.umbFnC7].map(
                   (f) => (
                     <li key={f} className="flex items-start gap-2.5">
                       <IconCheck className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />

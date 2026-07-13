@@ -10,6 +10,31 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-13 — Notary surfaced as the visible third pillar (Cursor / Fable 5)
+
+- Context: after building /noteret, the owner asked where notary services
+  belong in the UI — integrated or separate. Industry pattern (Rocket
+  Lawyer, LegalZoom, Proof): service verticals under one brand with a
+  dedicated landing, surfaced in main nav and contextual flows — never a
+  separate site. Decision: integrated, elevated from the hidden "Vegla"
+  dropdown to a first-class pillar.
+- Done:
+  - Desktop header: "Noterët" is now a top-level nav link right after
+    "Avokatët" (chain reads Ava · Avokatët · Noterët · Posto · Rasti im);
+    removed from the Vegla dropdown. Mobile bottom nav intentionally
+    unchanged (4 core actions + SOS).
+  - Footer citizen column: /noteret link added.
+  - Umbrella landing `/`: new citizen function bullet `umbFnC8` (find the
+    notary, know the fee, arrive prepared), placed after the directory line.
+  - `/per-qytetaret`: fifth story section "Edhe kur të duhet noteri"
+    (violet tone) with CTA to /noteret and a "notary pack" link to
+    /dokumentet.
+  - Ava page: fifth example chip "Çfarë më duhet për ta shitur banesën te
+    noteri?" (avaEx5) — Ava already routes these to /noteret.
+  - Strings ×6 (umbFnC8, avaEx5, landNotary*); sw cache → v17.
+- Verified: build OK, all four pages 200 and render the new content
+  (checked server-rendered HTML for the section title and the C8 bullet).
+
 ## 2026-07-13 — Notary integration: third bridge citizen → lawyer → notary (Cursor / Fable 5)
 
 - Done (plan "Integrimi i noterisë", phases 1+2+3):

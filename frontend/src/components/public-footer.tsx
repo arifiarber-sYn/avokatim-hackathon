@@ -39,6 +39,7 @@ export default function PublicFooter() {
           <Link href="/rasti-im?sos=1" className={link}>SOS</Link>
           <Link href="/afatet" className={link}>{t.dcTitle}</Link>
           <Link href="/dokumentet" className={link}>{t.cdTitle}</Link>
+          <Link href="/noteret" className={link}>{t.pnNotaries}</Link>
           <Link href="/kycu" className={link}>{t.acctLoginT}</Link>
           <Link href="/llogaria" className={link}>{t.acctTitle}</Link>
         </div>
