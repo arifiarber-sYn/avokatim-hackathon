@@ -25,6 +25,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [me, setMe] = useState<Me | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  // Unhandled /kontakti feedback — badge on the Platform nav item so the
+  // operator sees new complaints/suggestions without any email ping.
+  const [feedbackCount, setFeedbackCount] = useState(0);
 
   useEffect(() => {
     if (!getToken()) {
@@ -36,6 +39,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
   }, [router]);
+
+  useEffect(() => {
+    if (!me?.is_superadmin) return;
+    apiGet<{ count: number }>("/platform/feedback/pending-count")
+      .then((r) => setFeedbackCount(r.count))
+      .catch(() => {});
+  }, [me?.is_superadmin, pathname]);
 
   // Close the drawer on navigation
   useEffect(() => {
@@ -98,6 +108,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           >
             <span className="w-4 text-center">{item.icon}</span>
             {item.label}
+            {item.href === "/platform" && feedbackCount > 0 && (
+              <span className="ml-auto rounded-full bg-rose-500 text-white text-[10px] font-semibold px-1.5 py-0.5 leading-none">
+                {feedbackCount}
+              </span>
+            )}
           </Link>
         ))}
       </nav>

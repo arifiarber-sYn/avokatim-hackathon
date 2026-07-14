@@ -125,6 +125,17 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   notifies the lawyer; `pending_payment` holds the slot; Stripe error or no
   key ⇒ free flow unchanged. Migrations `c3a3e4c5a37f`, `8fc9637a45d9`,
   `e0c562b27017`.
+- **Automated professional outreach** (2026-07-14): `avokatim-outreach.timer`
+  (systemd user unit, daily 09:30, `Persistent=true` → catches up after a
+  reboot) runs `backend/scripts/oak_outreach_campaign.py`: 30 personalized
+  emails/day, same-day guard against double batches, dedup via
+  `data/oak_outreach_log.csv` (now with `audience` column), registered
+  users/citizens auto-suppressed from the DB. Phase 1 lawyers
+  (`data/oak_registry.csv`), then automatically phase 2 notaries
+  (`data/notaries.json`) with a notary letter. Output → `data/outreach.log`.
+- **Feedback lives in-platform only** (2026-07-14): `/kontakti` submissions
+  no longer email the operator; `GET /platform/feedback/pending-count`
+  powers a red badge on the Platform nav item (app sidebar).
 - **Marketplace case quality gate** (2026-07-13):
   `services/case_quality.py` — heuristics (repetition, gibberish, too short)
   + one fast LLM JSON classification (fail-open → `quality_flag="heuristic"`);

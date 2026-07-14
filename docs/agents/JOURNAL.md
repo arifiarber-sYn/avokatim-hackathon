@@ -10,6 +10,29 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-14 — Automated outreach + feedback stays in-platform (Cursor / Fable 5)
+
+- Done: outreach campaign is now fully automatic and reboot-proof —
+  `avokatim-outreach.timer` (systemd user unit, 09:30 daily,
+  `Persistent=true`, lingering already on) runs
+  `scripts/oak_outreach_campaign.py`; the script gained a same-day guard
+  (refuses a second batch on one calendar day, `--force` overrides), an
+  `audience` column in `data/oak_outreach_log.csv`, dynamic suppression of
+  every registered user/citizen email (DB query), and an automatic phase
+  switch: when all ~1,455 lawyers are contacted it continues with the 141
+  ONK notaries using a notary-specific letter
+  (`/regjistrohu?profesioni=noter`). Output appends to `data/outreach.log`.
+- Done: `/kontakti` feedback no longer emails the operator — it lives only
+  in the `/platform` queue; new `GET /platform/feedback/pending-count`
+  drives a red badge on the Platform nav item in the app sidebar.
+- Verified: 88 backend tests pass (incl. new `test_outreach.py`); dry-runs
+  for both audiences; today's batch of 30 sent via the systemd service
+  (log rows 31–60); second run same day correctly refused; timer listed
+  for tomorrow 09:30; health endpoint OK after restart.
+- Left open: first outreach conversion confirmed (Av. Adnan Pacolli,
+  signed up 7h after the July 13 batch) — watch replies to
+  arifi.arber@gmail.com for "STOP" requests and add them to SUPPRESS.
+
 ## 2026-07-13 — "Jam noter": notaries become the second paying profession (Cursor / Fable 5)
 
 - Done (plan "Jam noter", all 6 todos; decision D-024):

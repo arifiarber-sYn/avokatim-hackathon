@@ -3,18 +3,16 @@ or problem report to the platform operator (no account needed) via /kontakti.
 Superadmins review and mark entries handled in the /platform panel."""
 import uuid
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, EmailStr, Field
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.marketplace import _ip, _rate_limit
-from app.config import settings
 from app.database import get_db
 from app.deps import require_superadmin
 from app.models import PlatformFeedback, User
 from app.services.audit import log_action
-from app.services.notifications import _is_test_recipient, send_email
 
 public_router = APIRouter(prefix="/public", tags=["public"])
 admin_router = APIRouter(prefix="/platform", tags=["platform"])
@@ -31,9 +29,11 @@ class FeedbackIn(BaseModel):
 async def submit_feedback(
     body: FeedbackIn,
     request: Request,
-    background: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
+    # No operator email here on purpose: feedback lives in the /platform
+    # review queue (with an unhandled-count badge), keeping the owner's
+    # personal inbox reserved for real correspondence.
     await _rate_limit("public_feedback", _ip(request), limit=5, window_seconds=3600)
     entry = PlatformFeedback(
         kind=body.kind,
@@ -43,33 +43,24 @@ async def submit_feedback(
     )
     db.add(entry)
     await db.commit()
-    # Simulation submissions (test emails) stay in the review queue but
-    # never ping the operator's inbox
-    if not (entry.email and _is_test_recipient(entry.email)):
-        background.add_task(_notify_operators, body.kind, entry.message[:500])
     return {"received": True}
 
 
-async def _notify_operators(kind: str, excerpt: str) -> None:
-    """Email every active superadmin that new feedback arrived."""
-    from app.database import SessionLocal
-
-    async with SessionLocal() as db:
-        operators = (
-            await db.execute(
-                select(User).where(User.is_superadmin.is_(True), User.is_active.is_(True))
-            )
-        ).scalars().all()
-        for op in operators:
-            await send_email(
-                op.email,
-                f"AvokatIM — Feedback i ri ({kind})",
-                f"Mesazh i ri nga /kontakti:\n\n{excerpt}\n\n"
-                f"Shqyrtoje te {settings.public_base_url}/platform",
-            )
-
-
 # ---------- operator review ----------
+
+@admin_router.get("/feedback/pending-count")
+async def pending_feedback_count(
+    admin: User = Depends(require_superadmin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Unhandled feedback count — drives the badge on the Platform nav item."""
+    n = await db.scalar(
+        select(func.count())
+        .select_from(PlatformFeedback)
+        .where(PlatformFeedback.status == "new")
+    )
+    return {"count": n or 0}
+
 
 @admin_router.get("/feedback")
 async def list_feedback(
