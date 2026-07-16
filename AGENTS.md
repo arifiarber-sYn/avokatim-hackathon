@@ -4,6 +4,35 @@
 > This file is the entry point for ANY AI agent or LLM working on this project,
 > regardless of vendor or tool. Read it fully before making changes.
 
+## How the agent layer works (vendor-agnostic by design)
+
+The owner must be able to swap the coding agent (Cursor, Claude Code, Codex,
+Gemini CLI, ...) and the underlying LLM at any time without losing anything.
+Three rules make that possible:
+
+1. **`AGENTS.md` is the single source of truth** (the cross-vendor standard
+   most tools read natively). Tools that expect their own file get a one-line
+   pointer instead of a copy: `CLAUDE.md`, `GEMINI.md`,
+   `.github/copilot-instructions.md` all say "read AGENTS.md". Never duplicate
+   content into a pointer file; if a new tool needs its own filename, add
+   another pointer.
+2. **All durable knowledge lives in the repo**, in `docs/agents/` — never only
+   in a vendor's chat history, memory feature, or settings. If you learned
+   something a future agent will need, write it into STATE / JOURNAL /
+   DECISIONS before the session ends.
+3. **The app itself is LLM-agnostic too** (D-003): every product LLM call goes
+   through `backend/app/llm/` and the provider is chosen by config
+   (`backend/.env`), so swapping DeepSeek for a local or other hosted model is
+   a config change, not a refactor.
+
+**Reading order when your context window is small** (don't ingest everything):
+1. This file (always).
+2. `docs/agents/STATE.md` — headline + only the sections your task touches
+   (it is long; search it, don't read linearly).
+3. Last 2–3 entries of `docs/agents/JOURNAL.md`.
+4. `docs/agents/DECISIONS.md` only if you touch architecture — scan titles,
+   read the relevant D-numbers.
+
 ## 0. Who you are working for
 
 - The owner is a solo developer building this as his own legal-tech product,
@@ -99,12 +128,16 @@ systemctl --user restart avokatim    # restart everything
 ```
 
 Related units: `avokatim-tunnel.service` (Cloudflare Tunnel for the public
-domain; the tunnel's internal name on Cloudflare is still `boralaw` — leave it)
-and `avokatim-backup.timer` (daily encrypted backup at 03:00 →
-`~/AvokatIMBackups`, key at `~/.config/avokatim/backup.key`).
+domain; the tunnel's internal name on Cloudflare is still `boralaw` — leave it),
+`avokatim-backup.timer` (daily encrypted backup at 03:00 → `~/AvokatIMBackups`,
+key at `~/.config/avokatim/backup.key`) and `avokatim-outreach.timer` (daily
+09:30, `Persistent=true`: 30 personalized recruitment emails/day to OAK
+lawyers, then ONK notaries — script `backend/scripts/oak_outreach_campaign.py`,
+log `data/outreach.log`, dedup `data/oak_outreach_log.csv`).
 
 URLs: public https://avokatiim.ai · local http://127.0.0.1:3000 ·
-LAN https://<machine-ip>:8443 · API http://127.0.0.1:8000/api
+LAN https://<machine-ip>:8443 · API http://127.0.0.1:8000/api ·
+analytics https://stats.avokatiim.ai (self-hosted Umami container)
 (the old domain boraarifi.ai serves only a static parking page)
 
 - Health check: `curl http://127.0.0.1:8000/api/health` → `{"status":"ok","app":"AvokatIM"}`
@@ -112,6 +145,20 @@ LAN https://<machine-ip>:8443 · API http://127.0.0.1:8000/api
 - Backend tests: `cd backend && .venv/bin/python -m pytest tests/ -q`
 - New migration: `cd backend && .venv/bin/alembic revision --autogenerate -m "..."`
   then `.venv/bin/alembic upgrade head`
+
+**Verification playbook** (run what matches your change, against the live stack):
+
+| Suite | When | Command (from `backend/`) |
+|---|---|---|
+| Unit tests | always | `.venv/bin/python -m pytest tests/ -q` |
+| Full E2E simulation | marketplace / citizen / billing / Ava changes | `.venv/bin/python scripts/full_simulation.py` |
+| Notary E2E | notary/booking changes | `.venv/bin/python scripts/notary_simulation.py` |
+| Tenant isolation | auth/tenancy/permissions changes | `.venv/bin/python scripts/isolation_check.py` |
+| SaaS lifecycle | signup/trial/billing/invite changes | `.venv/bin/python scripts/saas_check.py` |
+
+Simulations create throwaway tenants and clean up after themselves; their email
+addresses are suppressed (`_is_test_recipient` in `services/notifications.py`) —
+keep new test identities matching those patterns or bounces hit the owner's inbox.
 
 **IMPORTANT — frontend builds:** `start.sh` rebuilds the frontend automatically
 when anything under `frontend/src`/`public` is newer than `.next/BUILD_ID`, and
@@ -155,3 +202,6 @@ errors directly).
 | `docs/agents/ROADMAP.md` | Vision, phases, backlog — what to build next |
 | `README.md` | User-facing overview (in Albanian) |
 | `frontend/AGENTS.md` | Next.js version caveats — read before frontend work |
+| `docs/integrimet/` | Integration research: e-Kosova, e-notary, WhatsApp |
+| `docs/legal/` | Platform legal docs: ToS, privacy, AML policy, DPA, SLA |
+| `docs/pitch/` · `docs/rekrutimi/` | Sales/presentation texts · OAK/ONK outreach drafts |

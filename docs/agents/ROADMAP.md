@@ -29,6 +29,9 @@ Everything in STATE.md "What exists and works".
       "Ava" against DeepSeek on Albanian legal questions. (Checked 2026-07-07:
       ollama binary present but no models/service and no GPU tooling on host —
       CPU inference would be slow; needs owner decision on model/hardware.)
+- [x] Multilingual legal corpus ✅ (2026-07-16): official gazette texts in
+      sq/sr/tr/bs/en (`import_gzk.py --lang`), language-aware retrieval, Ava
+      cites the official text in the user's language.
 - [x] Email/notification channel for approaching deadlines ✅ (2026-07-07):
       hourly reminder loop mails responsible lawyer per remind_days_before,
       Redis-deduped. Needs SMTP_* in backend/.env to activate.
@@ -37,8 +40,9 @@ Everything in STATE.md "What exists and works".
 - [x] Dashboard upgrade P2 ✅ (2026-07-07): /reports analytics page with
       utilization, realization, collection, intake funnel by source,
       profitability by practice area; hours target in Settings.
-- [ ] Public domain + real TLS certificate (Caddy handles it automatically once a
-      domain points here) instead of self-signed on :8443.
+- [x] Public domain + real TLS ✅ (2026-07-11): https://avokatiim.ai via
+      Cloudflare Tunnel (`avokatim-tunnel.service`); :8443 stays self-signed
+      for LAN only.
 
 ## Phase 3 — Multi-lawyer / law firms
 
@@ -97,29 +101,41 @@ marketplace build guides (license verification, reviews), consumer legal apps
 `mungesat-kunder-tregut-2026`.
 
 P1 — trust layer (before promoting the directory publicly):
-- [ ] OAK bar-license verification: license number on lawyer profile →
-      "pending verification" → superadmin checks the public OAK registry and
-      approves → "Verified" badge in directory; unverified lawyers are not
-      publicly listed and cannot claim cases.
-- [ ] Client reviews: only citizens whose case was claimed+closed can review,
-      prompts about communication/responsiveness (never legal outcome —
-      regulatory risk), average shown in directory and used in ranking.
+- [x] OAK bar-license verification ✅ (2026-07-12): license on profile →
+      pending → superadmin approves against the public OAK registry →
+      "Verified" badge; unverified lawyers get no cases. ONK matching for
+      notaries added 2026-07-13.
+- [x] Client reviews ✅ (2026-07-12): only citizens with a claimed case can
+      review (communication/responsiveness, never legal outcome); average in
+      directory + ranking.
 - [x] Lawyer onboarding nudge ✅ (2026-07-12): dashboard banner when the public
-      profile is inactive (first real user got stuck here).
+      profile is inactive (first real user got stuck here). Full onboarding
+      wizard `/onboarding` + welcome/nudge emails ✅ (2026-07-13).
 
 P2 — demand growth:
-- [ ] Consultation booking: availability calendar on lawyer profile, citizens
-      book free/fixed-fee slots.
-- [ ] Public deadline calculator (engine exists — expose no-login page).
-- [ ] Citizen document automation: plain-language interview → simple documents
-      (complaint letter, request) — Start My Claim pattern.
-- [ ] Transparent pricing on public profiles ("from €X" / fixed-fee consult).
+- [x] Consultation booking ✅ (2026-07-12): slots on lawyer profile, citizens
+      book; Stripe payment for paid consults ✅ (2026-07-13); notary bookings
+      with prepared-dossier attachment ✅ (2026-07-13).
+- [x] Public deadline calculator ✅ (2026-07-12): `/afatet`.
+- [x] Citizen document automation ✅ (2026-07-12): `/dokumentet` interview →
+      letters/complaints + notary pack (2026-07-13).
+- [x] Transparent pricing ✅ (2026-07-12): consult fee on public profiles.
 
 P3 — office differentiation:
 - [ ] Passive time capture (suggest entries from activity).
-- [ ] Voice input for Ava (citizen accessibility + SOS hands-free).
-- [ ] Agentic intake triage (Ava proposes category/urgency/conflict facts).
+- [x] Voice input for Ava ✅ (2026-07-13): faster-whisper STT + Piper sq TTS,
+      SOS hands-free audio counseling + evidence recording.
+- [x] Agentic intake triage ✅ (2026-07-13): Ava-intake `structure-case`
+      prefills the citizen case form; deep research + clause assist + document
+      AI summaries on the lawyer side.
 - [ ] Public API tokens for integrations.
+
+Growth operations (running):
+- [x] Automated outreach ✅ (2026-07-14): `avokatim-outreach.timer`, 30
+      emails/day to OAK lawyers, auto-switches to ONK notaries when done.
+- [x] Notaries as second paying profession ✅ (2026-07-13): signup choice,
+      `/per-noteret`, ONK verification, adapted dashboard, no marketplace.
+- [x] Self-hosted analytics ✅ (2026-07-13): Umami at stats.avokatiim.ai.
 
 ## Phase 4 — More jurisdictions
 

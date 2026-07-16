@@ -10,6 +10,25 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-16 — Agent layer hardened for vendor independence (Cursor / Fable 5)
+
+- Done: formalized the agent-agnostic layer (D-025): AGENTS.md now explains
+  the pointer-file convention and gained a small-context reading order, the
+  verification playbook table (pytest + 4 E2E simulation suites and when to
+  run each), current systemd units (incl. `avokatim-outreach.timer`) and the
+  full docs map (integrimet/legal/pitch/rekrutimi). Added pointer files
+  `GEMINI.md` and `.github/copilot-instructions.md` (CLAUDE.md already
+  existed) — any of Claude Code / Gemini CLI / Copilot / Codex / Cursor can
+  now onboard from the same single source.
+- Done: refreshed stale docs — ROADMAP checkboxes brought up to reality
+  (OAK verification, reviews, booking, /afatet, /dokumentet, voice, agentic
+  triage etc. marked done with dates; new "Growth operations" section),
+  STATE.md headline now says live-in-production with first real signups.
+- Verified: ~/BoraLaw is a symlink to ~/AvokatIM (no stale copy); pointer
+  files resolve; nothing code-side changed, so no test run needed.
+- Left open: consider `.cursor/rules` only if Cursor ever stops reading
+  AGENTS.md natively (it does today).
+
 ## 2026-07-16 — Multilingual legal corpus from the Official Gazette (Cursor / Fable 5)
 
 - Done: the corpus now holds the **official** language versions of Kosovo

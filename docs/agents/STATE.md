@@ -3,9 +3,9 @@
 > Update this file whenever the state changes (new module, dependency, behavior,
 > known issue). Keep it a snapshot, not a history — history lives in JOURNAL.md.
 
-**Last updated:** 2026-07-13
+**Last updated:** 2026-07-16
 
-## Status: demo-ready — P0/P1/P2 closed + full Kosovo-law compliance layer (6 languages, data protection 06/L-082, AML 05/L-096) + public citizen marketplace (Phase 1 of the citizen-bridge vision); zero known feature gaps
+## Status: live in production at https://avokatiim.ai — lawyer office + citizen marketplace + notary profession + growth ops (automated outreach, analytics); first real signups arriving (first outreach conversion 2026-07-13)
 
 All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 

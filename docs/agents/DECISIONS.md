@@ -485,3 +485,23 @@
   profile) — renaming was skipped deliberately to avoid a risky migration;
   revisit only if a third profession lands. Art. 50 notary registers stay
   out of scope until ONK shows interest.
+
+## D-025: AGENTS.md is the single agent entry point; vendor files are pointers (2026-07-16)
+
+- Context: the owner must be able to swap the coding agent (Cursor, Claude
+  Code, Codex, Gemini CLI, ...) and the underlying LLM at any time. Vendor
+  tools look for different instruction files (CLAUDE.md, GEMINI.md,
+  .github/copilot-instructions.md, .cursor/rules) and offer proprietary
+  "memory" features that would trap project knowledge in one tool.
+- Decision: `AGENTS.md` (the emerging cross-vendor standard) is the only
+  full instruction file; every vendor-specific file is a one-line pointer to
+  it. All durable knowledge is committed to the repo under `docs/agents/`
+  (STATE / JOURNAL / DECISIONS / ROADMAP) — never stored in a vendor's chat
+  memory. AGENTS.md carries a "reading order" for small-context models so
+  weaker/cheaper LLMs can also operate the repo. Product-side LLM
+  independence stays as per D-003 (`backend/app/llm/` abstraction + config).
+- Consequences: switching agent vendors costs one pointer file at most; a
+  new agent is productive after reading AGENTS.md + STATE headline + last
+  journal entries. The discipline cost: agents MUST write session results
+  into the docs (session protocol §2) or the knowledge is lost to the next
+  tool.
