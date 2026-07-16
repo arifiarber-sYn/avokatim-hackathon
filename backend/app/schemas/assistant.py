@@ -9,6 +9,9 @@ class AskRequest(BaseModel):
     matter_id: uuid.UUID | None = None
     conversation_id: uuid.UUID | None = None
     provider: str | None = None  # deepseek | local (default from settings)
+    # UI locale — selects the corpus language for citations (official gazette
+    # texts exist in sq/sr/tr/bs/en; Albanian is always the fallback)
+    locale: str | None = Field(default=None, max_length=8)
 
 
 class MessageOut(BaseModel):

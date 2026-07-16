@@ -79,7 +79,7 @@ export default function PublicAvaPage() {
       const res = await fetch("/api/public/ava/ask-stream", {
         method: "POST",
         headers,
-        body: JSON.stringify({ question, history, session_id: sessionId() }),
+        body: JSON.stringify({ question, history, session_id: sessionId(), locale }),
       });
       if (!res.ok || !res.body) {
         let detail = t.error;

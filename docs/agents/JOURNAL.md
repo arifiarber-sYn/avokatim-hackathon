@@ -10,6 +10,27 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-16 — Multilingual legal corpus from the Official Gazette (Cursor / Fable 5)
+
+- Done: the corpus now holds the **official** language versions of Kosovo
+  laws, not translations. The gazette is official in 5 languages (Law
+  03/L-190): `import_gzk.py --lang sr|tr|bs|en` switches the GZK session
+  language via ASP.NET postback and imports the same ActIDs; skip check is
+  now per (reference, language). Imported 9 of 11 corpus laws in each of
+  sr/tr/bs/en (~36 new docs, ~12k chunks); 08/L-182 and amendment 08/L-149
+  exist only as Albanian PDFs — they fall back to sq.
+- Done: `_SECTION_RE` in corpus.py now also matches "Član"/"Clan" (sr/bs)
+  and "Madde" (tr); `rag.search_corpus` takes `language` (filters to that
+  language + sq fallback); public Ava (`AvaAskIn.locale`) and the lawyer
+  assistant (`AskRequest.locale`, incl. deep research) receive the UI
+  locale from the frontend and cite official text in the user's language.
+- Verified: 94 backend tests (new `test_multilang_corpus.py`); live Serbian
+  question → citations "Zakon O Parničnom Postupku, Član 395" with correct
+  answer; Albanian question unchanged (Neni-only citations); build +
+  health OK.
+- Left open: matter summarize / hearing prep stay Albanian by design;
+  Chinese has no official gazette version (falls back to sq).
+
 ## 2026-07-14 — Automated outreach + feedback stays in-platform (Cursor / Fable 5)
 
 - Done: outreach campaign is now fully automatic and reboot-proof —

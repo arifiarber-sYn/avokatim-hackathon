@@ -972,6 +972,9 @@ class AvaAskIn(BaseModel):
     history: list[dict] = []
     # Anonymous visitors send a random session id (kept in localStorage)
     session_id: str | None = Field(default=None, max_length=64)
+    # UI locale — picks the corpus language for citations (official gazette
+    # texts exist in sq/sr/tr/bs/en; Albanian is always the fallback)
+    locale: str | None = Field(default=None, max_length=8)
 
 
 async def _optional_citizen(
@@ -1058,7 +1061,9 @@ async def _ava_prepare(
     context_blocks: list[str] = []
     citations: list[dict] = []
     if jurisdiction is not None:
-        for hit in await rag.search_corpus(db, jurisdiction.id, body.question):
+        for hit in await rag.search_corpus(
+            db, jurisdiction.id, body.question, language=body.locale
+        ):
             label = hit["doc_title"] + (f", {hit['section']}" if hit["section"] else "")
             context_blocks.append(f"[Nga ligji: {label}]\n{hit['text']}")
             citations.append(

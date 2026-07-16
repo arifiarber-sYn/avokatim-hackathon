@@ -136,6 +136,7 @@ async def _build_ask_messages(
     jurisdiction_id: uuid.UUID | None,
     history: list[ChatMessage] | None = None,
     retrieval_query: str | None = None,
+    language: str | None = None,
 ) -> tuple[list[ChatMessage], list[dict]]:
     """Shared RAG prompt assembly for ask_bora and ask_bora_stream."""
     context_blocks: list[str] = []
@@ -150,7 +151,9 @@ async def _build_ask_messages(
             citations.append({"type": "document", "title": hit["doc_title"]})
 
     if jurisdiction_id:
-        law_hits = await rag.search_corpus(db, jurisdiction_id, search_text)
+        law_hits = await rag.search_corpus(
+            db, jurisdiction_id, search_text, language=language
+        )
         for hit in law_hits:
             label = f"{hit['doc_title']}" + (f", {hit['section']}" if hit["section"] else "")
             context_blocks.append(f"[Nga ligji: {label}]\n{hit['text']}")
@@ -183,6 +186,7 @@ async def ask_bora(
     provider_name: str | None = None,
     history: list[ChatMessage] | None = None,
     retrieval_query: str | None = None,
+    language: str | None = None,
 ) -> tuple[str, list[dict]]:
     """RAG-grounded chat. Returns (answer, citations). retrieval_query lets
     callers search with case facts instead of a generic instruction prompt."""
@@ -193,6 +197,7 @@ async def ask_bora(
         jurisdiction_id=jurisdiction_id,
         history=history,
         retrieval_query=retrieval_query,
+        language=language,
     )
     provider = get_provider(provider_name)
     result = await provider.chat(messages)
@@ -207,6 +212,7 @@ async def ask_bora_stream(
     jurisdiction_id: uuid.UUID | None,
     provider_name: str | None = None,
     history: list[ChatMessage] | None = None,
+    language: str | None = None,
 ):
     """Streaming variant: returns (citations, chunk_iterator). Chunks are
     ("thinking"|"delta", text) — thinking tokens are shown live but not saved."""
@@ -216,6 +222,7 @@ async def ask_bora_stream(
         matter_id=matter_id,
         jurisdiction_id=jurisdiction_id,
         history=history,
+        language=language,
     )
     provider = get_provider(provider_name)
     return citations, provider.chat_stream(messages)
@@ -258,6 +265,7 @@ async def deep_research_stream(
     matter_id: uuid.UUID | None,
     jurisdiction_id: uuid.UUID | None,
     provider_name: str | None = None,
+    language: str | None = None,
 ):
     """CoCounsel-style deep research: decompose the question into sub-questions,
     search the corpus for each one, then synthesize a cited answer.
@@ -303,7 +311,9 @@ async def deep_research_stream(
         }
         if not jurisdiction_id:
             continue
-        for hit in await rag.search_corpus(db, jurisdiction_id, subq, limit=4):
+        for hit in await rag.search_corpus(
+            db, jurisdiction_id, subq, limit=4, language=language
+        ):
             key = (hit["doc_title"], hit["section"])
             if key in seen:
                 continue

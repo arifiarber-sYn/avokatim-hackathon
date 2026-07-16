@@ -80,6 +80,7 @@ export default function AssistantPage() {
           matter_id: matterId || null,
           conversation_id: conversationId,
           provider,
+          locale,
         },
         (ev) => {
           if (ev.type === "meta") {

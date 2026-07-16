@@ -200,6 +200,15 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   Disputes 08/L-182, Business Organizations 06/L-016, Family Law 2004/32,
   Data Protection 06/L-082. Re-runnable importer: `backend/scripts/import_gzk.py`
   (skips laws already present; add new laws to its `LAWS` list).
+  **Multilingual corpus** (2026-07-16): the gazette's official language
+  versions (Law 03/L-190: sq/sr/tr/bs/en) imported via
+  `import_gzk.py --lang sr|tr|bs|en` (GZK session-language postback, skip per
+  (reference, language)); 9 of 11 laws exist in all five languages (08/L-182
+  and 08/L-149 are Albanian-only PDFs). `rag.search_corpus(language=...)`
+  filters to the question's language + sq fallback; public Ava and the lawyer
+  assistant pass the UI locale, so citations quote the official text in the
+  user's language ("Član 395" for sr, "Madde" for tr...). Chinese falls back
+  to the Albanian corpus.
   **Notary laws added** (2026-07-13): Law on Notary 06/L-010 (80 chunks) +
   amendment 08/L-149 (MoJ PDF mirror). Amendment 08/L-272 (e-signature)
   has no machine-readable text online yet — see the note in `import_gzk.py`.

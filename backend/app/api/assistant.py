@@ -184,6 +184,7 @@ async def ask(
             jurisdiction_id=jurisdiction_id,
             provider_name=provider_name,
             history=history,
+            language=body.locale,
         )
     except RuntimeError as exc:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc))
@@ -224,6 +225,7 @@ async def ask_stream(body: AskRequest, user: User = Depends(get_current_user)):
                     jurisdiction_id=jurisdiction_id,
                     provider_name=provider_name,
                     history=history,
+                    language=body.locale,
                 )
                 async for kind, text in chunks:
                     if kind == "thinking":
@@ -279,6 +281,7 @@ async def deep_research(body: AskRequest, user: User = Depends(get_current_user)
                     matter_id=body.matter_id or conversation.matter_id,
                     jurisdiction_id=jurisdiction_id,
                     provider_name=provider_name,
+                    language=body.locale,
                 )
                 async for event in events:
                     if event["type"] == "citations":

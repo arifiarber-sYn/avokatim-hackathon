@@ -103,9 +103,24 @@ def _score_rows(rows, query: str, limit: int):
 
 
 async def search_corpus(
-    db: AsyncSession, jurisdiction_id: uuid.UUID, query: str, limit: int = 6
+    db: AsyncSession,
+    jurisdiction_id: uuid.UUID,
+    query: str,
+    limit: int = 6,
+    language: str | None = None,
 ) -> list[dict]:
-    """Semantic (or fallback text) search over the legal corpus."""
+    """Semantic (or fallback text) search over the legal corpus.
+
+    When `language` is given, the search runs over that language's official
+    texts plus Albanian as fallback (some laws only exist in sq); cosine
+    ranking naturally prefers the chunks that match the query's language.
+    """
+    # Albanian is always included: it is the only complete corpus language.
+    lang_filter = (
+        LegalCorpusDoc.language.in_([language, "sq"])
+        if language and language != "sq"
+        else LegalCorpusDoc.language == "sq"
+    )
     vectors = embed([query])
     if vectors:
         stmt = (
@@ -113,6 +128,7 @@ async def search_corpus(
             .join(LegalCorpusDoc, LegalCorpusDoc.id == LegalCorpusChunk.doc_id)
             .where(
                 LegalCorpusDoc.jurisdiction_id == jurisdiction_id,
+                lang_filter,
                 LegalCorpusChunk.embedding.isnot(None),
             )
             .order_by(LegalCorpusChunk.embedding.cosine_distance(vectors[0]))
@@ -127,7 +143,7 @@ async def search_corpus(
         stmt = (
             select(LegalCorpusChunk, LegalCorpusDoc)
             .join(LegalCorpusDoc, LegalCorpusDoc.id == LegalCorpusChunk.doc_id)
-            .where(LegalCorpusDoc.jurisdiction_id == jurisdiction_id)
+            .where(LegalCorpusDoc.jurisdiction_id == jurisdiction_id, lang_filter)
             .limit(2000)
         )
         rows = _score_rows((await db.execute(stmt)).all(), query, limit)

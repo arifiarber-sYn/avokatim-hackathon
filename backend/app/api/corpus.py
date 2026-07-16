@@ -16,8 +16,14 @@ from app.services.audit import log_action
 
 router = APIRouter(prefix="/corpus", tags=["corpus"])
 
-# Albanian/English/Chinese article headers: "Neni 176", "Article 5", "第一条"
-_SECTION_RE = re.compile(r"^(Neni\s+\d+[a-z]?|Article\s+\d+[a-z]?|第[一二三四五六七八九十百千0-9]+条)", re.IGNORECASE)
+# Article headers in the five official gazette languages + Chinese:
+# sq "Neni 176", sr/bs "Član 5" (also "Clan" when diacritics are lost in
+# extraction), tr "Madde 5", en "Article 5", zh "第一条"
+_SECTION_RE = re.compile(
+    r"^(Neni\s+\d+[a-z]?|[ČC]lan\s+\d+[a-z]?|Madde\s+\d+[a-z]?"
+    r"|Article\s+\d+[a-z]?|第[一二三四五六七八九十百千0-9]+条)",
+    re.IGNORECASE,
+)
 
 
 class CorpusDocIn(BaseModel):

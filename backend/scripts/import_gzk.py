@@ -1,11 +1,19 @@
 """Import Kosovo laws from Gazeta Zyrtare (gzk.rks-gov.net) into the RAG corpus.
 
 Fetches the full text of each act from ActDocumentDetail.aspx, strips the HTML,
-and posts it to the local corpus API (which chunks by "Neni X" and embeds
-locally). Safe to re-run: laws whose reference already exists are skipped.
+and posts it to the local corpus API (which chunks by article headers and
+embeds locally). Safe to re-run: laws whose (reference, language) pair already
+exists are skipped.
+
+The gazette is official in five languages (Law 03/L-190): Albanian, Serbian,
+Turkish, Bosnian and English. GZK serves the language versions of the same
+ActID after a session language postback, so `--lang sr` imports the official
+Serbian texts, etc. PDF mirror candidates are Albanian-only and are skipped
+for other languages.
 
 Usage:
-    cd backend && .venv/bin/python scripts/import_gzk.py
+    cd backend && .venv/bin/python scripts/import_gzk.py             # Albanian
+    cd backend && .venv/bin/python scripts/import_gzk.py --lang sr   # Serbian
 
 To add more laws, append entries to LAWS below (find the ActID in the act's
 URL on gzk.rks-gov.net; candidates are tried in order — put the consolidated
@@ -26,6 +34,29 @@ from app.models import User  # noqa: E402
 from app.security import create_access_token  # noqa: E402
 
 API = "http://127.0.0.1:8000/api"
+GZK = "https://gzk.rks-gov.net"
+
+LANG = sys.argv[sys.argv.index("--lang") + 1] if "--lang" in sys.argv else "sq"
+
+# ASP.NET postback targets that switch the GZK session language.
+LANG_POSTBACK = {
+    "sr": "ctl00$ctlLang1$lbSerbian",
+    "tr": "ctl00$ctlLang1$lbTurkish",
+    "bs": "ctl00$ctlLang1$lbBosnian",
+    "en": "ctl00$ctlLang1$lbEnglish",
+}
+if LANG != "sq" and LANG not in LANG_POSTBACK:
+    sys.exit(f"unsupported --lang {LANG!r} (use sq, sr, tr, bs or en)")
+
+# A text is accepted only when it contains the article header of its language
+# (guards against GZK silently serving the Albanian fallback).
+LANG_MARKERS = {
+    "sq": ("Neni",),
+    "sr": ("Član", "Clan", "ČLAN"),
+    "bs": ("Član", "Clan", "ČLAN"),
+    "tr": ("Madde", "MADDE"),
+    "en": ("Article", "ARTICLE"),
+}
 
 # (title, reference, doc_type, [candidates]) — a candidate is either an int
 # (GZK ActID) or a str (direct PDF URL, e.g. Ministry of Justice mirror).
@@ -69,6 +100,45 @@ LAWS = [
 _SPAN_RE = re.compile(
     r'<span id="MainContent_txtDocument">(.*?)</span>', re.DOTALL
 )
+# The act's own (localized) title on ActDetail.aspx
+_TITLE_RE = re.compile(r'id="MainContent_rAktet_lblAn_0"[^>]*>([^<]+)<')
+
+
+def _form_field(page_html: str, name: str) -> str:
+    m = re.search(rf'id="{name}" value="([^"]*)"', page_html)
+    return m.group(1) if m else ""
+
+
+async def _switch_gzk_language(web: httpx.AsyncClient, act_id: int) -> None:
+    """ASP.NET postback that flips the GZK session language; the session
+    cookie persists on the client, so every later fetch is localized."""
+    url = f"{GZK}/ActDetail.aspx?ActID={act_id}"
+    r = await web.get(url, follow_redirects=True)
+    r.raise_for_status()
+    await web.post(
+        url,
+        data={
+            "__EVENTTARGET": LANG_POSTBACK[LANG],
+            "__EVENTARGUMENT": "",
+            "__VIEWSTATE": _form_field(r.text, "__VIEWSTATE"),
+            "__VIEWSTATEGENERATOR": _form_field(r.text, "__VIEWSTATEGENERATOR"),
+            "__EVENTVALIDATION": _form_field(r.text, "__EVENTVALIDATION"),
+        },
+        follow_redirects=True,
+    )
+
+
+async def _localized_title(web: httpx.AsyncClient, act_id: int) -> str | None:
+    try:
+        r = await web.get(f"{GZK}/ActDetail.aspx?ActID={act_id}", follow_redirects=True)
+        r.raise_for_status()
+    except httpx.HTTPError:
+        return None
+    m = _TITLE_RE.search(r.text)
+    if not m:
+        return None
+    title = html_lib.unescape(m.group(1))
+    return re.sub(r"\s+", " ", title).strip().title() or None
 
 
 def _extract_pdf_text(content: bytes) -> str | None:
@@ -110,25 +180,36 @@ async def main() -> None:
         token = create_access_token(str(owner.id), str(owner.tenant_id))
     headers = {"Authorization": f"Bearer {token}"}
 
+    markers = LANG_MARKERS[LANG]
     async with httpx.AsyncClient(timeout=180, headers={"User-Agent": "Mozilla/5.0"}) as web, \
             httpx.AsyncClient(timeout=600, headers=headers) as api:
         existing = {
-            d.get("reference")
+            (d.get("reference"), d.get("language"))
             for d in (await api.get(f"{API}/corpus?jurisdiction_code=XK")).json()
         }
+        if LANG != "sq":
+            first_act = next(
+                c for entry in LAWS for c in entry[3] if isinstance(c, int)
+            )
+            await _switch_gzk_language(web, first_act)
+            print(f"GZK session language switched to {LANG}\n")
         for entry in LAWS:
             title, reference, doc_type, act_ids = entry[:4]
             min_chars = entry[4] if len(entry) > 4 else 5000
-            if reference in existing:
-                print(f"SKIP  {reference}  {title} (already in corpus)")
+            if (reference, LANG) in existing:
+                print(f"SKIP  {reference}  {title} (already in corpus, {LANG})")
                 continue
             text = None
             source_url = None
+            loaded_act_id = None
             for candidate_src in act_ids:
                 if isinstance(candidate_src, int):
-                    url = f"https://gzk.rks-gov.net/ActDocumentDetail.aspx?ActID={candidate_src}"
-                else:
+                    url = f"{GZK}/ActDocumentDetail.aspx?ActID={candidate_src}"
+                elif LANG == "sq":
                     url = candidate_src
+                else:
+                    # PDF mirrors (Ministry of Justice) are Albanian-only
+                    continue
                 try:
                     r = await web.get(url, follow_redirects=True)
                     r.raise_for_status()
@@ -141,22 +222,33 @@ async def main() -> None:
                     candidate = _extract_pdf_text(r.content)
                 else:
                     candidate = _extract_text(r.text)
-                if candidate and len(candidate) > min_chars and "Neni" in candidate:
+                if (
+                    candidate
+                    and len(candidate) > min_chars
+                    and any(m in candidate for m in markers)
+                ):
                     text, source_url = candidate, url
+                    if isinstance(candidate_src, int):
+                        loaded_act_id = candidate_src
                     break
             if text is None:
-                print(f"FAIL  {reference}  {title} — no usable text found")
+                print(f"FAIL  {reference}  {title} — no usable {LANG} text found")
                 continue
-            print(f"LOAD  {reference}  {title} ({len(text)//1000} KB) ...", flush=True)
+            doc_title = title
+            if LANG != "sq":
+                doc_title = (
+                    await _localized_title(web, loaded_act_id) if loaded_act_id else None
+                ) or f"{title} [{LANG.upper()}]"
+            print(f"LOAD  {reference}  {doc_title} ({len(text)//1000} KB) ...", flush=True)
             r = await api.post(
                 f"{API}/corpus",
                 json={
                     "jurisdiction_code": "XK",
-                    "title": title,
+                    "title": doc_title,
                     "doc_type": doc_type,
                     "reference": reference,
                     "source_url": source_url,
-                    "language": "sq",
+                    "language": LANG,
                     "text": text,
                 },
             )
