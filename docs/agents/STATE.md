@@ -141,7 +141,10 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   `services/ops_notify.py` pushes operator events (signup, verification,
   SOS, case, feedback, booking) to `/hooks/agent` over loopback
   (`OPENCLAW_HOOK_TOKEN` in backend/.env; empty = disabled; test recipients
-  suppressed). OpenClaw cron jobs run `scripts/ops_inbox_triage.py` (10-min
+  suppressed). Hook runs are isolated sessions with no chat context, so the
+  payload also carries the explicit delivery target (`channel=telegram`,
+  `to=OPENCLAW_HOOK_TO`) — without it the gateway refuses the assistant's
+  message-tool send as ambiguous and nothing reaches the phone. OpenClaw cron jobs run `scripts/ops_inbox_triage.py` (10-min
   read-only Gmail triage, state `data/ops/inbox_state.json`; replies drafted,
   sent only after owner approval via `scripts/ops_send_reply.py`) and
   `scripts/ops_digest.py` (08:30 morning report: 24h growth/marketplace

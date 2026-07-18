@@ -17,13 +17,25 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-_INSTRUCTION = (
-    "Ti je Halim. Lexo ~/.openclaw/workspace/AVOKATIM-OPS.md (seksioni "
-    "'Ngjarjet e platformës') dhe vepro sipas tij: përcillja Kllosha-s në "
-    "Telegram shqip, shkurt e qartë, me linkun përkatës. Respekto rregullin "
-    "e natës — vetëm SOS dhe urgjencat mes 23:00–08:00; tjetrat mblidhen "
-    "për raportin e mëngjesit."
-)
+def _instruction() -> str:
+    # The hook run is an isolated session WITHOUT chat delivery context: a
+    # plain final reply goes nowhere. The assistant must call its message
+    # tool with the explicit Telegram target to actually reach the operator.
+    to = settings.openclaw_hook_to
+    send_hint = (
+        f"DËRGIMI: përdor veglën 'message' me target eksplicit Telegram, "
+        f"chat id {to} — përgjigja jote finale NUK dorëzohet vetvetiu."
+        if to
+        else "DËRGIMI: përdor veglën 'message' me targetin e Kllosha-s në "
+             "Telegram (shih AVOKATIM-OPS.md)."
+    )
+    return (
+        "Ti je Halim. Lexo ~/.openclaw/workspace/AVOKATIM-OPS.md (seksioni "
+        "'Ngjarjet e platformës') dhe vepro sipas tij: përcillja Kllosha-s "
+        "në Telegram shqip, shkurt e qartë, me linkun përkatës. "
+        f"{send_hint} Respekto rregullin e natës — vetëm SOS dhe urgjencat "
+        "mes 23:00–08:00; tjetrat shënoji te memory/ për raportin e mëngjesit."
+    )
 
 
 def ops_notify_enabled() -> bool:
@@ -38,11 +50,16 @@ async def notify_ops(kind: str, text: str, urgent: bool = False) -> bool:
     payload = {
         "message": (
             f"[Ngjarje AvokatIM] lloji={kind} urgjente={'PO' if urgent else 'jo'}\n"
-            f"{text}\n\n{_INSTRUCTION}"
+            f"{text}\n\n{_instruction()}"
         ),
         "name": "AvokatIM",
         "wakeMode": "now",
     }
+    if settings.openclaw_hook_to:
+        # Explicit delivery context: the runner can verify the assistant's
+        # message-tool send against the intended target (no ambiguity errors).
+        payload["channel"] = "telegram"
+        payload["to"] = settings.openclaw_hook_to
     headers = {"Authorization": f"Bearer {settings.openclaw_hook_token}"}
     try:
         async with httpx.AsyncClient(timeout=5) as client:

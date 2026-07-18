@@ -134,8 +134,11 @@ class Settings(BaseSettings):
     # OpenClaw operator assistant (Halim): platform events are pushed to the
     # local gateway's /hooks/agent endpoint and forwarded to the operator on
     # Telegram. Empty token = disabled. Loopback only — never expose the hook.
+    # Hook agent turns have no chat delivery context of their own, so the
+    # operator's Telegram chat id must be given explicitly (openclaw_hook_to).
     openclaw_hook_url: str = "http://127.0.0.1:18789/hooks/agent"
     openclaw_hook_token: str = ""
+    openclaw_hook_to: str = ""  # Telegram chat id of the operator
 
 
 @lru_cache
