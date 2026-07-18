@@ -23,7 +23,7 @@ from app.deps import get_current_user
 from app.i18n import pick_locale, tr
 from app.models import CitizenUser, ConsultBooking, LawyerProfile, Tenant, User
 from app.services.audit import log_action
-from app.services.notifications import send_email
+from app.services.notifications import _is_test_recipient, send_email
 
 logger = logging.getLogger(__name__)
 
@@ -387,6 +387,16 @@ async def citizen_create_booking(
     await db.commit()
     if not charge_online:
         background.add_task(_notify_lawyer_new_booking, booking.id)
+    if not _is_test_recipient(citizen.email):
+        from app.services.ops_notify import notify_ops
+
+        background.add_task(
+            notify_ops, "rezervim",
+            f"Rezervim i ri konsulte te {lawyer.full_name} "
+            f"({starts_local:%d.%m.%Y %H:%M})"
+            + (f", pagesë online {profile.consult_fee_eur} EUR" if charge_online else "")
+            + ".",
+        )
     return {**_booking_out(booking, lawyer.full_name), "checkout_url": checkout_url}
 
 

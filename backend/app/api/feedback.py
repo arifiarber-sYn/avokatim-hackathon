@@ -3,7 +3,7 @@ or problem report to the platform operator (no account needed) via /kontakti.
 Superadmins review and mark entries handled in the /platform panel."""
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +13,8 @@ from app.database import get_db
 from app.deps import require_superadmin
 from app.models import PlatformFeedback, User
 from app.services.audit import log_action
+from app.services.notifications import _is_test_recipient
+from app.services.ops_notify import notify_ops
 
 public_router = APIRouter(prefix="/public", tags=["public"])
 admin_router = APIRouter(prefix="/platform", tags=["platform"])
@@ -29,11 +31,13 @@ class FeedbackIn(BaseModel):
 async def submit_feedback(
     body: FeedbackIn,
     request: Request,
+    background: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
     # No operator email here on purpose: feedback lives in the /platform
     # review queue (with an unhandled-count badge), keeping the owner's
-    # personal inbox reserved for real correspondence.
+    # personal inbox reserved for real correspondence. The operator assistant
+    # gets a Telegram heads-up instead.
     await _rate_limit("public_feedback", _ip(request), limit=5, window_seconds=3600)
     entry = PlatformFeedback(
         kind=body.kind,
@@ -43,6 +47,12 @@ async def submit_feedback(
     )
     db.add(entry)
     await db.commit()
+    if not (body.email and _is_test_recipient(str(body.email))):
+        background.add_task(
+            notify_ops, "feedback",
+            f"Feedback i ri ({body.kind}) nga {entry.name or 'anonim'}: "
+            f"{entry.message[:300]} — shqyrtohet te /platform.",
+        )
     return {"received": True}
 
 

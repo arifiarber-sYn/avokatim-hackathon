@@ -136,6 +136,17 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - **Feedback lives in-platform only** (2026-07-14): `/kontakti` submissions
   no longer email the operator; `GET /platform/feedback/pending-count`
   powers a red badge on the Platform nav item (app sidebar).
+- **OpenClaw operations assistant "Halim"** (2026-07-18, D-027): the local
+  OpenClaw gateway relays everything to the owner on Telegram.
+  `services/ops_notify.py` pushes operator events (signup, verification,
+  SOS, case, feedback, booking) to `/hooks/agent` over loopback
+  (`OPENCLAW_HOOK_TOKEN` in backend/.env; empty = disabled; test recipients
+  suppressed). OpenClaw cron jobs run `scripts/ops_inbox_triage.py` (10-min
+  read-only Gmail triage, state `data/ops/inbox_state.json`; replies drafted,
+  sent only after owner approval via `scripts/ops_send_reply.py`) and
+  `scripts/ops_digest.py` (08:30 morning report: 24h growth/marketplace
+  numbers, pending verifications, feedback, overdue invoices, outreach tail,
+  Umami traffic). Assistant rules: `~/.openclaw/workspace/AVOKATIM-OPS.md`.
 - **Marketplace case quality gate** (2026-07-13):
   `services/case_quality.py` — heuristics (repetition, gibberish, too short)
   + one fast LLM JSON classification (fail-open → `quality_flag="heuristic"`);

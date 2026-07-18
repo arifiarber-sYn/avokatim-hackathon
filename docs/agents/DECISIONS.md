@@ -524,3 +524,28 @@
   confirming email; the manual queue shrinks to edge cases (different email
   than the registry, stale registry, no license). The registry files must be
   refreshed periodically or auto-verify silently degrades to manual.
+
+## D-027: OpenClaw (Halim) as the operations assistant — push over loopback, read-only by default (2026-07-18)
+
+- Context: the platform is live and the owner cannot watch the inbox and the
+  operator queue all day. An OpenClaw gateway ("Halim") already runs on this
+  machine with a Telegram channel to the owner.
+- Decision: three integration lanes, all local-only:
+  (1) backend pushes operator events (signup, license verification, SOS, new
+  case, feedback, booking) to the gateway's `/hooks/agent` endpoint over
+  loopback with a dedicated bearer token (`OPENCLAW_HOOK_TOKEN` in
+  backend/.env; `services/ops_notify.py`, fire-and-forget, disabled when the
+  token is empty, suppressed for test recipients);
+  (2) an OpenClaw cron job every 10 min runs `scripts/ops_inbox_triage.py` —
+  read-only IMAP PEEK triage of the owner's Gmail (state in
+  data/ops/inbox_state.json), human mail → Telegram summary + draft reply;
+  (3) a daily 08:30 cron runs `scripts/ops_digest.py` (read-only DB +
+  Umami traffic) → morning report on Telegram.
+- Guardrails (written into the assistant's AVOKATIM-OPS.md): the assistant
+  never sends email without explicit owner approval (then via
+  `scripts/ops_send_reply.py`), never writes to Gmail/DB/data/, never
+  restarts services. Events → assistant is one-way; actions stay human-gated.
+- Consequences: the owner gets everything on Telegram in real time and a
+  daily digest; the assistant drafts but humans decide. If OpenClaw is down,
+  nothing breaks — ops_notify fails silently and the operator emails still
+  arrive; the digest/triage simply pause.

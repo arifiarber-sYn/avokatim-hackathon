@@ -157,6 +157,15 @@ async def try_auto_verify(user_id) -> bool:
                note=profile.verification_note,
                url=f"{settings.public_base_url}/settings"),
         )
+        from app.services.ops_notify import notify_ops
+
+        await notify_ops(
+            "auto-verifikim",
+            f"{user.full_name} u verifikua AUTOMATIKISHT (licenca {chamber} "
+            f"nr. {profile.oak_license_no}; emaili {user.email} përputhet me "
+            f"regjistrin publik — {match['name']}, {match['city'] or '?'}). "
+            f"Tani është live në drejtori. S'kërkohet veprim.",
+        )
         # FYI to the operator — no action needed, but keep them in the loop
         operators = (
             await db.execute(

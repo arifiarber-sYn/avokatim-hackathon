@@ -10,6 +10,28 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-18 — OpenClaw (Halim) wired in as operations assistant (Cursor / Fable 5)
+
+- Done: D-027 — three local-only lanes between AvokatIM and the OpenClaw
+  gateway on this machine: (1) `services/ops_notify.py` pushes operator
+  events (signup, manual-verification fallback, auto-verify, SOS, new case,
+  feedback, booking) to `/hooks/agent` with a dedicated token
+  (OPENCLAW_HOOK_TOKEN in backend/.env); (2) cron `avokatim-inbox-triage`
+  every 10 min runs `scripts/ops_inbox_triage.py` (IMAP PEEK, read-only,
+  state in data/ops/inbox_state.json) — human mail lands on Telegram with a
+  draft reply, sending only after explicit approval via
+  `scripts/ops_send_reply.py`; (3) cron `avokatim-raporti-mengjesit` at
+  08:30 runs `scripts/ops_digest.py` (24h signups/cases/SOS/bookings,
+  pending verifications, feedback, overdue invoices, outreach tail, Umami
+  traffic straight from the umami DB). Assistant-side rules live in
+  `~/.openclaw/workspace/AVOKATIM-OPS.md`; heartbeat now also checks
+  `avokatim.service` + /api/health.
+- Verified: triage baseline run + silent incremental run; digest JSON
+  correct (traffic 18 visitors/56 pageviews); morning report test-run
+  delivered on Telegram; live notify_ops event delivered; tests pass.
+- Left open: Gmail Pub/Sub real-time push (needs GCP project) noted as a
+  possible upgrade — 10-min polling is the accepted trade-off for now.
+
 ## 2026-07-18 — First real lawyer verified + automatic license verification (Cursor / Fable 5)
 
 - Done: verified Arben Rrahmani (OAK 2555/24) after confirming his signup

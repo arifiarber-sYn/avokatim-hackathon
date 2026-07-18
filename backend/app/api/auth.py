@@ -41,7 +41,8 @@ from app.security import (
     verify_totp,
 )
 from app.services.audit import log_action
-from app.services.notifications import send_email
+from app.services.notifications import _is_test_recipient, send_email
+from app.services.ops_notify import notify_ops
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -235,6 +236,13 @@ async def signup(
     background.add_task(
         _send_welcome_email, user.email, user.full_name, body.locale, body.profession
     )
+    if not _is_test_recipient(user.email):
+        profession_sq = "noteri" if body.profession == "notary" else "avokati"
+        background.add_task(
+            notify_ops, "regjistrim",
+            f"Zyrë e re u regjistrua: {user.full_name} ({user.email}), "
+            f"{profession_sq}, zyra '{tenant.name}'. Provë 90-ditore ka nisur.",
+        )
     return TokenResponse(access_token=create_access_token(user.id, tenant.id))
 
 

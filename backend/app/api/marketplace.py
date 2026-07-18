@@ -45,6 +45,7 @@ from app.security import (
 from app.services.audit import log_action
 from app.services.conflicts import check_conflicts
 from app.services.notifications import _is_test_recipient, send_email
+from app.services.ops_notify import notify_ops
 from app.services.sms import send_sms, sms_enabled
 
 logger = logging.getLogger(__name__)
@@ -502,6 +503,14 @@ async def citizen_create_case(
     )
     await db.commit()
 
+    if not _is_test_recipient(citizen.email):
+        background.add_task(
+            notify_ops, "rast",
+            f"Rast i ri në treg: kategoria {body.category}, qyteti {body.city or '-'}, "
+            f"urgjenca {body.urgency}"
+            + (f", i drejtuar te '{directed_tenant.name}'" if directed_tenant else "")
+            + f". Cilësia: {quality_flag or 'ok'}.",
+        )
     if directed_tenant is None:
         # Demand->supply matching: alert lawyers whose profile fits the case
         background.add_task(_notify_matching_lawyers, case.id, body.category, body.city)
@@ -801,6 +810,13 @@ async def citizen_sos(
     )
     await db.commit()
     background.add_task(_notify_on_duty_lawyers, case.id, body.city)
+    if not _is_test_recipient(citizen.email):
+        background.add_task(
+            notify_ops, "sos",
+            f"SOS nga qytetari ({body.city or 'qytet i panjohur'}): "
+            f"{body.description[:300]}",
+            True,
+        )
     return _case_out(case)
 
 
@@ -1365,6 +1381,12 @@ async def _auto_verify_or_notify(user_id, lawyer_name: str, license_no: str) -> 
     except Exception:
         logger.exception("Auto-verify failed for %s — falling back to manual", lawyer_name)
     await _notify_operator_verification(lawyer_name, license_no)
+    await notify_ops(
+        "verifikim",
+        f"{lawyer_name} dërgoi licencën nr. {license_no} — auto-verifikimi nuk "
+        f"e kapi (emaili s'përputhet me regjistrin publik), duhet kontroll "
+        f"manual te {settings.public_base_url}/platform",
+    )
 
 
 async def _notify_operator_verification(lawyer_name: str, license_no: str) -> None:

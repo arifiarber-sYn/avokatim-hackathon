@@ -131,6 +131,12 @@ class Settings(BaseSettings):
     whatsapp_api_base: str = "https://graph.facebook.com/v21.0"
     whatsapp_daily_limit: int = 20
 
+    # OpenClaw operator assistant (Halim): platform events are pushed to the
+    # local gateway's /hooks/agent endpoint and forwarded to the operator on
+    # Telegram. Empty token = disabled. Loopback only — never expose the hook.
+    openclaw_hook_url: str = "http://127.0.0.1:18789/hooks/agent"
+    openclaw_hook_token: str = ""
+
 
 @lru_cache
 def get_settings() -> Settings:
