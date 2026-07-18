@@ -1332,8 +1332,9 @@ async def update_my_profile(
     profile.sms_case_alerts = body.sms_case_alerts
 
     # Entering or changing the license number (re)starts verification; the
-    # status itself is never client-writable — only the platform operator
-    # flips it after checking the public OAK registry.
+    # status itself is never client-writable. Auto-approval happens only when
+    # the confirmed signup email matches the public chamber registry
+    # (services/license_verify.py); otherwise the operator checks by hand.
     new_license = (body.oak_license_no or "").strip() or None
     if new_license != profile.oak_license_no:
         profile.oak_license_no = new_license
@@ -1343,7 +1344,7 @@ async def update_my_profile(
         # Simulation accounts (test emails) must not ping the operator —
         # their tenants are deleted at cleanup, so there is nothing to verify
         if new_license and not _is_test_recipient(user.email):
-            background.add_task(_notify_operator_verification, user.full_name, new_license)
+            background.add_task(_auto_verify_or_notify, user.id, user.full_name, new_license)
 
     await log_action(
         db, tenant_id=user.tenant_id, user_id=user.id, action="marketplace.profile_update",
@@ -1351,6 +1352,19 @@ async def update_my_profile(
     )
     await db.commit()
     return _profile_out(profile)
+
+
+async def _auto_verify_or_notify(user_id, lawyer_name: str, license_no: str) -> None:
+    """Try the automatic registry check first; if it can't approve safely,
+    fall back to pinging the operator for a manual review."""
+    from app.services.license_verify import try_auto_verify
+
+    try:
+        if await try_auto_verify(user_id):
+            return
+    except Exception:
+        logger.exception("Auto-verify failed for %s — falling back to manual", lawyer_name)
+    await _notify_operator_verification(lawyer_name, license_no)
 
 
 async def _notify_operator_verification(lawyer_name: str, license_no: str) -> None:

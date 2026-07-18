@@ -13,6 +13,7 @@ from app.database import get_db
 from app.deps import require_superadmin
 from app.models import LawyerProfile, Matter, PlatformInvoice, Tenant, User
 from app.services.audit import log_action
+from app.services.license_verify import registry_match
 from app.services.platform_billing import generate_invoice, invoice_out
 
 # The first N OAK-verified offices get the permanent "Founder" badge —
@@ -158,30 +159,11 @@ async def update_tenant(
 
 
 # ---------- license verification queue (OAK lawyers + ONK notaries) ----------
-# Manual by design: OAK (Kosovo Bar Association) publishes its member
-# registry but has no lookup API, so the operator checks it by hand.
-# For notaries we do have the scraped ONK registry (data/notaries.json),
-# so the queue suggests an automatic match to verify with one click.
-
-
-def _norm_name(name: str) -> str:
-    return " ".join(name.lower().replace("ë", "e").replace("ç", "c").split())
-
-
-def _onk_match(full_name: str, email: str) -> dict | None:
-    """Best-effort match of a signup against the public ONK registry:
-    exact email first, then normalized full-name equality."""
-    from app.api.public_tools import _load_notaries
-
-    email = email.strip().lower()
-    name = _norm_name(full_name)
-    for n in _load_notaries().get("notaries", []):
-        if email and n.get("email", "").strip().lower() == email:
-            return {"name": n["name"], "city": n.get("city"), "matched_by": "email"}
-    for n in _load_notaries().get("notaries", []):
-        if name and _norm_name(n.get("name", "")) == name:
-            return {"name": n["name"], "city": n.get("city"), "matched_by": "name"}
-    return None
+# Mostly automatic: a confirmed signup email that matches the public chamber
+# registry (OAK for lawyers, ONK for notaries) auto-approves via
+# services/license_verify.py. Everything else lands here for manual review,
+# with the best registry match shown as a hint (a name-only match is never
+# auto-approved — namesakes exist).
 
 
 @router.get("/verifications")
@@ -212,10 +194,9 @@ async def list_verifications(
             "verification_note": profile.verification_note,
             "verified_at": profile.verified_at.isoformat() if profile.verified_at else None,
             "submitted_at": profile.updated_at.isoformat(),
-            "onk_match": (
-                _onk_match(user.full_name, user.email)
-                if tenant.profession == "notary"
-                else None
+            "email_verified": user.email_verified_at is not None,
+            "registry_match": registry_match(
+                tenant.profession or "lawyer", user.full_name, user.email
             ),
         }
         for profile, user, tenant in rows

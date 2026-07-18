@@ -10,6 +10,28 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-18 — First real lawyer verified + automatic license verification (Cursor / Fable 5)
+
+- Done: verified Arben Rrahmani (OAK 2555/24) after confirming his signup
+  email `arbenrrahmani90@gmail.com` appears verbatim in the public OAK
+  registry (`data/oak_registry.csv`, Prishtinë) — the platform's FIRST real
+  verified lawyer, live in `/avokatet` with the Founder badge.
+- Done: automated the procedure — new `app/services/license_verify.py`:
+  `registry_match(profession, name, email)` checks OAK CSV / ONK JSON
+  (email first, then normalized name) and `try_auto_verify(user_id)`
+  auto-approves ONLY on confirmed-email + registry-email match (audit
+  `platform.verification_auto`, approval email ×6 locales, FYI to
+  operators). Hooked after license submit and after email confirmation.
+  Name-only matches never auto-approve (namesakes) — the /platform queue
+  now shows a registry-match badge + unconfirmed-email badge for both
+  professions (replaced notary-only `_onk_match`).
+- Verified: 97 backend tests pass; live `registry_match` finds Rrahmani by
+  email and Sijarina by name-only (correctly not auto-approvable); frontend
+  built; health OK; directory shows 1 verified lawyer.
+- Left open: keep `data/oak_registry.csv` fresh (re-run
+  `scrape_oak_registry.py` monthly) — auto-verify silently degrades to the
+  manual queue when the file is stale or missing.
+
 ## 2026-07-16 — Agent layer hardened for vendor independence (Cursor / Fable 5)
 
 - Done: formalized the agent-agnostic layer (D-025): AGENTS.md now explains

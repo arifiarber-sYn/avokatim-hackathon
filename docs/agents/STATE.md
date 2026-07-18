@@ -3,7 +3,7 @@
 > Update this file whenever the state changes (new module, dependency, behavior,
 > known issue). Keep it a snapshot, not a history — history lives in JOURNAL.md.
 
-**Last updated:** 2026-07-16
+**Last updated:** 2026-07-18
 
 ## Status: live in production at https://avokatiim.ai — lawyer office + citizen marketplace + notary profession + growth ops (automated outreach, analytics); first real signups arriving (first outreach conversion 2026-07-13)
 
@@ -380,7 +380,17 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   entering the license → pending + email to superadmins; operator decides in
   `/platform` (queue at top, `POST /platform/verifications/{id}/decide`,
   decision emailed ×6 locales). Verified is a hard gate for directory
-  listing, match/SOS notifications, stats and claiming (403). `CaseReview`
+  listing, match/SOS notifications, stats and claiming (403).
+  **Auto-verification** (2026-07-18): `app/services/license_verify.py` —
+  when the signup email is confirmed AND matches the public chamber
+  registry exactly (OAK `data/oak_registry.csv`, ONK `data/notaries.json`),
+  the license is approved automatically (audit action
+  `platform.verification_auto`, approval email to the professional, FYI
+  email to operators). Hooks: license submit (`PUT /marketplace/profile` →
+  `_auto_verify_or_notify`) and email confirmation (`POST
+  /auth/verify-email`). Name-only matches are never auto-approved
+  (namesakes) — they stay in the queue with a hint badge
+  (`registry_match` + `email_verified` in `GET /platform/verifications`). `CaseReview`
   (1:1 with concluded claimed case; communication/speed/clarity 1–5 +
   comment; POST/GET `/public/citizen/cases/{id}/review`); directory returns
   `verified`, `rating`, `review_count`, `consult_fee_eur`, ranked by plan
@@ -448,9 +458,10 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   ONK license instead of OAK and hide SOS/practice-areas/consult-fee/
   referral; matter detail says "Përgjegjësi". Marketing page
   **`/per-noteret`** (×6, violet), linked from `/` (umbFnL9) and a banner
-  on `/noteret`. Verification: same queue; for notaries the platform panel
-  shows an automatic match against `data/notaries.json` (email, then
-  normalized name — `_onk_match` in `api/platform.py`). Directory merge:
+  on `/noteret`. Verification: same queue; the registry match (email, then
+  normalized name) now lives in `services/license_verify.py`
+  (`registry_match`) and covers both professions, with email matches
+  auto-approved (see the trust-layer entry above). Directory merge:
   `/public/tools/notaries` lists registered verified notary offices first
   (badge "I verifikuar në AvokatIM", equal listing — no promoted placement)
   and dedupes their scraped registry entry. Bookings: `/noteret` shows a

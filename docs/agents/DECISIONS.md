@@ -505,3 +505,22 @@
   journal entries. The discipline cost: agents MUST write session results
   into the docs (session protocol §2) or the knowledge is lost to the next
   tool.
+
+## D-026: License auto-verification only on confirmed-email registry match (2026-07-18)
+
+- Context: OAK/ONK have no lookup APIs, so verification was manual (D-017).
+  Both chambers publish member registries WITH email addresses, and we keep
+  local copies (data/oak_registry.csv, data/notaries.json). The operator
+  wants the procedure automated.
+- Decision: `services/license_verify.py` auto-approves a pending license
+  only when BOTH hold: (1) the account has confirmed its email
+  (email_verified_at) and (2) that exact email appears in the chamber's
+  public registry. Owning the mailbox the chamber itself publishes for a
+  member is the strongest identity proof available without an official API.
+  A name-only match is never auto-approved (namesakes exist) — it is shown
+  as a hint badge in the manual queue. Every auto-approval is audit-logged
+  (`platform.verification_auto`) and the operator gets an FYI email.
+- Consequences: most legitimate signups verify themselves within minutes of
+  confirming email; the manual queue shrinks to edge cases (different email
+  than the registry, stale registry, no license). The registry files must be
+  refreshed periodically or auto-verify silently degrades to manual.

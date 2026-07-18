@@ -239,7 +239,11 @@ async def signup(
 
 
 @router.post("/verify-email")
-async def verify_email(body: VerifyEmailRequest, db: AsyncSession = Depends(get_db)):
+async def verify_email(
+    body: VerifyEmailRequest,
+    background: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
     try:
         payload = decode_purpose_token(body.token, "verify_email")
     except (pyjwt.PyJWTError, ValueError):
@@ -253,6 +257,11 @@ async def verify_email(body: VerifyEmailRequest, db: AsyncSession = Depends(get_
             db, tenant_id=user.tenant_id, user_id=user.id, action="auth.email_verified"
         )
         await db.commit()
+        # A license may already be waiting for this confirmation — the
+        # registry auto-check needs a verified mailbox to approve safely.
+        from app.services.license_verify import try_auto_verify
+
+        background.add_task(try_auto_verify, user.id)
     return {"verified": True}
 
 

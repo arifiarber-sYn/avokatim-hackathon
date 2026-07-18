@@ -1,11 +1,11 @@
 """The second paying profession (notary offices): signup validation and
-the automatic match against the scraped ONK registry."""
+the automatic match against the public chamber registries (OAK/ONK)."""
 import pytest
 from pydantic import ValidationError
 
-from app.api import platform as platform_api
 from app.api import public_tools
 from app.schemas.auth import SignupRequest
+from app.services import license_verify
 
 
 BASE = {
@@ -32,7 +32,7 @@ def test_signup_profession_rejects_unknown():
         SignupRequest(**BASE, profession="judge")
 
 
-FAKE_REGISTRY = {
+FAKE_ONK = {
     "notaries": [
         {
             "name": "Vlora Këpuska",
@@ -43,23 +43,61 @@ FAKE_REGISTRY = {
     ]
 }
 
+FAKE_OAK = [
+    {"name": "Arben Rrahmani", "email": "arbenrrahmani90@gmail.com", "city": "Prishtinë"},
+    {"name": "Hysen Rrahmani", "email": "prof-h@hotmail.com", "city": "Ferizaj"},
+]
+
 
 def test_onk_match_by_email(monkeypatch):
-    monkeypatch.setattr(public_tools, "_load_notaries", lambda: FAKE_REGISTRY)
-    match = platform_api._onk_match("Emër Tjetër", "VLORA.KEPUSKA@noteria-ks.org")
+    monkeypatch.setattr(public_tools, "_load_notaries", lambda: FAKE_ONK)
+    match = license_verify.registry_match(
+        "notary", "Emër Tjetër", "VLORA.KEPUSKA@noteria-ks.org"
+    )
     assert match is not None
     assert match["matched_by"] == "email"
     assert match["city"] == "Prishtinë"
 
 
 def test_onk_match_by_normalized_name(monkeypatch):
-    monkeypatch.setattr(public_tools, "_load_notaries", lambda: FAKE_REGISTRY)
+    monkeypatch.setattr(public_tools, "_load_notaries", lambda: FAKE_ONK)
     # Diacritics and extra spaces must not break the match
-    match = platform_api._onk_match("argjend  cocaj", "tjeter@example.com")
+    match = license_verify.registry_match("notary", "argjend  cocaj", "tjeter@example.com")
     assert match is not None
     assert match["matched_by"] == "name"
 
 
 def test_onk_match_none(monkeypatch):
-    monkeypatch.setattr(public_tools, "_load_notaries", lambda: FAKE_REGISTRY)
-    assert platform_api._onk_match("Askush Fare", "askush@example.com") is None
+    monkeypatch.setattr(public_tools, "_load_notaries", lambda: FAKE_ONK)
+    assert (
+        license_verify.registry_match("notary", "Askush Fare", "askush@example.com")
+        is None
+    )
+
+
+def test_oak_match_by_email(monkeypatch):
+    monkeypatch.setattr(license_verify, "load_oak_registry", lambda: FAKE_OAK)
+    match = license_verify.registry_match(
+        "lawyer", "Emër Tjetër", "ArbenRrahmani90@gmail.com"
+    )
+    assert match is not None
+    assert match["matched_by"] == "email"
+    assert match["name"] == "Arben Rrahmani"
+
+
+def test_oak_name_only_match_is_flagged_not_email(monkeypatch):
+    # A name-only hit must never look like the auto-approvable email match
+    monkeypatch.setattr(license_verify, "load_oak_registry", lambda: FAKE_OAK)
+    match = license_verify.registry_match(
+        "lawyer", "hysen rrahmani", "dikush.tjeter@gmail.com"
+    )
+    assert match is not None
+    assert match["matched_by"] == "name"
+
+
+def test_oak_match_none(monkeypatch):
+    monkeypatch.setattr(license_verify, "load_oak_registry", lambda: FAKE_OAK)
+    assert (
+        license_verify.registry_match("lawyer", "Askush Fare", "askush@gmail.com")
+        is None
+    )
