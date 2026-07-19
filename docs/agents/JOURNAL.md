@@ -10,6 +10,31 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-19 — Complete Kosovo legislation imported from GZK (Cursor / Fable 5)
+
+- Done: `scripts/import_gzk_bulk.py` — two-phase bulk importer for ALL Kosovo
+  legislation from gzk.rks-gov.net: `--index` crawls the search listing per
+  category (Kushtetuta 6, Kode 13, Aktet e Konsoliduara 156, Ligje 1100 →
+  1,275 acts in `data/gzk_laws_index.json`), `--lang sq|sr|tr|bs|en` imports
+  each act via the corpus API. Consolidated acts import first so the current
+  wording wins the reference; the base law is then skipped as a duplicate.
+  Resumable: (reference, language) pairs already in the corpus are skipped,
+  so reboots just continue. Key discovery: ~1/4 of acts have no HTML text on
+  ActDocumentDetail.aspx — they are served as gazette PDFs behind an
+  image-button postback on ActDetail.aspx (`rAktet$ctl00$imgDownload.x/y`);
+  the importer falls back to that PDF (pypdf) and strips gazette headers.
+  Language markers (Neni/Član/Madde/Article + amendment words for the
+  constitution category) guard against GZK silently serving Albanian.
+- Done: public stat `laws_in_corpus` now counts DISTINCT references (unique
+  acts), not documents — the old number counted each language version.
+  Label updated in all 6 dictionaries ("ligje e akte të Kosovës…").
+- Verified: 100 backend tests pass; health OK after rebuild+restart; import
+  running in background (log: `data/gzk_bulk_import.log`), PDF fallback
+  confirmed live (e.g. Customs Code 08/L-247 → 555 chunks). Halim pings
+  Telegram when the 5-language run finishes.
+- Left open: acts that fail in all sources are listed as FAIL in the log —
+  worth a one-off review after the run; re-running the script is safe.
+
 ## 2026-07-18 — OpenClaw (Halim) wired in as operations assistant (Cursor / Fable 5)
 
 - Done: D-027 — three local-only lanes between AvokatIM and the OpenClaw

@@ -226,6 +226,15 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   **Notary laws added** (2026-07-13): Law on Notary 06/L-010 (80 chunks) +
   amendment 08/L-149 (MoJ PDF mirror). Amendment 08/L-272 (e-signature)
   has no machine-readable text online yet — see the note in `import_gzk.py`.
+  **COMPLETE legislation import** (2026-07-19): `scripts/import_gzk_bulk.py`
+  crawls the full GZK catalogue (constitution + amendments, 13 codes, 156
+  consolidated acts, ~1,100 laws = 1,275 acts in `data/gzk_laws_index.json`)
+  and imports every act in all 5 official languages. Resumable (skips
+  existing (reference, language)); ~1/4 of acts are gazette-PDF-only and are
+  fetched via the ActDetail image-button postback + pypdf. Re-run
+  `--index` then `--lang ...` to pick up newly published laws. Log of the
+  initial run: `data/gzk_bulk_import.log`. The public stat counts DISTINCT
+  references (unique acts), not per-language documents.
 - **Billing**: time entries, **matter expenses/disbursements** (categories:
   court fee, bailiff, expert, travel, notary, translation; billing tab), invoices
   generated from unbilled hours **and unbilled expenses** plus **manual flat-fee

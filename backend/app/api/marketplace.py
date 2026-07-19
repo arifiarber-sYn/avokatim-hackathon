@@ -18,6 +18,7 @@ import redis.asyncio as aioredis
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, EmailStr, Field
+from sqlalchemy import String as sa_String
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -940,7 +941,22 @@ async def public_stats(db: AsyncSession = Depends(get_db)):
             ).where(CaseRequest.claimed_at.isnot(None))
         )
     ).scalar_one()
-    laws = (await db.execute(select(func.count(LegalCorpusDoc.id)))).scalar_one()
+    # Unique acts, not documents: the same law exists in up to 5 official
+    # language versions, which used to inflate this public number.
+    laws = (
+        await db.execute(
+            select(
+                func.count(
+                    func.distinct(
+                        func.coalesce(
+                            LegalCorpusDoc.reference,
+                            func.cast(LegalCorpusDoc.id, sa_String),
+                        )
+                    )
+                )
+            )
+        )
+    ).scalar_one()
     chunks = (await db.execute(select(func.count(LegalCorpusChunk.id)))).scalar_one()
     return {
         "lawyers_in_directory": lawyers,
