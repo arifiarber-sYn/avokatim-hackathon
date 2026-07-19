@@ -25,6 +25,11 @@
   the importer falls back to that PDF (pypdf) and strips gazette headers.
   Language markers (Neni/Član/Madde/Article + amendment words for the
   constitution category) guard against GZK silently serving Albanian.
+  Second fallback for SCANNED PDFs (no text layer, mostly older acts):
+  pdftoppm + tesseract OCR (models in `data/tessdata/`: system sqi/eng plus
+  srp_latn/tur/bos fetched from tessdata_fast). A watcher re-runs `--lang sq`
+  after the main 5-language run so scanned acts missed by the first sq pass
+  (which predated the OCR code) get picked up.
 - Done: public stat `laws_in_corpus` now counts DISTINCT references (unique
   acts), not documents — the old number counted each language version.
   Label updated in all 6 dictionaries ("ligje e akte të Kosovës…").

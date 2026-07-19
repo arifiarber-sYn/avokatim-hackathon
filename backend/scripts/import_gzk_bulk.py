@@ -66,6 +66,12 @@ LANG_MARKERS = {
     "tr": ("Madde", "MADDE"),
     "en": ("Article", "ARTICLE"),
 }
+# Tesseract models: sqi/eng come from the system install, srp_latn/tur/bos
+# were fetched from tessdata_fast into data/tessdata (all copied there so a
+# single TESSDATA_PREFIX works).
+TESSDATA_DIR = PROJECT_DIR / "data" / "tessdata"
+OCR_LANG = {"sq": "sqi", "sr": "srp_latn", "bs": "bos", "tr": "tur", "en": "eng"}
+OCR_MAX_PAGES = 400
 AMENDMENT_MARKERS = {
     "sq": ("Amendament", "Amandament", "AMENDAMENT", "AMANDAMENT"),
     "sr": ("Amandman", "AMANDMAN"),
@@ -110,10 +116,47 @@ def _extract_text(page_html: str) -> str | None:
     return text or None
 
 
-async def _fetch_pdf_text(web: httpx.AsyncClient, act_id: int) -> str | None:
+def _ocr_pdf(content: bytes, lang: str) -> str | None:
+    """Last resort for scanned gazette PDFs (mostly pre-2010 acts): rasterize
+    with pdftoppm and OCR with tesseract. Slow but runs only when the PDF has
+    no embedded text layer."""
+    import os
+    import subprocess
+    import tempfile
+
+    model = OCR_LANG[lang]
+    if not (TESSDATA_DIR / f"{model}.traineddata").exists():
+        return None
+    env = dict(os.environ, TESSDATA_PREFIX=str(TESSDATA_DIR))
+    try:
+        with tempfile.TemporaryDirectory() as td:
+            pdf_path = os.path.join(td, "act.pdf")
+            with open(pdf_path, "wb") as fh:
+                fh.write(content)
+            subprocess.run(
+                ["pdftoppm", "-r", "200", "-gray", "-png",
+                 "-l", str(OCR_MAX_PAGES), pdf_path, os.path.join(td, "pg")],
+                check=True, capture_output=True, timeout=600,
+            )
+            pages = sorted(f for f in os.listdir(td) if f.endswith(".png"))
+            texts = []
+            for pg in pages:
+                out = subprocess.run(
+                    ["tesseract", os.path.join(td, pg), "-", "-l", model, "--psm", "6"],
+                    capture_output=True, text=True, env=env, timeout=120,
+                )
+                texts.append(out.stdout)
+    except (subprocess.SubprocessError, OSError):
+        return None
+    return "\n".join(texts).strip() or None
+
+
+async def _fetch_pdf_text(
+    web: httpx.AsyncClient, act_id: int, lang: str, ocr: bool = True
+) -> tuple[str | None, str]:
     """Fallback for acts published only as gazette PDFs (~1/4 of all laws):
     ActDetail.aspx carries an image-button postback that serves the PDF of
-    the act in the current session language."""
+    the act in the current session language. Returns (text, source_tag)."""
     import io
 
     from pypdf import PdfReader
@@ -133,21 +176,28 @@ async def _fetch_pdf_text(web: httpx.AsyncClient, act_id: int) -> str | None:
         })
         r2.raise_for_status()
     except httpx.HTTPError:
-        return None
+        return None, "pdf"
     if not r2.headers.get("content-type", "").lower().startswith("application/pdf"):
-        return None
+        return None, "pdf"
+    source = "pdf"
     try:
         reader = PdfReader(io.BytesIO(r2.content))
         text = "\n".join(p.extract_text() or "" for p in reader.pages).strip()
     except Exception:
-        return None
+        text = ""
+    if len(text) < 200 and ocr:  # scanned image PDF — no embedded text layer
+        loop = asyncio.get_running_loop()
+        text = await loop.run_in_executor(None, _ocr_pdf, r2.content, lang) or ""
+        source = "ocr"
+    if not text:
+        return None, source
     # Drop the running gazette header lines so they don't pollute chunks
     text = re.sub(
         r"^.*(GAZETA ZYRTARE|SLU[ŽZ]BENI LIST|RESM[İI] GAZETE|OFFICIAL GAZETTE).*$",
         "", text, flags=re.MULTILINE | re.IGNORECASE,
     )
     text = re.sub(r"\n{3,}", "\n\n", text).strip()
-    return text or None
+    return (text or None), source
 
 
 async def build_index() -> None:
@@ -270,8 +320,7 @@ async def import_language(lang: str) -> None:
                 continue
             source = "html"
             if not text or len(text) < min_chars or not any(m in text for m in markers):
-                text = await _fetch_pdf_text(web, act["act_id"])
-                source = "pdf"
+                text, source = await _fetch_pdf_text(web, act["act_id"], lang)
             if not text or len(text) < min_chars or not any(m in text for m in markers):
                 print(f"[{i}/{total}] FAIL {reference} — no usable {lang} text "
                       f"({len(text or '')} chars)", flush=True)
