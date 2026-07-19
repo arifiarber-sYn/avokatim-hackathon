@@ -10,6 +10,19 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-19 — Onboarding nudges: 48h → 1h (Cursor / Fable 5)
+
+- Done: owner's call — reminders should help while the signup is fresh, not
+  two days later. Lawyer profile nudge now fires 1h after signup (was 48h),
+  citizen verify reminder 1h (was 24h); `reminder_check_minutes` default
+  60 → 10 so the loop actually lands near the 1h mark. Same one-shot
+  semantics (nudge_sent_at) and 14-day window as before.
+- Verified: after restart the loop reported "every 10 min" and the nudge to
+  the newest real signup (Betim Sijarina, OAK lawyer from the outreach
+  campaign, signed up 18.07 but no public profile yet) went out immediately.
+- Context: he's the 2nd outreach conversion (150 mails → 2 signups). His
+  email matches the OAK registry, so license entry will auto-verify.
+
 ## 2026-07-19 — Complete Kosovo legislation imported from GZK (Cursor / Fable 5)
 
 - Done: `scripts/import_gzk_bulk.py` — two-phase bulk importer for ALL Kosovo

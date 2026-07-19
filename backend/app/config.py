@@ -65,7 +65,8 @@ class Settings(BaseSettings):
     smtp_password: str = ""
     smtp_from: str = "AvokatIM <noreply@avokatim.local>"
     smtp_starttls: bool = True
-    reminder_check_minutes: int = 60
+    # Also drives onboarding nudges (sent ~1h after signup), so keep it short
+    reminder_check_minutes: int = 10
 
     # Email-to-matter ingestion (IMAP). Empty imap_host = disabled.
     # Each matter gets an alias imap_user-local-part+<token>@domain (plus

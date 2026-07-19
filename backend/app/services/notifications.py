@@ -171,9 +171,11 @@ async def _check_deadline_reminders(redis: aioredis.Redis) -> None:
 
 async def _check_onboarding_nudges() -> None:
     """One-shot onboarding reminders (the gap seen with the first real signups):
-    - lawyer signed up >48h ago and public profile still not visible -> 1 email
-    - citizen signed up >24h ago and email still unverified -> 1 email
-    Only accounts from the last 14 days, so old/test accounts are never mailed.
+    - lawyer signed up >1h ago and public profile still not visible -> 1 email
+    - citizen signed up >1h ago and email still unverified -> 1 email
+    Owner's call: help while the signup is still fresh in the person's mind,
+    not two days later. Only accounts from the last 14 days, so old/test
+    accounts are never mailed.
     """
     from app.models import CitizenUser, LawyerProfile
 
@@ -181,7 +183,7 @@ async def _check_onboarding_nudges() -> None:
     window_start = now - timedelta(days=14)
 
     async with SessionLocal() as db:
-        # Lawyers without an active public profile, 48h after signup
+        # Lawyers without an active public profile, 1h after signup
         visible_user_ids = select(LawyerProfile.user_id).where(
             LawyerProfile.is_visible.is_(True)
         )
@@ -191,7 +193,7 @@ async def _check_onboarding_nudges() -> None:
                     User.is_active.is_(True),
                     User.is_superadmin.is_(False),
                     User.profile_nudge_sent_at.is_(None),
-                    User.created_at <= now - timedelta(hours=48),
+                    User.created_at <= now - timedelta(hours=1),
                     User.created_at >= window_start,
                     User.id.not_in(visible_user_ids),
                 )
@@ -212,7 +214,7 @@ async def _check_onboarding_nudges() -> None:
             if sent:
                 logger.info("Profile nudge sent to lawyer %s", user.email)
 
-        # Citizens with unverified email, 24h after signup
+        # Citizens with unverified email, 1h after signup
         from app.security import create_purpose_token
 
         citizens = (
@@ -221,7 +223,7 @@ async def _check_onboarding_nudges() -> None:
                     CitizenUser.is_active.is_(True),
                     CitizenUser.email_verified_at.is_(None),
                     CitizenUser.verify_reminder_sent_at.is_(None),
-                    CitizenUser.created_at <= now - timedelta(hours=24),
+                    CitizenUser.created_at <= now - timedelta(hours=1),
                     CitizenUser.created_at >= window_start,
                 )
             )
