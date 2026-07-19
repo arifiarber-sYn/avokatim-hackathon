@@ -549,3 +549,27 @@
   daily digest; the assistant drafts but humans decide. If OpenClaw is down,
   nothing breaks — ops_notify fails silently and the operator emails still
   arrive; the digest/triage simply pause.
+
+## D-028: Halim is the correspondence operator; the system thanks every registration itself (2026-07-19)
+
+- Context: the owner wants zero routine email work. The first founder letter
+  was written by hand; that does not scale, and Halim's old protocol asked
+  open-ended questions ("dërgo / ndrysho / lëre").
+- Decision: three communication lanes, documented in `docs/agents/COMMS.md`
+  (the single source of truth for outbound mail):
+  (A) the SYSTEM automatically thanks every successful registration — the
+  license-verification email is now a warm thank-you letter signed by the
+  owner (with a 'Founder' paragraph for the first 20 offices, both the
+  auto-verify and the manual approval path), and citizens get a
+  `citizen_welcome` letter the moment they confirm their email (plus a
+  `notify_ops` heads-up so Halim knows no action is needed);
+  (B) HALIM handles all inbound human correspondence with a single-question
+  protocol: final ready-to-send draft on Telegram + "PO (dërgo) / JO (lëre)";
+  any other reply is treated as an edit instruction. He never duplicates
+  lane A;
+  (C) only sensitive/press/legal matters remain owner-written.
+- Consequences: the owner's only routine involvement in email is answering
+  PO/JO on Telegram. Agents adding outbound email must update COMMS.md in the
+  same commit (AGENTS.md §4b + session protocol enforce this). Milestone
+  moments are celebrated automatically instead of depending on the owner's
+  availability.

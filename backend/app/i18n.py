@@ -118,6 +118,20 @@ _SQ = {
         "Konfirmo adresën tënde të email-it duke hapur këtë link:\n{url}\n\n"
         "Linku vlen 3 ditë."
     ),
+    "citizen_welcome_subject": "Faleminderit, {name} — llogaria jote në AvokatIM është gati!",
+    "citizen_welcome_body": (
+        "Përshëndetje {name},\n\n"
+        "Faleminderit që u bashkove me AvokatIM — llogaria jote u konfirmua "
+        "dhe gjithçka është gati.\n\n"
+        "Çfarë ke tani, plotësisht falas:\n"
+        "• Ava, asistentja ligjore — pyet çfarëdo për ligjin e Kosovës: {ava_url}\n"
+        "• Posto rastin tënd dhe avokatët e verifikuar të kontaktojnë: {post_url}\n"
+        "• Drejtoria e avokatëve dhe noterëve të verifikuar: {dir_url}\n"
+        "• Shkresa e ankesa të gatshme për t'u plotësuar: {docs_url}\n"
+        "• SOS për situata urgjente — ndihmë e menjëhershme.\n\n"
+        "Për ty si qytetar platforma është dhe do të mbetet falas.\n\n"
+        "Me respekt,\nArbër Arifi — AvokatIM"
+    ),
     "citizen_reset_subject": "AvokatIM — Rivendos fjalëkalimin",
     "citizen_reset_body": (
         "Ke kërkuar rivendosjen e fjalëkalimit. Hape këtë link për të vendosur një fjalëkalim të ri:\n{url}\n\n"
@@ -162,10 +176,23 @@ _SQ = {
         "Në Treg sapo u postua një rast që përputhet me profilin tënd "
         "({category}, {city}). Avokati i parë që e merr, e fiton:\n{url}"
     ),
-    "verify_approved_subject": "AvokatIM — Licenca juaj OAK u verifikua",
+    "verify_approved_subject": "AvokatIM — Urime, {name}! Licenca u verifikua",
     "verify_approved_body": (
-        "Licenca juaj OAK u verifikua me sukses. Profili juaj tani shfaqet "
-        "në drejtorinë publike dhe mund të merrni raste nga Tregu:\n{url}"
+        "I/e nderuar {name},\n\n"
+        "Licenca juaj u verifikua me sukses — faleminderit që i besuat AvokatIM!\n\n"
+        "Nga ky moment profili juaj mban shenjën e verifikimit, shfaqet në "
+        "drejtorinë publike dhe qytetarët mund t'ju kontaktojnë direkt. "
+        "Avokatët e verifikuar marrin edhe rastet nga Tregu dhe njoftimet SOS.\n\n"
+        "Profili juaj: {url}\n\n{founder}"
+        "Po ndërtojmë urën mes qytetarëve dhe profesionistëve të drejtësisë në "
+        "Kosovë — dhe ju tani jeni pjesë e saj. Për çdo pyetje na shkruani, "
+        "përgjigjemi shpejt.\n\n"
+        "Me respekt,\nArbër Arifi — AvokatIM"
+    ),
+    "verify_approved_founder": (
+        "Diçka e veçantë: jeni ndër 20 zyrat e para të verifikuara në platformë "
+        "dhe mbani përgjithmonë shenjën 'Themelues' — falënderimi ynë për "
+        "besimin e hershëm."
     ),
     "verify_rejected_subject": "AvokatIM — Verifikimi i licencës OAK nuk u aprovua",
     "verify_rejected_body": (
@@ -295,6 +322,20 @@ _SR = {
         "Potvrdite svoju email adresu otvaranjem ovog linka:\n{url}\n\n"
         "Link važi 3 dana."
     ),
+    "citizen_welcome_subject": "Hvala, {name} — vaš AvokatIM nalog je spreman!",
+    "citizen_welcome_body": (
+        "Zdravo {name},\n\n"
+        "Hvala što ste se pridružili AvokatIM-u — vaš nalog je potvrđen i sve "
+        "je spremno.\n\n"
+        "Šta sada imate, potpuno besplatno:\n"
+        "• Ava, pravna asistentkinja — pitajte bilo šta o zakonu Kosova: {ava_url}\n"
+        "• Objavite svoj slučaj i verifikovani advokati vas kontaktiraju: {post_url}\n"
+        "• Imenik verifikovanih advokata i notara: {dir_url}\n"
+        "• Gotovi podnesci i žalbe za popunjavanje: {docs_url}\n"
+        "• SOS za hitne situacije — trenutna pomoć.\n\n"
+        "Za vas kao građanina platforma jeste i ostaće besplatna.\n\n"
+        "S poštovanjem,\nArbër Arifi — AvokatIM"
+    ),
     "citizen_reset_subject": "AvokatIM — Resetujte lozinku",
     "citizen_reset_body": (
         "Zatražili ste resetovanje lozinke. Otvorite ovaj link da postavite novu lozinku:\n{url}\n\n"
@@ -339,10 +380,23 @@ _SR = {
         "Na Tržištu je upravo objavljen slučaj koji odgovara vašem profilu "
         "({category}, {city}). Prvi advokat koji ga preuzme — dobija ga:\n{url}"
     ),
-    "verify_approved_subject": "AvokatIM — Vaša AKK licenca je verifikovana",
+    "verify_approved_subject": "AvokatIM — Čestitamo, {name}! Licenca je verifikovana",
     "verify_approved_body": (
-        "Vaša advokatska licenca je uspešno verifikovana. Vaš profil je sada "
-        "vidljiv u javnom imeniku i možete preuzimati slučajeve sa Tržišta:\n{url}"
+        "Poštovani/a {name},\n\n"
+        "Vaša licenca je uspešno verifikovana — hvala vam na poverenju!\n\n"
+        "Od ovog trenutka vaš profil nosi oznaku verifikacije, vidljiv je u "
+        "javnom imeniku i građani mogu direktno da vas kontaktiraju. "
+        "Verifikovani advokati dobijaju i slučajeve sa Tržišta i SOS "
+        "obaveštenja.\n\n"
+        "Vaš profil: {url}\n\n{founder}"
+        "Gradimo most između građana i pravnih profesionalaca na Kosovu — i vi "
+        "ste sada deo toga. Za svako pitanje pišite nam, odgovaramo brzo.\n\n"
+        "S poštovanjem,\nArbër Arifi — AvokatIM"
+    ),
+    "verify_approved_founder": (
+        "Nešto posebno: među prvih ste 20 verifikovanih kancelarija na "
+        "platformi i zauvek nosite oznaku 'Osnivač' — naša zahvalnost za rano "
+        "ukazano poverenje."
     ),
     "verify_rejected_subject": "AvokatIM — Verifikacija licence nije odobrena",
     "verify_rejected_body": (
@@ -472,6 +526,20 @@ _TR = {
         "E-posta adresinizi bu bağlantıyı açarak doğrulayın:\n{url}\n\n"
         "Bağlantı 3 gün geçerlidir."
     ),
+    "citizen_welcome_subject": "Teşekkürler, {name} — AvokatIM hesabınız hazır!",
+    "citizen_welcome_body": (
+        "Merhaba {name},\n\n"
+        "AvokatIM'e katıldığınız için teşekkürler — hesabınız doğrulandı ve "
+        "her şey hazır.\n\n"
+        "Artık tamamen ücretsiz olarak sahip olduklarınız:\n"
+        "• Hukuk asistanı Ava — Kosova hukuku hakkında her şeyi sorun: {ava_url}\n"
+        "• Davanızı yayınlayın, doğrulanmış avukatlar sizinle iletişime geçsin: {post_url}\n"
+        "• Doğrulanmış avukat ve noter rehberi: {dir_url}\n"
+        "• Doldurulmaya hazır dilekçe ve itirazlar: {docs_url}\n"
+        "• Acil durumlar için SOS — anında yardım.\n\n"
+        "Vatandaş olarak sizin için platform ücretsizdir ve öyle kalacaktır.\n\n"
+        "Saygılarımızla,\nArbër Arifi — AvokatIM"
+    ),
     "citizen_reset_subject": "AvokatIM — Şifrenizi sıfırlayın",
     "citizen_reset_body": (
         "Şifre sıfırlama talebinde bulundunuz. Yeni bir şifre belirlemek için bu bağlantıyı açın:\n{url}\n\n"
@@ -516,10 +584,24 @@ _TR = {
         "Pazar'da profilinize uyan bir dava yayınlandı ({category}, {city}). "
         "Davayı ilk üstlenen avukat kazanır:\n{url}"
     ),
-    "verify_approved_subject": "AvokatIM — Baro lisansınız doğrulandı",
+    "verify_approved_subject": "AvokatIM — Tebrikler, {name}! Lisansınız doğrulandı",
     "verify_approved_body": (
-        "Avukatlık lisansınız başarıyla doğrulandı. Profiliniz artık kamu "
-        "rehberinde görünüyor ve Pazar'dan dava üstlenebilirsiniz:\n{url}"
+        "Sayın {name},\n\n"
+        "Lisansınız başarıyla doğrulandı — güveniniz için teşekkür ederiz!\n\n"
+        "Şu andan itibaren profiliniz doğrulama işareti taşıyor, kamu "
+        "rehberinde görünüyor ve vatandaşlar sizinle doğrudan iletişim "
+        "kurabilir. Doğrulanmış avukatlar Pazar'dan davalar ve SOS "
+        "bildirimleri de alır.\n\n"
+        "Profiliniz: {url}\n\n{founder}"
+        "Kosova'da vatandaşlar ile hukuk profesyonelleri arasında bir köprü "
+        "kuruyoruz — ve artık siz de bunun bir parçasısınız. Her sorunuz için "
+        "bize yazın, hızla yanıtlıyoruz.\n\n"
+        "Saygılarımızla,\nArbër Arifi — AvokatIM"
+    ),
+    "verify_approved_founder": (
+        "Özel bir not: platformda doğrulanan ilk 20 ofis arasındasınız ve "
+        "'Kurucu' rozetini kalıcı olarak taşıyorsunuz — erken güveniniz için "
+        "teşekkürlerimiz."
     ),
     "verify_rejected_subject": "AvokatIM — Lisans doğrulaması onaylanmadı",
     "verify_rejected_body": (
@@ -649,6 +731,20 @@ _BS = {
         "Potvrdite svoju email adresu otvaranjem ovog linka:\n{url}\n\n"
         "Link vrijedi 3 dana."
     ),
+    "citizen_welcome_subject": "Hvala, {name} — vaš AvokatIM nalog je spreman!",
+    "citizen_welcome_body": (
+        "Zdravo {name},\n\n"
+        "Hvala što ste se pridružili AvokatIM-u — vaš nalog je potvrđen i sve "
+        "je spremno.\n\n"
+        "Šta sada imate, potpuno besplatno:\n"
+        "• Ava, pravna asistentica — pitajte bilo šta o zakonu Kosova: {ava_url}\n"
+        "• Objavite svoj slučaj i verificirani advokati vas kontaktiraju: {post_url}\n"
+        "• Imenik verificiranih advokata i notara: {dir_url}\n"
+        "• Gotovi podnesci i žalbe za popunjavanje: {docs_url}\n"
+        "• SOS za hitne situacije — trenutna pomoć.\n\n"
+        "Za vas kao građanina platforma jeste i ostat će besplatna.\n\n"
+        "S poštovanjem,\nArbër Arifi — AvokatIM"
+    ),
     "citizen_reset_subject": "AvokatIM — Resetujte lozinku",
     "citizen_reset_body": (
         "Zatražili ste resetovanje lozinke. Otvorite ovaj link da postavite novu lozinku:\n{url}\n\n"
@@ -693,10 +789,23 @@ _BS = {
         "Na Tržištu je upravo objavljen slučaj koji odgovara vašem profilu "
         "({category}, {city}). Prvi advokat koji ga preuzme — dobija ga:\n{url}"
     ),
-    "verify_approved_subject": "AvokatIM — Vaša advokatska licenca je verificirana",
+    "verify_approved_subject": "AvokatIM — Čestitamo, {name}! Licenca je verificirana",
     "verify_approved_body": (
-        "Vaša advokatska licenca je uspješno verificirana. Vaš profil je sada "
-        "vidljiv u javnom imeniku i možete preuzimati slučajeve s Tržišta:\n{url}"
+        "Poštovani/a {name},\n\n"
+        "Vaša licenca je uspješno verificirana — hvala vam na povjerenju!\n\n"
+        "Od ovog trenutka vaš profil nosi oznaku verifikacije, vidljiv je u "
+        "javnom imeniku i građani mogu direktno da vas kontaktiraju. "
+        "Verificirani advokati dobijaju i slučajeve s Tržišta i SOS "
+        "obavještenja.\n\n"
+        "Vaš profil: {url}\n\n{founder}"
+        "Gradimo most između građana i pravnih profesionalaca na Kosovu — i vi "
+        "ste sada dio toga. Za svako pitanje pišite nam, odgovaramo brzo.\n\n"
+        "S poštovanjem,\nArbër Arifi — AvokatIM"
+    ),
+    "verify_approved_founder": (
+        "Nešto posebno: među prvih ste 20 verificiranih kancelarija na "
+        "platformi i zauvijek nosite oznaku 'Osnivač' — naša zahvalnost za "
+        "rano ukazano povjerenje."
     ),
     "verify_rejected_subject": "AvokatIM — Verifikacija licence nije odobrena",
     "verify_rejected_body": (
@@ -826,6 +935,20 @@ _EN = {
         "Confirm your email address by opening this link:\n{url}\n\n"
         "The link is valid for 3 days."
     ),
+    "citizen_welcome_subject": "Thank you, {name} — your AvokatIM account is ready!",
+    "citizen_welcome_body": (
+        "Hello {name},\n\n"
+        "Thank you for joining AvokatIM — your account is confirmed and "
+        "everything is ready.\n\n"
+        "What you now have, completely free:\n"
+        "• Ava, the legal assistant — ask anything about Kosovo law: {ava_url}\n"
+        "• Post your case and verified lawyers contact you: {post_url}\n"
+        "• Directory of verified lawyers and notaries: {dir_url}\n"
+        "• Ready-to-fill letters and complaints: {docs_url}\n"
+        "• SOS for urgent situations — immediate help.\n\n"
+        "For you as a citizen the platform is and will remain free.\n\n"
+        "Respectfully,\nArbër Arifi — AvokatIM"
+    ),
     "citizen_reset_subject": "AvokatIM — Reset your password",
     "citizen_reset_body": (
         "You requested a password reset. Open this link to set a new password:\n{url}\n\n"
@@ -870,10 +993,24 @@ _EN = {
         "A case matching your profile was just posted on the Marketplace "
         "({category}, {city}). The first lawyer to claim it wins:\n{url}"
     ),
-    "verify_approved_subject": "AvokatIM — Your OAK license is verified",
+    "verify_approved_subject": "AvokatIM — Congratulations, {name}! Your license is verified",
     "verify_approved_body": (
-        "Your bar license was verified successfully. Your profile is now "
-        "listed in the public directory and you can claim Marketplace cases:\n{url}"
+        "Dear {name},\n\n"
+        "Your license was verified successfully — thank you for trusting "
+        "AvokatIM!\n\n"
+        "From this moment your profile carries the verification badge, appears "
+        "in the public directory and citizens can contact you directly. "
+        "Verified lawyers also receive Marketplace cases and SOS alerts.\n\n"
+        "Your profile: {url}\n\n{founder}"
+        "We are building the bridge between citizens and legal professionals "
+        "in Kosovo — and you are now part of it. Write to us with any "
+        "question, we reply fast.\n\n"
+        "Respectfully,\nArbër Arifi — AvokatIM"
+    ),
+    "verify_approved_founder": (
+        "Something special: you are among the first 20 verified offices on the "
+        "platform and keep the 'Founder' badge forever — our thanks for your "
+        "early trust."
     ),
     "verify_rejected_subject": "AvokatIM — License verification not approved",
     "verify_rejected_body": (
@@ -982,6 +1119,19 @@ _ZH = {
     # Marketplace (citizens)
     "citizen_verify_subject": "AvokatIM — 确认您的邮箱",
     "citizen_verify_body": "请打开以下链接确认您的邮箱地址：\n{url}\n\n链接有效期为 3 天。",
+    "citizen_welcome_subject": "谢谢您，{name} — 您的 AvokatIM 账户已就绪！",
+    "citizen_welcome_body": (
+        "您好，{name}：\n\n"
+        "感谢您加入 AvokatIM——您的账户已确认，一切就绪。\n\n"
+        "您现在可以完全免费使用：\n"
+        "• 法律助手 Ava——咨询任何科索沃法律问题：{ava_url}\n"
+        "• 发布您的案件，经过验证的律师会与您联系：{post_url}\n"
+        "• 经过验证的律师和公证人名录：{dir_url}\n"
+        "• 可直接填写的申请书和投诉书：{docs_url}\n"
+        "• 紧急情况 SOS——即时帮助。\n\n"
+        "对公民而言，本平台现在免费，将来也保持免费。\n\n"
+        "此致，\nArbër Arifi — AvokatIM"
+    ),
     "citizen_reset_subject": "AvokatIM — 重置密码",
     "citizen_reset_body": "您请求了密码重置。请打开以下链接设置新密码：\n{url}\n\n链接有效期为 1 小时。如果不是您本人操作，请忽略此邮件。",
     "case_claimed_subject": "AvokatIM — 一位律师接受了您的案件",
@@ -1009,8 +1159,21 @@ _ZH = {
     "sos_alert_body": "一位公民请求紧急帮助（{city}）。您是 SOS 值班律师——请尽快打开市场并接手案件：\n{url}",
     "case_match_subject": "AvokatIM — 有一个与您的资料匹配的新案件",
     "case_match_body": "市场上刚发布了一个与您的资料匹配的案件（{category}，{city}）。先接手的律师获得该案件：\n{url}",
-    "verify_approved_subject": "AvokatIM — 您的律师执照已通过验证",
-    "verify_approved_body": "您的律师执照已成功验证。您的资料现已列入公开名录，并可以从市场接手案件：\n{url}",
+    "verify_approved_subject": "AvokatIM — 恭喜，{name}！您的执照已通过验证",
+    "verify_approved_body": (
+        "尊敬的{name}：\n\n"
+        "您的执照已成功通过验证——感谢您对 AvokatIM 的信任！\n\n"
+        "从现在起，您的资料带有验证标志，显示在公开名录中，公民可以直接联系您。"
+        "经过验证的律师还会收到市场案件和 SOS 通知。\n\n"
+        "您的资料：{url}\n\n{founder}"
+        "我们正在科索沃搭建公民与法律专业人士之间的桥梁——您现在是其中的一员。"
+        "有任何问题请写信给我们，我们会尽快回复。\n\n"
+        "此致，\nArbër Arifi — AvokatIM"
+    ),
+    "verify_approved_founder": (
+        "特别之处：您是平台上最早通过验证的 20 家事务所之一，"
+        "将永久保留“创始人”徽章——感谢您的早期信任。"
+    ),
     "verify_rejected_subject": "AvokatIM — 执照验证未通过",
     "verify_rejected_body": "您的律师执照验证未通过。备注：{note}\n请在设置中更正执照号码后重新提交：\n{url}",
     "platform_invoice_subject": "AvokatIM — 订阅发票 {number}",

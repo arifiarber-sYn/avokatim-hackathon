@@ -150,6 +150,13 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   `scripts/ops_digest.py` (08:30 morning report: 24h growth/marketplace
   numbers, pending verifications, feedback, overdue invoices, outreach tail,
   Umami traffic). Assistant rules: `~/.openclaw/workspace/AVOKATIM-OPS.md`.
+  **Correspondence operator role** (2026-07-19, D-028): Halim replaces the
+  owner for inbound human email — final ready-to-send draft on Telegram with
+  a single "PO (dërgo) / JO (lëre)" question; never duplicates automatic
+  letters. Outbound-communication map: `docs/agents/COMMS.md` (three lanes;
+  every successful registration is thanked automatically — warm
+  `verify_approved` letter with founder paragraph for professionals,
+  `citizen_welcome` letter on citizen email confirmation).
 - **Marketplace case quality gate** (2026-07-13):
   `services/case_quality.py` — heuristics (repetition, gibberish, too short)
   + one fast LLM JSON classification (fail-open → `quality_flag="heuristic"`);

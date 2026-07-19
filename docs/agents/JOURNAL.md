@@ -10,6 +10,28 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-19 — Thank-you letters + Halim as correspondence operator (Cursor / Fable 5)
+
+- Done: D-028. (1) `verify_approved_*` rewritten as a warm thank-you letter
+  (signed "Arbër Arifi — AvokatIM", `{founder}` paragraph for the first 20
+  offices) sent by BOTH verification paths (auto in
+  `services/license_verify.py`, manual in `api/platform.py`; rejected path
+  unchanged). (2) New `citizen_welcome_*` letter sent on first email
+  confirmation (`citizen_verify_email` in `api/marketplace.py`) with links to
+  Ava/posto-rastin/avokatet/dokumentet + `notify_ops` heads-up; test
+  recipients suppressed. All texts in 6 languages. (3) New
+  `docs/agents/COMMS.md` — full outbound-communication map (3 lanes:
+  automatic / Halim PO-JO / owner-only) + AGENTS.md §4b and session-protocol
+  step. (4) AVOKATIM-OPS.md rewritten: Halim replaces the owner in email
+  correspondence — final draft + single "PO (dërgo) / JO (lëre)" question,
+  never duplicates automatic letters; openclaw-knowledge synced.
+- Verified: new i18n test (letters format in all 6 locales) + 100 unit tests
+  pass (voice test flaky under the running GZK import, passes in isolation);
+  full E2E simulation 188 PASS / 0 FAIL; live hook announcement delivered to
+  Halim; health OK.
+- Left open: nothing. Future agents: any outbound email change must update
+  COMMS.md in the same commit.
+
 ## 2026-07-19 — Onboarding nudges: 48h → 1h (Cursor / Fable 5)
 
 - Done: owner's call — reminders should help while the signup is fresh, not

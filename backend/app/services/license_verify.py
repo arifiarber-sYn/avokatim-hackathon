@@ -150,12 +150,17 @@ async def try_auto_verify(user_id) -> bool:
         from app.services.notifications import send_email
 
         loc = pick_locale(user.locale)
+        # Warm thank-you letter — the moment they officially join the platform
+        founder_par = (
+            tr(loc, "verify_approved_founder") + "\n\n" if profile.is_founder else ""
+        )
         await send_email(
             user.email,
-            tr(loc, "verify_approved_subject"),
+            tr(loc, "verify_approved_subject", name=user.full_name),
             tr(loc, "verify_approved_body",
-               note=profile.verification_note,
-               url=f"{settings.public_base_url}/settings"),
+               name=user.full_name,
+               url=f"{settings.public_base_url}/avokatet",
+               founder=founder_par),
         )
         from app.services.ops_notify import notify_ops
 

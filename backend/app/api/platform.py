@@ -251,13 +251,27 @@ async def decide_verification(
         from app.services.notifications import send_email
 
         loc = pick_locale(lawyer.locale)
-        key = "verify_approved" if body.approve else "verify_rejected"
-        await send_email(
-            lawyer.email,
-            tr(loc, f"{key}_subject"),
-            tr(loc, f"{key}_body", note=body.note or "-",
-               url=f"{settings.public_base_url}/settings"),
-        )
+        if body.approve:
+            # Warm thank-you letter (same as the auto-verify path)
+            founder_par = (
+                tr(loc, "verify_approved_founder") + "\n\n"
+                if profile.is_founder else ""
+            )
+            await send_email(
+                lawyer.email,
+                tr(loc, "verify_approved_subject", name=lawyer.full_name),
+                tr(loc, "verify_approved_body",
+                   name=lawyer.full_name,
+                   url=f"{settings.public_base_url}/avokatet",
+                   founder=founder_par),
+            )
+        else:
+            await send_email(
+                lawyer.email,
+                tr(loc, "verify_rejected_subject"),
+                tr(loc, "verify_rejected_body", note=body.note or "-",
+                   url=f"{settings.public_base_url}/settings"),
+            )
     return {"verification_status": profile.verification_status}
 
 

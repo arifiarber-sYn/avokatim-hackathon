@@ -47,6 +47,29 @@ def test_bilabel_pairs_albanian_with_client_language():
     assert only_sq in both and "/" in both
 
 
+def test_thank_you_letters_format_in_every_locale():
+    """The registration thank-you letters (verified professional + confirmed
+    citizen) must format without KeyError in all six languages."""
+    for code in ALL_LOCALES:
+        subject = tr(code, "verify_approved_subject", name="Test Testi")
+        body = tr(
+            code, "verify_approved_body",
+            name="Test Testi", url="https://x/avokatet",
+            founder=tr(code, "verify_approved_founder") + "\n\n",
+        )
+        assert "Test Testi" in subject and "https://x/avokatet" in body, code
+        # Founder paragraph lands inside the letter, before the signature
+        assert body.index(tr(code, "verify_approved_founder")) < len(body) - 40, code
+
+        c_subject = tr(code, "citizen_welcome_subject", name="Qytetari")
+        c_body = tr(
+            code, "citizen_welcome_body",
+            name="Qytetari", ava_url="A1", post_url="P1", dir_url="D1", docs_url="K1",
+        )
+        assert "Qytetari" in c_subject, code
+        assert all(u in c_body for u in ("A1", "P1", "D1", "K1")), code
+
+
 def test_aml_indicators_have_all_languages():
     assert len(XK_AML_INDICATORS) >= 8
     for ind in XK_AML_INDICATORS:

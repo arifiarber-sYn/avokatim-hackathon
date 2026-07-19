@@ -91,7 +91,9 @@ subscription after a 90-day trial. Never a percentage of lawyer fees.
 2. Update `docs/agents/STATE.md` if the state changed (new module, new dependency,
    changed behavior, known issues).
 3. Record any architectural decision in `docs/agents/DECISIONS.md`.
-4. Commit your work to git (see §6). Never leave finished work uncommitted.
+4. If you added/changed any outbound email or operator notification, update
+   `docs/agents/COMMS.md` (see §4b).
+5. Commit your work to git (see §6). Never leave finished work uncommitted.
 
 ## 3. Architecture map
 
@@ -171,6 +173,21 @@ systemctl --user restart avokatim
 (or run `cd frontend && npm run build` yourself first if you want to see build
 errors directly).
 
+## 4b. Communication layer (emails + operator assistant)
+
+All outbound communication is mapped in **`docs/agents/COMMS.md`** — read it
+before touching anything that emails users. The short version:
+
+- **Lane A (automatic)**: the system itself welcomes, thanks, reminds and
+  invoices — every successful registration (lawyer/notary verified, citizen
+  confirmed) gets a warm thank-you letter with no human involvement.
+- **Lane B (Halim)**: the OpenClaw operator assistant handles inbound human
+  email — drafts a final reply, asks the owner only **PO/JO** on Telegram,
+  sends on "PO". The owner never composes routine mail.
+- If you add or change an outbound email: all 6 languages in
+  `backend/app/i18n.py`, test-recipient suppression, a row in COMMS.md, and a
+  `notify_ops` event when operationally relevant — in the same commit.
+
 ## 5. Hard rules
 
 1. **Never commit secrets.** `backend/.env` holds the DeepSeek API key, DB password,
@@ -197,6 +214,7 @@ errors directly).
 | File | Purpose |
 |---|---|
 | `docs/agents/STATE.md` | Current snapshot: what exists, what works, environment |
+| `docs/agents/COMMS.md` | Communication layer: every automated email + Halim's correspondence protocol |
 | `docs/agents/JOURNAL.md` | Chronological work log of all agent sessions |
 | `docs/agents/DECISIONS.md` | Architectural decisions and their reasons |
 | `docs/agents/ROADMAP.md` | Vision, phases, backlog — what to build next |

@@ -198,8 +198,27 @@ async def citizen_login(
     return {"access_token": _citizen_token(citizen.id), "citizen": _citizen_out(citizen)}
 
 
+async def _send_citizen_welcome(email: str, name: str, locale: str) -> None:
+    """Thank-you letter after the account is confirmed — the citizen's
+    "successful registration" moment (mirrors the lawyers' verified letter)."""
+    loc = pick_locale(locale)
+    base = settings.public_base_url
+    await send_email(
+        email,
+        tr(loc, "citizen_welcome_subject", name=name),
+        tr(loc, "citizen_welcome_body",
+           name=name,
+           ava_url=f"{base}/ava",
+           post_url=f"{base}/posto-rastin",
+           dir_url=f"{base}/avokatet",
+           docs_url=f"{base}/dokumentet"),
+    )
+
+
 @public_router.post("/citizen/verify-email")
-async def citizen_verify_email(body: dict, db: AsyncSession = Depends(get_db)):
+async def citizen_verify_email(
+    body: dict, background: BackgroundTasks, db: AsyncSession = Depends(get_db)
+):
     try:
         payload = decode_purpose_token(str(body.get("token", "")), "citizen_verify")
     except (pyjwt.PyJWTError, ValueError):
@@ -210,6 +229,17 @@ async def citizen_verify_email(body: dict, db: AsyncSession = Depends(get_db)):
     if citizen.email_verified_at is None:
         citizen.email_verified_at = datetime.now(UTC)
         await db.commit()
+        # First confirmation only: thank-you letter + heads-up to the operator
+        # assistant (test/simulation accounts stay silent)
+        if not _is_test_recipient(citizen.email):
+            background.add_task(
+                _send_citizen_welcome, citizen.email, citizen.full_name, citizen.locale
+            )
+            background.add_task(
+                notify_ops, "regjistrim-qytetar",
+                f"Qytetar i ri konfirmoi llogarinë: {citizen.full_name}. "
+                f"Letra falënderuese iu dërgua automatikisht — s'kërkohet veprim.",
+            )
     return {"verified": True}
 
 
