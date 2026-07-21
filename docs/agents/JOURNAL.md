@@ -10,6 +10,20 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-21 — AgentStandard v1 adopted (Cursor / Fable 5)
+
+- Done: the agent layer was aligned with the new cross-project standard
+  (`~/AgentStandard/STANDARD.md`, extracted from sYn/HELM, TotoTrading,
+  AvokatIM, OpsHub, EdaS). Added `docs/agents/LESSONS.md` (operational
+  lessons/incidents register), `docs/agents/INDEX.md` (documentation router),
+  `docs/agents/UPDATE-PROTOCOL.md` (write-side procedure), a Cursor
+  alwaysApply rule (`.cursor/rules/agent-docs.mdc`) and a deterministic
+  docs-sync stop hook (`.cursor/hooks/check-docs-sync.sh` — nudges when
+  backend/frontend code changes without a docs/agents update). AGENTS.md §2
+  and §7 updated to reference the new files.
+- Verified: hook syntax-checked and exercised (both nudge paths).
+- Left open: nothing.
+
 ## 2026-07-19 — Thank-you letters + Halim as correspondence operator (Cursor / Fable 5)
 
 - Done: D-028. (1) `verify_approved_*` rewritten as a warm thank-you letter

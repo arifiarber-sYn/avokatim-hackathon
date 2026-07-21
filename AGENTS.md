@@ -85,6 +85,8 @@ subscription after a 90-day trial. Never a percentage of lawyer fees.
 1. Read `docs/agents/STATE.md` — current state of the project.
 2. Read the last 2–3 entries of `docs/agents/JOURNAL.md` — recent work.
 3. If your task touches architecture, skim `docs/agents/DECISIONS.md`.
+4. Before proposing to remove/replace anything, check `docs/agents/LESSONS.md`.
+   Unsure which file covers your task? Route via `docs/agents/INDEX.md`.
 
 **At the end of every session (or after completing a significant task):**
 1. Append an entry to `docs/agents/JOURNAL.md` (format is described there).
@@ -213,7 +215,10 @@ before touching anything that emails users. The short version:
 
 | File | Purpose |
 |---|---|
+| `docs/agents/INDEX.md` | Documentation router — the layer at a glance + task routing |
 | `docs/agents/STATE.md` | Current snapshot: what exists, what works, environment |
+| `docs/agents/LESSONS.md` | Settled operational lessons + incidents — check before proposing changes |
+| `docs/agents/UPDATE-PROTOCOL.md` | Write-side procedure after any change |
 | `docs/agents/COMMS.md` | Communication layer: every automated email + Halim's correspondence protocol |
 | `docs/agents/JOURNAL.md` | Chronological work log of all agent sessions |
 | `docs/agents/DECISIONS.md` | Architectural decisions and their reasons |
