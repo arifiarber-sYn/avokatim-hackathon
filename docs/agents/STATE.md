@@ -163,7 +163,14 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   fragment). Buttons appear per provider only when its `OAUTH_*` credentials
   exist in `backend/.env` (commented placeholders + redirect URIs are there).
   **Not yet activated** — owner still has to create the Google/Apple/Meta
-  OAuth apps (Apple needs the paid Developer Program).
+  OAuth apps. Good news from the sYn project (2026-07-23): all three
+  developer accounts already exist — Apple Developer Program is ALREADY PAID
+  (Team ID `6G9FRA7A53`, Sign in with Apple live for `app.synsocial.synios`),
+  Google Cloud Console has OAuth clients (project `984240847520`), Meta has
+  app `2394511174305570`. Only new per-app clients branded "AvokatIM" are
+  needed (~15 min, no cost); sYn's own credentials can't be reused because
+  the consent screens say "SYN" and its flow is native-mobile, not web
+  redirect.
 - **Marketplace case quality gate** (2026-07-13):
   `services/case_quality.py` — heuristics (repetition, gibberish, too short)
   + one fast LLM JSON classification (fail-open → `quality_flag="heuristic"`);
