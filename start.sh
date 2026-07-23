@@ -37,10 +37,17 @@ fi
 if [ "$NEEDS_BUILD" = "1" ]; then
     echo "  Kodi i frontend-it ka ndryshuar — po rindertohet..."
     (cd frontend && npm run build > /dev/null 2>&1)
-    # Serveri i vjeter (nese ekziston) mban referenca te build-it te vjeter — ndaloje
-    pkill -f "next-serve[r]" 2>/dev/null || true
-    sleep 2
 fi
+# Ndalo GJITHMONE serverin e vjeter te KETIJ projekti (identifikohet nga cwd,
+# se emri "next-server" eshte i njejte per cdo projekt Next ne kete makine).
+# Incidenti 2026-07-23: build manual + restart e linte serverin e vjeter gjalle
+# me kod te vjeter ne memorie, sepse pkill ndodhte vetem kur ndryshonte kodi.
+for pid in $(pgrep -f "next-serve[r]" 2>/dev/null || true); do
+    if [ "$(readlink /proc/$pid/cwd 2>/dev/null)" = "$PWD/frontend" ]; then
+        kill "$pid" 2>/dev/null || true
+    fi
+done
+sleep 2
 if ! curl -sf http://127.0.0.1:3000 > /dev/null 2>&1; then
     (cd frontend && nohup npm start >> ../data/frontend.log 2>&1 &)
 fi

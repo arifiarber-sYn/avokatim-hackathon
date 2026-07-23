@@ -31,10 +31,21 @@
 - Verified: 110/110 backend tests (9 new in `test_oauth_citizen.py`: state
   roundtrip, open-redirect guard, Apple ES256 client secret, provider
   gating), frontend build clean, live `/api/public/oauth/providers` → `[]`.
-- Left open: owner must create the OAuth apps (Google Cloud Console — free;
-  Apple Developer Program — $99/yr, needed for the iCloud button; Meta for
-  Developers) and fill the `.env` keys; buttons appear automatically after
-  a restart. Exact redirect URIs are documented in `.env` comments.
+- Done (same evening): **Google login ACTIVATED in production.** The sYn
+  project proved all three developer accounts already exist (Apple program
+  paid, Team `6G9FRA7A53`). Guided the owner through Google Cloud Console
+  (project `elemental-shine-503317-u9`, existing "My Project 94295"), then
+  drove the browser directly (pynput/XTest + screenshots) to finish the
+  form, create the web client, copy the secret via clipboard and publish
+  the app to production. `.env` filled, `providers` returns `["google"]`,
+  full flow verified live with Playwright (button → accounts.google.com).
+- Done: fixed the stale-frontend trap found during verification (LESSONS
+  #3): `start.sh` now always kills this project's `next-server` (matched by
+  `/proc/<pid>/cwd`), and `public/sw.js` cache bumped to v19.
+- Left open: Apple (Services ID + .p8 key on developer.apple.com — account
+  already paid) and Meta (new app on developers.facebook.com) — same guided
+  procedure when the owner has 10 minutes; backend/frontend are ready,
+  buttons appear as soon as the `.env` keys exist.
 
 ## 2026-07-21 — AgentStandard v1 adopted (Cursor / Fable 5)
 
