@@ -58,6 +58,23 @@ class Settings(BaseSettings):
     # Public base URL used in links (calendar feed, public intake form)
     public_base_url: str = "http://127.0.0.1:3000"
 
+    # Social login for citizen accounts (Google / Apple / Meta). A provider's
+    # button appears only when its credentials are set. Redirect URIs to
+    # register with each provider:
+    #   {public_base_url}/api/public/oauth/{google|apple|meta}/callback
+    oauth_google_client_id: str = ""
+    oauth_google_client_secret: str = ""
+    # Apple "Sign in with Apple": Services ID (client id), Team ID, Key ID and
+    # the .p8 private key (PEM contents or a file path) — requires the paid
+    # Apple Developer Program.
+    oauth_apple_client_id: str = ""
+    oauth_apple_team_id: str = ""
+    oauth_apple_key_id: str = ""
+    oauth_apple_private_key: str = ""
+    # Meta (Facebook Login)
+    oauth_meta_client_id: str = ""
+    oauth_meta_client_secret: str = ""
+
     # Email notifications (deadline reminders). Empty smtp_host = disabled.
     smtp_host: str = ""
     smtp_port: int = 587

@@ -25,6 +25,7 @@ from app.api import (
     intake,
     marketplace,
     matters,
+    oauth_citizen,
     platform,
     portal,
     privacy,
@@ -102,6 +103,7 @@ app.include_router(privacy.router, prefix=api_prefix)
 app.include_router(aml.router, prefix=api_prefix)
 app.include_router(marketplace.router, prefix=api_prefix)
 app.include_router(marketplace.public_router, prefix=api_prefix)
+app.include_router(oauth_citizen.router, prefix=api_prefix)
 app.include_router(subscription.router, prefix=api_prefix)
 app.include_router(voice.router, prefix=api_prefix)
 app.include_router(whatsapp.router, prefix=api_prefix)

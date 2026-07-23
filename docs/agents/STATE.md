@@ -157,6 +157,13 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   every successful registration is thanked automatically — warm
   `verify_approved` letter with founder paragraph for professionals,
   `citizen_welcome` letter on citizen email confirmation).
+- **Citizen social login** (2026-07-23): "Vazhdo me Google / Apple /
+  Facebook" on the citizen auth form (`api/oauth_citizen.py`, server-side
+  OAuth code flow at `/api/public/oauth/*`; token handed back in the URL
+  fragment). Buttons appear per provider only when its `OAUTH_*` credentials
+  exist in `backend/.env` (commented placeholders + redirect URIs are there).
+  **Not yet activated** — owner still has to create the Google/Apple/Meta
+  OAuth apps (Apple needs the paid Developer Program).
 - **Marketplace case quality gate** (2026-07-13):
   `services/case_quality.py` — heuristics (repetition, gibberish, too short)
   + one fast LLM JSON classification (fail-open → `quality_flag="heuristic"`);
@@ -372,8 +379,9 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - **Audit log** on matter/document actions.
 - **Public marketplace — citizens ↔ lawyers** (2026-07-11, Phase 1 of D-013):
   platform-level models in `app/models/marketplace.py` (no tenant_id):
-  `CitizenUser` (own bcrypt password, locale, email verification,
-  `privacy_accepted_at`), `LawyerProfile` (opt-in public directory entry per
+  `CitizenUser` (own bcrypt password — **nullable** for social-login
+  accounts, `oauth_provider`/`oauth_sub` since 2026-07-23, locale, email
+  verification, `privacy_accepted_at`), `LawyerProfile` (opt-in public directory entry per
   tenant user: bio/areas/cities/languages/photo, `is_visible`), `CaseRequest`
   (open → claimed → converted / closed; optional `directed_tenant_id` for
   requests aimed at one lawyer from the directory), `CaseRequestMessage`

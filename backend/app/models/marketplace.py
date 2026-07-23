@@ -44,7 +44,12 @@ class CitizenUser(Base, TimestampMixin):
     email: Mapped[str] = mapped_column(String(255), index=True)
     phone: Mapped[str | None] = mapped_column(String(64))
     full_name: Mapped[str] = mapped_column(String(200))
-    password_hash: Mapped[str] = mapped_column(String(255))
+    # Null for social-login accounts (Google/Apple/Meta) that never set one
+    password_hash: Mapped[str | None] = mapped_column(String(255))
+    # Social login (OAuth/OIDC): provider slug + the provider's stable user id.
+    # Email can change on the provider side; (provider, sub) cannot.
+    oauth_provider: Mapped[str | None] = mapped_column(String(20))
+    oauth_sub: Mapped[str | None] = mapped_column(String(255), index=True)
     locale: Mapped[str] = mapped_column(String(8), default="sq")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

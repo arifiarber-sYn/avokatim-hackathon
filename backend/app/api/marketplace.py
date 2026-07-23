@@ -191,7 +191,13 @@ async def citizen_login(
     citizen = (
         await db.execute(select(CitizenUser).where(CitizenUser.email == body.email.lower()))
     ).scalar_one_or_none()
-    if citizen is None or not verify_password(body.password, citizen.password_hash):
+    # password_hash is None for social-login accounts that never set one —
+    # they must use the provider button (or the reset flow to add a password)
+    if (
+        citizen is None
+        or not citizen.password_hash
+        or not verify_password(body.password, citizen.password_hash)
+    ):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
     if not citizen.is_active:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Account disabled")
@@ -298,7 +304,9 @@ async def citizen_change_password(
     db: AsyncSession = Depends(get_db),
 ):
     await _rate_limit("citizen_pw_change", str(citizen.id), limit=5, window_seconds=3600)
-    if not verify_password(body.current_password, citizen.password_hash):
+    if not citizen.password_hash or not verify_password(
+        body.current_password, citizen.password_hash
+    ):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Current password is incorrect")
     citizen.password_hash = hash_password(body.new_password)
     await log_action(

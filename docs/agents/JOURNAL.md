@@ -10,6 +10,32 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-23 — Social login for citizens: Google / Apple / Meta (Cursor / Fable 5)
+
+- Done: first real user asked to sign up with the identity already on their
+  phone (iCloud/Google/Meta), email as fallback. Implemented server-side
+  OAuth code flow, no SDKs: new `app/api/oauth_citizen.py` mounted at
+  `/api/public/oauth` (`/providers`, `/{provider}/start`,
+  `/{provider}/callback` GET+POST — Apple uses `response_mode=form_post`).
+  `CitizenUser` got `oauth_provider`/`oauth_sub`, `password_hash` now
+  nullable (migration `47aad58def60`); login/change-password guard the null
+  hash. Identity keyed on the provider's stable `sub`; same verified email
+  links to the existing account instead of duplicating. OAuth signups are
+  born email-verified → the `citizen_welcome` letter + `notify_ops` fire
+  immediately (COMMS.md lane A). Frontend: provider buttons + "ose me email"
+  divider in `citizen-auth.tsx` (token returned in the URL *fragment*,
+  picked up on mount), 5 new strings × 6 languages. A provider's button
+  appears only when its `.env` credentials are set (`OAUTH_GOOGLE_*`,
+  `OAUTH_APPLE_*` ×4, `OAUTH_META_*`; commented placeholders added to
+  `backend/.env`).
+- Verified: 110/110 backend tests (9 new in `test_oauth_citizen.py`: state
+  roundtrip, open-redirect guard, Apple ES256 client secret, provider
+  gating), frontend build clean, live `/api/public/oauth/providers` → `[]`.
+- Left open: owner must create the OAuth apps (Google Cloud Console — free;
+  Apple Developer Program — $99/yr, needed for the iCloud button; Meta for
+  Developers) and fill the `.env` keys; buttons appear automatically after
+  a restart. Exact redirect URIs are documented in `.env` comments.
+
 ## 2026-07-21 — AgentStandard v1 adopted (Cursor / Fable 5)
 
 - Done: the agent layer was aligned with the new cross-project standard
