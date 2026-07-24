@@ -162,14 +162,14 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   OAuth code flow at `/api/public/oauth/*`; token handed back in the URL
   fragment). Buttons appear per provider only when its `OAUTH_*` credentials
   exist in `backend/.env` (commented placeholders + redirect URIs are there).
-  **Google is LIVE in production** (2026-07-23 evening: GCP project
-  `elemental-shine-503317-u9`, app "AvokatIM" published, flow verified
-  end-to-end). Apple and Meta still pending — the accounts already exist
-  from the sYn project (Apple Developer Program ALREADY PAID, Team ID
-  `6G9FRA7A53`; Meta developer account with app `2394511174305570`), so
-  only new per-app clients branded "AvokatIM" are needed (~10 min, no
-  cost). sYn's own credentials can't be reused (consent screens say "SYN",
-  native-mobile flow).
+  **Google is LIVE** (2026-07-23: GCP project `elemental-shine-503317-u9`,
+  app "AvokatIM" published, flow verified end-to-end). **Apple is LIVE**
+  (2026-07-24: team `6G9FRA7A53` / reYa Cloud LLC — App ID
+  `ai.avokatiim.app`, Services ID `ai.avokatiim.web` = client_id, key
+  `6B5M85MHN7`, .p8 at `backend/secrets/` which is git-ignored; flow
+  verified to appleid.apple.com). Meta still pending — developer account
+  exists from sYn (app `2394511174305570`), only a new "AvokatIM" app with
+  Facebook Login is needed (~5 min, no cost).
 - **Marketplace case quality gate** (2026-07-13):
   `services/case_quality.py` — heuristics (repetition, gibberish, too short)
   + one fast LLM JSON classification (fail-open → `quality_flag="heuristic"`);

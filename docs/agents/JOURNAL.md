@@ -42,10 +42,18 @@
 - Done: fixed the stale-frontend trap found during verification (LESSONS
   #3): `start.sh` now always kills this project's `next-server` (matched by
   `/proc/<pid>/cwd`), and `public/sw.js` cache bumped to v19.
-- Left open: Apple (Services ID + .p8 key on developer.apple.com — account
-  already paid) and Meta (new app on developers.facebook.com) — same guided
-  procedure when the owner has 10 minutes; backend/frontend are ready,
-  buttons appear as soon as the `.env` keys exist.
+- Done (2026-07-24 morning): **Apple login ACTIVATED.** Owner logged into
+  the Apple Developer account (reYa Cloud LLC, team `6G9FRA7A53`); the
+  agent drove the browser end to end: App ID `ai.avokatiim.app` (Sign In
+  with Apple, primary), Services ID `ai.avokatiim.web` (domains
+  avokatiim.ai + www, return URL `/api/public/oauth/apple/callback`), key
+  "AvokatIM SIWA" `6B5M85MHN7` with one-time .p8 download → moved to
+  `backend/secrets/` (0600, git-ignored). `.env` filled; providers now
+  `["google","apple"]`; Playwright verified the button reaches
+  appleid.apple.com with "sign in to AvokatIM Web".
+- Left open: Meta only (new app on developers.facebook.com) — same guided
+  procedure; backend/frontend ready, button appears as soon as the
+  `OAUTH_META_*` keys exist.
 
 ## 2026-07-21 — AgentStandard v1 adopted (Cursor / Fable 5)
 

@@ -16,3 +16,4 @@ frontend/out/
 # Data (client documents, DB dumps)
 data/
 *.log
+backend/secrets/
