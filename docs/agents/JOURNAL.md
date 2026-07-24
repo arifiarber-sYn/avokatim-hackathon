@@ -51,9 +51,23 @@
   `backend/secrets/` (0600, git-ignored). `.env` filled; providers now
   `["google","apple"]`; Playwright verified the button reaches
   appleid.apple.com with "sign in to AvokatIM Web".
-- Left open: Meta only (new app on developers.facebook.com) — same guided
-  procedure; backend/frontend ready, button appears as soon as the
-  `OAUTH_META_*` keys exist.
+- Done (2026-07-24): **Meta (Facebook) login ACTIVATED — all three providers
+  live.** Owner completed the Meta-for-Developers registration (SMS verify,
+  role Owner/founder); the agent drove the browser end to end: app
+  "AvokatIM" (App ID `1330283695757341`, type consumer via the new use-case
+  flow, use case "Facebook Login"), `email` permission added, valid OAuth
+  redirect URI `https://avokatiim.ai/api/public/oauth/meta/callback`,
+  Basic settings filled (privacy `/privatesia`, terms `/kushtet`, data
+  deletion `/privatesia`, category Business and pages, 1024×1024 icon from
+  `icon-512.png`). `.env` filled → `providers` returns
+  `["google","apple","meta"]`. Full flow verified LIVE on avokatiim.ai/kycu:
+  "Vazhdo me Facebook" → FB consent → logged in and linked to the existing
+  citizen account (same email) as verified.
+- Left open (Meta): app is still in **Development Mode** — only app
+  admins/testers can log in. Public access needs Meta **Business
+  verification** (business documents at developers.facebook.com → app
+  AvokatIM → Publish → Start Verification) and then Publish. Google and
+  Apple are fully public already, so this only affects the Facebook button.
 
 ## 2026-07-21 — AgentStandard v1 adopted (Cursor / Fable 5)
 

@@ -167,9 +167,12 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   (2026-07-24: team `6G9FRA7A53` / reYa Cloud LLC — App ID
   `ai.avokatiim.app`, Services ID `ai.avokatiim.web` = client_id, key
   `6B5M85MHN7`, .p8 at `backend/secrets/` which is git-ignored; flow
-  verified to appleid.apple.com). Meta still pending — developer account
-  exists from sYn (app `2394511174305570`), only a new "AvokatIM" app with
-  Facebook Login is needed (~5 min, no cost).
+  verified to appleid.apple.com). **Meta is LIVE in dev mode** (2026-07-24:
+  app "AvokatIM" `1330283695757341` with Facebook Login use case, `email`
+  permission, redirect URI + basic settings filled; full flow verified on
+  /kycu). Caveat: only app admins/testers can use the Facebook button until
+  Meta **Business verification + Publish** are completed by the owner
+  (developers.facebook.com → AvokatIM → Publish → Start Verification).
 - **Marketplace case quality gate** (2026-07-13):
   `services/case_quality.py` — heuristics (repetition, gibberish, too short)
   + one fast LLM JSON classification (fail-open → `quality_flag="heuristic"`);
