@@ -10,6 +10,30 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-25 — Lawyer-registration audit: stats fix, test cleanup, follow-ups (Cursor / Fable 5)
+
+- Done: owner saw "4 lawyers" on the landing page but the directory showed
+  fewer. Root cause: `/public/stats` counted verified+visible profiles
+  without the `User.is_active` / `Tenant.status` filters the `/lawyers`
+  directory applies, so 2 deactivated test accounts inflated the number.
+  Stats query now mirrors the directory filters exactly (comment says so).
+  Also made `test_oauth_citizen.py` gating tests independent of the real
+  OAuth credentials now living in `backend/.env` (new `no_oauth` fixture).
+- Done (owner-approved): deleted test tenants `test`, `Test` and the demo
+  tenant `Zyra Demo` (recreatable any time via `scripts/seed_demo.py`).
+  Kept "Test Office" (Kujtim Gacaferri) — real person, pending signup.
+  12 tenants remain: admin + 10 real lawyer/notary offices + Test Office.
+- Done (owner-approved): personal follow-up emails sent to the 3 lawyers
+  whose visible profile lacks only the OAK license — Jeton Shala, Adnan
+  Pacolli (license letter) and Illyrian Berisha (fresh verify link + the
+  license step; registered a day earlier, email unconfirmed);
+  `profile_nudge_sent_at` stamped so automated reminders don't double-send.
+- Verified: 110/110 backend tests, `/api/public/stats` returns
+  `lawyers_in_directory: 2` matching the live directory (Rrahmani, Osmanaj).
+- Left open: real funnel state — 2 lawyers public; 3 nudged for license;
+  4 signups without a public profile (2 of them email-unconfirmed);
+  notary Dervishaj unverified (ONK).
+
 ## 2026-07-23 — Social login for citizens: Google / Apple / Meta (Cursor / Fable 5)
 
 - Done: first real user asked to sign up with the identity already on their
