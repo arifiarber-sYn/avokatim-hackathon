@@ -15,19 +15,38 @@ from app.api.oauth_citizen import (
 )
 from app.config import settings
 
+_ALL_OAUTH_SETTINGS = [
+    "oauth_google_client_id",
+    "oauth_google_client_secret",
+    "oauth_apple_client_id",
+    "oauth_apple_team_id",
+    "oauth_apple_key_id",
+    "oauth_apple_private_key",
+    "oauth_meta_client_id",
+    "oauth_meta_client_secret",
+]
 
-def test_no_providers_without_credentials():
+
+@pytest.fixture
+def no_oauth(monkeypatch):
+    """Real credentials live in backend/.env now; gating tests need a
+    clean slate independent of the developer's environment."""
+    for name in _ALL_OAUTH_SETTINGS:
+        monkeypatch.setattr(settings, name, "")
+
+
+def test_no_providers_without_credentials(no_oauth):
     """Fresh install: no OAuth credentials -> no buttons, endpoints 404."""
     assert enabled_providers() == []
 
 
-def test_google_enabled_when_configured(monkeypatch):
+def test_google_enabled_when_configured(no_oauth, monkeypatch):
     monkeypatch.setattr(settings, "oauth_google_client_id", "cid")
     monkeypatch.setattr(settings, "oauth_google_client_secret", "sec")
     assert enabled_providers() == ["google"]
 
 
-def test_apple_requires_all_four_settings(monkeypatch):
+def test_apple_requires_all_four_settings(no_oauth, monkeypatch):
     monkeypatch.setattr(settings, "oauth_apple_client_id", "ai.avokatiim.signin")
     monkeypatch.setattr(settings, "oauth_apple_team_id", "TEAM123")
     monkeypatch.setattr(settings, "oauth_apple_key_id", "KEY123")

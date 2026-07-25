@@ -949,14 +949,19 @@ async def public_stats(db: AsyncSession = Depends(get_db)):
 
     from app.models import LegalCorpusChunk, LegalCorpusDoc
 
+    # Must mirror the /lawyers directory filters exactly, otherwise the
+    # landing-page count disagrees with what visitors actually see there.
     lawyers = (
         await db.execute(
             select(func.count(LawyerProfile.id))
             .select_from(LawyerProfile)
+            .join(User, User.id == LawyerProfile.user_id)
             .join(Tenant, Tenant.id == LawyerProfile.tenant_id)
             .where(
                 LawyerProfile.is_visible.is_(True),
                 LawyerProfile.verification_status == "verified",
+                User.is_active.is_(True),
+                Tenant.status == "active",
                 Tenant.profession == "lawyer",
             )
         )
