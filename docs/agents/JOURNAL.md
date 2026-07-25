@@ -10,6 +10,16 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-25a — Personal nudge: notary Dervishaj (Halim / DeepSeek v4)
+
+- Done: sent personal follow-up email to Fatos Dervishaj (Tosi / fatosdervishaj@gmail.com).
+  Profile bare after 11 days: no cities, no bio, no photo, no ONK license, is_visible=true.
+  Script at `backend/scripts/send_tosi_email.py` (one-shot, keep for reference).
+  Stamped `profile_nudge_sent_at` so automatic reminders won't double-send.
+- Verified: SMTP sent OK; DB updated (UPDATE 1).
+- Left open: Gani Abazi — email unverified, auto-nudge already sent on signup day;
+  no point sending to an unconfirmed address. Wait.
+
 ## 2026-07-25 — Lawyer-registration audit: stats fix, test cleanup, follow-ups (Cursor / Fable 5)
 
 - Done: owner saw "4 lawyers" on the landing page but the directory showed
