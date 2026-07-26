@@ -17,3 +17,6 @@ frontend/out/
 data/
 *.log
 backend/secrets/
+
+# Halim (OpenClaw) runtime state — inbox triage cursor, contains third-party email details
+backend/memory/
