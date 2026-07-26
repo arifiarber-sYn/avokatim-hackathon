@@ -125,11 +125,15 @@ The project lives at `~/AvokatIM` (a compat symlink `~/BoraLaw` points there).
 The stack runs on this machine via **systemd user services** (start on boot):
 
 ```bash
-systemctl --user status avokatim     # status
-systemctl --user restart avokatim    # restart everything
-./start.sh                          # manual start (same thing)
-./stop.sh                           # stop backend, frontend, containers
+systemctl --user status avokatim              # backend status
+systemctl --user restart avokatim             # backend + containers ONLY
+systemctl --user restart avokatim-frontend    # frontend (rebuilds if src changed)
+./start.sh                                    # manual full start (fallback)
+./stop.sh                                     # stop backend, frontend, containers
 ```
+
+**The frontend is a separate unit** (`avokatim-frontend.service`): restarting
+`avokatim` does NOT deploy UI changes (LESSONS #4).
 
 Related units: `avokatim-tunnel.service` (Cloudflare Tunnel for the public
 domain; the tunnel's internal name on Cloudflare is still `boralaw` — leave it),
@@ -164,16 +168,20 @@ Simulations create throwaway tenants and clean up after themselves; their email
 addresses are suppressed (`_is_test_recipient` in `services/notifications.py`) —
 keep new test identities matching those patterns or bounces hit the owner's inbox.
 
-**IMPORTANT — frontend builds:** `start.sh` rebuilds the frontend automatically
-when anything under `frontend/src`/`public` is newer than `.next/BUILD_ID`, and
-kills the stale `next-server` first. So after changing frontend code:
+**IMPORTANT — frontend builds:** after changing frontend code, deploy with:
 
 ```bash
-systemctl --user restart avokatim
+cd frontend && npm run build && systemctl --user restart avokatim-frontend
 ```
 
-(or run `cd frontend && npm run build` yourself first if you want to see build
-errors directly).
+Then verify an asset actually loads (stale-server incidents: LESSONS #3, #4):
+
+```bash
+curl -s http://127.0.0.1:3000/ | rg -o '/_next/static/[^"]+' | head -1  # → curl it, expect 200
+```
+
+Bump `CACHE` in `frontend/public/sw.js` on UI overhauls (PWA caches
+`/_next/static` cache-first and Turbopack chunk names are not content-hashed).
 
 ## 4b. Communication layer (emails + operator assistant)
 

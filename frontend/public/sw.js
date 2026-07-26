@@ -3,7 +3,7 @@
 
 // Bump the version on UI overhauls: activate deletes every older cache,
 // so returning browsers drop any stale shell immediately.
-const CACHE = "avokatim-shell-v19";
+const CACHE = "avokatim-shell-v20";
 const OFFLINE_URLS = ["/", "/dashboard", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {

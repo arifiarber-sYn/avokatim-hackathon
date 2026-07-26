@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
 import { getCitizenToken } from "@/lib/citizen";
-import { Button, Card, ErrorNote, Textarea } from "@/components/ui";
+import { Button, Card, ErrorNote, Textarea, TypingDots } from "@/components/ui";
 import PublicShell from "@/components/public-shell";
 import PageIntro from "@/components/page-intro";
 import { MicButton, SpeakButton, useVoiceAvailable } from "@/components/voice-controls";
@@ -69,7 +69,14 @@ export default function PublicAvaPage() {
     setError("");
     setDraft("");
     const history = messagesRef.current.map((m) => ({ role: m.role, content: m.content }));
-    setMessages((prev) => [...prev, { role: "user", content: question }]);
+    // Append the empty assistant bubble right away: it renders animated
+    // typing dots, so the user sees the system working from the first moment
+    // (feedback: a static "…" looked like a hang while RAG+LLM warmed up).
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", content: question },
+      { role: "assistant", content: "" },
+    ]);
 
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     const token = getCitizenToken();
@@ -88,13 +95,13 @@ export default function PublicAvaPage() {
           if (res.status === 429) detail = t.mkAvaLimitReached;
           else if (typeof data.detail === "string") detail = data.detail;
         } catch {}
-        setMessages((prev) => prev.slice(0, -1));
+        // Drop both the user message and the assistant placeholder
+        setMessages((prev) => prev.slice(0, -2));
         setDraft(question);
         throw new Error(detail);
       }
       let citations: ChatMsg["citations"] = [];
       let answer = "";
-      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
@@ -251,7 +258,7 @@ export default function PublicAvaPage() {
                     : "bg-white border border-slate-200 text-slate-700"
                 }`}
               >
-                {m.content || "…"}
+                {m.content || <TypingDots />}
               </div>
               {m.role === "assistant" && (m.content || (m.citations && m.citations.length > 0)) && (
                 <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
@@ -268,7 +275,11 @@ export default function PublicAvaPage() {
               </div>
             </div>
           ))}
-          {thinking && <p className="text-xs text-slate-400 animate-pulse">…</p>}
+          {thinking && (
+            <p className="flex items-center gap-2 text-xs text-slate-400">
+              <TypingDots /> {t.avaThinking}
+            </p>
+          )}
           <div ref={bottomRef} />
         </div>
 

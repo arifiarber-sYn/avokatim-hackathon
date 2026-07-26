@@ -200,6 +200,22 @@ export function Spinner() {
   );
 }
 
+/** Animated "assistant is typing" dots — an empty chat bubble with a static
+ * "…" made users think the system had hung (feedback from Dukagjin Rudi). */
+export function TypingDots() {
+  return (
+    <span className="inline-flex items-center gap-1" aria-label="…" role="status">
+      {[0, 150, 300].map((delay) => (
+        <span
+          key={delay}
+          className="h-1.5 w-1.5 rounded-full bg-slate-400 animate-bounce"
+          style={{ animationDelay: `${delay}ms`, animationDuration: "0.9s" }}
+        />
+      ))}
+    </span>
+  );
+}
+
 export function ErrorNote({ message }: { message: string }) {
   if (!message) return null;
   return (

@@ -50,3 +50,22 @@
   browser. Related: `public/sw.js` caches `/_next/static` cache-first and
   Turbopack chunk names are NOT content-hashed — bump `CACHE` version on
   UI overhauls.
+
+## #4 — Frontend now has its OWN systemd unit; restarting `avokatim` does not deploy UI changes (2026-07-26)
+
+- **Symptom**: same class as #3, second incident. After a frontend rebuild
+  and `systemctl --user restart avokatim`, the live site served the
+  morning's HTML whose chunk files the new build had deleted from
+  `.next/static/chunks/` → every `/_next` asset returned 500, pages
+  rendered unstyled and never hydrated (buttons dead).
+- **Cause**: the stack was split into `avokatim.service` (backend uvicorn
+  only) and `avokatim-frontend.service` (ExecStartPre rebuild-if-changed +
+  `npm start`). Restarting `avokatim` no longer touches the frontend at
+  all, but AGENTS.md and muscle memory still said "restart avokatim =
+  everything".
+- **Rule** (deterministic, per AgentStandard §6): after ANY frontend
+  change, deploy with
+  `cd frontend && npm run build && systemctl --user restart avokatim-frontend`.
+  Verify with `curl -s http://127.0.0.1:3000/<page> | rg -o '/_next/[^"]+' | head -1`
+  and confirm that asset returns 200. If `systemctl` warns "unit file
+  changed on disk", run `systemctl --user daemon-reload` first.

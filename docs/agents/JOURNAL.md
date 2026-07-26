@@ -20,6 +20,31 @@
 - Left open: Gani Abazi — email unverified, auto-nudge already sent on signup day;
   no point sending to an unconfirmed address. Wait.
 
+## 2026-07-26 — First real UX feedback: Ava typing indicator + frontend-unit lesson (Cursor / Fable 5)
+
+- Context: citizen Dukagjin Rudi sent the owner a WhatsApp complaint with a
+  screenshot: after asking Ava a question, the reply bubble shows a static
+  "…" — nothing moves, so it looks like the system hung while the answer
+  is being prepared.
+- Done: complaint registered in `platform_feedback` (kind `ankese`, his
+  name/email, status `new` → red badge in /platform). Fix shipped: new
+  `TypingDots` component in `components/ui.tsx` (three staggered bouncing
+  dots); the empty assistant bubble on `/ava` now renders it AND the
+  bubble is appended immediately on send (it used to appear only after the
+  SSE stream opened, leaving the whole RAG+LLM warm-up with no indicator).
+  The `thinking` SSE state shows dots + new `avaThinking` string (6
+  languages). SW cache bumped to v20.
+- Incident while deploying (LESSONS #4, same class as #3): restarting
+  `avokatim` did not deploy the UI — the frontend now lives in its own
+  `avokatim-frontend.service`, so the morning's `next-server` kept serving
+  HTML whose chunks the new build had deleted → 500 on every `/_next`
+  asset, unstyled dead pages. Fixed by `daemon-reload` + restarting
+  `avokatim-frontend`; AGENTS.md §4 rewritten with the correct deploy
+  command + asset verification step.
+- Verified: Playwright on a clean headless browser — 3 animated dots
+  visible immediately after sending a question on /ava; chunk assets 200;
+  health OK.
+
 ## 2026-07-25 — Lawyer-registration audit: stats fix, test cleanup, follow-ups (Cursor / Fable 5)
 
 - Done: owner saw "4 lawyers" on the landing page but the directory showed
