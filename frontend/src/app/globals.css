@@ -3,6 +3,8 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Tell the browser not to auto-darken form controls/scrollbars either */
+  color-scheme: light;
 }
 
 @theme inline {
@@ -12,12 +14,10 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* The UI is designed light-only: every surface (cards, headers, footers) is
+   a hardcoded light Tailwind class. The starter's prefers-color-scheme dark
+   override used to flip the base text to #ededed on those white surfaces,
+   making unstyled headings/names unreadable on devices in dark mode. */
 
 body {
   background: var(--background);
