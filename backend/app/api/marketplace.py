@@ -482,6 +482,7 @@ async def public_lawyers(
                     else None
                 ),
                 "cases_completed": cases_completed.get(tenant.id, 0),
+                "flat_services": profile.flat_services or [],
             }
         )
     # Within each placement tier, better-rated lawyers surface first
@@ -573,6 +574,7 @@ async def public_lawyer_profile(
             else None
         ),
         "cases_completed": cases_completed.get(tenant.id, 0),
+        "flat_services": profile.flat_services or [],
         "reviews": reviews,
         "member_since": profile.created_at.isoformat(),
     }
@@ -1426,7 +1428,7 @@ def _profile_out(profile: LawyerProfile | None) -> dict:
             "practice_areas": [], "cities": [], "languages": [], "photo": None,
             "oak_license_no": None, "verification_status": "none",
             "verification_note": None, "consult_fee_eur": None,
-            "career_start_year": None,
+            "career_start_year": None, "flat_services": [],
             "phone": None, "sms_case_alerts": False, "is_founder": False,
         }
     return {
@@ -1442,6 +1444,7 @@ def _profile_out(profile: LawyerProfile | None) -> dict:
         "verification_note": profile.verification_note,
         "consult_fee_eur": profile.consult_fee_eur,
         "career_start_year": profile.career_start_year,
+        "flat_services": profile.flat_services or [],
         "phone": profile.phone,
         "sms_case_alerts": profile.sms_case_alerts,
         "is_founder": profile.is_founder,
@@ -1513,6 +1516,11 @@ def _scrub_bio(bio: str | None) -> str | None:
     return "\n".join(kept).strip() or None
 
 
+class FlatServiceIn(BaseModel):
+    title: str = Field(min_length=3, max_length=120)
+    price_eur: int = Field(ge=1, le=10000)
+
+
 class ProfileIn(BaseModel):
     is_visible: bool = False
     sos_on_duty: bool = False
@@ -1526,6 +1534,7 @@ class ProfileIn(BaseModel):
     career_start_year: int | None = Field(default=None, ge=1950, le=2100)
     phone: str | None = Field(default=None, max_length=64)
     sms_case_alerts: bool = False
+    flat_services: list[FlatServiceIn] = Field(default=[], max_length=10)
 
 
 @router.put("/profile")
@@ -1558,6 +1567,11 @@ async def update_my_profile(
     )
     profile.phone = (body.phone or "").strip() or None
     profile.sms_case_alerts = body.sms_case_alerts
+    profile.flat_services = [
+        {"title": s.title.strip(), "price_eur": s.price_eur}
+        for s in body.flat_services
+        if s.title.strip()
+    ][:10]
 
     # Entering or changing the license number (re)starts verification; the
     # status itself is never client-writable. Auto-approval happens only when

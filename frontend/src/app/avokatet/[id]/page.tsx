@@ -35,6 +35,7 @@ interface LawyerProfileData {
   booking: boolean;
   years_experience: number | null;
   cases_completed: number;
+  flat_services: { title: string; price_eur: number }[];
   reviews: ProfileReview[];
   member_since: string;
 }
@@ -191,6 +192,24 @@ export default function LawyerProfilePage({ params }: { params: Promise<{ id: st
             <p className="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed">
               {profile.bio}
             </p>
+          </section>
+        )}
+
+        {/* Flat-fee service menu (transparent pricing, LegalZoom model) */}
+        {profile.flat_services?.length > 0 && (
+          <section className="space-y-2">
+            <h2 className="font-semibold">{t.fsPublicTitle}</h2>
+            <Card className="divide-y divide-slate-100">
+              {profile.flat_services.map((s, i) => (
+                <div key={i} className="flex items-center justify-between gap-3 px-4 py-3">
+                  <p className="text-sm text-slate-700">{s.title}</p>
+                  <p className="text-sm font-semibold text-slate-900 shrink-0">
+                    {s.price_eur} €
+                  </p>
+                </div>
+              ))}
+            </Card>
+            <p className="text-[11px] text-slate-400">{t.fsPublicNote}</p>
           </section>
         )}
 

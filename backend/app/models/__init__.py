@@ -19,7 +19,14 @@ from app.models.matters import (
     MatterParty,
 )
 from app.models.documents import Document, DocumentChunk
-from app.models.billing import Expense, Invoice, InvoiceItem, TimeEntry, TrustTransaction
+from app.models.billing import (
+    Expense,
+    Invoice,
+    InvoiceItem,
+    TimeEntry,
+    TimeSuggestion,
+    TrustTransaction,
+)
 from app.models.assistant import Conversation, Message
 from app.models.audit import AuditLog
 from app.models.collab import MatterMessage, PushSubscription, SignatureRequest
@@ -58,6 +65,7 @@ __all__ = [
     "Document",
     "DocumentChunk",
     "TimeEntry",
+    "TimeSuggestion",
     "Expense",
     "Invoice",
     "InvoiceItem",

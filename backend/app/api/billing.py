@@ -1,9 +1,10 @@
 import uuid
-from datetime import date
+from datetime import date, datetime, time as dt_time, timezone
 from decimal import Decimal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from fastapi.responses import Response
+from pydantic import BaseModel, Field
 from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -21,6 +22,7 @@ from app.models import (
     Matter,
     Tenant,
     TimeEntry,
+    TimeSuggestion,
     TrustTransaction,
     User,
 )
@@ -75,6 +77,131 @@ async def create_time_entry(
     await db.commit()
     await db.refresh(entry)
     return entry
+
+
+# ---------- Passive time capture (suggestions from activity) ----------
+
+
+@router.get("/time-suggestions")
+async def list_time_suggestions(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Pending billable-time candidates derived from the audit trail."""
+    stmt = (
+        select(TimeSuggestion, Matter.reference, Matter.title)
+        .join(Matter, Matter.id == TimeSuggestion.matter_id)
+        .where(
+            TimeSuggestion.tenant_id == user.tenant_id,
+            TimeSuggestion.status == "pending",
+        )
+        .order_by(TimeSuggestion.day.desc())
+        .limit(100)
+    )
+    rows = (await db.execute(stmt)).all()
+    return [
+        {
+            "id": str(s.id),
+            "matter_id": str(s.matter_id),
+            "matter_reference": ref,
+            "matter_title": title,
+            "day": s.day.isoformat(),
+            "suggested_minutes": s.suggested_minutes,
+            "description": s.description,
+        }
+        for s, ref, title in rows
+    ]
+
+
+@router.post("/time-suggestions/generate")
+async def generate_time_suggestions(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """On-demand scan of recent activity ('Gjenero nga aktiviteti' button)."""
+    from app.services.time_capture import generate_suggestions
+
+    created = await generate_suggestions(db, user.tenant_id)
+    await db.commit()
+    return {"created": created}
+
+
+class TimeSuggestionAcceptIn(BaseModel):
+    minutes: int | None = Field(default=None, ge=1, le=24 * 60)
+    description: str | None = Field(default=None, max_length=2000)
+    hourly_rate: Decimal | None = None
+
+
+async def _load_suggestion(
+    db: AsyncSession, user: User, suggestion_id: uuid.UUID
+) -> TimeSuggestion:
+    suggestion = await db.get(TimeSuggestion, suggestion_id)
+    if suggestion is None or suggestion.tenant_id != user.tenant_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Suggestion not found")
+    if suggestion.status != "pending":
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Suggestion already handled")
+    return suggestion
+
+
+@router.post("/time-suggestions/{suggestion_id}/accept", response_model=TimeEntryOut)
+async def accept_time_suggestion(
+    suggestion_id: uuid.UUID,
+    body: TimeSuggestionAcceptIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Turn the suggestion into a real TimeEntry (editable minutes/text)."""
+    suggestion = await _load_suggestion(db, user, suggestion_id)
+    await get_owned_matter(db, user, suggestion.matter_id)
+    rate = body.hourly_rate
+    if rate is None:
+        # Default to the accepting lawyer's most recent rate
+        rate = (
+            await db.execute(
+                select(TimeEntry.hourly_rate)
+                .where(
+                    TimeEntry.tenant_id == user.tenant_id,
+                    TimeEntry.user_id == user.id,
+                    TimeEntry.hourly_rate.is_not(None),
+                )
+                .order_by(TimeEntry.started_at.desc())
+                .limit(1)
+            )
+        ).scalar_one_or_none()
+    entry = TimeEntry(
+        tenant_id=user.tenant_id,
+        matter_id=suggestion.matter_id,
+        user_id=user.id,
+        started_at=datetime.combine(suggestion.day, dt_time(9, 0), tzinfo=timezone.utc),
+        minutes=body.minutes or suggestion.suggested_minutes,
+        description=body.description or suggestion.description,
+        billable=True,
+        hourly_rate=rate,
+    )
+    db.add(entry)
+    await db.flush()
+    suggestion.status = "accepted"
+    suggestion.time_entry_id = entry.id
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="time_suggestion.accept",
+        entity_type="time_suggestion", entity_id=str(suggestion.id),
+        details={"minutes": entry.minutes},
+    )
+    await db.commit()
+    await db.refresh(entry)
+    return entry
+
+
+@router.post("/time-suggestions/{suggestion_id}/dismiss", status_code=204)
+async def dismiss_time_suggestion(
+    suggestion_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    suggestion = await _load_suggestion(db, user, suggestion_id)
+    suggestion.status = "dismissed"
+    await db.commit()
+    return Response(status_code=204)
 
 
 # ---------- Expenses (matter disbursements) ----------
@@ -547,6 +674,48 @@ async def create_invoice_payment_link(
     await log_action(
         db, tenant_id=user.tenant_id, user_id=user.id, action="invoice.payment_link",
         entity_type="invoice", entity_id=str(invoice.id), details={"session": session_id},
+    )
+    await db.commit()
+    return await _load_invoice(db, user, invoice_id)
+
+
+@router.get("/payments-config")
+async def payments_config(user: User = Depends(get_current_user)):
+    """Lets the UI decide which payment-link actions to offer: the automated
+    provider button only makes sense when a provider is configured."""
+    return {"auto_provider": payments_enabled()}
+
+
+class ManualPayLinkIn(BaseModel):
+    # Bank pay-by-link URLs (Raiffeisen/TEB) that the lawyer generates in
+    # their own merchant portal — the realistic card path in Kosovo today,
+    # where Stripe cannot onboard local businesses.
+    url: str | None = Field(default=None, max_length=1000)
+
+
+@router.put("/invoices/{invoice_id}/payment-link", response_model=InvoiceOut)
+async def set_invoice_payment_link(
+    invoice_id: uuid.UUID,
+    body: ManualPayLinkIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Attach (or clear) a manually created payment URL to the invoice. It is
+    shown in the client portal and embedded in the invoice email — same slot
+    an automated provider would fill."""
+    invoice = await _load_invoice(db, user, invoice_id)
+    if invoice.status in ("paid", "void"):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invoice is already settled")
+    url = (body.url or "").strip() or None
+    if url and not url.startswith("https://"):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Payment link must be an https:// URL")
+    invoice.payment_link = url
+    # A manual link is not a Stripe session; drop any stale session id so the
+    # webhook can never mis-match it
+    invoice.stripe_session_id = None
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="invoice.payment_link_manual",
+        entity_type="invoice", entity_id=str(invoice.id), details={"set": bool(url)},
     )
     await db.commit()
     return await _load_invoice(db, user, invoice_id)

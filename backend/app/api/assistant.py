@@ -4,6 +4,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -109,6 +110,41 @@ async def set_style(
     )
     await db.commit()
     return {"style": tenant.assistant_style}
+
+
+class OfficeAskRequest(BaseModel):
+    question: str = Field(min_length=3, max_length=2000)
+    language: str = "sq"
+    provider: str | None = None
+
+
+@router.post("/office-ask")
+async def office_ask_endpoint(
+    body: OfficeAskRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Office-level Ava: firm-data questions answered through a fixed pipeline
+    of ~8 predefined, tenant-scoped queries (D-030: no free-form tool loop)."""
+    from app.services.office_ask import office_ask
+
+    provider_name = await _effective_provider(db, user, body.provider)
+    try:
+        result = await office_ask(
+            db,
+            tenant_id=user.tenant_id,
+            question=body.question,
+            language=body.language,
+            provider_name=provider_name,
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc))
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="assistant.office_ask",
+        entity_type="assistant", entity_id="", details={"tool": result["tool"]},
+    )
+    await db.commit()
+    return result
 
 
 @router.get("/providers")

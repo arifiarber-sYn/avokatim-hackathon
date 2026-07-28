@@ -88,6 +88,26 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   only accounts ≤14 days old are ever nudged). **Activation follow-up**
   (2026-07-28, D-030): verified citizens with no posted case get one email
   48h after signup (`citizen_users.case_followup_sent_at`, ×6 languages).
+- **Last industry gaps** (2026-07-28, D-032): **Payments abstraction** —
+  `services/payments.py` dispatches on `payments_provider` (`stripe` |
+  `raiffeisen`); Raiffeisen adapter skeleton + `verify_raiffeisen_callback`
+  (finalize field names when the bank contract lands — steps in
+  `docs/integrimet/raiffeisen-pagesat.md`). Manual pay-by-link:
+  `PUT /invoices/{id}/payment-link` (https-only) + paste/edit UI; the auto
+  link button gates on `GET /payments-config`. **Passive time capture** —
+  `time_suggestions` table; `services/time_capture.py` turns audit-log
+  activity into per-(matter, user, day) suggestions (cap 120 min, idempotent),
+  generated nightly in the reminder loop + on-demand; accept → real
+  `TimeEntry`, UI in billing + dashboard card. **Office Ava** —
+  `POST /assistant/office-ask`: LLM picks one of 8 fixed tenant-scoped SQL
+  tools, then phrases the answer in the UI language; "Zyra" segment with 6
+  chips on the assistant page. **Auto review request** —
+  `case_requests.review_request_sent_at`, one-shot email 48h after a claimed
+  case concludes (×6, COMMS.md updated). **Flat-fee services** —
+  `lawyer_profiles.flat_services` (≤10 × {title, price_eur}), editors in
+  Settings + onboarding, section on `/avokatet/[id]`, chip in the directory.
+  Operational: after `npm run build`, restart `avokatim-frontend`
+  explicitly (it is not covered by `restart avokatim`).
 - **UI audit wave** (2026-07-28, D-031): **Lawyer profile pages** —
   `/avokatet/[id]` (server layout: metadata + Attorney JSON-LD; client page:
   big trust numbers, CTA card, anonymized reviews) backed by

@@ -131,6 +131,33 @@ class Invoice(Base, TenantMixin, TimestampMixin):
         return self.total + self.vat_amount
 
 
+class TimeSuggestion(Base, TenantMixin, TimestampMixin):
+    """Passive time capture (Smokeball model): a billable-time candidate
+    derived from audit-log activity on a matter. Kept in its own table so no
+    existing billing query is affected; accepting one creates a real
+    TimeEntry."""
+
+    __tablename__ = "time_suggestions"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    matter_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("matters.id", ondelete="CASCADE"), index=True
+    )
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL")
+    )
+    # e.g. "activity" (audit-log window); leaves room for future sources
+    source: Mapped[str] = mapped_column(String(32), default="activity")
+    day: Mapped[date] = mapped_column(Date, index=True)
+    suggested_minutes: Mapped[int] = mapped_column(Integer)
+    description: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(16), default="pending", index=True)
+    # pending | accepted | dismissed
+    time_entry_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("time_entries.id", ondelete="SET NULL")
+    )
+
+
 class InvoiceItem(Base):
     __tablename__ = "invoice_items"
 

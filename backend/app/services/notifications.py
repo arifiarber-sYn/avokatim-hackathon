@@ -5,7 +5,7 @@ import asyncio
 import logging
 import re
 import smtplib
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from email.message import EmailMessage
 
 import redis.asyncio as aioredis
@@ -278,6 +278,69 @@ async def _check_onboarding_nudges() -> None:
         await db.commit()
 
 
+async def _check_review_requests() -> None:
+    """One-shot review invitation: a claimed case that concluded (converted or
+    closed) 48h+ ago, has no review yet and no invitation sent, gets a single
+    email pointing to /rasti-im where the rating form lives."""
+    from app.models import CaseRequest, CaseReview, CitizenUser
+
+    now = datetime.now(UTC)
+    async with SessionLocal() as db:
+        reviewed = select(CaseReview.case_request_id)
+        cases = (
+            (
+                await db.execute(
+                    select(CaseRequest).where(
+                        CaseRequest.claimed_by_tenant_id.is_not(None),
+                        CaseRequest.status.in_(["converted", "closed"]),
+                        CaseRequest.review_request_sent_at.is_(None),
+                        # updated_at is when the status flipped to concluded
+                        CaseRequest.updated_at <= now - timedelta(hours=48),
+                        CaseRequest.id.not_in(reviewed),
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
+        for case in cases:
+            citizen = await db.get(CitizenUser, case.citizen_id)
+            if citizen is None or not citizen.is_active or citizen.email_verified_at is None:
+                case.review_request_sent_at = now  # never retry dead ends
+                continue
+            loc = pick_locale(case.locale or citizen.locale)
+            sent = await send_email(
+                citizen.email,
+                tr(loc, "case_review_request_subject"),
+                tr(
+                    loc,
+                    "case_review_request_body",
+                    url=f"{settings.public_base_url}/rasti-im",
+                ),
+            )
+            case.review_request_sent_at = now
+            if sent:
+                logger.info("Review request sent for case %s", case.id)
+        await db.commit()
+
+
+async def _generate_time_suggestions_nightly() -> None:
+    """Run passive time capture once per day per tenant (idempotent — the
+    generator skips windows that already have a suggestion)."""
+    from app.services.time_capture import generate_suggestions
+
+    async with SessionLocal() as db:
+        tenant_ids = (
+            (await db.execute(select(Tenant.id).where(Tenant.is_active.is_(True))))
+            .scalars()
+            .all()
+        )
+        for tenant_id in tenant_ids:
+            created = await generate_suggestions(db, tenant_id)
+            if created:
+                await db.commit()
+
+
 async def reminder_loop() -> None:
     """Background task started from the app lifespan."""
     if not smtp_enabled() and not push_enabled() and not sms_enabled():
@@ -285,6 +348,7 @@ async def reminder_loop() -> None:
         return
     redis = aioredis.from_url(settings.redis_url)
     logger.info("Deadline reminder loop started (every %s min)", settings.reminder_check_minutes)
+    last_time_capture_day: str | None = None
     while True:
         try:
             await _check_deadline_reminders(redis)
@@ -295,4 +359,15 @@ async def reminder_loop() -> None:
                 await _check_onboarding_nudges()
             except Exception as exc:
                 logger.warning("Onboarding nudge check failed: %s", exc)
+            try:
+                await _check_review_requests()
+            except Exception as exc:
+                logger.warning("Review request check failed: %s", exc)
+        today = date.today().isoformat()
+        if today != last_time_capture_day:
+            try:
+                await _generate_time_suggestions_nightly()
+                last_time_capture_day = today
+            except Exception as exc:
+                logger.warning("Time-capture generation failed: %s", exc)
         await asyncio.sleep(settings.reminder_check_minutes * 60)

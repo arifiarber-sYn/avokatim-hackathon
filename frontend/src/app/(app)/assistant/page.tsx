@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { apiGet, apiStream } from "@/lib/api";
+import { apiGet, apiPost, apiStream } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
 import { MicButton, SpeakButton, useVoiceAvailable } from "@/components/voice-controls";
@@ -29,6 +29,7 @@ export default function AssistantPage() {
   const [error, setError] = useState("");
   const [deep, setDeep] = useState(false);
   const [steps, setSteps] = useState<string[]>([]);
+  const [mode, setMode] = useState<"legal" | "office">("legal");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -134,6 +135,29 @@ export default function AssistantPage() {
   return (
     <div className="flex flex-col gap-4 h-[calc(100vh-9rem)] md:h-[calc(100vh-6rem)]">
       <PageIntro k="assistant" title={t.assistantIntroT} body={t.assistantIntro} />
+      <div className="flex gap-2">
+        {(
+          [
+            { key: "legal", label: t.oaModeLegal },
+            { key: "office", label: t.oaModeOffice },
+          ] as const
+        ).map((m) => (
+          <button
+            key={m.key}
+            onClick={() => setMode(m.key)}
+            className={`text-sm font-medium rounded-lg px-4 py-1.5 border transition ${
+              mode === m.key
+                ? "bg-indigo-600 border-indigo-600 text-white"
+                : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300"
+            }`}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
+      {mode === "office" ? (
+        <OfficeTab provider={provider} />
+      ) : (
       <div className="flex gap-6 flex-1 min-h-0">
       <div className="hidden md:block w-64 shrink-0 space-y-3 overflow-auto">
         <Button
@@ -326,6 +350,111 @@ export default function AssistantPage() {
         </form>
       </Card>
       </div>
+      )}
     </div>
+  );
+}
+
+interface OfficeAnswer {
+  answer: string | null;
+  tool: string | null;
+  data: Record<string, unknown>[];
+}
+
+function OfficeTab({ provider }: { provider: string }) {
+  const { t, locale } = useI18n();
+  const [question, setQuestion] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [history, setHistory] = useState<{ q: string; a: OfficeAnswer }[]>([]);
+  const chips = [t.oaChip1, t.oaChip2, t.oaChip3, t.oaChip4, t.oaChip5, t.oaChip6];
+
+  async function ask(q: string) {
+    if (!q.trim() || busy) return;
+    setBusy(true);
+    setError("");
+    setQuestion("");
+    try {
+      const res = await apiPost<OfficeAnswer>("/assistant/office-ask", {
+        question: q,
+        language: locale,
+        provider,
+      });
+      setHistory((prev) => [...prev, { q, a: res }]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+      setQuestion(q);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Card className="flex-1 flex flex-col min-h-0">
+      <div className="p-4 border-b border-slate-100 space-y-2">
+        <p className="text-sm text-slate-600">{t.oaHint}</p>
+        <div className="flex flex-wrap gap-1.5">
+          {chips.map((c) => (
+            <button
+              key={c}
+              onClick={() => ask(c)}
+              disabled={busy}
+              className="text-xs rounded-full px-3 py-1.5 border bg-white border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-700 transition disabled:opacity-50"
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="flex-1 overflow-auto p-4 space-y-4">
+        {history.length === 0 && !busy && (
+          <div className="text-center py-16">
+            <p className="text-4xl mb-3">📊</p>
+            <p className="text-slate-500 text-sm">{t.oaEmpty}</p>
+          </div>
+        )}
+        {history.map((h, i) => (
+          <div key={i} className="space-y-2">
+            <div className="flex justify-end">
+              <div className="max-w-[80%] rounded-2xl px-4 py-3 text-sm bg-indigo-600 text-white">
+                {h.q}
+              </div>
+            </div>
+            <div className="flex justify-start">
+              <div className="max-w-[85%] rounded-2xl px-4 py-3 text-sm bg-slate-100 text-slate-900 whitespace-pre-wrap leading-relaxed">
+                {h.a.answer || t.oaNoTool}
+              </div>
+            </div>
+          </div>
+        ))}
+        {busy && <p className="text-sm text-slate-400 animate-pulse">{t.thinking}</p>}
+      </div>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          ask(question);
+        }}
+        className="p-4 border-t border-slate-100 space-y-2"
+      >
+        <ErrorNote message={error} />
+        <div className="flex gap-2">
+          <Textarea
+            rows={2}
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder={t.oaPlaceholder}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                ask(question);
+              }
+            }}
+          />
+          <Button type="submit" disabled={busy || !question.trim()}>
+            {t.send}
+          </Button>
+        </div>
+      </form>
+    </Card>
   );
 }

@@ -102,9 +102,17 @@ class Settings(BaseSettings):
     sms_from: str = ""
     sms_api_base: str = "https://api.twilio.com"
 
-    # Card payments (Stripe Checkout). Empty secret key = disabled.
+    # Card payments. Provider is selected here; a provider counts as enabled
+    # only when its credentials below are set. "stripe" needs a foreign-
+    # registered entity (Stripe does not onboard Kosovo businesses);
+    # "raiffeisen" is the local gateway (see docs/integrimet/raiffeisen-pagesat.md).
+    payments_provider: str = "stripe"  # stripe | raiffeisen
     stripe_secret_key: str = ""
     stripe_webhook_secret: str = ""
+    raiffeisen_api_base: str = ""
+    raiffeisen_merchant_id: str = ""
+    raiffeisen_api_key: str = ""
+    raiffeisen_callback_secret: str = ""
 
     # Platform subscription billing: operator's bank details printed in the
     # subscription-invoice emails (bank transfer is the default rail until a

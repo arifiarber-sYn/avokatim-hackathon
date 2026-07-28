@@ -152,7 +152,8 @@ export default function LawyerDirectoryPage() {
                 {/* Trust chips: experience, verified platform activity, price */}
                 {(lawyer.years_experience != null ||
                   (lawyer.cases_completed ?? 0) > 0 ||
-                  lawyer.consult_fee_eur != null) && (
+                  lawyer.consult_fee_eur != null ||
+                  (lawyer.flat_services?.length ?? 0) > 0) && (
                   <div className="flex flex-wrap gap-1.5">
                     {lawyer.years_experience != null && lawyer.years_experience > 0 && (
                       <span className="text-xs font-medium bg-sky-50 text-sky-700 rounded-full px-2 py-0.5">
@@ -167,6 +168,11 @@ export default function LawyerDirectoryPage() {
                     {lawyer.consult_fee_eur != null && (
                       <span className="text-xs font-medium bg-slate-100 text-slate-600 rounded-full px-2 py-0.5">
                         {t.lpConsultFrom} {lawyer.consult_fee_eur} €
+                      </span>
+                    )}
+                    {(lawyer.flat_services?.length ?? 0) > 0 && (
+                      <span className="text-xs font-medium bg-violet-50 text-violet-700 rounded-full px-2 py-0.5">
+                        {t.fsChip}
                       </span>
                     )}
                   </div>

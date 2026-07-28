@@ -57,6 +57,14 @@ _SQ = {
         "jonë me ligjet e plota të Kosovës të përgjigjet menjëherë, edhe me zë:\n{ava_url}\n\n"
         "Ky është i vetmi email i tillë që marrim — s'të shqetësojmë më.\n\n— AvokatIM"
     ),
+    "case_review_request_subject": "AvokatIM — Si shkoi me avokatin? Vlerësimi yt ndihmon të tjerët",
+    "case_review_request_body": (
+        "Rasti yt në AvokatIM u përmbyll.\n\n"
+        "Vlerësimi yt (komunikimi, shpejtësia, qartësia) i ndihmon qytetarët e "
+        "tjerë të zgjedhin avokatin e duhur — dhe avokatët e mirë t'i shohin të "
+        "gjithë. Merr vetëm 30 sekonda:\n{url}\n\n"
+        "Ky është i vetmi email i tillë për këtë rast.\n\n— AvokatIM"
+    ),
     # Deadline reminder (lawyer)
     "reminder_subject": "[AvokatIM] Afat pas {days} ditësh: {title}",
     "reminder_matter": "Lënda",
@@ -278,6 +286,14 @@ _SR = {
         "asistentkinja sa kompletnim zakonima Kosova odgovara odmah, i glasom:\n{ava_url}\n\n"
         "Ovo je jedini ovakav email — nećemo vas više uznemiravati.\n\n— AvokatIM"
     ),
+    "case_review_request_subject": "AvokatIM — Kako je prošlo sa advokatom? Vaša ocena pomaže drugima",
+    "case_review_request_body": (
+        "Vaš predmet na AvokatIM je zaključen.\n\n"
+        "Vaša ocena (komunikacija, brzina, jasnoća) pomaže drugim građanima da "
+        "izaberu pravog advokata — a dobrim advokatima da budu vidljivi. "
+        "Potrebno je samo 30 sekundi:\n{url}\n\n"
+        "Ovo je jedini ovakav email za ovaj predmet.\n\n— AvokatIM"
+    ),
     "reminder_subject": "[AvokatIM] Rok za {days} dana: {title}",
     "reminder_matter": "Predmet",
     "reminder_deadline": "Rok",
@@ -490,6 +506,14 @@ _TR = {
         "Avukatlık bir konu olup olmadığından emin değilseniz Ava'ya sorun — Kosova'nın "
         "tüm yasalarını bilen asistanımız anında yanıtlar, sesli de:\n{ava_url}\n\n"
         "Bu türden tek e-postadır — sizi bir daha rahatsız etmeyeceğiz.\n\n— AvokatIM"
+    ),
+    "case_review_request_subject": "AvokatIM — Avukatla nasıl geçti? Değerlendirmeniz başkalarına yardımcı olur",
+    "case_review_request_body": (
+        "AvokatIM'deki dosyanız sonuçlandı.\n\n"
+        "Değerlendirmeniz (iletişim, hız, açıklık) diğer vatandaşların doğru "
+        "avukatı seçmesine — iyi avukatların da görünür olmasına yardımcı olur. "
+        "Sadece 30 saniye sürer:\n{url}\n\n"
+        "Bu dosya için bu türden tek e-postadır.\n\n— AvokatIM"
     ),
     "reminder_subject": "[AvokatIM] {days} gün sonra süre: {title}",
     "reminder_matter": "Dosya",
@@ -705,6 +729,14 @@ _BS = {
         "asistentica s kompletnim zakonima Kosova odgovara odmah, i glasom:\n{ava_url}\n\n"
         "Ovo je jedini ovakav email — nećemo vas više uznemiravati.\n\n— AvokatIM"
     ),
+    "case_review_request_subject": "AvokatIM — Kako je prošlo s advokatom? Vaša ocjena pomaže drugima",
+    "case_review_request_body": (
+        "Vaš predmet na AvokatIM je zaključen.\n\n"
+        "Vaša ocjena (komunikacija, brzina, jasnoća) pomaže drugim građanima da "
+        "izaberu pravog advokata — a dobrim advokatima da budu vidljivi. "
+        "Potrebno je samo 30 sekundi:\n{url}\n\n"
+        "Ovo je jedini ovakav email za ovaj predmet.\n\n— AvokatIM"
+    ),
     "reminder_subject": "[AvokatIM] Rok za {days} dana: {title}",
     "reminder_matter": "Predmet",
     "reminder_deadline": "Rok",
@@ -918,6 +950,14 @@ _EN = {
         "the complete laws of Kosovo answers instantly, by voice too:\n{ava_url}\n\n"
         "This is the only email of its kind — we won't bother you again.\n\n— AvokatIM"
     ),
+    "case_review_request_subject": "AvokatIM — How did it go with your lawyer? Your rating helps others",
+    "case_review_request_body": (
+        "Your case on AvokatIM has concluded.\n\n"
+        "Your rating (communication, speed, clarity) helps other citizens pick "
+        "the right lawyer — and helps good lawyers get seen. It takes just 30 "
+        "seconds:\n{url}\n\n"
+        "This is the only email of its kind for this case.\n\n— AvokatIM"
+    ),
     "reminder_subject": "[AvokatIM] Deadline in {days} days: {title}",
     "reminder_matter": "Matter",
     "reminder_deadline": "Deadline",
@@ -1115,6 +1155,8 @@ _ZH = {
     "citizen_verify_reminder_body": "您的账户已就绪，但电子邮箱尚未确认——未确认前无法发布案件。\n\n请在此确认：\n{url}\n\n链接有效期为3天。\n\n— AvokatIM",
     "citizen_case_followup_subject": "AvokatIM — 还没有发布案件？这些服务全部免费",
     "citizen_case_followup_body": "您的 AvokatIM 账户已就绪——但您还没有发布任何案件。\n\n如果您有法律问题，请简要描述，覆盖您所在领域和城市的认证律师会直接联系您——完全免费：\n{post_url}\n\n不确定是否需要律师？问问 Ava——我们掌握科索沃全部法律的助手会立即回答，还支持语音：\n{ava_url}\n\n这是唯一一封此类邮件——我们不会再打扰您。\n\n— AvokatIM",
+    "case_review_request_subject": "AvokatIM — 与律师合作得如何？您的评价能帮助他人",
+    "case_review_request_body": "您在 AvokatIM 上的案件已结束。\n\n您的评价（沟通、速度、清晰度）能帮助其他公民选择合适的律师，也能让优秀的律师被更多人看到。只需30秒：\n{url}\n\n针对此案件，这是唯一一封此类邮件。\n\n— AvokatIM",
     "reminder_subject": "[AvokatIM] {days} 天后到期：{title}",
     "reminder_matter": "案件",
     "reminder_deadline": "期限",

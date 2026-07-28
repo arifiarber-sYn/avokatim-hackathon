@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { apiDelete, apiDownload, apiGet, apiPost, getToken } from "@/lib/api";
+import { apiDelete, apiDownload, apiGet, apiPost, apiPut, getToken } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
 import {
@@ -62,9 +62,21 @@ export default function BillingPage() {
   );
 }
 
+interface TimeSuggestion {
+  id: string;
+  matter_id: string;
+  matter_reference: string;
+  matter_title: string;
+  day: string;
+  suggested_minutes: number;
+  description: string;
+}
+
 function TimeTab({ matters }: { matters: Matter[] }) {
   const { t } = useI18n();
   const [entries, setEntries] = useState<TimeEntry[] | null>(null);
+  const [suggestions, setSuggestions] = useState<TimeSuggestion[]>([]);
+  const [generating, setGenerating] = useState(false);
   const [form, setForm] = useState({
     matter_id: "",
     minutes: "60",
@@ -74,11 +86,32 @@ function TimeTab({ matters }: { matters: Matter[] }) {
 
   const load = useCallback(() => {
     apiGet<TimeEntry[]>("/time-entries").then(setEntries).catch(() => {});
+    apiGet<TimeSuggestion[]>("/time-suggestions").then(setSuggestions).catch(() => {});
   }, []);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  async function generateSuggestions() {
+    setGenerating(true);
+    try {
+      await apiPost("/time-suggestions/generate");
+      load();
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  async function acceptSuggestion(id: string) {
+    await apiPost(`/time-suggestions/${id}/accept`, {});
+    load();
+  }
+
+  async function dismissSuggestion(id: string) {
+    await apiPost(`/time-suggestions/${id}/dismiss`);
+    load();
+  }
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
@@ -123,6 +156,48 @@ function TimeTab({ matters }: { matters: Matter[] }) {
           </div>
           <Button type="submit">{t.newTimeEntry}</Button>
         </form>
+      </Card>
+
+      <Card className="p-4 space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <h3 className="text-sm font-semibold text-slate-800">{t.tsTitle}</h3>
+            <p className="text-xs text-slate-500">{t.tsHint}</p>
+          </div>
+          <Button variant="secondary" onClick={generateSuggestions} disabled={generating}>
+            {generating ? t.loading : t.tsGenerate}
+          </Button>
+        </div>
+        {suggestions.length === 0 ? (
+          <p className="text-xs text-slate-400">{t.tsEmpty}</p>
+        ) : (
+          <ul className="space-y-2">
+            {suggestions.map((s) => (
+              <li
+                key={s.id}
+                className="flex items-center justify-between gap-3 flex-wrap rounded-lg border border-amber-200 bg-amber-50/60 px-3 py-2"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm text-slate-800">
+                    <span className="font-mono text-xs text-slate-500 mr-2">
+                      {s.matter_reference}
+                    </span>
+                    {s.description}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {new Date(s.day).toLocaleDateString()} · {s.suggested_minutes} min
+                  </p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <Button onClick={() => acceptSuggestion(s.id)}>{t.tsAccept}</Button>
+                  <Button variant="secondary" onClick={() => dismissSuggestion(s.id)}>
+                    {t.tsDismiss}
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </Card>
 
       {entries === null ? (
@@ -321,6 +396,10 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
   const [error, setError] = useState("");
   const [tariff, setTariff] = useState<FeeTariffItem[]>([]);
 
+  // Whether an automated card provider (Stripe/Raiffeisen API) is configured;
+  // the manual paste-a-link flow is always available.
+  const [autoProvider, setAutoProvider] = useState(false);
+
   const load = useCallback(() => {
     apiGet<Invoice[]>("/invoices").then(setInvoices).catch(() => {});
   }, []);
@@ -328,6 +407,9 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
   useEffect(() => {
     load();
     apiGet<FeeTariffItem[]>("/fee-tariff").then(setTariff).catch(() => {});
+    apiGet<{ auto_provider: boolean }>("/payments-config")
+      .then((c) => setAutoProvider(c.auto_provider))
+      .catch(() => {});
   }, [load]);
 
   function addTariffItem(id: string) {
@@ -401,6 +483,9 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
   }
 
   const [linkingId, setLinkingId] = useState<string | null>(null);
+  // Inline editor for pasting a bank pay-by-link URL onto an invoice
+  const [manualLinkId, setManualLinkId] = useState<string | null>(null);
+  const [manualUrl, setManualUrl] = useState("");
 
   async function createLink(inv: Invoice) {
     setLinkingId(inv.id);
@@ -413,6 +498,18 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
       setError(err instanceof Error ? err.message : t.error);
     } finally {
       setLinkingId(null);
+    }
+  }
+
+  async function saveManualLink(invId: string, url: string | null) {
+    setError("");
+    try {
+      await apiPut(`/invoices/${invId}/payment-link`, { url });
+      setManualLinkId(null);
+      setManualUrl("");
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
     }
   }
 
@@ -568,13 +665,24 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
                       {sendingId === inv.id ? t.loading : t.sendToClient}
                     </Button>
                   )}
-                  {inv.status !== "paid" && inv.status !== "void" && !inv.payment_link && (
+                  {autoProvider && inv.status !== "paid" && inv.status !== "void" && !inv.payment_link && (
                     <Button
                       variant="secondary"
                       onClick={() => createLink(inv)}
                       disabled={linkingId === inv.id}
                     >
                       {linkingId === inv.id ? t.loading : t.createPaymentLink}
+                    </Button>
+                  )}
+                  {inv.status !== "paid" && inv.status !== "void" && (
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setManualLinkId(manualLinkId === inv.id ? null : inv.id);
+                        setManualUrl(inv.payment_link || "");
+                      }}
+                    >
+                      {inv.payment_link ? t.payLinkEditBtn : t.payLinkManualBtn}
                     </Button>
                   )}
                   {inv.status === "draft" && (
@@ -585,6 +693,36 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
                   )}
                 </div>
               </div>
+              {manualLinkId === inv.id && (
+                <form
+                  className="mt-3 pt-3 border-t border-slate-100 space-y-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    saveManualLink(inv.id, manualUrl.trim() || null);
+                  }}
+                >
+                  <Label>{t.payLinkManualBtn}</Label>
+                  <Input
+                    type="url"
+                    value={manualUrl}
+                    onChange={(e) => setManualUrl(e.target.value)}
+                    placeholder="https://pay.raiffeisen-kosovo.com/..."
+                  />
+                  <p className="text-xs text-slate-400">{t.payLinkManualHint}</p>
+                  <div className="flex gap-2">
+                    <Button type="submit">{t.save}</Button>
+                    {inv.payment_link && (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => saveManualLink(inv.id, null)}
+                      >
+                        {t.payLinkRemove}
+                      </Button>
+                    )}
+                  </div>
+                </form>
+              )}
               {inv.payment_link && inv.status !== "paid" && (
                 <p className="mt-2 text-xs text-slate-600">
                   {t.paymentLinkLabel}:{" "}

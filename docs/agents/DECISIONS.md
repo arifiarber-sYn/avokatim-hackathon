@@ -658,3 +658,42 @@
   is dynamic (profiles, revalidate 1h). Screenshot verification of
   JS-rendered pages now uses Playwright chromium (cached in
   `~/.cache/ms-playwright`); headless Firefox fires before client fetches.
+
+## D-032: Last industry gaps — payments abstraction, passive time, office Ava, review requests, flat fees (2026-07-28)
+
+- Context: after the UI wave the owner asked for one more comparison with the
+  2026 industry and whether card payments for lawyer→client services are
+  complete. Stripe cannot onboard Kosovo businesses, so "complete" needed a
+  local answer.
+- Decisions:
+  1. **Payments are a provider abstraction, not a Stripe integration.**
+     `services/payments.py` dispatches on `payments_provider`
+     (`stripe`|`raiffeisen`); a provider is "enabled" only when its
+     credentials exist. Until a gateway contract exists, the working rails
+     are bank transfer + a **manual pay-by-link** the lawyer pastes onto the
+     invoice (`PUT /invoices/{id}/payment-link`, https-only) — same
+     `payment_link` slot an automated provider would fill, so email/portal
+     need no changes. The Raiffeisen adapter is a documented skeleton; only
+     `_raiffeisen_payment_link()` needs touching when the bank's API docs
+     arrive (owner steps: `docs/integrimet/raiffeisen-pagesat.md`).
+  2. **Passive time capture is suggestions, never entries.** A separate
+     `time_suggestions` table (no existing billing query touched); derived
+     from the append-only audit log with conservative per-action minutes and
+     a 120-min/day cap; idempotent per (matter, user, day); only an explicit
+     accept creates a `TimeEntry`. Nightly generation rides the existing
+     reminder loop (one run per calendar day).
+  3. **Office Ava follows D-030: fixed pipeline, no tool loop.** The LLM only
+     (a) picks one of 8 hand-written tenant-scoped queries and (b) phrases
+     the result; it never writes SQL and never sees cross-tenant data. Every
+     call is audited with the tool id.
+  4. **Review requests are one-shot and evidence-anchored**:
+     `review_request_sent_at` on the case, sent 48h after conclusion, only
+     when no review exists — same sent-at pattern as every other reminder
+     (COMMS.md rule 4).
+  5. **Flat-fee menus are data on the profile** (`flat_services` JSONB,
+     max 10, validated server-side), shown on the public profile and as a
+     directory chip — transparent pricing without a new table or workflow.
+- Consequence / operational note: `systemctl --user restart avokatim` does
+  not restart the separate `avokatim-frontend` unit; after any frontend
+  build, restart `avokatim-frontend` explicitly or the old process serves a
+  stale chunk manifest (CSS 500, unstyled pages).

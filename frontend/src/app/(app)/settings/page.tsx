@@ -1372,6 +1372,7 @@ function PublicProfileSection({ isNotary = false }: { isNotary?: boolean }) {
     phone: "",
     sms_case_alerts: false,
   });
+  const [flatServices, setFlatServices] = useState<{ title: string; price: string }[]>([]);
   const [verification, setVerification] = useState<{
     status: string;
     note: string | null;
@@ -1405,8 +1406,12 @@ function PublicProfileSection({ isNotary = false }: { isNotary?: boolean }) {
       career_start_year: number | null;
       phone: string | null;
       sms_case_alerts: boolean;
+      flat_services: { title: string; price_eur: number }[];
     }>("/marketplace/profile")
       .then((p) => {
+        setFlatServices(
+          (p.flat_services || []).map((s) => ({ title: s.title, price: String(s.price_eur) }))
+        );
         setProfile({
           is_visible: p.is_visible,
           sos_on_duty: p.sos_on_duty,
@@ -1451,6 +1456,9 @@ function PublicProfileSection({ isNotary = false }: { isNotary?: boolean }) {
             profile.career_start_year === "" ? null : Number(profile.career_start_year),
           phone: profile.phone.trim() || null,
           sms_case_alerts: profile.sms_case_alerts,
+          flat_services: flatServices
+            .filter((s) => s.title.trim().length >= 3 && Number(s.price) >= 1)
+            .map((s) => ({ title: s.title.trim(), price_eur: Number(s.price) })),
         }
       );
       setVerification({ status: p.verification_status, note: p.verification_note });
@@ -1553,6 +1561,59 @@ function PublicProfileSection({ isNotary = false }: { isNotary?: boolean }) {
             placeholder="p.sh. 30"
           />
           <p className="text-xs text-slate-500 mt-1">{t.mkConsultFeeHint}</p>
+        </div>
+        )}
+        {!isNotary && (
+        <div>
+          <Label>{t.fsTitle}</Label>
+          <p className="text-xs text-slate-500 mb-2">{t.fsHint}</p>
+          <div className="space-y-2">
+            {flatServices.map((s, i) => (
+              <div key={i} className="flex gap-2 items-center">
+                <Input
+                  value={s.title}
+                  onChange={(e) =>
+                    setFlatServices((prev) =>
+                      prev.map((x, j) => (j === i ? { ...x, title: e.target.value } : x))
+                    )
+                  }
+                  placeholder={t.fsServicePlaceholder}
+                  maxLength={120}
+                  className="flex-1"
+                />
+                <Input
+                  type="number"
+                  min={1}
+                  max={10000}
+                  value={s.price}
+                  onChange={(e) =>
+                    setFlatServices((prev) =>
+                      prev.map((x, j) => (j === i ? { ...x, price: e.target.value } : x))
+                    )
+                  }
+                  placeholder="EUR"
+                  className="w-24"
+                />
+                <button
+                  type="button"
+                  onClick={() => setFlatServices((prev) => prev.filter((_, j) => j !== i))}
+                  className="text-slate-400 hover:text-red-600 text-lg leading-none px-1"
+                  aria-label={t.remove}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            {flatServices.length < 10 && (
+              <button
+                type="button"
+                onClick={() => setFlatServices((prev) => [...prev, { title: "", price: "" }])}
+                className="text-xs text-indigo-600 hover:underline font-medium"
+              >
+                + {t.fsAdd}
+              </button>
+            )}
+          </div>
         </div>
         )}
         <div>

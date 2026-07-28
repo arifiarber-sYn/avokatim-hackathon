@@ -49,6 +49,7 @@ recipients** (`_is_test_recipient`).
 | Social signup (Google/Apple/Meta) | email arrives provider-verified → `citizen_welcome_*` + `notify_ops` fire immediately, no verify step | `api/oauth_citizen.py` |
 | Password reset | `citizen_reset_*` | `api/marketplace.py` |
 | Lawyer claimed their case / new message | `case_claimed_*`, `case_message_*` | `api/marketplace.py` |
+| 48h after a claimed case concluded, no review yet | `case_review_request_*` (one-shot, link to `/rasti-im`) | `services/notifications.py` |
 | Matter portal invite / new message / signature | `case_portal_ready_*`, `email_new_message_*`, `email_signed_*`, `email_signature_*` | `api/intake.py`, `api/portal.py`, `api/collab.py` |
 | Client invoice | `email_invoice_*` | `api/billing.py` |
 

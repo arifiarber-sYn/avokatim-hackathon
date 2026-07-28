@@ -116,6 +116,9 @@ class LawyerProfile(Base, TimestampMixin):
         Boolean, default=False, server_default="false"
     )
     booking_slots: Mapped[list] = mapped_column(JSONB, default=list)
+    # Public flat-fee menu (LegalZoom model): up to 10 items of
+    # {"title": str, "price_eur": int} shown on the profile and directory card
+    flat_services: Mapped[list] = mapped_column(JSONB, default=list)
 
 
 BOOKING_STATUSES = ["pending", "confirmed", "declined", "cancelled"]
@@ -181,6 +184,8 @@ class CaseRequest(Base, TimestampMixin):
     intake_request_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("intake_requests.id", ondelete="SET NULL")
     )
+    # One-shot review invitation, sent 48h after the engagement concluded
+    review_request_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     # Set when the intake is accepted and the citizen becomes a portal client
     contact_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("contacts.id", ondelete="SET NULL")

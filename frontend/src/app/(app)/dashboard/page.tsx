@@ -154,6 +154,7 @@ export default function DashboardPage() {
   const [welcome, setWelcome] = useState(false);
   const [profileVisible, setProfileVisible] = useState<boolean | null>(null);
   const [profession, setProfession] = useState<string>("lawyer");
+  const [timeSuggestions, setTimeSuggestions] = useState(0);
 
   const loadTasks = useCallback(() => {
     apiGet<Task[]>("/tasks?mine=true&open_only=true").then(setTasks).catch(() => {});
@@ -167,6 +168,9 @@ export default function DashboardPage() {
       .catch(() => {});
     apiGet<{ tenant_profession?: string }>("/auth/me")
       .then((m) => setProfession(m.tenant_profession || "lawyer"))
+      .catch(() => {});
+    apiGet<unknown[]>("/time-suggestions")
+      .then((s) => setTimeSuggestions(s.length))
       .catch(() => {});
     loadTasks();
     if (
@@ -233,6 +237,25 @@ export default function DashboardPage() {
       {/* Notary offices have no marketplace page, so their appointment
           requests from /noteret surface here on the dashboard */}
       {profession === "notary" && <BookingsPanel />}
+
+      {timeSuggestions > 0 && (
+        <Card className="p-5 border-amber-300 bg-amber-50/60">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="font-semibold text-amber-900">{t.tsDashTitle}</h2>
+              <p className="text-sm text-amber-800 mt-1">
+                {t.tsDashBody.replace("{n}", String(timeSuggestions))}
+              </p>
+            </div>
+            <Link
+              href="/billing"
+              className="shrink-0 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold px-4 py-2"
+            >
+              {t.tsDashCta}
+            </Link>
+          </div>
+        </Card>
+      )}
 
       {profileVisible === false && profession !== "notary" && (
         <Card className="p-5 border-amber-300 bg-amber-50/60">

@@ -10,6 +10,51 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-28e — Industry gaps 2026: payments, passive time, office Ava (Cursor / Fable 5)
+
+- Done (owner approved the "Boshllëqet e fundit 2026" plan, D-032). 5 items:
+  1. **Card payments without Stripe**: (a) manual pay-by-link — new
+     `PUT /invoices/{id}/payment-link` (https-only, clears stale Stripe
+     session id) + paste/edit/remove UI on the invoice; the auto "Krijo link"
+     button now shows only when a provider is configured (new
+     `GET /payments-config`). (b) provider abstraction in
+     `services/payments.py`: `payments_provider` config (`stripe`|
+     `raiffeisen`), Raiffeisen adapter skeleton + HMAC callback verifier,
+     owner's application steps in `docs/integrimet/raiffeisen-pagesat.md`.
+  2. **Passive time capture** (Smokeball model): `TimeSuggestion` model +
+     migration; `services/time_capture.py` groups audit-log activity per
+     (matter, user, day) with conservative per-action minutes (cap 120/day),
+     idempotent; nightly run in the reminder loop + "Gjenero nga aktiviteti"
+     button; accept creates a real `TimeEntry` (rate defaults to the
+     lawyer's last used); amber suggestion list in billing + dashboard card.
+  3. **Office-level Ava**: `POST /assistant/office-ask` — fixed auditable
+     pipeline (D-030 principle): LLM classifies into one of 8 hand-written
+     tenant-scoped SQL tools (debts by client, week deadlines, stale
+     matters, hours by user, revenue by area, A/R aging, upcoming bookings,
+     intake stats) → LLM phrases the answer in the UI language. "Zyra"
+     segment on the assistant page with 6 chips + free field.
+  4. **Automatic review request**: `case_requests.review_request_sent_at` +
+     migration; one-shot email 48h after a claimed case concludes
+     (converted/closed, no review yet), 6 languages, row added to COMMS.md.
+  5. **Public flat-fee services**: `lawyer_profiles.flat_services` (JSONB,
+     max 10 × {title, price_eur}) + migration; row editor in Settings and
+     onboarding; "Shërbime me çmim të prerë" section on `/avokatet/[id]`;
+     "Çmime fikse" chip on directory cards; returned by both public
+     endpoints.
+- Verified: 122 backend tests pass (new: `test_time_capture.py`,
+  `test_office_ask.py` incl. provider dispatch + flat-services validation);
+  frontend build OK, sw v24; live smoke test on a `.sim.` tenant (signup →
+  flat_services round-trip → manual pay link incl. http rejection → office-ask
+  with the real LLM answered "debts_by_client" correctly), tenant deleted
+  after. Screenshot of /avokatet OK.
+- Gotcha fixed during verification: `systemctl --user restart avokatim` does
+  NOT restart `avokatim-frontend` (separate unit) — after `npm run build` the
+  old Next process kept serving a stale chunk manifest (CSS 500). Always
+  `systemctl --user restart avokatim-frontend` after a frontend build.
+- Left open: Raiffeisen adapter field names must be finalized against the
+  bank's merchant API docs once the owner completes the e-commerce
+  application (steps documented, non-technical).
+
 ## 2026-07-28d — UI audit wave: 10 improvements P1-P3 (Cursor / Fable 5)
 
 - Done (owner approved the full UI audit plan, D-031). All 10 items shipped:

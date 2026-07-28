@@ -131,4 +131,6 @@ export interface PublicLawyer {
   // Trust signals (2026): years practicing + verified platform activity
   years_experience?: number | null;
   cases_completed?: number;
+  // Public flat-fee service menu (transparent pricing)
+  flat_services?: { title: string; price_eur: number }[];
 }
