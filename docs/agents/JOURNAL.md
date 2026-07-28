@@ -10,6 +10,23 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-28 — "What's left" reminder to 8 incomplete lawyers + outreach status (Cursor / Fable 5)
+
+- Done: owner-requested resend of the registration reminder — a personal
+  letter (from Arbër) explaining what the free AI legal office includes and
+  listing ONLY the steps that remain for each account. Sent to 8 incomplete
+  lawyer registrations: Art/ViskyLaw, Jeton, Adnan (license only), Illyrian
+  (verify + license, fresh 3-day link), Marigona, Betim (profile + license),
+  Kujtim, Gani (verify + profile/visibility + license). Skipped: Vegim
+  (disposable yopmail), Tosi the notary (personal letter 3 days ago), Elsa
+  (already verified/public). Stamped `profile_nudge_sent_at` on all 8.
+- Verified: dry-run confirmed correct per-account step lists; all 8 SMTP OK.
+- Outreach campaign status (owner asked "are all 1473 notified?"): NO —
+  OAK registry has 1457 rows (1456 with email), 450 emailed so far
+  (30/day since Jul 13, timer healthy, next batch today 09:30). ~1004
+  remain ≈ 34 more days at the current rate. Raising the daily batch is
+  possible but was not changed without owner approval (Gmail deliverability).
+
 ## 2026-07-25a — Personal nudge: notary Dervishaj (Halim / DeepSeek v4)
 
 - Done: sent personal follow-up email to Fatos Dervishaj (Tosi / fatosdervishaj@gmail.com).
