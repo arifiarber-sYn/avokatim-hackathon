@@ -37,26 +37,43 @@ function statusStyle(status: string): string {
   }
 }
 
-/** Progress line for an active case: posted -> taken -> converted. */
-function CaseTimeline({ status, labels }: { status: string; labels: string[] }) {
+/** Live progress line for an active case: posted -> taken -> converted.
+ * Each reached step shows WHEN it happened (package-tracking pattern —
+ * clients expect the same transparency from legal work). */
+function CaseTimeline({
+  status,
+  labels,
+  dates,
+}: {
+  status: string;
+  labels: string[];
+  dates: (string | null)[];
+}) {
   const stage = status === "open" ? 0 : status === "claimed" ? 1 : 2;
+  const fmt = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleDateString("sq-AL", { day: "numeric", month: "short" }) : "";
   return (
-    <ol className="flex items-center gap-1.5">
+    <ol className="flex items-start gap-1.5">
       {labels.map((label, i) => (
-        <li key={label} className="flex items-center gap-1.5 flex-1 min-w-0">
+        <li key={label} className="flex items-start gap-1.5 flex-1 min-w-0">
           <span
-            className={`h-2.5 w-2.5 rounded-full shrink-0 ${
+            className={`h-2.5 w-2.5 mt-0.5 rounded-full shrink-0 ${
               i < stage ? "bg-emerald-500" : i === stage ? "bg-indigo-600 ring-2 ring-indigo-100" : "bg-slate-200"
             }`}
           />
-          <span
-            className={`text-[11px] truncate ${
-              i === stage ? "font-semibold text-slate-700" : "text-slate-400"
-            }`}
-          >
-            {label}
+          <span className="min-w-0">
+            <span
+              className={`block text-[11px] truncate ${
+                i === stage ? "font-semibold text-slate-700" : "text-slate-400"
+              }`}
+            >
+              {label}
+            </span>
+            {i <= stage && dates[i] && (
+              <span className="block text-[10px] text-slate-400">{fmt(dates[i])}</span>
+            )}
           </span>
-          {i < labels.length - 1 && <span className="flex-1 h-px bg-slate-200 min-w-1.5" />}
+          {i < labels.length - 1 && <span className="flex-1 h-px bg-slate-200 min-w-1.5 mt-1" />}
         </li>
       ))}
     </ol>
@@ -213,6 +230,11 @@ function MyCaseInner() {
                   <CaseTimeline
                     status={c.status}
                     labels={[t.mkStatusOpen, t.mkStatusClaimed, t.mkStatusConverted]}
+                    dates={[
+                      c.created_at,
+                      c.claimed_at,
+                      c.status === "converted" ? c.updated_at ?? null : null,
+                    ]}
                   />
                 )}
                 <p className="text-sm text-slate-700 whitespace-pre-wrap">{c.description}</p>

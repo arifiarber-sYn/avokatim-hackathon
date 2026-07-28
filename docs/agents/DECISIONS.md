@@ -591,3 +591,37 @@
   already tested — only the constant moved. Historical one-shot scripts in
   `backend/scripts/send_*.py` still say "tre muajt" — they are archives, do
   not reuse their copy verbatim.
+
+## D-030: Industry-gap wave — GEO, trust signals, follow-up, office memory, agentic prepare, client timeline (2026-07-28)
+
+- Context: owner asked what AvokatIM lacks vs the 2026 industry (Clio Duo/
+  Work, Harvey Agents, Avvo/Martindale trust patterns, GEO — generative
+  engine optimization) and approved the full plan ("implemetoj te lutem siq
+  ti sygjeron"). Priority order: acquisition first (GEO + trust), retention
+  second (follow-up), AI depth third (memory + agentic), transparency last.
+- Decision, six shipped items:
+  1. GEO: schema.org JSON-LD server-rendered on public pages (Organization/
+     WebSite on landing, ItemList of Attorney on /avokatet, Notary on
+     /noteret), per-page metadata via server layouts, robots.ts + sitemap.ts.
+     Notary emails are omitted from JSON-LD on purpose (spam protection).
+  2. Trust signals: `LawyerProfile.career_start_year` (self-reported, shown
+     as "N vjet përvojë") + `cases_completed` (computed from marketplace
+     activity — evidence, not claims). Both public in the directory API.
+  3. Activation follow-up: single 48h email to verified citizens with no
+     posted case (`case_followup_sent_at`, 14-day window). One-shot by
+     design — we never nag twice.
+  4. Office memory: `Tenant.assistant_style`, free text appended to Ava's
+     office system prompt (capped 2000 chars). Deliberately tenant-level and
+     transparent (a Settings textarea) instead of hidden learned memory.
+  5. Agentic preparation: `prepare_matter_stream` is an orchestrated
+     server-side pipeline (read file → derive questions → search corpus →
+     synthesize + draft), NOT a free-form tool loop — DeepSeek function
+     calling is less reliable and a fixed pipeline is auditable. The draft is
+     separated by the literal marker `=== DRAFT-SHKRESA ===`.
+  6. Client timeline: reused `updated_at` as the converted/closed timestamp
+     instead of adding event tables — good enough for a 3-step stepper.
+- Consequences: public pages are now crawlable/citable by AI assistants
+  (expect directory citations to build over weeks, not days). New outbound
+  email documented in COMMS.md. The agentic pattern (derive → search →
+  synthesize with a machine-readable marker) is the template for future
+  agent features; extend it rather than inventing new shapes.

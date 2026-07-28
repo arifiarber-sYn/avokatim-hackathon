@@ -128,6 +128,19 @@ async def build_matter_context(db: AsyncSession, matter_id: uuid.UUID) -> str:
     return "\n".join(parts)
 
 
+def _system_prompt(style: str | None) -> str:
+    """Office memory: the lawyer's standing preferences (drafting style,
+    citation habits) ride along on every request — set once in Settings."""
+    if not style or not style.strip():
+        return SYSTEM_PROMPT
+    return (
+        SYSTEM_PROMPT
+        + "\n\nPREFERENCAT E ZYRËS (vendosur nga avokati — zbatoji gjithmonë "
+        "kur nuk bien ndesh me pyetjen):\n"
+        + style.strip()[:2000]
+    )
+
+
 async def _build_ask_messages(
     db: AsyncSession,
     *,
@@ -137,6 +150,7 @@ async def _build_ask_messages(
     history: list[ChatMessage] | None = None,
     retrieval_query: str | None = None,
     language: str | None = None,
+    style: str | None = None,
 ) -> tuple[list[ChatMessage], list[dict]]:
     """Shared RAG prompt assembly for ask_bora and ask_bora_stream."""
     context_blocks: list[str] = []
@@ -170,7 +184,7 @@ async def _build_ask_messages(
             + f"\n\n=== PYETJA E AVOKATIT ===\n{question}"
         )
 
-    messages = [ChatMessage(role="system", content=SYSTEM_PROMPT)]
+    messages = [ChatMessage(role="system", content=_system_prompt(style))]
     if history:
         messages.extend(history[-8:])
     messages.append(ChatMessage(role="user", content=user_content))
@@ -187,6 +201,7 @@ async def ask_bora(
     history: list[ChatMessage] | None = None,
     retrieval_query: str | None = None,
     language: str | None = None,
+    style: str | None = None,
 ) -> tuple[str, list[dict]]:
     """RAG-grounded chat. Returns (answer, citations). retrieval_query lets
     callers search with case facts instead of a generic instruction prompt."""
@@ -198,6 +213,7 @@ async def ask_bora(
         history=history,
         retrieval_query=retrieval_query,
         language=language,
+        style=style,
     )
     provider = get_provider(provider_name)
     result = await provider.chat(messages)
@@ -213,6 +229,7 @@ async def ask_bora_stream(
     provider_name: str | None = None,
     history: list[ChatMessage] | None = None,
     language: str | None = None,
+    style: str | None = None,
 ):
     """Streaming variant: returns (citations, chunk_iterator). Chunks are
     ("thinking"|"delta", text) — thinking tokens are shown live but not saved."""
@@ -223,6 +240,7 @@ async def ask_bora_stream(
         jurisdiction_id=jurisdiction_id,
         history=history,
         language=language,
+        style=style,
     )
     provider = get_provider(provider_name)
     return citations, provider.chat_stream(messages)
@@ -341,6 +359,124 @@ async def deep_research_stream(
     ]
     yield {"type": "citations", "citations": citations}
     async for kind, text in provider.chat_stream(messages):
+        yield {"type": kind if kind == "thinking" else "delta", "text": text}
+
+
+MATTER_QUESTIONS_PROMPT = """Kjo është dosja e plotë e një lënde ligjore në Kosovë.
+Identifiko 3 deri 5 pyetje kërkimi ligjor konkrete që duhen hulumtuar për ta
+përgatitur lëndën (baza ligjore e kërkesës, afatet procedurale, kompetenca,
+provat e nevojshme, mjetet juridike).
+Kthe VETËM JSON të vlefshëm: një listë stringjesh në shqip, pa asgjë tjetër.
+
+DOSJA:
+{context}"""
+
+PREPARE_SYNTHESIS_INSTRUCTIONS = (
+    "PËRGATITJA E LËNDËS: materialet më lart janë mbledhur duke hulumtuar "
+    "secilën pyetje kërkimi në korpusin ligjor. Strukturo përgatitjen kështu:\n"
+    "1. PËRMBLEDHJA E SITUATËS — çfarë ka ndodhur dhe ku qëndron lënda (shkurt).\n"
+    "2. BAZA LIGJORE — dispozitat konkrete të zbatueshme, me citim (ligji + neni), "
+    "vetëm nga materialet e dhëna.\n"
+    "3. HAPAT E RADHËS — listë e numëruar veprimesh konkrete për avokatin, me "
+    "afatet procedurale kur njihen nga materialet.\n"
+    "4. RREZIQET — çfarë mund ta dëmtojë lëndën (afate, prova që mungojnë, "
+    "përjashtime).\n"
+    "Pastaj, në rresht të veçantë saktësisht '=== DRAFT-SHKRESA ===', shkruaj "
+    "draftin e plotë të shkresës më të nevojshme për hapin e parë (padi, "
+    "përgjigje në padi, ankesë, kërkesë a propozim — zgjidh vetë sipas fazës), "
+    "të gatshëm për redaktim, me vende bosh __________ ku mungojnë të dhënat."
+)
+
+
+async def prepare_matter_stream(
+    db: AsyncSession,
+    *,
+    matter_id: uuid.UUID,
+    jurisdiction_id: uuid.UUID | None,
+    provider_name: str | None = None,
+    language: str | None = None,
+    style: str | None = None,
+):
+    """Agentic one-click matter preparation (the 2026 'agent' pattern —
+    Harvey Agents / Clio Work): read the file, derive the legal questions,
+    research each one in the corpus, then synthesize situation + legal basis
+    + next steps + a ready-to-edit draft document. Async generator of event
+    dicts: step / thinking / delta / citations."""
+    provider = get_provider(provider_name)
+    system = _system_prompt(style)
+
+    yield {"type": "step", "step": "reading", "status": "start"}
+    context = await build_matter_context(db, matter_id)
+    doc_blocks: list[str] = []
+    citations: list[dict] = []
+    for hit in await rag.search_matter_documents(
+        db, matter_id, context[:1000], limit=6
+    ):
+        doc_blocks.append(f"[Nga dokumenti '{hit['doc_title']}']\n{hit['text']}")
+        citations.append({"type": "document", "title": hit["doc_title"]})
+    yield {"type": "step", "step": "reading", "status": "done"}
+
+    yield {"type": "step", "step": "subquestions", "status": "start"}
+    questions: list[str] = []
+    try:
+        result = await provider.chat(
+            [
+                ChatMessage(role="system", content=system),
+                ChatMessage(
+                    role="user",
+                    content=MATTER_QUESTIONS_PROMPT.format(context=context[:8000]),
+                ),
+            ]
+        )
+        parsed = _extract_json_list(result.content)
+        if parsed:
+            questions = [str(q).strip() for q in parsed if str(q).strip()][:5]
+    except RuntimeError:
+        pass
+    if not questions:
+        questions = [context[:300]]  # degrade to searching with the file itself
+    yield {
+        "type": "step", "step": "subquestions", "status": "done",
+        "subquestions": questions,
+    }
+
+    law_blocks: list[str] = []
+    seen: set[tuple] = set()
+    for index, q in enumerate(questions, start=1):
+        yield {
+            "type": "step", "step": "search", "index": index,
+            "total": len(questions), "question": q,
+        }
+        if not jurisdiction_id:
+            continue
+        for hit in await rag.search_corpus(
+            db, jurisdiction_id, q, limit=4, language=language
+        ):
+            key = (hit["doc_title"], hit["section"])
+            if key in seen:
+                continue
+            seen.add(key)
+            label = hit["doc_title"] + (f", {hit['section']}" if hit["section"] else "")
+            law_blocks.append(f"[Nga ligji: {label}]\n{hit['text']}")
+            citations.append(
+                {"type": "law", "title": hit["doc_title"], "section": hit["section"],
+                 "reference": hit["reference"]}
+            )
+
+    yield {"type": "step", "step": "synthesis", "status": "start"}
+    user_content = (
+        "DOSJA E LËNDËS:\n\n" + context
+        + ("\n\n---\n\n" + "\n\n---\n\n".join(doc_blocks) if doc_blocks else "")
+        + ("\n\n---\n\n" + "\n\n---\n\n".join(law_blocks) if law_blocks else "")
+        + f"\n\n{PREPARE_SYNTHESIS_INSTRUCTIONS}"
+    )
+    yield {"type": "citations", "citations": citations}
+    async for kind, text in provider.chat_stream(
+        [
+            ChatMessage(role="system", content=system),
+            ChatMessage(role="user", content=user_content),
+        ]
+    ):
         yield {"type": kind if kind == "thinking" else "delta", "text": text}
 
 

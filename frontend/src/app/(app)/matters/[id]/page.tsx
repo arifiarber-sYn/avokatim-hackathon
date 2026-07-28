@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useCallback, useEffect, useState } from "react";
-import { apiDelete, apiDownload, apiGet, apiPatch, apiPost, apiPut, apiUpload, getToken } from "@/lib/api";
+import { apiDelete, apiDownload, apiGet, apiPatch, apiPost, apiPut, apiStream, apiUpload, getToken } from "@/lib/api";
 import { localized, useI18n } from "@/lib/i18n";
 import {
   Contact, Deadline, DeadlineRule, Doc, Matter, Task,
@@ -1228,14 +1228,51 @@ function Notes({ matterId }: { matterId: string }) {
   );
 }
 
+const DRAFT_MARKER = "=== DRAFT-SHKRESA ===";
+
 function MatterAI({ matterId }: { matterId: string }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [output, setOutput] = useState("");
   const [isDraft, setIsDraft] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [sentToPortal, setSentToPortal] = useState(false);
   const [copiedText, setCopiedText] = useState(false);
+  const [prepStep, setPrepStep] = useState("");
+  const [copiedDraft, setCopiedDraft] = useState(false);
+
+  /** Agentic preparation: Ava reads the file, researches each legal question
+   * in the corpus and streams back analysis + next steps + a draft document. */
+  async function prepare() {
+    setBusy(true);
+    setError("");
+    setOutput("");
+    setIsDraft(false);
+    setPrepStep(t.prepReading);
+    try {
+      await apiStream(
+        `/assistant/matters/${matterId}/prepare?locale=${locale}`,
+        {},
+        (event) => {
+          if (event.type === "step") {
+            if (event.step === "subquestions") setPrepStep(t.prepQuestions);
+            if (event.step === "search")
+              setPrepStep(`${t.prepSearching} ${event.index}/${event.total}`);
+            if (event.step === "synthesis") setPrepStep(t.prepWriting);
+          } else if (event.type === "delta") {
+            setOutput((prev) => prev + (event.text as string));
+          } else if (event.type === "error") {
+            setError(String(event.detail || t.error));
+          }
+        }
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setBusy(false);
+      setPrepStep("");
+    }
+  }
 
   async function run(action: "summarize" | "hearing" | "clientUpdate") {
     setBusy(true);
@@ -1277,17 +1314,60 @@ function MatterAI({ matterId }: { matterId: string }) {
   return (
     <div className="space-y-4">
       <div className="flex gap-2 flex-wrap">
-        <Button onClick={() => run("summarize")} disabled={busy}>{t.summarizeMatter}</Button>
+        <Button onClick={prepare} disabled={busy}>✦ {t.prepMatter}</Button>
+        <Button onClick={() => run("summarize")} disabled={busy} variant="secondary">{t.summarizeMatter}</Button>
         <Button onClick={() => run("hearing")} disabled={busy} variant="secondary">{t.hearingPrep}</Button>
         <Button onClick={() => run("clientUpdate")} disabled={busy} variant="secondary">
           {t.draftClientUpdate}
         </Button>
       </div>
       <ErrorNote message={error} />
-      {busy && <p className="text-sm text-slate-500 animate-pulse">{t.thinking}</p>}
+      {busy && (
+        <p className="text-sm text-slate-500 animate-pulse">{prepStep || t.thinking}</p>
+      )}
       {output && (
         <Card className="p-5 space-y-4">
-          <p className="text-sm whitespace-pre-wrap leading-relaxed">{output}</p>
+          <p className="text-sm whitespace-pre-wrap leading-relaxed">
+            {output.split(DRAFT_MARKER)[0].trim()}
+          </p>
+          {output.includes(DRAFT_MARKER) && (
+            <div className="pt-3 border-t border-slate-100 space-y-3">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <h3 className="text-sm font-semibold text-indigo-700">{t.prepDraftTitle}</h3>
+                <div className="flex gap-2">
+                  <Button
+                    variant="secondary"
+                    onClick={() =>
+                      apiDownload("/assistant/export-docx", "draft.docx", {
+                        method: "POST",
+                        body: {
+                          content: output.split(DRAFT_MARKER)[1].trim(),
+                          title: t.prepDraftTitle,
+                        },
+                      })
+                    }
+                  >
+                    .docx
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(
+                        output.split(DRAFT_MARKER)[1].trim()
+                      );
+                      setCopiedDraft(true);
+                      setTimeout(() => setCopiedDraft(false), 2000);
+                    }}
+                  >
+                    {copiedDraft ? t.copied : t.copyText}
+                  </Button>
+                </div>
+              </div>
+              <p className="text-sm whitespace-pre-wrap leading-relaxed bg-slate-50 rounded-lg p-4 border border-slate-100">
+                {output.split(DRAFT_MARKER)[1].trim()}
+              </p>
+            </div>
+          )}
           {isDraft && (
             <div className="flex gap-2 items-center pt-3 border-t border-slate-100">
               <Button onClick={sendDraftToPortal} disabled={sentToPortal}>

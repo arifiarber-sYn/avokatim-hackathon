@@ -400,6 +400,25 @@ async def _tenant_ratings(db: AsyncSession) -> dict[uuid.UUID, tuple[float, int]
     return {tid: (round(float(avg), 1), int(cnt)) for tid, avg, cnt in rows}
 
 
+async def _tenant_cases_completed(db: AsyncSession) -> dict[uuid.UUID, int]:
+    """tenant_id -> marketplace cases the office actually took on. Evidence-
+    based trust signal (ReferU/COUNSEL model): verified platform activity,
+    not self-reported claims."""
+    from sqlalchemy import func
+
+    rows = (
+        await db.execute(
+            select(CaseRequest.claimed_by_tenant_id, func.count(CaseRequest.id))
+            .where(
+                CaseRequest.claimed_by_tenant_id.is_not(None),
+                CaseRequest.status.in_(["claimed", "converted", "closed"]),
+            )
+            .group_by(CaseRequest.claimed_by_tenant_id)
+        )
+    ).all()
+    return {tid: int(cnt) for tid, cnt in rows}
+
+
 @public_router.get("/lawyers")
 async def public_lawyers(
     area: str | None = None,
@@ -427,6 +446,8 @@ async def public_lawyers(
         )
     ).all()
     ratings = await _tenant_ratings(db)
+    cases_completed = await _tenant_cases_completed(db)
+    current_year = datetime.now(UTC).year
     result = []
     for profile, user, tenant in rows:
         if area and area not in (profile.practice_areas or []):
@@ -454,6 +475,12 @@ async def public_lawyers(
                 "rating": avg_rating,
                 "review_count": review_count,
                 "booking": profile.booking_enabled,
+                "years_experience": (
+                    max(0, current_year - profile.career_start_year)
+                    if profile.career_start_year
+                    else None
+                ),
+                "cases_completed": cases_completed.get(tenant.id, 0),
             }
         )
     # Within each placement tier, better-rated lawyers surface first
@@ -487,6 +514,9 @@ def _case_out(case: CaseRequest, firm_name: str | None = None) -> dict:
         "claimed_at": case.claimed_at.isoformat() if case.claimed_at else None,
         "closed_reason": case.closed_reason,
         "created_at": case.created_at.isoformat(),
+        # Last state change — the citizen timeline uses it as the "matter
+        # opened" / "closed" timestamp (no dedicated columns for those)
+        "updated_at": case.updated_at.isoformat() if case.updated_at else None,
     }
 
 
@@ -1303,6 +1333,7 @@ def _profile_out(profile: LawyerProfile | None) -> dict:
             "practice_areas": [], "cities": [], "languages": [], "photo": None,
             "oak_license_no": None, "verification_status": "none",
             "verification_note": None, "consult_fee_eur": None,
+            "career_start_year": None,
             "phone": None, "sms_case_alerts": False, "is_founder": False,
         }
     return {
@@ -1317,6 +1348,7 @@ def _profile_out(profile: LawyerProfile | None) -> dict:
         "verification_status": profile.verification_status,
         "verification_note": profile.verification_note,
         "consult_fee_eur": profile.consult_fee_eur,
+        "career_start_year": profile.career_start_year,
         "phone": profile.phone,
         "sms_case_alerts": profile.sms_case_alerts,
         "is_founder": profile.is_founder,
@@ -1376,6 +1408,7 @@ class ProfileIn(BaseModel):
     photo: str | None = None
     oak_license_no: str | None = Field(default=None, max_length=64)
     consult_fee_eur: int | None = Field(default=None, ge=0, le=10000)
+    career_start_year: int | None = Field(default=None, ge=1950, le=2100)
     phone: str | None = Field(default=None, max_length=64)
     sms_case_alerts: bool = False
 
@@ -1403,6 +1436,11 @@ async def update_my_profile(
     ]
     profile.photo = body.photo
     profile.consult_fee_eur = body.consult_fee_eur
+    profile.career_start_year = (
+        body.career_start_year
+        if body.career_start_year and body.career_start_year <= datetime.now(UTC).year
+        else None
+    )
     profile.phone = (body.phone or "").strip() or None
     profile.sms_case_alerts = body.sms_case_alerts
 

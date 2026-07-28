@@ -100,6 +100,8 @@ export interface CitizenCase {
   claimed_at: string | null;
   closed_reason: string | null;
   created_at: string;
+  // Last state change — used as the "matter opened"/"closed" timeline date
+  updated_at?: string | null;
   // Reviews: set by /citizen/cases once the engagement concluded
   reviewed?: boolean;
   can_review?: boolean;
@@ -126,4 +128,7 @@ export interface PublicLawyer {
   review_count?: number;
   // Consultation booking enabled (Phase 4)
   booking?: boolean;
+  // Trust signals (2026): years practicing + verified platform activity
+  years_experience?: number | null;
+  cases_completed?: number;
 }

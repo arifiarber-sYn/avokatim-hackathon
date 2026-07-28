@@ -58,6 +58,10 @@ class CitizenUser(Base, TimestampMixin):
     # One-shot reminder: set when the "confirm your email" nudge has been sent
     # (24h after signup, only if still unverified)
     verify_reminder_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # One-shot activation follow-up: verified citizens who never posted a case
+    # get a single "here's what you can do" email 48h after signup (intake
+    # follow-up sequences are the industry's highest-ROI automation)
+    case_followup_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class LawyerProfile(Base, TimestampMixin):
@@ -102,6 +106,10 @@ class LawyerProfile(Base, TimestampMixin):
     verification_note: Mapped[str | None] = mapped_column(String(255))
     # Transparent pricing (optional): consultation fee shown in the directory
     consult_fee_eur: Mapped[int | None] = mapped_column(Integer)
+    # Trust signal (Martindale-Avvo 2026: years of experience is one of the
+    # five things consumers check before contacting a lawyer). Year the
+    # lawyer started practicing; the UI renders it as "N vjet përvojë".
+    career_start_year: Mapped[int | None] = mapped_column(Integer)
     # Consultation booking (Phase 4): weekly recurring availability windows,
     # e.g. [{"day": 0, "start": "09:00", "end": "12:00"}] (0 = Monday).
     booking_enabled: Mapped[bool] = mapped_column(

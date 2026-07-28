@@ -85,7 +85,24 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   `reminder_loop`: lawyer with inactive public profile 48h after signup,
   citizen with unverified email after 24h (columns
   `users.profile_nudge_sent_at`, `citizen_users.verify_reminder_sent_at`;
-  only accounts ≤14 days old are ever nudged).
+  only accounts ≤14 days old are ever nudged). **Activation follow-up**
+  (2026-07-28, D-030): verified citizens with no posted case get one email
+  48h after signup (`citizen_users.case_followup_sent_at`, ×6 languages).
+- **Industry-gap wave** (2026-07-28, D-030): **GEO** — schema.org JSON-LD
+  server-rendered (Organization/WebSite on `/`, Attorney ItemList on
+  `/avokatet`, Notary ItemList on `/noteret`), per-page metadata via server
+  `layout.tsx` on 9 public pages, `robots.ts` + `sitemap.ts`. **Trust
+  signals** — `lawyer_profiles.career_start_year` (onboarding + Settings)
+  and computed `cases_completed` shown on directory cards and in
+  `/public/lawyers`. **Office memory** — `tenants.assistant_style`
+  (GET/PUT `/assistant/style`, Settings card) appended to Ava's office
+  system prompt. **Agentic "Përgatit lëndën"** —
+  `POST /assistant/matters/{id}/prepare` (SSE): reads the file, derives
+  legal questions, searches corpus per question, streams situation + legal
+  basis + next steps + risks + a draft after `=== DRAFT-SHKRESA ===`;
+  matter AI tab has the button with live steps, draft copy + `.docx`
+  download (`POST /assistant/export-docx`). **Client timeline** — the
+  `rasti-im` stepper shows the date each stage was reached.
 - **Agentic AI — Phase 3 of the improvement backlog** (2026-07-13, D-022):
   **Deep research**: `POST /assistant/deep-research` (SSE) — LLM decomposes
   the question into 3–5 sub-questions, each searched in the corpus, one

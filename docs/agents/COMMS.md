@@ -44,6 +44,7 @@ recipients** (`_is_test_recipient`).
 |---|---|---|
 | Signup | `citizen_verify_*` (confirm email) | `api/marketplace.py` |
 | 1h after signup, email still unverified | `citizen_verify_reminder_*` (one-shot) | `services/notifications.py` |
+| 48h after signup, verified but no case posted | `citizen_case_followup_*` (one-shot) | `services/notifications.py` |
 | Email confirmed | `citizen_welcome_*` — **thank-you letter** (Ava, post case, directory, documents, SOS; free forever) | `api/marketplace.py` |
 | Social signup (Google/Apple/Meta) | email arrives provider-verified → `citizen_welcome_*` + `notify_ops` fire immediately, no verify step | `api/oauth_citizen.py` |
 | Password reset | `citizen_reset_*` | `api/marketplace.py` |

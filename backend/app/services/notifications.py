@@ -241,6 +241,40 @@ async def _check_onboarding_nudges() -> None:
             if sent:
                 logger.info("Verify reminder sent to citizen %s", citizen.email)
 
+        # Activation follow-up: verified citizens who never posted a case,
+        # once, 48h after signup (Clio 2026: intake follow-up is the single
+        # highest-ROI automation — people who registered clearly had a need)
+        from app.models import CaseRequest
+
+        posters = select(CaseRequest.citizen_id)
+        idle_citizens = (
+            await db.execute(
+                select(CitizenUser).where(
+                    CitizenUser.is_active.is_(True),
+                    CitizenUser.email_verified_at.is_not(None),
+                    CitizenUser.case_followup_sent_at.is_(None),
+                    CitizenUser.created_at <= now - timedelta(hours=48),
+                    CitizenUser.created_at >= window_start,
+                    CitizenUser.id.not_in(posters),
+                )
+            )
+        ).scalars().all()
+        for citizen in idle_citizens:
+            loc = pick_locale(citizen.locale)
+            sent = await send_email(
+                citizen.email,
+                tr(loc, "citizen_case_followup_subject"),
+                tr(
+                    loc,
+                    "citizen_case_followup_body",
+                    post_url=f"{settings.public_base_url}/posto-rastin",
+                    ava_url=f"{settings.public_base_url}/ava",
+                ),
+            )
+            citizen.case_followup_sent_at = now
+            if sent:
+                logger.info("Case follow-up sent to citizen %s", citizen.email)
+
         await db.commit()
 
 

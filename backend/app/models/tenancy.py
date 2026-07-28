@@ -37,6 +37,10 @@ class Tenant(Base, TimestampMixin):
     default_jurisdiction_code: Mapped[str] = mapped_column(String(8), default="XK")
     # Opaque token for the public intake form URL; null = form disabled
     intake_token: Mapped[str | None] = mapped_column(String(64), unique=True)
+    # Office "memory" for Ava (Vincent-Skills-lite): free-text preferences the
+    # lawyer sets once — drafting style, citation habits, standard clauses —
+    # appended to the assistant's system prompt on every office request.
+    assistant_style: Mapped[str | None] = mapped_column(Text)
 
     # Fiscal identity printed on invoices (Kosovo: NUI / VAT no.)
     fiscal_number: Mapped[str | None] = mapped_column(String(32))

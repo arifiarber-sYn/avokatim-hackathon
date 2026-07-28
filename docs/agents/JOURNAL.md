@@ -10,6 +10,44 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-28c — Industry-gap wave: GEO, trust signals, follow-up, office memory, agentic prepare, client timeline (Cursor / Fable 5)
+
+- Done (owner approved the full gap plan, D-030). Six improvements shipped:
+  1. **GEO/SEO**: `robots.ts` + `sitemap.ts` (Next conventions), rich root
+     metadata + Organization/WebSite JSON-LD, server layouts with per-page
+     metadata for 9 public pages, ItemList JSON-LD of Attorneys on `/avokatet`
+     (fetched server-side, revalidate 1h) and Notaries on `/noteret` (emails
+     deliberately omitted — anti-spam).
+  2. **Trust signals**: `LawyerProfile.career_start_year` (migration
+     a6cae157f00a) + `cases_completed` (count of claimed/converted/closed
+     marketplace cases per tenant) in `/public/lawyers`; editable in
+     onboarding step 2 + Settings; shown on directory cards; ×6 languages.
+  3. **Activation follow-up**: `CitizenUser.case_followup_sent_at` (migration
+     6eb277e6e5b5); one-shot email 48h after signup to verified citizens with
+     no posted case (14-day window; 3 test accounts pre-stamped in DB so they
+     are never mailed); `citizen_case_followup_*` ×6; COMMS.md row added.
+  4. **Office memory** (Vincent-Skills-lite): `Tenant.assistant_style`
+     (migration 9b4df1ac32d5), GET/PUT `/assistant/style`, Settings card
+     "Preferencat e Avës"; `_system_prompt(style)` appends preferences
+     (capped 2000 chars) to every office assistant request.
+  5. **Agentic "Përgatit lëndën"** (Harvey-Agents pattern):
+     `prepare_matter_stream` — reads the matter file, LLM derives 3-5 legal
+     research questions, searches corpus per question, synthesizes situation
+     + legal basis + next steps + risks + a draft document after the
+     `=== DRAFT-SHKRESA ===` marker. SSE endpoint
+     `POST /assistant/matters/{id}/prepare`; primary button in the matter AI
+     tab with live step progress; draft card with copy + `.docx` download
+     (new `POST /assistant/export-docx`).
+  6. **Client timeline**: `_case_out` now returns `updated_at`; the
+     `rasti-im` stepper shows the date each stage was reached
+     (package-tracking transparency).
+- Verified: 113/113 backend tests (3 new: trust-signal roundtrip, follow-up
+  i18n ×6, style prompt capping); frontend built; sw.js cache v21; both
+  services restarted; JSON-LD confirmed live on /, /avokatet, /noteret;
+  robots.txt + sitemap.xml serving; health OK.
+- Left open: WhatsApp channel completion still blocked on Meta business
+  verification; SMS follow-ups blocked on Twilio credentials (both external).
+
 ## 2026-07-28b — Free trial 90 → 365 days everywhere (Cursor / Fable 5)
 
 - Done: owner extended the free period to one full year (D-029).

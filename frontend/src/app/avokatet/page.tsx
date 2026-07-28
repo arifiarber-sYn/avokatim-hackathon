@@ -143,6 +143,20 @@ export default function LawyerDirectoryPage() {
                   </div>
                 </div>
                 {lawyer.bio && <p className="text-sm text-slate-600 line-clamp-3">{lawyer.bio}</p>}
+                {(lawyer.years_experience != null || (lawyer.cases_completed ?? 0) > 0) && (
+                  <p className="text-xs text-slate-500 flex flex-wrap gap-x-3 gap-y-0.5">
+                    {lawyer.years_experience != null && lawyer.years_experience > 0 && (
+                      <span>
+                        <b className="text-slate-700">{lawyer.years_experience}</b> {t.lpYearsExp}
+                      </span>
+                    )}
+                    {(lawyer.cases_completed ?? 0) > 0 && (
+                      <span>
+                        <b className="text-slate-700">{lawyer.cases_completed}</b> {t.lpCasesDone}
+                      </span>
+                    )}
+                  </p>
+                )}
                 <div className="flex flex-wrap gap-1.5">
                   {lawyer.practice_areas.map((a) => (
                     <span key={a} className="text-xs bg-indigo-50 text-indigo-700 rounded-full px-2 py-0.5">

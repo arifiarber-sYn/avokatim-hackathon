@@ -44,6 +44,7 @@ export default function SettingsPage() {
       <CalendarFeedSection />
       <PublicIntakeSection />
       <PublicProfileSection isNotary={isNotary} />
+      <AvaStyleSection />
       <BookingSection />
       {!isNotary && <ReferralSection />}
       <ImportSection />
@@ -1288,6 +1289,7 @@ function PublicProfileSection({ isNotary = false }: { isNotary?: boolean }) {
     photo: null as string | null,
     oak_license_no: "",
     consult_fee_eur: "" as string,
+    career_start_year: "" as string,
     phone: "",
     sms_case_alerts: false,
   });
@@ -1321,6 +1323,7 @@ function PublicProfileSection({ isNotary = false }: { isNotary?: boolean }) {
       verification_status: string;
       verification_note: string | null;
       consult_fee_eur: number | null;
+      career_start_year: number | null;
       phone: string | null;
       sms_case_alerts: boolean;
     }>("/marketplace/profile")
@@ -1335,6 +1338,7 @@ function PublicProfileSection({ isNotary = false }: { isNotary?: boolean }) {
           photo: p.photo,
           oak_license_no: p.oak_license_no || "",
           consult_fee_eur: p.consult_fee_eur == null ? "" : String(p.consult_fee_eur),
+          career_start_year: p.career_start_year == null ? "" : String(p.career_start_year),
           phone: p.phone || "",
           sms_case_alerts: p.sms_case_alerts,
         });
@@ -1364,6 +1368,8 @@ function PublicProfileSection({ isNotary = false }: { isNotary?: boolean }) {
           photo: profile.photo,
           oak_license_no: profile.oak_license_no.trim() || null,
           consult_fee_eur: profile.consult_fee_eur === "" ? null : Number(profile.consult_fee_eur),
+          career_start_year:
+            profile.career_start_year === "" ? null : Number(profile.career_start_year),
           phone: profile.phone.trim() || null,
           sms_case_alerts: profile.sms_case_alerts,
         }
@@ -1471,6 +1477,18 @@ function PublicProfileSection({ isNotary = false }: { isNotary?: boolean }) {
         </div>
         )}
         <div>
+          <Label>{t.mkCareerStart}</Label>
+          <Input
+            type="number"
+            min={1950}
+            max={new Date().getFullYear()}
+            value={profile.career_start_year}
+            onChange={(e) => setProfile({ ...profile, career_start_year: e.target.value })}
+            placeholder="p.sh. 2010"
+          />
+          <p className="text-xs text-slate-500 mt-1">{t.mkCareerStartHint}</p>
+        </div>
+        <div>
           <Label>{t.mkSmsPhone}</Label>
           <Input
             type="tel"
@@ -1576,6 +1594,56 @@ function PublicProfileSection({ isNotary = false }: { isNotary?: boolean }) {
 }
 
 /** Lawyer-brings-lawyer program: share link + count of referred offices. */
+/** Office memory (Vincent-Skills-lite): standing preferences Ava applies on
+ * every assistant request — drafting style, citation habits, standard notes. */
+function AvaStyleSection() {
+  const { t } = useI18n();
+  const [style, setStyle] = useState("");
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    apiGet<{ style: string | null }>("/assistant/style")
+      .then((d) => setStyle(d.style || ""))
+      .catch(() => {});
+  }, []);
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setSaved(false);
+    try {
+      await apiPut("/assistant/style", { style });
+      setSaved(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  return (
+    <Card className="p-5 space-y-3">
+      <div>
+        <h2 className="font-semibold">{t.avaStyleTitle}</h2>
+        <p className="text-xs text-slate-500 mt-0.5">{t.avaStyleHint}</p>
+      </div>
+      <form onSubmit={save} className="space-y-3">
+        <Textarea
+          rows={4}
+          value={style}
+          onChange={(e) => setStyle(e.target.value)}
+          maxLength={2000}
+          placeholder={t.avaStylePlaceholder}
+        />
+        <ErrorNote message={error} />
+        <div className="flex items-center gap-3">
+          <Button type="submit">{t.save}</Button>
+          {saved && <span className="text-sm text-emerald-600">{t.saved}</span>}
+        </div>
+      </form>
+    </Card>
+  );
+}
+
 function ReferralSection() {
   const { t } = useI18n();
   const [data, setData] = useState<{ code: string; url: string; referred_count: number } | null>(

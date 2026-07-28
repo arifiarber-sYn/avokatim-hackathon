@@ -27,6 +27,7 @@ from app.services.assistant import (
     ask_bora_stream,
     deep_research_stream,
     hearing_prep,
+    prepare_matter_stream,
 )
 from app.services.audit import log_action
 
@@ -48,6 +49,66 @@ async def _effective_provider(
     if not await _external_ai_allowed(db, user):
         return "local"
     return requested
+
+
+async def _office_style(db: AsyncSession, user: User) -> str | None:
+    tenant = await db.get(Tenant, user.tenant_id)
+    return tenant.assistant_style if tenant else None
+
+
+@router.post("/export-docx")
+async def export_docx(
+    body: dict,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Export any assistant output (e.g. the prepare-matter draft) as a styled
+    Word document — lawyers finish their drafting in Word."""
+    from fastapi.responses import Response
+
+    from app.services.docx_render import build_docx
+
+    content = str(body.get("content") or "").strip()
+    if not content:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "content is required")
+    title = str(body.get("title") or "Draft")[:120]
+    docx_bytes = build_docx(content[:100_000], title=title)
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="assistant.export_docx",
+        entity_type="assistant", entity_id="", details={"title": title},
+    )
+    await db.commit()
+    return Response(
+        content=docx_bytes,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f'attachment; filename="{title}.docx"'},
+    )
+
+
+@router.get("/style")
+async def get_style(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Office memory: standing preferences Ava applies on every request."""
+    return {"style": await _office_style(db, user)}
+
+
+@router.put("/style")
+async def set_style(
+    body: dict,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    tenant = await db.get(Tenant, user.tenant_id)
+    style = str(body.get("style") or "").strip()[:2000]
+    tenant.assistant_style = style or None
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="assistant.style",
+        entity_type="tenant", entity_id=str(tenant.id), details={},
+    )
+    await db.commit()
+    return {"style": tenant.assistant_style}
 
 
 @router.get("/providers")
@@ -185,6 +246,7 @@ async def ask(
             provider_name=provider_name,
             history=history,
             language=body.locale,
+            style=await _office_style(db, user),
         )
     except RuntimeError as exc:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc))
@@ -226,6 +288,7 @@ async def ask_stream(body: AskRequest, user: User = Depends(get_current_user)):
                     provider_name=provider_name,
                     history=history,
                     language=body.locale,
+                    style=await _office_style(db, user),
                 )
                 async for kind, text in chunks:
                     if kind == "thinking":
@@ -306,6 +369,56 @@ async def deep_research(body: AskRequest, user: User = Depends(get_current_user)
                     "message": MessageOut.model_validate(reply).model_dump(mode="json"),
                 }
             )
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@router.post("/matters/{matter_id}/prepare")
+async def prepare_matter(
+    matter_id: uuid.UUID,
+    provider: str | None = None,
+    locale: str | None = None,
+    user: User = Depends(get_current_user),
+):
+    """Agentic matter preparation (SSE): Ava reads the file, derives the legal
+    questions, researches each in the corpus and returns situation + legal
+    basis + next steps + a ready-to-edit draft, streaming progress live."""
+
+    async def event_stream():
+        async with SessionLocal() as db:
+            try:
+                matter = await get_owned_matter(db, user, matter_id)
+            except HTTPException as exc:
+                yield _sse({"type": "error", "detail": exc.detail})
+                return
+            provider_name = await _effective_provider(db, user, provider)
+            try:
+                events = prepare_matter_stream(
+                    db,
+                    matter_id=matter.id,
+                    jurisdiction_id=matter.jurisdiction_id,
+                    provider_name=provider_name,
+                    language=locale,
+                    style=await _office_style(db, user),
+                )
+                async for event in events:
+                    yield _sse(event)
+            except Exception as exc:
+                logger.exception("prepare-matter failed")
+                await db.rollback()
+                yield _sse({"type": "error", "detail": str(exc)})
+                return
+            await log_action(
+                db, tenant_id=user.tenant_id, user_id=user.id,
+                action="assistant.prepare_matter", entity_type="matter",
+                entity_id=str(matter.id), details={},
+            )
+            await db.commit()
+            yield _sse({"type": "done"})
 
     return StreamingResponse(
         event_stream(),

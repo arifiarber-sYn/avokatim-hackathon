@@ -48,6 +48,7 @@ export default function OnboardingPage() {
     photo: null as string | null,
     oak_license_no: "",
     consult_fee_eur: "",
+    career_start_year: "",
   });
   const [bookingEnabled, setBookingEnabled] = useState(false);
   const [windows, setWindows] = useState<BookingWindow[]>([]);
@@ -68,6 +69,7 @@ export default function OnboardingPage() {
       languages: string[];
       oak_license_no: string | null;
       consult_fee_eur: number | null;
+      career_start_year: number | null;
     }>("/marketplace/profile")
       .then((p) => {
         setProfile((prev) => ({
@@ -78,6 +80,7 @@ export default function OnboardingPage() {
           languages: p.languages.length ? p.languages : prev.languages,
           oak_license_no: p.oak_license_no || "",
           consult_fee_eur: p.consult_fee_eur == null ? "" : String(p.consult_fee_eur),
+          career_start_year: p.career_start_year == null ? "" : String(p.career_start_year),
         }));
       })
       .catch(() => {});
@@ -101,6 +104,8 @@ export default function OnboardingPage() {
         photo: profile.photo,
         oak_license_no: profile.oak_license_no.trim() || null,
         consult_fee_eur: profile.consult_fee_eur === "" ? null : Number(profile.consult_fee_eur),
+        career_start_year:
+          profile.career_start_year === "" ? null : Number(profile.career_start_year),
       });
       return true;
     } catch (err) {
@@ -295,6 +300,18 @@ export default function OnboardingPage() {
               <p className="text-xs text-slate-500 mt-1">{t.mkConsultFeeHint}</p>
             </div>
             )}
+            <div>
+              <Label>{t.mkCareerStart}</Label>
+              <Input
+                type="number"
+                min={1950}
+                max={new Date().getFullYear()}
+                value={profile.career_start_year}
+                onChange={(e) => setProfile({ ...profile, career_start_year: e.target.value })}
+                placeholder="p.sh. 2010"
+              />
+              <p className="text-xs text-slate-500 mt-1">{t.mkCareerStartHint}</p>
+            </div>
             <ErrorNote message={error} />
             <div className="flex items-center justify-between pt-1">
               <button

@@ -216,3 +216,44 @@ def test_marketplace_i18n_keys_in_all_languages():
 
     body = tr("sq", "case_claimed_body", firm="Zyra Test", url="https://x")
     assert "Zyra Test" in body and "https://x" in body
+
+
+def test_profile_out_includes_trust_signals():
+    """career_start_year (trust signal) must round-trip through the profile API."""
+    from app.api.marketplace import ProfileIn, _profile_out
+
+    assert _profile_out(None)["career_start_year"] is None
+    body = ProfileIn(career_start_year=2010)
+    assert body.career_start_year == 2010
+    # Bounds enforced by the schema
+    import pydantic
+    import pytest
+
+    with pytest.raises(pydantic.ValidationError):
+        ProfileIn(career_start_year=1900)
+
+
+def test_case_followup_i18n_keys_in_all_languages():
+    """The activation follow-up email exists in every UI language."""
+    from app.i18n import tr
+
+    for code in ALL_LOCALES:
+        assert "citizen_case_followup_subject" in CATALOG[code], code
+        body = tr(
+            code, "citizen_case_followup_body",
+            post_url="https://x/posto-rastin", ava_url="https://x/ava",
+        )
+        assert "https://x/posto-rastin" in body and "https://x/ava" in body
+
+
+def test_office_style_appended_to_system_prompt():
+    """Office memory: preferences ride along on the assistant system prompt."""
+    from app.services.assistant import SYSTEM_PROMPT, _system_prompt
+
+    assert _system_prompt(None) == SYSTEM_PROMPT
+    assert _system_prompt("   ") == SYSTEM_PROMPT
+    styled = _system_prompt("Shkresat gjithmonë formale.")
+    assert styled.startswith(SYSTEM_PROMPT)
+    assert "Shkresat gjithmonë formale." in styled
+    # Never unbounded: styles are capped at 2000 chars
+    assert len(_system_prompt("x" * 10_000)) < len(SYSTEM_PROMPT) + 2_100

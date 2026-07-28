@@ -48,6 +48,15 @@ _SQ = {
         "Llogaria jote është gati, por email-i ende s'është konfirmuar — pa të s'mund të postosh raste.\n\n"
         "Konfirmo këtu:\n{url}\n\nLinku vlen 3 ditë.\n\n— AvokatIM"
     ),
+    "citizen_case_followup_subject": "AvokatIM — Ende pa e postuar rastin? Ja çfarë mund të bësh falas",
+    "citizen_case_followup_body": (
+        "Llogaria jote në AvokatIM është gati — por ende s'ke postuar asnjë rast.\n\n"
+        "Nëse ke një çështje ligjore, përshkruaje me pak fjalë dhe avokatët e "
+        "verifikuar që mbulojnë fushën dhe qytetin tënd të kontaktojnë direkt — falas:\n{post_url}\n\n"
+        "Nëse s'je i sigurt a është çështje për avokat, pyete Avën — asistentja "
+        "jonë me ligjet e plota të Kosovës të përgjigjet menjëherë, edhe me zë:\n{ava_url}\n\n"
+        "Ky është i vetmi email i tillë që marrim — s'të shqetësojmë më.\n\n— AvokatIM"
+    ),
     # Deadline reminder (lawyer)
     "reminder_subject": "[AvokatIM] Afat pas {days} ditësh: {title}",
     "reminder_matter": "Lënda",
@@ -260,6 +269,15 @@ _SR = {
         "Vaš nalog je spreman, ali email još nije potvrđen — bez toga ne možete objavljivati predmete.\n\n"
         "Potvrdite ovde:\n{url}\n\nLink važi 3 dana.\n\n— AvokatIM"
     ),
+    "citizen_case_followup_subject": "AvokatIM — Još niste objavili predmet? Evo šta možete besplatno",
+    "citizen_case_followup_body": (
+        "Vaš nalog na AvokatIM je spreman — ali još niste objavili nijedan predmet.\n\n"
+        "Ako imate pravno pitanje, opišite ga ukratko i verifikovani advokati koji "
+        "pokrivaju vašu oblast i grad će vas kontaktirati direktno — besplatno:\n{post_url}\n\n"
+        "Ako niste sigurni da li je to pitanje za advokata, pitajte Avu — naša "
+        "asistentkinja sa kompletnim zakonima Kosova odgovara odmah, i glasom:\n{ava_url}\n\n"
+        "Ovo je jedini ovakav email — nećemo vas više uznemiravati.\n\n— AvokatIM"
+    ),
     "reminder_subject": "[AvokatIM] Rok za {days} dana: {title}",
     "reminder_matter": "Predmet",
     "reminder_deadline": "Rok",
@@ -463,6 +481,15 @@ _TR = {
     "citizen_verify_reminder_body": (
         "Hesabınız hazır, ancak e-postanız henüz doğrulanmadı — doğrulamadan dosya yayınlayamazsınız.\n\n"
         "Buradan doğrulayın:\n{url}\n\nBağlantı 3 gün geçerlidir.\n\n— AvokatIM"
+    ),
+    "citizen_case_followup_subject": "AvokatIM — Henüz dosya yayınlamadınız mı? Ücretsiz yapabilecekleriniz",
+    "citizen_case_followup_body": (
+        "AvokatIM hesabınız hazır — ancak henüz bir dosya yayınlamadınız.\n\n"
+        "Hukuki bir sorununuz varsa, kısaca anlatın; alanınızı ve şehrinizi kapsayan "
+        "doğrulanmış avukatlar sizinle doğrudan iletişime geçer — ücretsiz:\n{post_url}\n\n"
+        "Avukatlık bir konu olup olmadığından emin değilseniz Ava'ya sorun — Kosova'nın "
+        "tüm yasalarını bilen asistanımız anında yanıtlar, sesli de:\n{ava_url}\n\n"
+        "Bu türden tek e-postadır — sizi bir daha rahatsız etmeyeceğiz.\n\n— AvokatIM"
     ),
     "reminder_subject": "[AvokatIM] {days} gün sonra süre: {title}",
     "reminder_matter": "Dosya",
@@ -669,6 +696,15 @@ _BS = {
         "Vaš račun je spreman, ali email još nije potvrđen — bez toga ne možete objavljivati predmete.\n\n"
         "Potvrdite ovdje:\n{url}\n\nLink vrijedi 3 dana.\n\n— AvokatIM"
     ),
+    "citizen_case_followup_subject": "AvokatIM — Još niste objavili predmet? Evo šta možete besplatno",
+    "citizen_case_followup_body": (
+        "Vaš račun na AvokatIM je spreman — ali još niste objavili nijedan predmet.\n\n"
+        "Ako imate pravno pitanje, opišite ga ukratko i verificirani advokati koji "
+        "pokrivaju vašu oblast i grad će vas kontaktirati direktno — besplatno:\n{post_url}\n\n"
+        "Ako niste sigurni je li to pitanje za advokata, pitajte Avu — naša "
+        "asistentica s kompletnim zakonima Kosova odgovara odmah, i glasom:\n{ava_url}\n\n"
+        "Ovo je jedini ovakav email — nećemo vas više uznemiravati.\n\n— AvokatIM"
+    ),
     "reminder_subject": "[AvokatIM] Rok za {days} dana: {title}",
     "reminder_matter": "Predmet",
     "reminder_deadline": "Rok",
@@ -873,6 +909,15 @@ _EN = {
         "Your account is ready, but your email is not yet confirmed — without it you cannot post cases.\n\n"
         "Confirm here:\n{url}\n\nThe link is valid for 3 days.\n\n— AvokatIM"
     ),
+    "citizen_case_followup_subject": "AvokatIM — Haven't posted your case yet? Here's what you can do for free",
+    "citizen_case_followup_body": (
+        "Your AvokatIM account is ready — but you haven't posted a case yet.\n\n"
+        "If you have a legal issue, describe it briefly and verified lawyers covering "
+        "your area and city will contact you directly — free of charge:\n{post_url}\n\n"
+        "Not sure whether it's a matter for a lawyer? Ask Ava — our assistant with "
+        "the complete laws of Kosovo answers instantly, by voice too:\n{ava_url}\n\n"
+        "This is the only email of its kind — we won't bother you again.\n\n— AvokatIM"
+    ),
     "reminder_subject": "[AvokatIM] Deadline in {days} days: {title}",
     "reminder_matter": "Matter",
     "reminder_deadline": "Deadline",
@@ -1068,6 +1113,8 @@ _ZH = {
     "lawyer_profile_nudge_body": "公民无法在目录中找到您，您也无法从市场接收案件。\n\n激活只需2分钟：\n{url}\n\n— AvokatIM",
     "citizen_verify_reminder_subject": "AvokatIM — 提醒：确认您的电子邮箱",
     "citizen_verify_reminder_body": "您的账户已就绪，但电子邮箱尚未确认——未确认前无法发布案件。\n\n请在此确认：\n{url}\n\n链接有效期为3天。\n\n— AvokatIM",
+    "citizen_case_followup_subject": "AvokatIM — 还没有发布案件？这些服务全部免费",
+    "citizen_case_followup_body": "您的 AvokatIM 账户已就绪——但您还没有发布任何案件。\n\n如果您有法律问题，请简要描述，覆盖您所在领域和城市的认证律师会直接联系您——完全免费：\n{post_url}\n\n不确定是否需要律师？问问 Ava——我们掌握科索沃全部法律的助手会立即回答，还支持语音：\n{ava_url}\n\n这是唯一一封此类邮件——我们不会再打扰您。\n\n— AvokatIM",
     "reminder_subject": "[AvokatIM] {days} 天后到期：{title}",
     "reminder_matter": "案件",
     "reminder_deadline": "期限",
