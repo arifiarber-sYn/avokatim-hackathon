@@ -7,7 +7,7 @@ never takes a share of lawyer fees (fee splitting is an ethics violation —
 it killed Avvo Legal Services).
 
 Lifecycle:
-- signup -> plan="trial" for TRIAL_DAYS (90 = the "3 free months" pilot)
+- signup -> plan="trial" for TRIAL_DAYS (365 = the "first year free" pilot)
 - upgrade (self-service or operator) -> plan=solo/firm, invoices start
 - a PlatformInvoice is generated idempotently per tenant per calendar month
   by the daily billing loop (or on demand from the platform panel)
@@ -34,8 +34,10 @@ from app.services.notifications import send_email
 
 logger = logging.getLogger(__name__)
 
-# Days a new tenant runs free before needing a paid plan ("3 muaj falas")
-TRIAL_DAYS = 90
+# Days a new tenant runs free before needing a paid plan ("viti i parë
+# falas" — extended from 90 on 2026-07-28 so early offices fully adopt the
+# system before ever seeing an invoice)
+TRIAL_DAYS = 365
 # Days between issuing an invoice and its due date
 INVOICE_DUE_DAYS = 14
 # Days past due before marketplace claims are blocked

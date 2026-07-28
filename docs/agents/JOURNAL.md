@@ -10,6 +10,19 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-28b — Free trial 90 → 365 days everywhere (Cursor / Fable 5)
+
+- Done: owner extended the free period to one full year (D-029).
+  `TRIAL_DAYS = 365`; recomputed `trial_ends_at = created_at + 365d` for all
+  12 existing trial tenants; updated every promise in copy: dictionaries ×6
+  (npSubtitle/startTrial/landLawB/lpPlanTrial), i18n `trial_ending_body` ×6,
+  auth docstrings, OAK/ONK outreach letters, billing test.
+- Verified: 109/110 tests pass (test_voice TTS flake — passes in isolation,
+  failed only while the frontend build ran concurrently); frontend rebuilt,
+  `avokatim-frontend` restarted, asset 200; backend restarted, health OK.
+- Next: industry gap analysis delivered to owner in chat (what to add/change
+  vs Clio/Harvey/marketplaces 2026) — items to be planned on approval.
+
 ## 2026-07-28 — "What's left" reminder to 8 incomplete lawyers + outreach status (Cursor / Fable 5)
 
 - Done: owner-requested resend of the registration reminder — a personal

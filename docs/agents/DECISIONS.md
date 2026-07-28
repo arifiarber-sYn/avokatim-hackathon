@@ -573,3 +573,21 @@
   same commit (AGENTS.md §4b + session protocol enforce this). Milestone
   moments are celebrated automatically instead of depending on the owner's
   availability.
+
+## D-029: Free trial extended 90 → 365 days (2026-07-28)
+
+- Context: adoption, not revenue, is the bottleneck — 13 offices registered,
+  3 verified, first marketplace cycle just completed. The owner decided the
+  early market needs a full year to adopt the system before seeing an invoice
+  ("le te adaptohen me sistemin tone").
+- Decision: `platform_billing.TRIAL_DAYS = 365`. All existing trial tenants
+  (12) had `trial_ends_at` recomputed as `created_at + 365 days` in the DB.
+  All promises in copy were updated: dictionaries ×6 languages (npSubtitle,
+  startTrial, landLawB, lpPlanTrial), i18n trial_ending_body ×6, signup email
+  ({trial_days} placeholder picks it up automatically), OAK/ONK outreach
+  letters ("Viti i parë është plotësisht falas").
+- Consequences: first platform revenue moves to ~mid-2027. The billing
+  machinery (invoices, dunning, trial-ending nudges at T-7d) is unchanged and
+  already tested — only the constant moved. Historical one-shot scripts in
+  `backend/scripts/send_*.py` still say "tre muajt" — they are archives, do
+  not reuse their copy verbatim.

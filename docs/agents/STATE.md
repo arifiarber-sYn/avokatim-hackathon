@@ -12,7 +12,8 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 ## What exists and works
 
 - **Auth**: public self-service signup (`POST /auth/signup` → new tenant on a
-  **90-day trial** ("3 muaj falas", `platform_billing.TRIAL_DAYS`) + admin
+  **365-day trial** ("viti i parë falas", `platform_billing.TRIAL_DAYS`,
+  extended from 90 on 2026-07-28) + admin
   user; page `/regjistrohu`), JWT login, 2FA (TOTP),
   email verification (signed purpose tokens, page `/verifiko-email`, banner +
   resend in app), password reset (`/harrova-fjalekalimin` → `/rivendos?token=`,
@@ -496,7 +497,7 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   intentionally unchanged).
 - **Notaries as the second paying profession** (2026-07-13, D-024):
   `Tenant.profession` ("lawyer" | "notary", migration `d4761aba9c68`) —
-  same digital office + Ava + billing (per-seat, 90-day trial), no case
+  same digital office + Ava + billing (per-seat, 365-day trial), no case
   marketplace (impartial public officer, fixed AI 02/2012 tariffs). Signup
   has "Jam avokat / Jam noter" cards (`/regjistrohu?profesioni=noter`
   preselects); notary welcome email variant (`notary_welcome_*` ×6);

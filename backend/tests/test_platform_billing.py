@@ -27,7 +27,7 @@ BILLING_KEYS = [
 
 
 def test_trial_is_three_months():
-    assert TRIAL_DAYS == 90
+    assert TRIAL_DAYS == 365
     assert GRACE_DAYS > 0
 
 

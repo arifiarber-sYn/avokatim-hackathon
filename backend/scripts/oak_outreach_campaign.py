@@ -79,7 +79,7 @@ të plotë.
   përmirësim shkresash, përmbledhje dokumentesh.
 - Konsulta me pagesë online dhe orar rezervimesh, nëse dëshironi.
 
-Tre muajt e parë janë falas, pa kartelë dhe pa detyrime. Zyrat e para të
+Viti i parë është plotësisht falas, pa kartelë dhe pa detyrime. Zyrat e para të
 verifikuara me licencë OAK marrin shenjën e përhershme "Themelues" në
 drejtorinë publike.
 
@@ -119,7 +119,7 @@ dhe noterët e vendit. Tani AvokatIM ofron edhe zyrën noteriale digjitale.
 - Pa garë rastesh dhe pa vendosje të promovuara: noterët listohen të
   barabartë, siç e kërkon detyra.
 
-Tre muajt e parë janë falas, pa kartelë dhe pa detyrime.
+Viti i parë është plotësisht falas, pa kartelë dhe pa detyrime.
 
 Regjistrimi zgjat 2 minuta: https://avokatiim.ai/regjistrohu?profesioni=noter
 Më shumë për noterët: https://avokatiim.ai/per-noteret

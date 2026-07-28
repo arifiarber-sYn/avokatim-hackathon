@@ -61,7 +61,7 @@ class ProfileUpdateRequest(BaseModel):
 
 
 class SignupRequest(BaseModel):
-    """Public self-service signup: creates a new tenant on a 30-day trial."""
+    """Public self-service signup: creates a new tenant on a TRIAL_DAYS free trial."""
 
     practice_name: str = Field(min_length=2, max_length=200)
     full_name: str = Field(min_length=2, max_length=200)

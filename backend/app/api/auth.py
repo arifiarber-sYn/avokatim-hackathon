@@ -47,8 +47,8 @@ from app.services.ops_notify import notify_ops
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-# 3 free months (the ICL-pilot promise); after that a paid plan is required
-from app.services.platform_billing import TRIAL_DAYS  # noqa: E402  (=90)
+# First year free (owner decision 2026-07-28); after that a paid plan is required
+from app.services.platform_billing import TRIAL_DAYS  # noqa: E402  (=365)
 LOGIN_MAX_ATTEMPTS = 5
 LOGIN_WINDOW_SECONDS = 15 * 60
 
@@ -177,7 +177,7 @@ async def signup(
     background: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
-    """Public self-service signup: new law practice on a 30-day trial."""
+    """Public self-service signup: new law practice on a TRIAL_DAYS free trial."""
     taken = (
         await db.execute(select(User).where(User.email == body.email.lower()))
     ).scalar_one_or_none()
