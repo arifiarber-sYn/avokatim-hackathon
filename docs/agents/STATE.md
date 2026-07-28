@@ -88,6 +88,22 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   only accounts ≤14 days old are ever nudged). **Activation follow-up**
   (2026-07-28, D-030): verified citizens with no posted case get one email
   48h after signup (`citizen_users.case_followup_sent_at`, ×6 languages).
+- **UI audit wave** (2026-07-28, D-031): **Lawyer profile pages** —
+  `/avokatet/[id]` (server layout: metadata + Attorney JSON-LD; client page:
+  big trust numbers, CTA card, anonymized reviews) backed by
+  `GET /public/lawyers/{profile_id}`; `BookingWidget` shared component;
+  dynamic sitemap includes profiles. **Landing stats** — 554 laws · 141 ONK
+  notaries (`notaries_licensed` in `/public/stats`) · 6 languages · 24/7;
+  lawyer count self-restores at ≥20 in the directory. **Bio sanitizer** —
+  `_scrub_bio` in `PUT /marketplace/profile` drops bio lines with
+  email/phone/birth-date (tested). **Settings map** — 5 anchored groups
+  with sticky sidebar / mobile chips (`#grp-zyra|publik|ai|njoftimet|siguria`).
+  **Analytics charts** — /reports renders 6-month trend (SVG bars) + A/R
+  aging from `/reports/dashboard`. **What's-new card** on the dashboard
+  (versioned localStorage key). **Directory** — trust chips, profile links,
+  booking as a real button. **/afatet** — quick chips for the 5
+  most-searched deadlines. **/per-qytetaret** — 6-question FAQ accordion ×6
+  + FAQPage JSON-LD sourced from the sq dictionary.
 - **Industry-gap wave** (2026-07-28, D-030): **GEO** — schema.org JSON-LD
   server-rendered (Organization/WebSite on `/`, Attorney ItemList on
   `/avokatet`, Notary ItemList on `/noteret`), per-page metadata via server

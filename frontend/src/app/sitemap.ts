@@ -22,12 +22,33 @@ const ROUTES: { path: string; priority: number }[] = [
   { path: "/privatesia", priority: 0.3 },
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
-  return ROUTES.map(({ path, priority }) => ({
+  const entries: MetadataRoute.Sitemap = ROUTES.map(({ path, priority }) => ({
     url: `${BASE}${path}`,
     lastModified,
     changeFrequency: path === "/avokatet" || path === "/noteret" ? "daily" : "weekly",
     priority,
   }));
+
+  // Every lawyer profile is its own citable URL (GEO/SEO)
+  try {
+    const res = await fetch("http://127.0.0.1:8000/api/public/lawyers", {
+      next: { revalidate: 3600 },
+    });
+    if (res.ok) {
+      const lawyers: { id: string }[] = await res.json();
+      for (const l of lawyers) {
+        entries.push({
+          url: `${BASE}/avokatet/${l.id}`,
+          lastModified,
+          changeFrequency: "weekly",
+          priority: 0.7,
+        });
+      }
+    }
+  } catch {
+    // Backend unavailable at build time: static routes are still served
+  }
+  return entries;
 }

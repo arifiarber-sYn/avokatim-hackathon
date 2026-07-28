@@ -257,3 +257,37 @@ def test_office_style_appended_to_system_prompt():
     assert "Shkresat gjithmonë formale." in styled
     # Never unbounded: styles are capped at 2000 chars
     assert len(_system_prompt("x" * 10_000)) < len(SYSTEM_PROMPT) + 2_100
+
+
+def test_bio_scrub_drops_personal_data_lines():
+    """Public bios must never leak emails, phone numbers or birth dates —
+    lawyers sometimes paste raw registry/CV rows into the bio field."""
+    from app.api.marketplace import _scrub_bio
+
+    assert _scrub_bio(None) is None
+    assert _scrub_bio("") is None
+
+    raw = (
+        "Emri dhe mbiemri: Filan Fisteku\n"
+        "Datëlindja: 17.01.1977\n"
+        "Email: filani@gmail.com\n"
+        "Telefoni: 049/ 729/378\n"
+        "Tel: +383 44 123 456\n"
+        "Avokat me përvojë të gjatë në të drejtën civile.\n"
+        "Provimi i jurisprudencës — 2014."
+    )
+    cleaned = _scrub_bio(raw)
+    assert "gmail.com" not in cleaned
+    assert "1977" not in cleaned
+    assert "729" not in cleaned
+    assert "+383" not in cleaned
+    # Professional prose survives
+    assert "të drejtën civile" in cleaned
+    assert "jurisprudencës" in cleaned
+
+    # Plain years and clean prose are never touched (no false positives)
+    prose = "Ushtron profesionin që nga viti 2008.\nMagjistër i shkencave penale."
+    assert _scrub_bio(prose) == prose
+
+    # A bio that is nothing but personal data collapses to None
+    assert _scrub_bio("Email: a@b.com\n044-123-456") is None

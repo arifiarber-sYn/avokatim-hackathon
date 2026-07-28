@@ -71,6 +71,25 @@ export default function DeadlineCalcPage() {
 
   const selected = rules?.find((r) => r.id === ruleId);
 
+  // The deadlines people actually search for (appeals + answer to claim);
+  // one tap prefills the procedure and jumps to the date field
+  const POPULAR_CODES = [
+    "civil.appeal_judgment",
+    "criminal.appeal_judgment",
+    "civil.answer_to_claim",
+    "administrative.appeal_decision",
+    "labor.protection_claim",
+  ];
+  const popular = POPULAR_CODES
+    .map((code) => rules?.find((r) => r.code === code))
+    .filter((r): r is PublicRule => Boolean(r));
+
+  function pickPopular(rule: PublicRule) {
+    setRuleId(rule.id);
+    setResult(null);
+    document.getElementById("dc-trigger-date")?.focus();
+  }
+
   return (
     <PublicShell>
       <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-6 space-y-4">
@@ -80,6 +99,28 @@ export default function DeadlineCalcPage() {
         </div>
 
         <PageIntro k="afatet" title={t.dcIntroT} body={t.dcIntro} />
+
+        {rules !== null && popular.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-slate-500">{t.dcPopular}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {popular.map((rule) => (
+                <button
+                  key={rule.id}
+                  type="button"
+                  onClick={() => pickPopular(rule)}
+                  className={`text-xs rounded-full px-3 py-1.5 border transition ${
+                    ruleId === rule.id
+                      ? "bg-indigo-600 border-indigo-600 text-white"
+                      : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-700"
+                  }`}
+                >
+                  {ruleName(rule)} · {rule.days} {t.dcDaysShort}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {rules === null ? (
           <Spinner />
@@ -107,6 +148,7 @@ export default function DeadlineCalcPage() {
               <div>
                 <Label>{t.dcTrigger}</Label>
                 <Input
+                  id="dc-trigger-date"
                   type="date"
                   value={trigger}
                   onChange={(e) => { setTrigger(e.target.value); setResult(null); }}

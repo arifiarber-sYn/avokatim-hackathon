@@ -220,6 +220,33 @@ export default function ForCitizensPage() {
             {t.hiwFree}
           </p>
         </section>
+
+        {/* FAQ — the questions people actually ask Ava, mirrored as FAQPage
+            JSON-LD in the server layout for search/AI answers */}
+        <section className="max-w-3xl mx-auto space-y-5">
+          <h2 className="text-2xl font-bold text-slate-900 text-center">{t.faqTitle}</h2>
+          <div className="space-y-2">
+            {([1, 2, 3, 4, 5, 6] as const).map((n) => {
+              const dict = t as unknown as Record<string, string>;
+              return (
+                <details
+                  key={n}
+                  className="group bg-white rounded-xl border border-slate-200 px-5 py-4 open:border-indigo-200"
+                >
+                  <summary className="cursor-pointer list-none flex items-center justify-between gap-3 font-semibold text-slate-800 text-sm md:text-base">
+                    {dict[`faqQ${n}`]}
+                    <span className="shrink-0 text-slate-400 group-open:rotate-45 transition-transform text-xl leading-none">
+                      +
+                    </span>
+                  </summary>
+                  <p className="text-sm text-slate-600 leading-relaxed mt-3">
+                    {dict[`faqA${n}`]}
+                  </p>
+                </details>
+              );
+            })}
+          </div>
+        </section>
       </main>
     </PublicShell>
   );

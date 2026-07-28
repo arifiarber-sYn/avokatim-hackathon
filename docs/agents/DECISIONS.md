@@ -625,3 +625,36 @@
   email documented in COMMS.md. The agentic pattern (derive → search →
   synthesize with a machine-readable marker) is the template for future
   agent features; extend it rather than inventing new shapes.
+
+## D-031: UI audit wave — profile pages, honest stats, settings map, charts (2026-07-28)
+
+- Context: owner asked for a full interface audit vs the industry and
+  approved all 10 suggestions ("pregadite planin e plote per te gjitha edhe
+  implemetoj"). Guiding principle: the interface must reach the level of the
+  backend — every capability visible, every public page citable.
+- Decision, ten shipped items (P1 acquisition, P2 lawyer office, P3 polish):
+  1. The lawyer profile is a page, not a card: `/avokatet/[id]` server-routed
+     with its own metadata + Attorney JSON-LD; the directory feeds it. New
+     public endpoint `GET /public/lawyers/{profile_id}` with the exact same
+     trust gate as the list (visible+verified+active+lawyer) plus anonymized
+     review comments. Booking extracted into a shared `BookingWidget`.
+  2. Landing stats show only numbers that build trust today (554 laws, 141
+     ONK notaries, 6 languages, 24/7); the lawyer count self-restores at
+     >= 20 in the directory — no manual step, no vanity numbers.
+  3. Bio hygiene is enforced in code, not by policy: `_scrub_bio` drops any
+     bio line with an email/phone/birth-date at write time (`PUT /profile`).
+     One-time DB cleanup rewrote Ilire Aydogan's pasted-CV bio as prose.
+  4. Settings got an information architecture: 5 fixed anchored groups
+     (`#grp-zyra|publik|ai|njoftimet|siguria`) — deep-link `#grp-ai` for Ava
+     preferences. New sections must join a group, not float loose.
+  5. Charts stay dependency-free: inline SVG bars (6-month trend dual-series,
+     A/R aging) — no chart library.
+  6. Feature discovery via a versioned dismissible "E re" card on the
+     dashboard (`avokatim:whatsnew:YYYY-MM`); bump the key when contents
+     change, never re-nag otherwise.
+  7. FAQPage JSON-LD is generated from the same `dictionaries.sq` entries the
+     page renders — structured data can never drift from visible answers.
+- Consequences: every verified lawyer now has a citable URL (GEO); sitemap
+  is dynamic (profiles, revalidate 1h). Screenshot verification of
+  JS-rendered pages now uses Playwright chromium (cached in
+  `~/.cache/ms-playwright`); headless Firefox fires before client fetches.

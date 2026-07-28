@@ -4,10 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 import { LOCALES } from "@/lib/dictionaries";
-import { citizenPost, getCitizenToken, PublicLawyer } from "@/lib/citizen";
-import { Button, Card, ErrorNote, Input, Select, Spinner, Textarea } from "@/components/ui";
+import { PublicLawyer } from "@/lib/citizen";
+import { Card, Input, Select } from "@/components/ui";
 import PublicShell from "@/components/public-shell";
 import PageIntro from "@/components/page-intro";
+import BookingWidget from "@/components/booking-widget";
 
 const AREAS = ["civil", "criminal", "family", "commercial", "labor", "administrative", "other"] as const;
 
@@ -104,7 +105,12 @@ export default function LawyerDirectoryPage() {
                   )}
                   <div className="min-w-0">
                     <p className="font-semibold truncate flex items-center gap-1.5">
-                      <span className="truncate">{lawyer.full_name}</span>
+                      <Link
+                        href={`/avokatet/${lawyer.id}`}
+                        className="truncate hover:text-indigo-700 hover:underline"
+                      >
+                        {lawyer.full_name}
+                      </Link>
                       {lawyer.verified && (
                         <span
                           className="inline-flex items-center gap-0.5 shrink-0 text-[11px] font-semibold text-emerald-700 bg-emerald-50 rounded-full px-1.5 py-0.5"
@@ -143,19 +149,27 @@ export default function LawyerDirectoryPage() {
                   </div>
                 </div>
                 {lawyer.bio && <p className="text-sm text-slate-600 line-clamp-3">{lawyer.bio}</p>}
-                {(lawyer.years_experience != null || (lawyer.cases_completed ?? 0) > 0) && (
-                  <p className="text-xs text-slate-500 flex flex-wrap gap-x-3 gap-y-0.5">
+                {/* Trust chips: experience, verified platform activity, price */}
+                {(lawyer.years_experience != null ||
+                  (lawyer.cases_completed ?? 0) > 0 ||
+                  lawyer.consult_fee_eur != null) && (
+                  <div className="flex flex-wrap gap-1.5">
                     {lawyer.years_experience != null && lawyer.years_experience > 0 && (
-                      <span>
-                        <b className="text-slate-700">{lawyer.years_experience}</b> {t.lpYearsExp}
+                      <span className="text-xs font-medium bg-sky-50 text-sky-700 rounded-full px-2 py-0.5">
+                        {lawyer.years_experience} {t.lpYearsExp}
                       </span>
                     )}
                     {(lawyer.cases_completed ?? 0) > 0 && (
-                      <span>
-                        <b className="text-slate-700">{lawyer.cases_completed}</b> {t.lpCasesDone}
+                      <span className="text-xs font-medium bg-emerald-50 text-emerald-700 rounded-full px-2 py-0.5">
+                        {lawyer.cases_completed} {t.lpCasesDone}
                       </span>
                     )}
-                  </p>
+                    {lawyer.consult_fee_eur != null && (
+                      <span className="text-xs font-medium bg-slate-100 text-slate-600 rounded-full px-2 py-0.5">
+                        {t.lpConsultFrom} {lawyer.consult_fee_eur} €
+                      </span>
+                    )}
+                  </div>
                 )}
                 <div className="flex flex-wrap gap-1.5">
                   {lawyer.practice_areas.map((a) => (
@@ -171,18 +185,19 @@ export default function LawyerDirectoryPage() {
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <Link
-                    href={`/posto-rastin?avokati=${lawyer.tenant_id}`}
-                    className="inline-block text-sm font-medium text-indigo-600 hover:underline"
+                    href={`/avokatet/${lawyer.id}`}
+                    className="inline-block text-sm font-semibold text-indigo-600 hover:underline"
                   >
-                    {t.mkContactLawyer} →
+                    {t.lpViewProfile} →
                   </Link>
-                  {lawyer.consult_fee_eur != null && (
-                    <span className="text-xs text-slate-500">
-                      {t.lpConsultFrom} <b className="text-slate-700">{lawyer.consult_fee_eur} €</b>
-                    </span>
-                  )}
+                  <Link
+                    href={`/posto-rastin?avokati=${lawyer.tenant_id}`}
+                    className="inline-block text-sm font-medium text-slate-500 hover:text-indigo-600 hover:underline"
+                  >
+                    {t.mkContactLawyer}
+                  </Link>
                 </div>
-                {lawyer.booking && <BookingWidget profileId={lawyer.id} />}
+                {lawyer.booking && <BookingWidget profileId={lawyer.id} prominent />}
               </Card>
             ))}
           </div>
@@ -192,137 +207,3 @@ export default function LawyerDirectoryPage() {
   );
 }
 
-/** Inline slot picker: fetch free 30-min slots and reserve one (citizen auth). */
-function BookingWidget({ profileId }: { profileId: string }) {
-  const { t, locale } = useI18n();
-  const [open, setOpen] = useState(false);
-  const [slots, setSlots] = useState<string[] | null>(null);
-  const [picked, setPicked] = useState("");
-  const [note, setNote] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState("");
-
-  async function openPicker() {
-    setOpen(true);
-    if (slots !== null) return;
-    try {
-      const res = await fetch(`/api/public/lawyers/${profileId}/slots`);
-      const data = await res.json();
-      setSlots(data.slots || []);
-    } catch {
-      setSlots([]);
-    }
-  }
-
-  async function book(e: React.FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    setError("");
-    try {
-      const res = await citizenPost<{ checkout_url?: string | null }>("/citizen/bookings", {
-        profile_id: profileId,
-        starts_at: picked,
-        note: note.trim() || null,
-      });
-      if (res.checkout_url) {
-        // Paid consultation: finish the booking on Stripe Checkout
-        window.location.href = res.checkout_url;
-        return;
-      }
-      setSent(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t.error);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  if (sent) {
-    return (
-      <p className="text-xs bg-emerald-50 text-emerald-700 rounded-lg px-3 py-2">{t.bkBooked}</p>
-    );
-  }
-
-  if (!open) {
-    return (
-      <button
-        onClick={openPicker}
-        className="text-sm font-medium text-emerald-700 hover:underline"
-      >
-        📅 {t.bkBook}
-      </button>
-    );
-  }
-
-  if (!getCitizenToken()) {
-    return (
-      <p className="text-xs bg-amber-50 text-amber-800 rounded-lg px-3 py-2">
-        {t.bkLoginFirst}{" "}
-        <Link href="/rasti-im" className="underline font-medium">
-          {t.mkMyCase} →
-        </Link>
-      </p>
-    );
-  }
-
-  // Group upcoming slots by day for a compact picker
-  const byDay = new Map<string, string[]>();
-  for (const s of slots || []) {
-    const day = new Date(s).toLocaleDateString(locale, {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-    });
-    byDay.set(day, [...(byDay.get(day) || []), s]);
-  }
-
-  return (
-    <div className="border-t border-slate-100 pt-3 space-y-2">
-      <p className="text-xs font-semibold text-slate-600">{t.bkPickSlot}</p>
-      {slots === null ? (
-        <Spinner />
-      ) : slots.length === 0 ? (
-        <p className="text-xs text-slate-500">{t.bkNoSlots}</p>
-      ) : (
-        <form onSubmit={book} className="space-y-2">
-          <div className="space-y-1.5 max-h-44 overflow-y-auto">
-            {[...byDay.entries()].map(([day, daySlots]) => (
-              <div key={day} className="flex flex-wrap items-center gap-1.5">
-                <span className="text-[11px] text-slate-400 w-24 shrink-0">{day}</span>
-                {daySlots.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setPicked(s)}
-                    className={`text-xs rounded-md px-2 py-1 border transition ${
-                      picked === s
-                        ? "bg-indigo-600 border-indigo-600 text-white"
-                        : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300"
-                    }`}
-                  >
-                    {new Date(s).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}
-                  </button>
-                ))}
-              </div>
-            ))}
-          </div>
-          {picked && (
-            <>
-              <Textarea
-                rows={2}
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder={t.bkNote}
-              />
-              <ErrorNote message={error} />
-              <Button type="submit" disabled={busy} className="w-full">
-                {busy ? t.loading : t.bkConfirmBook}
-              </Button>
-            </>
-          )}
-        </form>
-      )}
-    </div>
-  );
-}

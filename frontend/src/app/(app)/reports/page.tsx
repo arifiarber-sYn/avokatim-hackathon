@@ -6,6 +6,88 @@ import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
 import { Card, Spinner } from "@/components/ui";
 
+interface TrendPoint {
+  month: string;
+  hours: number;
+  billed: number;
+}
+
+interface DashboardExtras {
+  monthly_trend: TrendPoint[];
+  ar_aging: Record<string, number>;
+}
+
+const AGING_KEYS = ["0_30", "31_60", "61_90", "91_plus"] as const;
+const AGING_LABELS: Record<(typeof AGING_KEYS)[number], string> = {
+  "0_30": "0–30",
+  "31_60": "31–60",
+  "61_90": "61–90",
+  "91_plus": "90+",
+};
+
+/** Grouped-bar SVG chart: hours (indigo) and billed EUR (emerald) per month,
+ * each series normalized to its own max so both stay readable. */
+function TrendChart({ trend, t }: { trend: TrendPoint[]; t: Record<string, string> }) {
+  const W = 560;
+  const H = 180;
+  const PAD_B = 22;
+  const maxHours = Math.max(...trend.map((p) => p.hours), 1);
+  const maxBilled = Math.max(...trend.map((p) => p.billed), 1);
+  const slot = W / trend.length;
+  const barW = Math.min(26, slot / 3);
+
+  return (
+    <div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img">
+        {trend.map((p, i) => {
+          const cx = slot * i + slot / 2;
+          const hHours = ((H - PAD_B - 8) * p.hours) / maxHours;
+          const hBilled = ((H - PAD_B - 8) * p.billed) / maxBilled;
+          return (
+            <g key={p.month}>
+              <rect
+                x={cx - barW - 2}
+                y={H - PAD_B - hHours}
+                width={barW}
+                height={Math.max(hHours, p.hours > 0 ? 2 : 0)}
+                rx="3"
+                className="fill-indigo-500"
+              />
+              <rect
+                x={cx + 2}
+                y={H - PAD_B - hBilled}
+                width={barW}
+                height={Math.max(hBilled, p.billed > 0 ? 2 : 0)}
+                rx="3"
+                className="fill-emerald-500"
+              />
+              <text
+                x={cx}
+                y={H - 6}
+                textAnchor="middle"
+                className="fill-slate-400"
+                fontSize="10"
+              >
+                {p.month.slice(5)}/{p.month.slice(2, 4)}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+      <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-500 mt-2">
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-sm bg-indigo-500 inline-block" />
+          {t.rpHoursSeries} (max {maxHours})
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-sm bg-emerald-500 inline-block" />
+          {t.rpBilledSeries} (max €{maxBilled.toFixed(0)})
+        </span>
+      </div>
+    </div>
+  );
+}
+
 interface Analytics {
   utilization: { billable_hours_mtd: number; target_monthly: number; pct: number | null };
   realization: { worked_hours_90d: number; billed_hours_90d: number; pct: number | null };
@@ -91,9 +173,12 @@ function RateCard({
 export default function ReportsPage() {
   const { t } = useI18n();
   const [data, setData] = useState<Analytics | null>(null);
+  const [extras, setExtras] = useState<DashboardExtras | null>(null);
 
   useEffect(() => {
     apiGet<Analytics>("/reports/analytics").then(setData).catch(() => {});
+    // Trend + aging already live on the dashboard endpoint — reuse them here
+    apiGet<DashboardExtras>("/reports/dashboard").then(setExtras).catch(() => {});
   }, []);
 
   if (!data) return <Spinner />;
@@ -138,6 +223,51 @@ export default function ReportsPage() {
           noData={t.noDataYet}
         />
       </div>
+
+      {extras && (
+        <div className="grid lg:grid-cols-2 gap-4">
+          <Card className="p-5">
+            <h2 className="font-semibold mb-1">{t.rpTrendTitle}</h2>
+            <p className="text-xs text-slate-500 mb-4">{t.rpTrendHint}</p>
+            {extras.monthly_trend.every((p) => p.hours === 0 && p.billed === 0) ? (
+              <p className="text-sm text-slate-400">{t.noDataYet}</p>
+            ) : (
+              <TrendChart trend={extras.monthly_trend} t={dict} />
+            )}
+          </Card>
+
+          <Card className="p-5">
+            <h2 className="font-semibold mb-1">{t.rpAgingTitle}</h2>
+            <p className="text-xs text-slate-500 mb-4">{t.rpAgingHint}</p>
+            {AGING_KEYS.every((k) => !(extras.ar_aging[k] > 0)) ? (
+              <p className="text-sm text-slate-400">{t.noDataYet}</p>
+            ) : (
+              <div className="space-y-3">
+                {(() => {
+                  const maxAging = Math.max(...AGING_KEYS.map((k) => extras.ar_aging[k] || 0), 1);
+                  const colors = ["bg-emerald-500", "bg-amber-400", "bg-orange-500", "bg-red-500"];
+                  return AGING_KEYS.map((k, i) => (
+                    <div key={k} className="flex items-center gap-3">
+                      <span className="text-sm w-16 shrink-0 text-slate-600 tabular-nums">
+                        {AGING_LABELS[k]} {t.rpDays}
+                      </span>
+                      <div className="flex-1 h-4 bg-slate-100 rounded overflow-hidden">
+                        <div
+                          className={`h-full rounded ${colors[i]}`}
+                          style={{ width: `${((extras.ar_aging[k] || 0) / maxAging) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-slate-500 tabular-nums w-20 text-right">
+                        €{(extras.ar_aging[k] || 0).toFixed(0)}
+                      </span>
+                    </div>
+                  ));
+                })()}
+              </div>
+            )}
+          </Card>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-4">
         <Card className="p-5">

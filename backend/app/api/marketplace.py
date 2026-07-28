@@ -10,6 +10,7 @@ source="marketplace"; the existing intake acceptance converts the citizen
 into a Contact with portal access reusing the same password hash.
 """
 import logging
+import re
 import uuid
 from datetime import UTC, datetime, timedelta
 
@@ -489,6 +490,92 @@ async def public_lawyers(
         reverse=True,
     )
     return result
+
+
+@public_router.get("/lawyers/{profile_id}")
+async def public_lawyer_profile(
+    profile_id: uuid.UUID, db: AsyncSession = Depends(get_db)
+):
+    """Single lawyer profile — the dedicated /avokatet/[id] page. In 2026 the
+    directory profile IS the destination (most clients never visit the firm's
+    website), so it carries everything: trust signals, reviews, booking."""
+    row = (
+        await db.execute(
+            select(LawyerProfile, User, Tenant)
+            .join(User, User.id == LawyerProfile.user_id)
+            .join(Tenant, Tenant.id == LawyerProfile.tenant_id)
+            .where(
+                LawyerProfile.id == profile_id,
+                # Same trust gate as the directory list
+                LawyerProfile.is_visible.is_(True),
+                LawyerProfile.verification_status == "verified",
+                User.is_active.is_(True),
+                Tenant.status == "active",
+                Tenant.profession == "lawyer",
+            )
+        )
+    ).first()
+    if row is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Lawyer not found")
+    profile, user, tenant = row
+
+    ratings = await _tenant_ratings(db)
+    cases_completed = await _tenant_cases_completed(db)
+    avg_rating, review_count = ratings.get(tenant.id, (None, 0))
+
+    # Recent review comments, anonymized ("Filan F.") — service experience
+    # only, never legal outcomes (see CaseReview docstring)
+    review_rows = (
+        await db.execute(
+            select(CaseReview, CitizenUser.full_name)
+            .join(CitizenUser, CitizenUser.id == CaseReview.citizen_id)
+            .where(
+                CaseReview.tenant_id == tenant.id,
+                CaseReview.comment.is_not(None),
+                CaseReview.comment != "",
+            )
+            .order_by(CaseReview.created_at.desc())
+            .limit(10)
+        )
+    ).all()
+    reviews = [
+        {
+            "author": _masked_name(name),
+            "rating": round(
+                (r.rating_communication + r.rating_speed + r.rating_clarity) / 3
+            ),
+            "comment": r.comment,
+            "date": r.created_at.isoformat(),
+        }
+        for r, name in review_rows
+    ]
+
+    current_year = datetime.now(UTC).year
+    return {
+        "id": str(profile.id),
+        "tenant_id": str(tenant.id),
+        "full_name": user.full_name,
+        "firm_name": tenant.name,
+        "bio": profile.bio,
+        "practice_areas": profile.practice_areas or [],
+        "cities": profile.cities or [],
+        "languages": profile.languages or [],
+        "photo": profile.photo,
+        "verified": True,
+        "founder": profile.is_founder,
+        "consult_fee_eur": profile.consult_fee_eur,
+        "rating": avg_rating,
+        "review_count": review_count,
+        "booking": profile.booking_enabled,
+        "years_experience": (
+            max(0, current_year - profile.career_start_year)
+            if profile.career_start_year
+            else None
+        ),
+        "cases_completed": cases_completed.get(tenant.id, 0),
+        "reviews": reviews,
+        "member_since": profile.created_at.isoformat(),
+    }
 
 
 # ---------- citizen case requests ----------
@@ -1031,6 +1118,11 @@ async def public_stats(db: AsyncSession = Depends(get_db)):
         )
     ).scalar_one()
     chunks = (await db.execute(select(func.count(LegalCorpusChunk.id)))).scalar_one()
+    # Licensed notaries from the official ONK registry snapshot — a strong
+    # trust number for the landing page while the platform directory grows
+    from app.api.public_tools import _load_notaries
+
+    notaries_licensed = len(_load_notaries().get("notaries", []))
     return {
         "lawyers_in_directory": lawyers,
         "cases_posted": cases_total,
@@ -1038,6 +1130,7 @@ async def public_stats(db: AsyncSession = Depends(get_db)):
         "avg_claim_hours": round(avg_seconds / 3600, 1) if avg_seconds else None,
         "laws_in_corpus": laws,
         "corpus_chunks": chunks,
+        "notaries_licensed": notaries_licensed,
     }
 
 
@@ -1398,6 +1491,28 @@ async def my_referral(
     }
 
 
+# Public bios must stay professional prose: lawyers sometimes paste raw
+# registry rows (personal email, mobile, even date of birth) which then leak
+# on the public directory. Any line containing such data is dropped.
+_BIO_SCRUB_RES = [
+    re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+"),  # email address
+    re.compile(r"(?:\+|00)\d[\d\s/.\-()]{6,}"),  # international phone
+    re.compile(r"(?<!\d)0\d{2}[\s/.\-]{0,3}\d{3}[\s/.\-]{0,3}\d{3,4}(?!\d)"),  # local mobile
+    re.compile(r"(?<!\d)\d{1,2}[./-]\d{1,2}[./-](?:19|20)\d{2}(?!\d)"),  # birth date
+]
+
+
+def _scrub_bio(bio: str | None) -> str | None:
+    if not bio:
+        return None
+    kept = [
+        line
+        for line in bio.splitlines()
+        if not any(rx.search(line) for rx in _BIO_SCRUB_RES)
+    ]
+    return "\n".join(kept).strip() or None
+
+
 class ProfileIn(BaseModel):
     is_visible: bool = False
     sos_on_duty: bool = False
@@ -1428,7 +1543,7 @@ async def update_my_profile(
         db.add(profile)
     profile.is_visible = body.is_visible
     profile.sos_on_duty = body.sos_on_duty
-    profile.bio = body.bio
+    profile.bio = _scrub_bio(body.bio)
     profile.practice_areas = [a for a in body.practice_areas if a in PRACTICE_AREAS]
     profile.cities = [c.strip() for c in body.cities if c.strip()][:20]
     profile.languages = [

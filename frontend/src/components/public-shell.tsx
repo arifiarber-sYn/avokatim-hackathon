@@ -174,7 +174,9 @@ export default function PublicShell({
               Avokat<span className="text-slate-900">IM</span>
             </span>
           </Link>
-          <nav className="hidden md:flex items-center gap-5">
+          {/* whitespace-nowrap + tight gaps: the row must never wrap on
+              narrow desktops (1024px) where every language fits differently */}
+          <nav className="hidden md:flex items-center gap-3.5 lg:gap-5 whitespace-nowrap">
             {/* Desktop shows the full legal chain (Ava · Avokatët · Noterët ·
                 Posto · Rasti im); the notary link stays desktop-only so the
                 mobile bottom nav keeps its four core actions + SOS. */}
@@ -186,7 +188,7 @@ export default function PublicShell({
               <Link
                 key={href}
                 href={href}
-                className={`text-sm hover:text-indigo-700 ${
+                className={`text-sm whitespace-nowrap hover:text-indigo-700 ${
                   pathname.startsWith(href) ? "text-indigo-700 font-semibold" : "text-slate-600"
                 }`}
               >
@@ -225,10 +227,12 @@ export default function PublicShell({
               audience-switch text, icon-only globe utility, and the account
               action as a filled button at the far edge. */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* Audience-switch text only where there's real room (>= xl);
+                below that it stays reachable via the footer and /kycu */}
             {!citizen && (
               <Link
                 href="/per-avokatet"
-                className="hidden sm:block text-xs text-slate-400 hover:text-slate-600 hover:underline mr-1"
+                className="hidden xl:block text-xs whitespace-nowrap text-slate-400 hover:text-slate-600 hover:underline mr-1"
               >
                 {t.mkForLawyersLink}
               </Link>

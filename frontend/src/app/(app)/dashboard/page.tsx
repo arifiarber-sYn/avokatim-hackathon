@@ -87,6 +87,65 @@ function MiniBarChart({
   );
 }
 
+/** Dismissible "what's new" showcase — feature discovery for tools that would
+ * otherwise stay buried (versioned key: reappears only when the list changes). */
+function WhatsNewCard() {
+  const { t } = useI18n();
+  const storageKey = "avokatim:whatsnew:2026-07";
+  const [open, setOpen] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    try {
+      setOpen(localStorage.getItem(storageKey) !== "1");
+    } catch {
+      setOpen(true);
+    }
+  }, []);
+
+  if (!open) return null;
+
+  function dismiss() {
+    setOpen(false);
+    try {
+      localStorage.setItem(storageKey, "1");
+    } catch {}
+  }
+
+  return (
+    <Card className="p-5 border-violet-200 bg-gradient-to-br from-violet-50/70 to-white">
+      <div className="flex items-start justify-between gap-3">
+        <h2 className="font-semibold text-violet-900 flex items-center gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider bg-violet-600 text-white rounded-full px-2 py-0.5">
+            {t.wnBadge}
+          </span>
+          {t.wnTitle}
+        </h2>
+        <button
+          onClick={dismiss}
+          className="text-slate-400 hover:text-slate-600 text-lg leading-none shrink-0"
+          aria-label={t.introHide}
+        >
+          ×
+        </button>
+      </div>
+      <div className="grid sm:grid-cols-2 gap-4 mt-3">
+        <div className="text-sm space-y-1.5">
+          <p className="text-slate-700">{t.wnPrepare}</p>
+          <Link href="/matters" className="inline-block font-semibold text-violet-700 hover:underline">
+            {t.wnPrepareCta} →
+          </Link>
+        </div>
+        <div className="text-sm space-y-1.5">
+          <p className="text-slate-700">{t.wnStyle}</p>
+          <Link href="/settings#grp-ai" className="inline-block font-semibold text-violet-700 hover:underline">
+            {t.wnStyleCta} →
+          </Link>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 export default function DashboardPage() {
   const { t, locale } = useI18n();
   const [data, setData] = useState<Dashboard | null>(null);
@@ -168,6 +227,8 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-bold">{t.dashboard}</h1>
 
       <PageIntro k="dashboard" title={t.dashIntroT} body={t.dashIntro} />
+
+      <WhatsNewCard />
 
       {/* Notary offices have no marketplace page, so their appointment
           requests from /noteret surface here on the dashboard */}

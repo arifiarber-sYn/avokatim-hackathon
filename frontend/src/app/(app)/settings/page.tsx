@@ -19,6 +19,10 @@ interface CorpusDoc {
   chunk_count: number;
 }
 
+// 18 cards need a map: settings are grouped in 5 anchored sections with a
+// sticky sidebar on desktop and a horizontal chip bar on mobile.
+const GROUP_IDS = ["zyra", "publik", "ai", "njoftimet", "siguria"] as const;
+
 export default function SettingsPage() {
   const { t } = useI18n();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -33,29 +37,104 @@ export default function SettingsPage() {
       .catch(() => {});
   }, []);
 
+  const groupLabels: Record<(typeof GROUP_IDS)[number], string> = {
+    zyra: t.setGrpOffice,
+    publik: t.setGrpPublic,
+    ai: t.setGrpAI,
+    njoftimet: t.setGrpNotifs,
+    siguria: t.setGrpSecurity,
+  };
+
   return (
-    <div className="space-y-8 max-w-3xl">
+    <div className="max-w-5xl">
       <h1 className="text-2xl font-bold">{t.settings}</h1>
-      <PageIntro k="settings" title={t.settingsIntroT} body={t.settingsIntro} />
-      <ProfileSection />
-      <FirmSection />
-      <PushSection />
-      <TeamSection />
-      <CalendarFeedSection />
-      <PublicIntakeSection />
-      <PublicProfileSection isNotary={isNotary} />
-      <AvaStyleSection />
-      <BookingSection />
-      {!isNotary && <ReferralSection />}
-      <ImportSection />
-      <TwoFASection />
-      <CorpusSection />
-      <PortalSection />
-      {isAdmin && <SubscriptionSection />}
-      {isAdmin && <ComplianceSection />}
-      {isAdmin && <AuditLogSection />}
-      {isAdmin && <ExportSection />}
+
+      {/* Mobile: horizontal chip bar (sticky) */}
+      <nav className="lg:hidden sticky top-0 z-20 -mx-4 px-4 py-2.5 mt-4 bg-slate-50/95 backdrop-blur border-b border-slate-100 flex gap-2 overflow-x-auto">
+        {GROUP_IDS.map((id) => (
+          <a
+            key={id}
+            href={`#grp-${id}`}
+            className="shrink-0 text-xs font-medium bg-white border border-slate-200 text-slate-600 rounded-full px-3 py-1.5 hover:border-indigo-300 hover:text-indigo-700"
+          >
+            {groupLabels[id]}
+          </a>
+        ))}
+      </nav>
+
+      <div className="flex gap-8 mt-6">
+        {/* Desktop: sticky sidebar */}
+        <aside className="hidden lg:block w-48 shrink-0">
+          <nav className="sticky top-6 space-y-1">
+            {GROUP_IDS.map((id) => (
+              <a
+                key={id}
+                href={`#grp-${id}`}
+                className="block text-sm text-slate-500 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg px-3 py-2 transition"
+              >
+                {groupLabels[id]}
+              </a>
+            ))}
+          </nav>
+        </aside>
+
+        <div className="flex-1 min-w-0 max-w-3xl space-y-10">
+          <PageIntro k="settings" title={t.settingsIntroT} body={t.settingsIntro} />
+
+          <SettingsGroup id="zyra" title={groupLabels.zyra}>
+            <ProfileSection />
+            <FirmSection />
+            <TeamSection />
+            <ImportSection />
+          </SettingsGroup>
+
+          <SettingsGroup id="publik" title={groupLabels.publik}>
+            <PublicProfileSection isNotary={isNotary} />
+            <BookingSection />
+            {!isNotary && <ReferralSection />}
+            <PublicIntakeSection />
+          </SettingsGroup>
+
+          <SettingsGroup id="ai" title={groupLabels.ai}>
+            <AvaStyleSection />
+            <CorpusSection />
+          </SettingsGroup>
+
+          <SettingsGroup id="njoftimet" title={groupLabels.njoftimet}>
+            <PushSection />
+            <CalendarFeedSection />
+          </SettingsGroup>
+
+          <SettingsGroup id="siguria" title={groupLabels.siguria}>
+            <TwoFASection />
+            <PortalSection />
+            {isAdmin && <SubscriptionSection />}
+            {isAdmin && <ComplianceSection />}
+            {isAdmin && <AuditLogSection />}
+            {isAdmin && <ExportSection />}
+          </SettingsGroup>
+        </div>
+      </div>
     </div>
+  );
+}
+
+function SettingsGroup({
+  id,
+  title,
+  children,
+}: {
+  id: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section id={`grp-${id}`} className="scroll-mt-16 space-y-5">
+      <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 border-b border-slate-200 pb-2">
+        {title}
+      </h2>
+      <div className="space-y-6">{children}</div>
+    </section>
   );
 }
 

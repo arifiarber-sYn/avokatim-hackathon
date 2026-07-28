@@ -10,6 +10,57 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-28d — UI audit wave: 10 improvements P1-P3 (Cursor / Fable 5)
+
+- Done (owner approved the full UI audit plan, D-031). All 10 items shipped:
+  1. **Lawyer profile pages** `/avokatet/[id]`: new public endpoint
+     `GET /public/lawyers/{profile_id}` (same trust gate as the directory,
+     + anonymized review comments via `_masked_name`, `member_since`);
+     server layout with `generateMetadata` + Attorney JSON-LD (aggregateRating
+     when reviews exist); client page with big trust numbers, CTA card
+     ("Dërgo rastin" + prominent booking + fee), bio, chips, reviews.
+     `BookingWidget` extracted to `components/booking-widget.tsx` (shared,
+     `prominent` variant); directory cards link to the profile; `sitemap.ts`
+     is now async and appends profile URLs.
+  2. **Landing stats**: weak numbers (3 lawyers, 1 case) replaced by
+     554 ligje · 141 noterë (new `notaries_licensed` in `/public/stats`,
+     from the ONK registry snapshot) · 6 gjuhë · 24/7. The lawyer count
+     returns automatically at `lawyers_in_directory >= 20`.
+  3. **Bio cleanup**: Ilire Aydogan's raw CV bio (birth date, email, phone,
+     home address) replaced in DB with professional prose; `_scrub_bio`
+     regex in `update_my_profile` now drops any bio line containing an
+     email/phone/birth-date (tested, incl. no-false-positive on plain years).
+  4. **Public header**: `whitespace-nowrap` + tighter gaps below `lg`;
+     "Për avokatët" hidden below `xl`. Verified at 1024px — single row.
+  5. **Settings map**: 5 anchored groups (Zyra / Profili publik / AI & Ava /
+     Njoftimet / Siguria & administrata) with sticky sidebar (desktop) and
+     horizontal chip bar (mobile). `#grp-ai` is the anchor for Ava prefs;
+     old `#public-profile` anchor still works.
+  6. **Analytics charts**: /reports now also fetches `/reports/dashboard`
+     and renders a grouped-bar SVG (hours + billed EUR, each normalized to
+     its own max) and A/R aging bars 0-30/31-60/61-90/90+.
+  7. **What's-new showcase**: dismissible card on the dashboard
+     (localStorage key `avokatim:whatsnew:2026-07`) presenting Përgatit
+     lëndën and Preferencat e Avës.
+  8. **Directory cards**: experience/cases/price as colored chips; "Shiko
+     profilin →" primary link; booking now a real secondary button.
+  9. **/afatet quick chips**: 5 most-searched deadlines prefill the form
+     and focus the date field.
+  10. **FAQ**: 6 real questions as accordion on /per-qytetaret (×6
+      languages) + FAQPage JSON-LD in the server layout sourced from the
+      same sq dictionary entries (can never drift).
+- Verified: 114/114 backend tests (incl. new `_scrub_bio` test; one flaky
+  TTS roundtrip passed on rerun), frontend build clean, sw cache v22,
+  services restarted, `/api/health` OK, `notaries_licensed: 141` live,
+  profile endpoint 200/404 correct, Playwright screenshots of landing,
+  profile, directory, FAQ, afatet, settings (sidebar), dashboard (E re
+  card), reports (chart cards) all correct.
+- Note: Playwright chromium now cached at `~/.cache/ms-playwright` — use
+  `npx playwright screenshot --wait-for-timeout=4500` for JS-rendered pages
+  (headless Firefox shoots before client fetches finish).
+- Left open: profile pages will get richer once reviews accumulate; the
+  lawyer count on the landing returns automatically at 20+.
+
 ## 2026-07-28c — Industry-gap wave: GEO, trust signals, follow-up, office memory, agentic prepare, client timeline (Cursor / Fable 5)
 
 - Done (owner approved the full gap plan, D-030). Six improvements shipped:
