@@ -24,8 +24,12 @@
 - Outreach campaign status (owner asked "are all 1473 notified?"): NO —
   OAK registry has 1457 rows (1456 with email), 450 emailed so far
   (30/day since Jul 13, timer healthy, next batch today 09:30). ~1004
-  remain ≈ 34 more days at the current rate. Raising the daily batch is
-  possible but was not changed without owner approval (Gmail deliverability).
+  remained ≈ 34 more days at the old rate.
+- Owner then asked to speed it up: raised the default batch from 30 to 60
+  per day (script default in `oak_outreach_campaign.py`; timer unchanged,
+  daily 09:30). Two weeks at 30/day with clean deliverability justified
+  the ramp; still far under Gmail consumer limits. New ETA ≈ 17 days,
+  then the script auto-switches to the ONK notaries phase.
 
 ## 2026-07-25a — Personal nudge: notary Dervishaj (Halim / DeepSeek v4)
 

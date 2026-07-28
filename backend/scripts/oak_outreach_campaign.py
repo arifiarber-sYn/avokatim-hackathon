@@ -10,13 +10,15 @@ twice, and a batch refuses to run twice in the same day — this makes the scrip
 safe to trigger from a systemd timer with Persistent=true (catch-up runs after
 a reboot cannot double-send).
 
-Deliberately conservative: default 30/run with 8s spacing, because the same
-Gmail account also delivers the platform's transactional email (verify
-links) — its sender reputation must stay clean.
+Default 60/run with 8s spacing — raised from 30 on 2026-07-28 (owner asked
+to speed the campaign up). Kept well under Gmail's consumer limits because
+the same account also delivers the platform's transactional email (verify
+links) — its sender reputation must stay clean. Two weeks at 30/day with
+zero bounce complaints justified the ramp.
 
 Usage:
     python scripts/oak_outreach_campaign.py --dry-run     # preview batch
-    python scripts/oak_outreach_campaign.py               # send batch of 30
+    python scripts/oak_outreach_campaign.py               # send batch of 60
     python scripts/oak_outreach_campaign.py --limit 50    # custom batch size
     python scripts/oak_outreach_campaign.py --force       # ignore daily guard
 """
@@ -41,7 +43,7 @@ LOG = DATA / "oak_outreach_log.csv"
 
 DRY_RUN = "--dry-run" in sys.argv
 FORCE = "--force" in sys.argv
-LIMIT = int(sys.argv[sys.argv.index("--limit") + 1]) if "--limit" in sys.argv else 30
+LIMIT = int(sys.argv[sys.argv.index("--limit") + 1]) if "--limit" in sys.argv else 60
 SEND_DELAY_S = 8
 
 # Never cold-email people already in touch with the platform (static floor —
