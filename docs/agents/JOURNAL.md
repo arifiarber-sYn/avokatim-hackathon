@@ -25,10 +25,14 @@
 - Verified: `http://avokatiim.ai` and `http://www.avokatiim.ai/avokatet?x=1`
   → 301 to the correct https URL (path+query preserved); https 200 + HSTS;
   `http://127.0.0.1:3000` still 200.
-- Left open (owner, dashboard-only — no API token on this machine): enable
-  "Always Use HTTPS" in Cloudflare per zone (avokatiim.ai, boraarifi.ai,
-  naturalbeautyks.com) to move the redirect to the edge and cover
-  OpsHub/NaturalBeauty too.
+- Follow-up same morning: owner pointed out the Cloudflare dashboard is
+  reachable through the desktop browser session (Google sign-in). Enabled
+  "Always Use HTTPS" via the dashboard for all three zones — avokatiim.ai,
+  boraarifi.ai (OpsHub), naturalbeautyks.com. Verified from outside: http on
+  all 7 public hostnames now 301s to https at the edge with path+query
+  preserved; https still 200 (no redirect loop with the app-layer proxy,
+  which only fires on `x-forwarded-proto: http`, which no longer reaches
+  the origin). The app-layer redirect + HSTS stays as defense in depth.
 
 ## 2026-07-28e — Industry gaps 2026: payments, passive time, office Ava (Cursor / Fable 5)
 
