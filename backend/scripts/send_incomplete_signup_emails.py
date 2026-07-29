@@ -59,7 +59,7 @@ Pas verifikimit, te https://avokatiim.ai/onboarding i plotësoni për 2 minuta
 profilin publik dhe numrin e licencës së OAK-së — dhe si një nga zyrat e
 para të verifikuara merrni shenjën e përhershme "Themelues" në drejtori.
 
-Tre muajt e parë gjithçka është falas, pa kartelë dhe pa detyrime. Nëse
+Viti i parë gjithçka është falas, pa kartelë dhe pa detyrime. Nëse
 diçka ju ka penguar gjatë regjistrimit, më përgjigjuni direkt — reagimi juaj
 na ndihmon shumë në këtë fazë.
 """ + SIGNATURE
@@ -81,7 +81,7 @@ qytetarëve.
 3. Pas verifikimit merrni shenjën ✓ dhe, si një nga zyrat e para,
    shenjën e përhershme "Themelues".
 
-Tre muajt e parë gjithçka është falas. Për çdo pyetje a sugjerim, më
+Viti i parë gjithçka është falas. Për çdo pyetje a sugjerim, më
 përgjigjuni direkt në këtë email.
 """ + SIGNATURE
 

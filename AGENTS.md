@@ -59,7 +59,8 @@ One platform, two sides (the bridge between Kosovo's citizens and lawyers):
    channel to the platform (/kontakti).
 
 Revenue model (D-016): citizens never pay; lawyers pay a flat per-seat monthly
-subscription after a 90-day trial. Never a percentage of lawyer fees.
+subscription after a 365-day trial (first year free — extended from 90 days
+on 2026-07-28). Never a percentage of lawyer fees.
 
 - **Jurisdictions**: Kosovo (XK) is active. GB, CN, INTL are prepared as data.
   Jurisdiction rules (deadlines, holidays, templates, legal corpus) are **data,

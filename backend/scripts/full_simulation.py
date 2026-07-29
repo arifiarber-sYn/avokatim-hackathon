@@ -88,7 +88,7 @@ async def main() -> None:
             "email": f"driton.sim.{SUFFIX}@gmail.com", "password": PW_FIRM,
             "accept_tos": True,
         })
-        check("signup i zyrës (trial 3 muaj, kushtet e pranuara)", r.status_code == 201)
+        check("signup i zyrës (trial 1 vit, kushtet e pranuara)", r.status_code == 201)
         h = {"Authorization": f"Bearer {r.json()['access_token']}"}
 
         r = await c.patch(f"{BASE}/firm", headers=h, json={
@@ -986,7 +986,7 @@ async def main() -> None:
         check("s'ka thirrje për raste jo-aktive (të mbyllura)",
               r.status_code in (400, 404), f"status={r.status_code}")
 
-        print("\n=== 28. ABONIMI I PLATFORMËS (të hyrat pas 3 muajve falas) ===")
+        print("\n=== 28. ABONIMI I PLATFORMËS (të hyrat pas vitit të parë falas) ===")
         from sqlalchemy import text as _sqltext
 
         from app.database import SessionLocal as _Session

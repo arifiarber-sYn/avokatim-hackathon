@@ -241,7 +241,7 @@ async def signup(
         background.add_task(
             notify_ops, "regjistrim",
             f"Zyrë e re u regjistrua: {user.full_name} ({user.email}), "
-            f"{profession_sq}, zyra '{tenant.name}'. Provë 90-ditore ka nisur.",
+            f"{profession_sq}, zyra '{tenant.name}'. Prova 1-vjeçare falas ka nisur.",
         )
     return TokenResponse(access_token=create_access_token(user.id, tenant.id))
 

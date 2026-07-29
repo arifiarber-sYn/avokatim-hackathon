@@ -69,7 +69,7 @@ merrni raste nga tregu. Aktivizimi zgjat 2 minuta:
    së OAK-së — pas verifikimit merrni shenjën ✓ dhe, si një nga zyrat e para,
    shenjën e përhershme **"Themelues"**.
 
-Gjatë 3 muajve të parë gjithçka është falas, pa kartelë dhe pa detyrime.
+Gjatë vitit të parë gjithçka është falas, pa kartelë dhe pa detyrime.
 Nëse diçka nuk funksionon si prisni, ose keni sugjerime — më shkruani direkt
 në këtë email; reagimi juaj formëson platformën.
 
@@ -115,10 +115,11 @@ Krijuesi i AvokatIM · https://avokatiim.ai
   (git-ignored). **1457 avokatë, 1456 me email.** Sipas regjionit:
   Prishtinë 771, Pejë 161, Prizren 132, Gjilan 121, Mitrovicë 102,
   Ferizaj 96, Gjakovë 74.
-- **Dërgimi**: `backend/scripts/oak_outreach_campaign.py` — valë nga 30
-  email/ditë nga adresa e pronarit (Gmail), 8 s ndërmjet dërgimeve, log në
-  `data/oak_outreach_log.csv` (askush s'kontaktohet dy herë). Prioritet:
-  Prishtina e para. Email-i përmban: përfitimet, 3 muaj falas, shenjën
+- **Dërgimi**: `backend/scripts/oak_outreach_campaign.py` — valë nga 60
+  email/ditë (rritur nga 30 më 2026-07-28) nga adresa e pronarit (Gmail),
+  8 s ndërmjet dërgimeve, log në `data/oak_outreach_log.csv` (askush
+  s'kontaktohet dy herë). Prioritet: Prishtina e para. Email-i përmban:
+  përfitimet, vitin e parë falas, shenjën
   "Themelues", burimin e adresës (regjistri publik OAK) dhe opt-out me
   "STOP".
 - **Pse 30/ditë**: e njëjta llogari Gmail dërgon edhe email-et
