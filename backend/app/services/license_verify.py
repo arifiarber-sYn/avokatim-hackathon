@@ -154,12 +154,15 @@ async def try_auto_verify(user_id) -> bool:
         founder_par = (
             tr(loc, "verify_approved_founder") + "\n\n" if profile.is_founder else ""
         )
+        profile_url = f"{settings.public_base_url}/avokatet/{profile.id}"
+        settings_url = f"{settings.public_base_url}/settings"
         await send_email(
             user.email,
             tr(loc, "verify_approved_subject", name=user.full_name),
             tr(loc, "verify_approved_body",
                name=user.full_name,
-               url=f"{settings.public_base_url}/avokatet",
+               url=profile_url,
+               settings_url=settings_url,
                founder=founder_par),
         )
         from app.services.ops_notify import notify_ops

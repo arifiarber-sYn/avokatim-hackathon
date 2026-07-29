@@ -30,7 +30,7 @@ recipients** (`_is_test_recipient`).
 |---|---|---|
 | Signup | `lawyer_verify_*` (confirm email), `lawyer_welcome_*` / `notary_welcome_*` (next steps) | `api/auth.py` |
 | 1h after signup, public profile still inactive | `lawyer_profile_nudge_*` (one-shot) | `services/notifications.py` |
-| License verified (auto or manual) | `verify_approved_*` — **warm thank-you letter**, + `verify_approved_founder` paragraph when the Founder badge applies | `services/license_verify.py`, `api/platform.py` |
+| License verified (auto or manual) | `verify_approved_*` — **warm thank-you letter** linking to the lawyer's own public profile (`/avokatet/{id}`) + settings, with next-steps checklist (sq), + `verify_approved_founder` paragraph when the Founder badge applies | `services/license_verify.py`, `api/platform.py` |
 | License rejected | `verify_rejected_*` | `api/platform.py` |
 | New matching marketplace case / directed case / SOS | `case_match_*`, `case_directed_*`, `sos_alert_*` (+ SMS variants) | `api/marketplace.py` |
 | New consultation booking | `booking_new_*` | `api/bookings.py` |

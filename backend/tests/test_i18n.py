@@ -54,7 +54,7 @@ def test_thank_you_letters_format_in_every_locale():
         subject = tr(code, "verify_approved_subject", name="Test Testi")
         body = tr(
             code, "verify_approved_body",
-            name="Test Testi", url="https://x/avokatet",
+            name="Test Testi", url="https://x/avokatet", settings_url="https://x/settings",
             founder=tr(code, "verify_approved_founder") + "\n\n",
         )
         assert "Test Testi" in subject and "https://x/avokatet" in body, code

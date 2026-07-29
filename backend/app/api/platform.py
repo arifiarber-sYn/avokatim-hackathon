@@ -262,7 +262,8 @@ async def decide_verification(
                 tr(loc, "verify_approved_subject", name=lawyer.full_name),
                 tr(loc, "verify_approved_body",
                    name=lawyer.full_name,
-                   url=f"{settings.public_base_url}/avokatet",
+                   url=f"{settings.public_base_url}/avokatet/{profile.id}",
+                   settings_url=f"{settings.public_base_url}/settings",
                    founder=founder_par),
             )
         else:

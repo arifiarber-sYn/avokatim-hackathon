@@ -10,6 +10,34 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-29c — Verification email now links to the lawyer's own profile (Cursor / Fable 5)
+
+- Done: committed pending working-tree changes to the `verify_approved_*`
+  thank-you email (found uncommitted; coherent and complete, so verified and
+  shipped). The email now links to the lawyer's own public profile
+  (`/avokatet/{profile.id}`) instead of the generic directory, adds a
+  settings link in all 6 locales, and (sq only) a 3-step "next steps"
+  checklist (photo/bio, specializations/prices, booking calendar). Both send
+  sites updated: `services/license_verify.py` (auto-verify) and
+  `api/platform.py` (manual approval). `tests/test_i18n.py` adjusted for the
+  new `settings_url` placeholder. COMMS.md row updated.
+- Verified: full backend suite 122 passed; backend restarted, health OK.
+
+## 2026-07-29b — 1-year trial leftovers + landing stats (Cursor / Fable 5)
+
+- Done (leftovers of the 90→365 trial extension, owner spotted "3 muaj"
+  remnants): fixed `trialTerms` + `subUpgradeHint` in all 6 locales of
+  `dictionaries.ts`, AGENTS.md revenue line, Halim's ops note in
+  `api/auth.py` ("Prova 1-vjeçare falas ka nisur"), Halim's knowledge file
+  (`~/openclaw-knowledge/projects/AvokatIM.md`), recruiting doc, incomplete-
+  signup email script, full_simulation labels, Desktop presentation +
+  Facebook draft. Verified all 15 trial tenants have exactly 365 days in DB.
+  Intentionally left: ICL offer (historical record), data-export "90 ditë"
+  guarantee, 90-day analytics windows.
+- Done (landing): removed the "show lawyers only at 20+" gate — the stats
+  row now shows lawyers in directory and licensed notaries side by side
+  (owner's call: real count even while small).
+
 ## 2026-07-29 — Force https at the app layer (Cursor / Fable 5)
 
 - Done: owner noticed http:// versions of the sites serve content instead of
