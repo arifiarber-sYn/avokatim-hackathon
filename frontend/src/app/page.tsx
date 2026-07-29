@@ -242,17 +242,15 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Public stats — only numbers that build trust today. The lawyer
-            count returns automatically once the directory reaches 20+. */}
+        {/* Public stats — lawyers and notaries side by side (owner's call:
+            show the real directory count even while it is small) */}
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center max-w-3xl mx-auto">
             {[
               { value: stats.laws_in_corpus, label: t.mkStatsLaws },
-              stats.lawyers_in_directory >= 20
-                ? { value: stats.lawyers_in_directory, label: t.mkStatsLawyers }
-                : { value: stats.notaries_licensed, label: t.mkStatsNotaries },
+              { value: stats.lawyers_in_directory, label: t.mkStatsLawyers },
+              { value: stats.notaries_licensed, label: t.mkStatsNotaries },
               { value: 6, label: t.mkStatsLangs },
-              { value: "24/7", label: t.mkStatsAlways },
             ].map((s) => (
               <div
                 key={s.label}
