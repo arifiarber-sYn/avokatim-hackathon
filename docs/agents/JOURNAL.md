@@ -10,6 +10,26 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-29 — Force https at the app layer (Cursor / Fable 5)
+
+- Done: owner noticed http:// versions of the sites serve content instead of
+  redirecting. TLS terminates at Cloudflare's edge (tunnel), but "Always Use
+  HTTPS" was never enabled per zone, so plain-http visitors stayed
+  unencrypted browser→edge. Added `frontend/src/proxy.ts` (Next 16 proxy
+  convention): on public hosts (`avokatiim.ai`, `*.avokatiim.ai`) with
+  `x-forwarded-proto: http` → 301 to https (host rebuilt from the Host
+  header — `nextUrl` carries the internal localhost origin); on https
+  responses adds `Strict-Transport-Security: max-age=31536000`. Local/LAN
+  access over plain http is untouched (Next synthesizes x-forwarded-proto on
+  direct connections, hence the host gate).
+- Verified: `http://avokatiim.ai` and `http://www.avokatiim.ai/avokatet?x=1`
+  → 301 to the correct https URL (path+query preserved); https 200 + HSTS;
+  `http://127.0.0.1:3000` still 200.
+- Left open (owner, dashboard-only — no API token on this machine): enable
+  "Always Use HTTPS" in Cloudflare per zone (avokatiim.ai, boraarifi.ai,
+  naturalbeautyks.com) to move the redirect to the edge and cover
+  OpsHub/NaturalBeauty too.
+
 ## 2026-07-28e — Industry gaps 2026: payments, passive time, office Ava (Cursor / Fable 5)
 
 - Done (owner approved the "Boshllëqet e fundit 2026" plan, D-032). 5 items:
