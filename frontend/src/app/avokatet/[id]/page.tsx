@@ -160,10 +160,15 @@ export default function LawyerProfilePage({ params }: { params: Promise<{ id: st
               </p>
             </Card>
           )}
-          <Card className="p-4 text-center">
-            <p className="text-2xl font-bold text-indigo-700">{memberYear}</p>
-            <p className="text-xs text-slate-500 mt-0.5">{t.ppMemberSince}</p>
-          </Card>
+          {/* "member since" only means something once it differs from the
+              current year — the platform launched in 2026, so showing it for
+              everyone reads like "active only since 2026" */}
+          {memberYear < new Date().getFullYear() && (
+            <Card className="p-4 text-center">
+              <p className="text-2xl font-bold text-indigo-700">{memberYear}</p>
+              <p className="text-xs text-slate-500 mt-0.5">{t.ppMemberSince}</p>
+            </Card>
+          )}
         </div>
 
         {/* Actions: concrete, low-friction CTAs */}

@@ -10,6 +10,19 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-30 — Hide "member since" card while it is meaningless (Cursor / Fable 5)
+
+- Done: owner was confused by "2026 / anëtar që nga" on Lulzim Aliu's public
+  profile — every lawyer shows the launch year, which reads like "active
+  only since 2026" and is unfair to a lawyer practicing since 1999. The card
+  on `/avokatet/[id]` now renders only when the join year differs from the
+  current year (it returns by itself from 2027 on). Frontend rebuilt +
+  restarted, screenshot verified.
+- Done: personal email (owner's voice) to Lulzim Aliu suggesting he fill
+  "Viti i fillimit të karrierës" (1999 → shows "27 vite përvojë") and add a
+  photo; profile link included. Halim notified via ops — no action needed
+  unless he replies.
+
 ## 2026-07-29c — Verification email now links to the lawyer's own profile (Cursor / Fable 5)
 
 - Done: committed pending working-tree changes to the `verify_approved_*`
