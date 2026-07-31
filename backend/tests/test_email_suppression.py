@@ -13,6 +13,9 @@ def test_simulation_addresses_are_suppressed():
     assert _is_test_recipient("qytetari.sim.c9fcc8@gmail.com")
     assert _is_test_recipient("kontakt.ferro.c9fcc8@gmail.com")
     assert _is_test_recipient("skrap.b19b9c@gmail.com")
+    # isolation_check.py probes (IsoTest A/B) — must never email or ping Halim
+    assert _is_test_recipient("iso.a.d0a55d68@gmail.com")
+    assert _is_test_recipient("iso.b.d0a55d68@gmail.com")
 
 
 def test_reserved_and_seed_domains_are_suppressed():
@@ -30,3 +33,4 @@ def test_real_addresses_still_pass():
     assert not _is_test_recipient("arifi.arber@gmail.com")
     assert not _is_test_recipient("someone@yopmail.com")
     assert not _is_test_recipient("simona@gmail.com")  # 'sim' inside a name is fine
+    assert not _is_test_recipient("iso.krasniqi@gmail.com")  # real-looking 'iso' name

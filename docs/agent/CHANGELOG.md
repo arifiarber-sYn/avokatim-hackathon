@@ -3,6 +3,17 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-07-31 — Suppress isolation_check probe addresses (iso.a/iso.b)
+
+- The owner was alarmed by two "unverified lawyer signups" — they were the
+  self-deleting IsoTest A/B tenants that `scripts/isolation_check.py` creates
+  through the real signup endpoint. Their `iso.[ab].<hex>@gmail.com` addresses
+  were missing from `_TEST_RECIPIENT_RE`, so signup pinged Halim/Telegram and
+  tried to send verification emails. Added the pattern + regression tests
+  (including a real-looking `iso.krasniqi@` that must still pass).
+- Files: `backend/app/services/notifications.py`,
+  `backend/tests/test_email_suppression.py`.
+
 ## 2026-07-31 — Security wave (D-033): Postgres RLS + OpsHub-inspired hardenings
 
 - Tenant isolation enforced in the database itself: non-superuser role

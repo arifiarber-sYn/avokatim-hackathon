@@ -37,6 +37,8 @@ _TEST_RECIPIENT_RE = re.compile(
     # Non-".sim." throwaway identities used by full_simulation.py
     r"|^kontakt\.ferro\.[0-9a-f]+@gmail\.com$"
     r"|^skrap\.[0-9a-f]+@gmail\.com$"
+    # isolation_check.py tenants (IsoTest A/B) — self-deleting security probes
+    r"|^iso\.[ab]\.[0-9a-f]+@gmail\.com$"
     r"|@example\.(com|org|net)$"
     r"|@avokatim\.(local|app)$"
     r"|@gmail\.con$)",  # common .com typo — the domain does not exist
