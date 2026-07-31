@@ -10,6 +10,22 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-31b — Verifikimi OAK/ONK plotësisht automatik (Cursor / Fable 5)
+
+- Done: removed the "extra procedure" the owner flagged — verification no
+  longer waits for a typed license number. A confirmed email matching the
+  chamber registry verifies immediately at email-confirmation time
+  (`try_auto_verify` accepts status none/pending, creates the profile row
+  invisible when onboarding wasn't opened; license number is now an optional
+  enrich-your-profile field, copy updated ×6). Email-anchored verifications
+  no longer reset to pending when the number changes.
+- Done: backfill — Adnan Pacolli, Betim Sijarina and Marigona Gashi were all
+  sitting with confirmed registry emails but no license number; all three
+  verified instantly (thank-you emails + Halim FYI sent). Directory 6 → 7
+  (Pacolli was already published; the other two go live when they publish).
+- Verified: in-process end-to-end test with fake in-memory registry entry,
+  pytest 128/128, frontend rebuilt, health OK.
+
 ## 2026-07-31 — Security wave: Postgres RLS + forcime nga auditimi OpsHub (Cursor / Fable 5)
 
 - Done (D-033): tenant isolation now enforced *inside* Postgres — new

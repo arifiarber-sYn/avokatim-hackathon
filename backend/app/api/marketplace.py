@@ -1573,20 +1573,35 @@ async def update_my_profile(
         if s.title.strip()
     ][:10]
 
-    # Entering or changing the license number (re)starts verification; the
-    # status itself is never client-writable. Auto-approval happens only when
-    # the confirmed signup email matches the public chamber registry
-    # (services/license_verify.py); otherwise the operator checks by hand.
+    # The license number is an optional profile field; verification itself is
+    # anchored to the confirmed registry email (services/license_verify.py)
+    # and the status is never client-writable. Changing the number only
+    # (re)starts a review when the identity is NOT already proven by the
+    # registry email — otherwise the badge would flap and re-trigger emails.
     new_license = (body.oak_license_no or "").strip() or None
     if new_license != profile.oak_license_no:
+        from app.services.license_verify import registry_match
+
         profile.oak_license_no = new_license
-        profile.verified_at = None
-        profile.verification_note = None
-        profile.verification_status = "pending" if new_license else "none"
-        # Simulation accounts (test emails) must not ping the operator —
-        # their tenants are deleted at cleanup, so there is nothing to verify
-        if new_license and not _is_test_recipient(user.email):
-            background.add_task(_auto_verify_or_notify, user.id, user.full_name, new_license)
+        tenant = await db.get(Tenant, user.tenant_id)
+        registry_ok = user.email_verified_at is not None and (
+            (m := registry_match(
+                tenant.profession if tenant else "lawyer", user.full_name, user.email
+            ))
+            and m["matched_by"] == "email"
+        )
+        if profile.verification_status == "verified" and registry_ok:
+            pass  # identity comes from the registry email — keep the badge
+        else:
+            profile.verified_at = None
+            profile.verification_note = None
+            profile.verification_status = "pending" if new_license else "none"
+            # Simulation accounts (test emails) must not ping the operator —
+            # their tenants are deleted at cleanup, there is nothing to verify
+            if new_license and not _is_test_recipient(user.email):
+                background.add_task(
+                    _auto_verify_or_notify, user.id, user.full_name, new_license
+                )
 
     await log_action(
         db, tenant_id=user.tenant_id, user_id=user.id, action="marketplace.profile_update",

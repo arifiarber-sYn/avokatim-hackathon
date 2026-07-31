@@ -3,6 +3,21 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-07-31 — Fully automatic lawyer/notary verification (email = proof)
+
+- Owner's call: if the system finds the lawyer in the OAK registry, no extra
+  step may be required. `try_auto_verify` no longer demands a typed license
+  number or an existing profile row — a confirmed email that matches the
+  chamber registry verifies on the spot (profile auto-created invisible if
+  onboarding wasn't opened). Changing the license number later no longer
+  resets an email-anchored verification (no badge flapping / repeat emails).
+  License field copy across 6 languages now says "optional". Backfill
+  verified 3 real lawyers instantly: Adnan Pacolli (now live in the
+  directory — 7 total), Betim Sijarina, Marigona Gashi (verified, awaiting
+  their own publish). Manual review remains only for no-match cases.
+- Files: `backend/app/services/license_verify.py`,
+  `backend/app/api/marketplace.py`, `frontend/src/lib/dictionaries.ts`.
+
 ## 2026-07-31 — Suppress isolation_check probe addresses (iso.a/iso.b)
 
 - The owner was alarmed by two "unverified lawyer signups" — they were the

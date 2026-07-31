@@ -10,6 +10,10 @@ the check can be automated with a conservative rule:
   AND the account has confirmed control of that mailbox (email_verified_at).
   Owning the inbox that the chamber itself publishes for a member is the
   strongest identity proof available without an official API.
+- The chamber registries do not publish license numbers, so a typed license
+  number adds nothing to the email proof — verification therefore requires
+  NO extra step from the lawyer: confirming the email is enough (owner's
+  call, 2026-07-31). The license number stays an optional profile field.
 - A name-only match is NEVER auto-approved (namesakes exist); it is surfaced
   in the operator queue as a hint instead.
 - No match -> stays pending for manual review, exactly as before.
@@ -78,10 +82,12 @@ def registry_match(profession: str, full_name: str, email: str) -> dict | None:
 
 
 async def try_auto_verify(user_id) -> bool:
-    """Attempt automatic approval of a pending license verification.
+    """Attempt automatic approval of a lawyer/notary verification.
 
-    Runs as a background task after (a) the lawyer/notary submits a license
-    number or (b) they confirm their email. Returns True when auto-approved.
+    Runs as a background task after (a) the account confirms its email or
+    (b) a license number is submitted/changed. A confirmed registry email is
+    sufficient on its own — the profile row is created here if the lawyer
+    has not opened onboarding yet. Returns True when auto-approved.
     """
     from app.database import SessionLocal
 
@@ -89,19 +95,24 @@ async def try_auto_verify(user_id) -> bool:
         user = await db.get(User, user_id)
         if user is None or user.email_verified_at is None:
             return False
+        tenant = await db.get(Tenant, user.tenant_id)
+        if tenant is None or tenant.profession not in ("lawyer", "notary"):
+            return False
+        profession = tenant.profession
         profile = (
             await db.execute(
                 select(LawyerProfile).where(LawyerProfile.user_id == user.id)
             )
         ).scalar_one_or_none()
-        if (
-            profile is None
-            or profile.verification_status != "pending"
-            or not profile.oak_license_no
-        ):
+        if profile is None:
+            # Not onboarded yet — attach the verification now; the profile
+            # stays invisible until the lawyer publishes it themselves.
+            profile = LawyerProfile(tenant_id=user.tenant_id, user_id=user.id)
+            db.add(profile)
+            await db.flush()
+        if profile.verification_status not in ("none", "pending"):
+            # already verified, or explicitly rejected by the operator
             return False
-        tenant = await db.get(Tenant, user.tenant_id)
-        profession = tenant.profession if tenant else "lawyer"
 
         match = registry_match(profession, user.full_name, user.email)
         if match is None or match["matched_by"] != "email":
@@ -167,12 +178,17 @@ async def try_auto_verify(user_id) -> bool:
         )
         from app.services.ops_notify import notify_ops
 
+        license_txt = (
+            f"licenca {chamber} nr. {profile.oak_license_no}; "
+            if profile.oak_license_no
+            else f"anëtar i regjistrit {chamber}; "
+        )
         await notify_ops(
             "auto-verifikim",
-            f"{user.full_name} u verifikua AUTOMATIKISHT (licenca {chamber} "
-            f"nr. {profile.oak_license_no}; emaili {user.email} përputhet me "
+            f"{user.full_name} u verifikua AUTOMATIKISHT ({license_txt}"
+            f"emaili {user.email} përputhet me "
             f"regjistrin publik — {match['name']}, {match['city'] or '?'}). "
-            f"Tani është live në drejtori. S'kërkohet veprim.",
+            f"S'kërkohet veprim.",
         )
         # FYI to the operator — no action needed, but keep them in the loop
         operators = (
@@ -185,7 +201,7 @@ async def try_auto_verify(user_id) -> bool:
                 op.email,
                 f"AvokatIM — Verifikim automatik {chamber}: {user.full_name}",
                 f"{user.full_name} u verifikua AUTOMATIKISHT.\n"
-                f"Licenca {chamber} nr. {profile.oak_license_no}; emaili "
+                f"{license_txt.capitalize().rstrip('; ')}. Emaili "
                 f"{user.email} përputhet me regjistrin publik "
                 f"({match['name']}, {match['city'] or '?'}).\n"
                 f"Nuk kërkohet asnjë veprim — shiko te "
