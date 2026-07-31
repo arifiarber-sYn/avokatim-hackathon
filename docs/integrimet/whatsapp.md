@@ -26,7 +26,10 @@
    WHATSAPP_TOKEN=<permanent token>
    WHATSAPP_PHONE_ID=<phone number id>
    WHATSAPP_VERIFY_TOKEN=<çfarëdo stringu të rastësishëm — e zgjedh ti>
+   WHATSAPP_APP_SECRET=<App Secret nga App Settings → Basic>
    ```
+   `WHATSAPP_APP_SECRET` aktivizon verifikimin e nënshkrimit
+   `X-Hub-Signature-256` — pa të, webhook-u refuzon çdo POST të pafirmosur.
    dhe `systemctl --user restart avokatim`.
 5. **Webhook** në panelin e Meta-s (WhatsApp → Configuration):
    - Callback URL: `https://avokatiim.ai/api/public/whatsapp/webhook`

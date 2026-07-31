@@ -11,6 +11,22 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
 ## What exists and works
 
+- **Security hardening wave** (2026-07-31, D-033): **Postgres RLS** on all 25
+  tables with `tenant_id` — app connects as non-superuser `avokatim_app`
+  (setting `database_app_url` in `backend/.env`; owner role stays in
+  `database_url` for Alembic/scripts); `deps.get_current_user` pins each
+  session to the tenant via transaction-local GUC (`app.tenant_id`,
+  `after_begin` listener in `database.py`); policies are default-open so
+  public/background/superadmin paths are unaffected, NULL-tenant rows are
+  platform-shared. Plus: CSP/Permissions-Policy/nosniff headers in
+  `frontend/src/proxy.ts`; WhatsApp webhook HMAC verification
+  (`whatsapp_app_secret`); document-upload MIME+extension allowlist;
+  TOTP secrets Fernet-encrypted (`enc:v1:` prefix); `users.token_version`
+  JWT revocation (bumped on password reset/change); root `SECURITY.md` +
+  vulnerability-report card on /siguria (×6); weekly dependency scan
+  `scripts/security_scan.sh` via `avokatim-secscan.timer` (Mon 07:30,
+  reports to Halim, log `data/security-scan.log`).
+  `scripts/isolation_check.py` also asserts RLS coverage + SQL-level probes.
 - **Auth**: public self-service signup (`POST /auth/signup` → new tenant on a
   **365-day trial** ("viti i parë falas", `platform_billing.TRIAL_DAYS`,
   extended from 90 on 2026-07-28) + admin
@@ -38,7 +54,7 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   whole platform + unlimited marketplace leads; citizens never pay; **never a
   % of lawyer fees** (Avvo Legal Services died of fee splitting).
   `PlatformInvoice` model (unique tenant+month, number P-YYYY-NNNN);
-  `app/services/platform_billing.py`: `TRIAL_DAYS=90`, due 14 d, grace 14 d,
+  `app/services/platform_billing.py`: `TRIAL_DAYS=365`, due 14 d, grace 14 d,
   idempotent monthly generation + **daily billing loop** (lifespan task,
   every 12 h): issues current-month invoices + emails admins, weekly dunning
   reminders (Redis dedup), trial-ending nudges (≤7 d). Tenant-admin API

@@ -32,6 +32,7 @@ async def main() -> None:
                 "full_name": f"Iso {label.upper()}",
                 "email": f"iso.{label}.{SUFFIX}@gmail.com",
                 "password": PASSWORD,
+                "accept_tos": True,
             })
             r.raise_for_status()
             tokens[label] = r.json()["access_token"]
@@ -112,11 +113,55 @@ async def main() -> None:
 
         assert msg  # created OK for A
 
-    # --- cleanup: remove both throwaway tenants entirely ---
+    # --- RLS layer (D-033): Postgres itself must block cross-tenant rows ---
     sys.path.insert(0, ".")
     from sqlalchemy import text
-    from app.database import SessionLocal
+    from app.database import SessionLocal, scope_session_to_tenant
 
+    async with SessionLocal() as db:
+        # every table with a tenant_id column must carry the policy — catches
+        # future tables added without RLS
+        missing = (
+            await db.execute(text("""
+                select c.table_name from information_schema.columns c
+                where c.table_schema = 'public' and c.column_name = 'tenant_id'
+                  and c.table_name not in (
+                      select tablename from pg_policies
+                      where policyname = 'tenant_isolation')
+            """))
+        ).scalars().all()
+        check("RLS covers all tenant tables", not missing, f"missing: {missing}")
+
+        tenant_ids = (
+            await db.execute(
+                text("select id from tenants where name like :p order by name"),
+                {"p": f"IsoTest % {SUFFIX}"},
+            )
+        ).scalars().all()
+        if len(tenant_ids) == 2:
+            tid_a, tid_b = tenant_ids
+            # scope the session to tenant B, then query A's data WITHOUT any
+            # tenant filter — a deliberately "buggy" query. RLS must return 0.
+            await scope_session_to_tenant(db, tid_b)
+            leaked = (
+                await db.execute(
+                    text("select count(*) from matters where tenant_id = :a"),
+                    {"a": tid_a},
+                )
+            ).scalar()
+            check("RLS blocks unfiltered cross-tenant SELECT", leaked == 0, f"({leaked})")
+            unfiltered = (
+                await db.execute(text("select distinct tenant_id from contacts"))
+            ).scalars().all()
+            check(
+                "RLS scopes unfiltered contact list",
+                all(t == tid_b for t in unfiltered),
+            )
+        else:
+            check("RLS scoped SQL probe (tenants found)", False, f"({len(tenant_ids)})")
+
+    # --- cleanup: remove both throwaway tenants entirely (owner-role URL
+    # would also work; the default-open policy admits the unscoped session) ---
     async with SessionLocal() as db:
         await db.execute(
             text("DELETE FROM tenants WHERE name LIKE :p"), {"p": f"IsoTest % {SUFFIX}"}

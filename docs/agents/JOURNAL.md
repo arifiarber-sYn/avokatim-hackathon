@@ -10,6 +10,36 @@
 > - Left open / next: ...
 > ```
 
+## 2026-07-31 — Security wave: Postgres RLS + forcime nga auditimi OpsHub (Cursor / Fable 5)
+
+- Done (D-033): tenant isolation now enforced *inside* Postgres — new
+  non-superuser role `avokatim_app` (app connects via `database_app_url`;
+  Alembic keeps the owner URL), `tenant_isolation` policies (ENABLE+FORCE)
+  on all 25 tables with `tenant_id`, applied per-request with a
+  transaction-local GUC re-armed by a Session `after_begin` listener.
+  Default-open design: public/background/superadmin paths unchanged; a
+  session pinned by `get_current_user` cannot see or write other tenants'
+  rows even with a deliberately unfiltered query. NULL-tenant rows (global
+  templates, platform audit) stay shared — the full simulation caught that.
+- Done, quick hardenings: CSP + Permissions-Policy + nosniff + Referrer-
+  Policy in `proxy.ts` (verified live on avokatiim.ai, page renders clean);
+  WhatsApp webhook verifies `X-Hub-Signature-256` when `whatsapp_app_secret`
+  is set; MIME+extension allowlist on document uploads (415 otherwise);
+  TOTP secrets Fernet-encrypted (`enc:v1:`, 1 existing user backfilled);
+  `users.token_version` revokes all JWTs on password reset/change.
+- Done, process: root `SECURITY.md`; /siguria got a "report a vulnerability"
+  card (6 languages); `scripts/security_scan.sh` + `avokatim-secscan.timer`
+  (Mon 07:30) report pip-audit/npm-audit to Halim (AVOKATIM-OPS.md updated).
+  First scan already paid off: Next.js 16.2.12 (middleware-bypass fix),
+  sharp >=0.35.0 override, pip upgraded.
+- Verified: pytest 128/128; isolation_check.py extended with SQL-level RLS
+  probes + coverage check (all PASS); full_simulation.py 188 PASS / 0 FAIL;
+  health OK; headers verified with curl against the live domain; screenshot
+  of the homepage under CSP.
+- Left open: torch 2.13 upgrade (PYSEC-2025-194; keeps setuptools <82 until
+  then); consider CSP nonces and httpOnly-cookie tokens as a separate wave;
+  OpsHub-side fixes (committed DB password) belong to the OpsHub repo.
+
 ## 2026-07-30 — Hide "member since" card while it is meaningless (Cursor / Fable 5)
 
 - Done: owner was confused by "2026 / anëtar që nga" on Lulzim Aliu's public

@@ -78,3 +78,30 @@ def test_password_fingerprint_changes_with_hash():
     h1 = hash_password("password-one-long")
     h2 = hash_password("password-two-long")
     assert password_fingerprint(h1) != password_fingerprint(h2)
+
+
+def test_totp_secret_encrypted_at_rest():
+    from app.config import settings
+    from app.security import (
+        _totp_fernet,
+        new_totp_secret,
+        protect_totp_secret,
+        reveal_totp_secret,
+        verify_totp,
+    )
+
+    if not settings.doc_encryption_key:
+        # test env without a key: passthrough mode
+        s = new_totp_secret()
+        assert protect_totp_secret(s) == s
+        return
+    _totp_fernet.cache_clear()
+    secret = new_totp_secret()
+    stored = protect_totp_secret(secret)
+    assert stored.startswith("enc:v1:") and secret not in stored
+    assert reveal_totp_secret(stored) == secret
+    # legacy plaintext rows keep working
+    assert reveal_totp_secret(secret) == secret
+    import pyotp
+
+    assert verify_totp(reveal_totp_secret(stored), pyotp.TOTP(secret).now())

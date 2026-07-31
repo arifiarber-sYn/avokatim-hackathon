@@ -5,6 +5,9 @@ without any Meta credentials; the actual reply is sent only when
 `whatsapp_token` + `whatsapp_phone_id` are configured in backend/.env.
 Setup steps for the owner are documented in docs/integrimet/whatsapp.md.
 """
+import hashlib
+import hmac
+import json
 import logging
 
 import httpx
@@ -122,10 +125,28 @@ async def _answer_message(sender: str, text: str) -> None:
     await send_whatsapp_text(sender, answer)
 
 
+def verify_hub_signature(raw_body: bytes, header: str | None) -> bool:
+    """Meta signs every webhook POST with HMAC-SHA256 of the raw body using
+    the App Secret. Without this check anyone who finds the URL can inject
+    fake 'messages' and burn the LLM budget / spam arbitrary numbers."""
+    if not settings.whatsapp_app_secret:
+        # stub mode (no Meta app configured) — accept, as before
+        return True
+    if not header or not header.startswith("sha256="):
+        return False
+    expected = hmac.new(
+        settings.whatsapp_app_secret.encode(), raw_body, hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(header.removeprefix("sha256="), expected)
+
+
 @router.post("/webhook")
 async def receive_webhook(request: Request, background: BackgroundTasks):
+    raw = await request.body()
+    if not verify_hub_signature(raw, request.headers.get("X-Hub-Signature-256")):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Invalid signature")
     try:
-        payload = await request.json()
+        payload = json.loads(raw)
     except Exception:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid payload")
     messages = extract_text_messages(payload)

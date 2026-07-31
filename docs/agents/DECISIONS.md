@@ -697,3 +697,58 @@
   not restart the separate `avokatim-frontend` unit; after any frontend
   build, restart `avokatim-frontend` explicitly or the old process serves a
   stale chunk manifest (CSS 500, unstyled pages).
+
+## D-033: Security hardening wave — Postgres RLS + OpsHub-inspired fixes (2026-07-31)
+
+- Context: a comparative security audit of OpsHub (the owner's CRM project)
+  and AvokatIM showed OpsHub enforces tenant isolation *inside* Postgres
+  (RLS FORCE + non-superuser app role) while AvokatIM relied only on
+  `tenant_id` filters in code. Both projects shared gaps: no CSP, unsigned
+  WhatsApp webhook, no dependency scanning, no SECURITY.md.
+- Decision:
+  1. **RLS with a default-open policy, not default-deny.** Unlike a pure
+     per-org SaaS, AvokatIM has legitimate cross-tenant reads (public lawyer
+     directory, landing stats, background reminder loops, /platform admin).
+     The `tenant_isolation` policy on all 25 tables with `tenant_id`
+     therefore admits sessions with **no** tenant GUC, and locks a session
+     to one tenant as soon as `deps.get_current_user` pins it (superadmins
+     stay unpinned). This protects exactly the risky surface — authenticated
+     lawyer endpoints with a forgotten WHERE clause — with zero regression
+     risk for public/background paths. Rows with `tenant_id IS NULL` are
+     platform-shared (global document templates, platform audit events) and
+     stay visible; the full simulation caught this (empty template list)
+     before the policy was amended.
+  2. **GUC via `set_config(..., local=true)` + a Session `after_begin`
+     listener**, never session-level: SQLAlchemy returns pooled connections
+     to the pool at every commit, so a connection-level setting would leak
+     tenant context across requests. The transaction-local setting dies with
+     each transaction and the listener re-arms it for every new one.
+     Corollary learned the hard way: after the local setting reverts, the
+     GUC reads `''` (not NULL) and Postgres does **not** short-circuit `OR`
+     — every cast in the policy goes through `nullif(..., '')`.
+  3. **Two DB roles**: the app connects as non-superuser `avokatim_app`
+     (NOBYPASSRLS, DML-only) via new setting `database_app_url`; Alembic and
+     admin scripts keep the owner role via `database_url`. FORCE RLS keeps
+     even owner sessions subject to the policies.
+  4. **JWT revocation via `users.token_version`** (claim `ver`, compared in
+     deps on every request — the user row is loaded anyway). Password
+     reset/change bumps it; change-password returns a fresh token so the
+     current device stays logged in. Chosen over a Redis denylist because it
+     needs no new infrastructure and covers the real scenario (compromised
+     password).
+  5. **CSP with 'unsafe-inline' scripts for now** (Next.js hydration without
+     nonce infrastructure); the enforced win is origin-locking script/connect
+     targets so injected code cannot exfiltrate localStorage tokens to an
+     attacker domain. Headers set in `proxy.ts` for public hosts only.
+  6. **TOTP secrets Fernet-encrypted at rest** (same key material as document
+     storage, different salt, `enc:v1:` prefix, plaintext passthrough for
+     legacy rows), WhatsApp webhook now requires `X-Hub-Signature-256` when
+     `whatsapp_app_secret` is set, document uploads validate a MIME +
+     extension allowlist, `SECURITY.md` + /siguria vulnerability-report
+     section published, and `scripts/security_scan.sh` (pip-audit + npm
+     audit) runs weekly via `avokatim-secscan.timer` reporting to Halim.
+- First scan acted on immediately: Next.js 16.2.10 → 16.2.12 (fixes the
+  middleware/proxy-bypass advisory that would have neutered the new CSP
+  headers), sharp overridden to >=0.35.0, pip upgraded. Left open: torch
+  2.12.1 → 2.13.0 (PYSEC-2025-194) — big dependency, needs its own session;
+  `setuptools` stays <82 until then (torch pin).

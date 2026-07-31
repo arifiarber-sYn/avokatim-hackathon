@@ -47,6 +47,18 @@ export default function SecurityPage() {
           ))}
         </div>
 
+        <div className="bg-white rounded-2xl border border-amber-200 shadow-sm p-6 space-y-2">
+          <p className="text-2xl">🛡️</p>
+          <h2 className="font-semibold text-slate-900">{t.secVulnT}</h2>
+          <p className="text-sm text-slate-600 leading-relaxed">{t.secVulnB}</p>
+          <Link
+            href="/kontakti"
+            className="inline-block text-sm font-medium text-indigo-600 hover:text-indigo-800 underline"
+          >
+            {t.ftContact}
+          </Link>
+        </div>
+
         <div className="bg-slate-900 text-slate-200 rounded-2xl p-6 text-center space-y-3">
           <p className="text-sm leading-relaxed">{t.secFooterNote}</p>
           <div className="flex flex-wrap justify-center gap-4 text-sm">

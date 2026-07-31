@@ -8,7 +8,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import get_db
+from app.database import get_db, scope_session_to_tenant
 from app.models import Tenant, User
 from app.security import decode_token
 
@@ -31,9 +31,19 @@ async def get_current_user(
     user = await db.get(User, uuid.UUID(payload["sub"]))
     if user is None or not user.is_active:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "User not found or inactive")
+    # Immediate revocation (D-033): bumping users.token_version kills every
+    # token issued before the bump (password reset/change does this).
+    if payload.get("ver", 0) != user.token_version:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Session revoked — log in again")
     # The tenant claim must match the user's actual tenant.
     if payload.get("tenant") and payload["tenant"] != str(user.tenant_id):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token/tenant mismatch")
+
+    # RLS defense in depth (D-033): pin this DB session to the user's tenant
+    # so Postgres itself blocks cross-tenant rows even if a query forgets the
+    # tenant filter. Superadmins stay unscoped — /platform reads all tenants.
+    if not user.is_superadmin:
+        await scope_session_to_tenant(db, user.tenant_id)
 
     tenant = await db.get(Tenant, user.tenant_id)
     if tenant is not None and not user.is_superadmin:

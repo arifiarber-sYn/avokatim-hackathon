@@ -121,8 +121,14 @@ class User(Base, TimestampMixin):
     )
 
     # TOTP 2FA
-    totp_secret: Mapped[str | None] = mapped_column(String(64))
+    # Fernet-encrypted with an enc:v1: prefix (D-033) — needs room
+    totp_secret: Mapped[str | None] = mapped_column(String(255))
     totp_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    # Bumped to instantly invalidate every issued JWT for this user (D-033):
+    # tokens carry the version at issue time and deps.py compares on each
+    # request. Incremented on password reset/change.
+    token_version: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
     # Platform operator (cross-tenant admin panel); never set via API
     is_superadmin: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")

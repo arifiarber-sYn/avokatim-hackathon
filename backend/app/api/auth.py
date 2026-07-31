@@ -35,6 +35,8 @@ from app.security import (
     decode_token,
     hash_password,
     new_totp_secret,
+    protect_totp_secret,
+    reveal_totp_secret,
     password_fingerprint,
     totp_uri,
     verify_password,
@@ -167,7 +169,9 @@ async def register(body: RegisterRequest, request: Request, db: AsyncSession = D
         ip_address=request.client.host if request.client else None,
     )
     await db.commit()
-    return TokenResponse(access_token=create_access_token(user.id, tenant.id))
+    return TokenResponse(
+        access_token=create_access_token(user.id, tenant.id, token_version=user.token_version)
+    )
 
 
 @router.post("/signup", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
@@ -243,7 +247,9 @@ async def signup(
             f"Zyrë e re u regjistrua: {user.full_name} ({user.email}), "
             f"{profession_sq}, zyra '{tenant.name}'. Prova 1-vjeçare falas ka nisur.",
         )
-    return TokenResponse(access_token=create_access_token(user.id, tenant.id))
+    return TokenResponse(
+        access_token=create_access_token(user.id, tenant.id, token_version=user.token_version)
+    )
 
 
 @router.post("/verify-email")
@@ -323,6 +329,8 @@ async def reset_password(body: ResetPasswordRequest, db: AsyncSession = Depends(
         # Fingerprint mismatch = token already used or password since changed
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired link")
     user.password_hash = hash_password(body.password)
+    # a forgotten/compromised password revokes every outstanding session
+    user.token_version += 1
     await log_action(
         db, tenant_id=user.tenant_id, user_id=user.id, action="auth.password_reset"
     )
@@ -339,11 +347,19 @@ async def change_password(
     if not verify_password(body.current_password, user.password_hash):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Current password is wrong")
     user.password_hash = hash_password(body.new_password)
+    # revoke all sessions ("sign out everywhere"); hand this device a fresh
+    # token so the user is not logged out mid-action
+    user.token_version += 1
     await log_action(
         db, tenant_id=user.tenant_id, user_id=user.id, action="auth.password_changed"
     )
     await db.commit()
-    return {"changed": True}
+    return {
+        "changed": True,
+        "access_token": create_access_token(
+            user.id, user.tenant_id, token_version=user.token_version
+        ),
+    }
 
 
 @router.post("/accept-invite", response_model=TokenResponse)
@@ -375,7 +391,9 @@ async def accept_invite(body: AcceptInviteRequest, db: AsyncSession = Depends(ge
         db, tenant_id=user.tenant_id, user_id=user.id, action="auth.invite_accepted"
     )
     await db.commit()
-    return TokenResponse(access_token=create_access_token(user.id, user.tenant_id))
+    return TokenResponse(
+        access_token=create_access_token(user.id, user.tenant_id, token_version=user.token_version)
+    )
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -406,10 +424,14 @@ async def login(body: LoginRequest, request: Request, db: AsyncSession = Depends
 
     if user.totp_enabled:
         return TokenResponse(
-            access_token=create_access_token(user.id, user.tenant_id, pre_2fa=True),
+            access_token=create_access_token(
+                user.id, user.tenant_id, pre_2fa=True, token_version=user.token_version
+            ),
             requires_2fa=True,
         )
-    return TokenResponse(access_token=create_access_token(user.id, user.tenant_id))
+    return TokenResponse(
+        access_token=create_access_token(user.id, user.tenant_id, token_version=user.token_version)
+    )
 
 
 @router.post("/2fa/verify", response_model=TokenResponse)
@@ -427,15 +449,17 @@ async def verify_2fa(
     user = await db.get(User, uuid.UUID(payload["sub"]))
     if user is None or not user.totp_secret:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "2FA not configured")
-    if not verify_totp(user.totp_secret, body.code):
+    if not verify_totp(reveal_totp_secret(user.totp_secret), body.code):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid 2FA code")
-    return TokenResponse(access_token=create_access_token(user.id, user.tenant_id))
+    return TokenResponse(
+        access_token=create_access_token(user.id, user.tenant_id, token_version=user.token_version)
+    )
 
 
 @router.post("/2fa/setup", response_model=TwoFASetupResponse)
 async def setup_2fa(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     secret = new_totp_secret()
-    user.totp_secret = secret
+    user.totp_secret = protect_totp_secret(secret)
     user.totp_enabled = False
     await db.commit()
     return TwoFASetupResponse(secret=secret, otpauth_uri=totp_uri(secret, user.email))
@@ -447,7 +471,9 @@ async def enable_2fa(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    if not user.totp_secret or not verify_totp(user.totp_secret, body.code):
+    if not user.totp_secret or not verify_totp(
+        reveal_totp_secret(user.totp_secret), body.code
+    ):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid 2FA code")
     user.totp_enabled = True
     await log_action(db, tenant_id=user.tenant_id, user_id=user.id, action="auth.2fa_enabled")

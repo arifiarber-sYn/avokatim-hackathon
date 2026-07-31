@@ -19,6 +19,42 @@ router = APIRouter(tags=["documents"])
 
 MAX_UPLOAD_BYTES = 100 * 1024 * 1024
 
+# Upload allowlist (D-033): documents, images, text and common evidence
+# media — never executables or archives. The declared MIME is client-
+# controlled, so the file extension is checked as well.
+ALLOWED_MIME_TYPES = {
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/vnd.oasis.opendocument.text",
+    "application/vnd.oasis.opendocument.spreadsheet",
+    "application/rtf",
+    "text/plain",
+    "text/csv",
+    "text/markdown",
+    "message/rfc822",
+    "application/octet-stream",  # unknown — the extension check decides
+}
+ALLOWED_MIME_PREFIXES = ("image/", "audio/", "video/")
+ALLOWED_EXTENSIONS = {
+    "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "odt", "ods", "rtf",
+    "txt", "csv", "md", "eml",
+    "jpg", "jpeg", "png", "gif", "webp", "tif", "tiff", "heic", "bmp",
+    "mp3", "wav", "m4a", "ogg", "opus", "amr", "mp4", "mov", "webm", "mkv", "avi",
+}
+
+
+def upload_type_allowed(filename: str, content_type: str | None) -> bool:
+    mime = (content_type or "application/octet-stream").split(";")[0].strip().lower()
+    if mime not in ALLOWED_MIME_TYPES and not mime.startswith(ALLOWED_MIME_PREFIXES):
+        return False
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    return ext in ALLOWED_EXTENSIONS
+
 
 def _to_out(doc: Document) -> DocumentOut:
     out = DocumentOut.model_validate(doc)
@@ -58,6 +94,11 @@ async def upload_document(
     existing document. Text is extracted (OCR for scans) and indexed for
     search and AI analysis."""
     await get_owned_matter(db, user, matter_id)
+    if not upload_type_allowed(file.filename or "file", file.content_type):
+        raise HTTPException(
+            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            "File type not allowed — documents, images and audio/video only",
+        )
     content = await file.read()
     if len(content) > MAX_UPLOAD_BYTES:
         raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "File too large")

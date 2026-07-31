@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { apiDownload, apiGet, apiPatch, apiPost, apiPut, apiUpload } from "@/lib/api";
+import { apiDownload, apiGet, apiPatch, apiPost, apiPut, apiUpload, setToken } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
 import { Contact } from "@/lib/types";
@@ -1123,10 +1123,13 @@ function ChangePasswordForm() {
     setMessage("");
     setError("");
     try {
-      await apiPost("/auth/change-password", {
-        current_password: current,
-        new_password: next,
-      });
+      const res = await apiPost<{ changed: boolean; access_token?: string }>(
+        "/auth/change-password",
+        { current_password: current, new_password: next },
+      );
+      // the backend revokes all sessions on password change and hands this
+      // device a fresh token — store it so the user stays logged in here
+      if (res.access_token) setToken(res.access_token);
       setCurrent("");
       setNext("");
       setMessage("✓ " + t.passwordChanged);

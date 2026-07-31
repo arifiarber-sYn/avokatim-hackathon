@@ -17,9 +17,14 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # Database (docker-compose exposes Postgres on 127.0.0.1:5433)
+    # database_url is the OWNER role (avokatim) — used by Alembic migrations
+    # and admin scripts. The app itself connects as the non-superuser role in
+    # database_app_url so Row-Level Security applies (D-033); empty = fall
+    # back to database_url (dev/tests).
     database_url: str = (
         "postgresql+psycopg://avokatim:avokatim-dev-password@127.0.0.1:5433/avokatim"
     )
+    database_app_url: str = ""
     redis_url: str = "redis://127.0.0.1:6380/0"
 
     # Auth
@@ -154,6 +159,9 @@ class Settings(BaseSettings):
     whatsapp_token: str = ""
     whatsapp_phone_id: str = ""
     whatsapp_verify_token: str = ""
+    # Meta App Secret — when set, webhook POSTs must carry a valid
+    # X-Hub-Signature-256 (HMAC-SHA256 of the raw body)
+    whatsapp_app_secret: str = ""
     whatsapp_api_base: str = "https://graph.facebook.com/v21.0"
     whatsapp_daily_limit: int = 20
 

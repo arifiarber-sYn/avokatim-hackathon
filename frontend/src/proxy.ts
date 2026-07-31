@@ -21,6 +21,38 @@ export function proxy(request: NextRequest) {
   if (isPublicHost && proto === "https") {
     response.headers.set("Strict-Transport-Security", "max-age=31536000");
   }
+  if (isPublicHost) {
+    // Security headers (D-033). CSP notes: Next.js hydration needs inline
+    // scripts (no nonce infra yet), so 'unsafe-inline' stays for now — the
+    // real win is locking script/connect origins so an injected payload
+    // cannot load or exfiltrate to an attacker domain. stats.avokatiim.ai
+    // is the self-hosted Umami; wss:/blob: cover LiveKit SOS calls and
+    // voice recording; data:/blob: images cover lawyer photos and previews.
+    response.headers.set(
+      "Content-Security-Policy",
+      [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' https://stats.avokatiim.ai",
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data: blob:",
+        "font-src 'self' data:",
+        "connect-src 'self' https://stats.avokatiim.ai wss: blob:",
+        "media-src 'self' blob: data:",
+        "worker-src 'self' blob:",
+        "frame-ancestors 'none'",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+      ].join("; "),
+    );
+    response.headers.set("X-Content-Type-Options", "nosniff");
+    response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+    response.headers.set(
+      "Permissions-Policy",
+      // camera/mic stay first-party — the SOS video call needs them
+      "camera=(self), microphone=(self), geolocation=(), payment=(), usb=()",
+    );
+  }
   return response;
 }
 
