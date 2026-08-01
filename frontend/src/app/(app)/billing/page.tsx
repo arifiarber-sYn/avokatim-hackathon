@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiDelete, apiDownload, apiGet, apiPost, apiPut, getToken } from "@/lib/api";
+import { clientCountry } from "@/lib/country";
 import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
 import {
@@ -435,6 +436,113 @@ interface RvgVvItem {
   name: Record<string, string>;
 }
 
+interface CostRiskInstance {
+  code: string;
+  name: Record<string, string>;
+  court_fee: string;
+  own_lawyer: { total: string };
+  total_if_lose: string;
+  cumulative_if_lose: string;
+}
+
+// Kosovo litigation cost-risk card (B1 parity with the DE
+// Prozesskostenrechner): UA 03/2025 court fees + OAK tariff, loser pays.
+function CostRiskCard() {
+  const { t, locale } = useI18n();
+  const [tracks, setTracks] = useState<{ code: string; name: Record<string, string> }[]>([]);
+  const [track, setTrack] = useState("civil");
+  const [value, setValue] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState<{
+    instances: CostRiskInstance[];
+    total_risk: string;
+    court_fee_advance: string;
+    legal_basis: string;
+  } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/public/tools/process-cost")
+      .then((res) => (res.ok ? res.json() : { tracks: [] }))
+      .then((data) => setTracks(data.tracks || []))
+      .catch(() => setTracks([]));
+  }, []);
+
+  const label = (name: Record<string, string>) => name[locale] || name.sq || name.en;
+
+  async function calc(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError("");
+    setResult(null);
+    try {
+      setResult(
+        await apiPost("/fee-calc/process-cost", {
+          value_eur: Number(value),
+          track,
+        })
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Card className="p-4 space-y-3">
+      <p className="text-sm font-medium text-slate-700">{t.kstTitle}</p>
+      <form onSubmit={calc} className="flex gap-3 items-end flex-wrap">
+        <div className="w-56">
+          <Label>{t.kstTrack}</Label>
+          <Select value={track} onChange={(e) => { setTrack(e.target.value); setResult(null); }}>
+            {(tracks.length ? tracks : [{ code: "civil", name: { sq: "Kontest civil" } }]).map(
+              (tr) => (
+                <option key={tr.code} value={tr.code}>{label(tr.name)}</option>
+              )
+            )}
+          </Select>
+        </div>
+        <div className="w-40">
+          <Label>{t.rvgValue}</Label>
+          <Input
+            type="number"
+            min="1"
+            step="1"
+            value={value}
+            onChange={(e) => { setValue(e.target.value); setResult(null); }}
+          />
+        </div>
+        <Button type="submit" disabled={busy || !value}>
+          {busy ? t.loading : t.pkrCalc}
+        </Button>
+      </form>
+      <ErrorNote message={error} />
+      {result && (
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-1.5">
+          {result.instances.map((inst) => (
+            <div key={inst.code} className="flex justify-between text-sm text-slate-600">
+              <span>
+                {label(inst.name)}{" "}
+                <span className="text-slate-400">
+                  ({t.pkrCourtFee} {Number(inst.court_fee).toFixed(0)} € · {t.pkrOwnLawyer}{" "}
+                  {Number(inst.own_lawyer.total).toFixed(0)} €)
+                </span>
+              </span>
+              <span className="font-mono">{Number(inst.total_if_lose).toFixed(2)} €</span>
+            </div>
+          ))}
+          <div className="flex justify-between text-sm font-semibold text-slate-800 border-t border-slate-200 pt-1.5">
+            <span>{t.pkrTotalRisk}</span>
+            <span className="font-mono">{Number(result.total_risk).toFixed(2)} €</span>
+          </div>
+          <p className="text-xs text-slate-400">{result.legal_basis}</p>
+        </div>
+      )}
+    </Card>
+  );
+}
+
 interface RvgLine {
   code: string;
   vv: string;
@@ -471,6 +579,9 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
 
   // RVG calculator (only German offices — the catalogue endpoint 404s elsewhere)
   const [rvgItems, setRvgItems] = useState<RvgVvItem[]>([]);
+  // Kosovo cost-risk card (host-scoped; resolved after mount for SSR parity)
+  const [isXK, setIsXK] = useState(false);
+  useEffect(() => setIsXK(clientCountry() === "XK"), []);
   const [rvgOpen, setRvgOpen] = useState(false);
   const [rvgValue, setRvgValue] = useState("");
   const [rvgSelected, setRvgSelected] = useState<string[]>([
@@ -835,6 +946,8 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
       </Card>
 
       {rvgItems.length > 0 && <DatevExportCard />}
+
+      {isXK && <CostRiskCard />}
 
       {invoices === null ? (
         <Spinner />

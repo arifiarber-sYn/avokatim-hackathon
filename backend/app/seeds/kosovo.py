@@ -1278,3 +1278,145 @@ XK_FEE_TARIFF = [
         "notes": "Sipas nr. tarifor 6, ose deri në 1% të vlerës së tregut të pasurisë.",
     },
 ]
+
+
+# ---------------------------------------------------------------------------
+# Court fees (taksat gjyqësore) per UA Nr. 03/2025 of the KGJK, in force
+# since 2026-01-01 (replaces the 2017 schedule; verified against press
+# coverage of the instruction — Betimi për Drejtësi / KosovaPress 2026-01,
+# incl. the caps reported by the Bar). Two tracks: civil claims of
+# measurable value in the Basic Courts and claims before the Commercial
+# Court. Appeals and extraordinary remedies cost 50% of the initial fee.
+# Data, not code — the cost-risk service only computes over this table.
+XK_COURT_FEE_TABLE = {
+    "legal_basis": (
+        "UA Nr. 03/2025 i KGJK-së për Unifikimin e Taksave Gjyqësore "
+        "(në fuqi nga 01.01.2026)"
+    ),
+    "tracks": {
+        "civil": {
+            "name": {
+                "sq": "Kontest civil (Gjykata Themelore)",
+                "en": "Civil dispute (Basic Court)",
+                "de": "Zivilstreit (Amtsgericht-Äquivalent)",
+                "zh": "民事纠纷（基础法院）",
+                "sr": "Građanski spor (Osnovni sud)",
+                "tr": "Hukuk uyuşmazlığı (Temel Mahkeme)",
+                "bs": "Građanski spor (Osnovni sud)",
+            },
+            # (from_exclusive, to_inclusive, fee) — value bands in EUR
+            "bands": [
+                ("0", "5000", "60.00"),
+                ("5000", "25000", "150.00"),
+                ("25000", "50000", "200.00"),
+                ("50000", "100000", "300.00"),
+            ],
+            # Above the last band: 0.5% of the value, capped (cap per UA;
+            # 0.5% continues the pre-2026 methodology and reproduces the
+            # reported maximum exactly: 0.5% × 500k = 2,500 €).
+            "above": {"percentage": "0.5", "cap": "2500.00"},
+        },
+        "commercial": {
+            "name": {
+                "sq": "Kontest komercial (Gjykata Komerciale)",
+                "en": "Commercial dispute (Commercial Court)",
+                "de": "Handelsstreit (Handelsgericht)",
+                "zh": "商事纠纷（商事法院）",
+                "sr": "Privredni spor (Privredni sud)",
+                "tr": "Ticari uyuşmazlık (Ticaret Mahkemesi)",
+                "bs": "Privredni spor (Privredni sud)",
+            },
+            "bands": [
+                ("0", "25000", "200.00"),
+                ("25000", "50000", "300.00"),
+                ("50000", "100000", "500.00"),
+                ("100000", "500000", "1000.00"),
+            ],
+            "above": {"percentage": "0.5", "cap": "10000.00"},
+        },
+    },
+    # Ankesa and extraordinary remedies (revizioni etc.): 50% of the
+    # first-instance fee (UA 03/2025).
+    "appeal_pct": "0.5",
+}
+
+# Per-instance model for the Kosovo litigation cost-risk calculator
+# (parity with DE_PROZESSKOSTEN_INSTANCES, D-040). Lawyer work per
+# instance follows the OAK tariff: one submission (padi/ankesë/revizion,
+# nr. tarifor 6) plus hearings (nr. tarifor 7) — hearings are typical
+# only in the first instance; appeal and revision are usually decided on
+# the papers. The 30% paushall of the tariff applies on top.
+XK_COST_RISK_INSTANCES = [
+    {
+        "code": "shkalla_e_pare",
+        "court_note": "Taksa e padisë sipas vlerës së kontestit",
+        "court_rate": "1.0",
+        "name": {
+            "sq": "Shkalla e parë",
+            "en": "First instance",
+            "de": "Erste Instanz",
+            "zh": "一审",
+            "sr": "Prvi stepen",
+            "tr": "İlk derece",
+            "bs": "Prvi stepen",
+        },
+        "submission_label": {
+            "sq": "Përpilimi i padisë (nr. tarifor 6)",
+            "en": "Drafting the claim (tariff no. 6)",
+            "de": "Klageschrift (Tarif Nr. 6)",
+            "zh": "起草诉状（第6号资费）",
+            "sr": "Sastavljanje tužbe (tarifni br. 6)",
+            "tr": "Dava dilekçesi (tarife no. 6)",
+            "bs": "Sastavljanje tužbe (tarifni br. 6)",
+        },
+        "hearings": 2,
+    },
+    {
+        "code": "apeli",
+        "court_note": "Ankesa: 50% e taksës së padisë",
+        "court_rate": "0.5",
+        "name": {
+            "sq": "Apeli (shkalla e dytë)",
+            "en": "Appeal (second instance)",
+            "de": "Berufung (2. Instanz)",
+            "zh": "上诉（二审）",
+            "sr": "Žalba (drugi stepen)",
+            "tr": "İstinaf (ikinci derece)",
+            "bs": "Žalba (drugi stepen)",
+        },
+        "submission_label": {
+            "sq": "Përpilimi i ankesës (nr. tarifor 6)",
+            "en": "Drafting the appeal (tariff no. 6)",
+            "de": "Berufungsschrift (Tarif Nr. 6)",
+            "zh": "起草上诉状（第6号资费）",
+            "sr": "Sastavljanje žalbe (tarifni br. 6)",
+            "tr": "İstinaf dilekçesi (tarife no. 6)",
+            "bs": "Sastavljanje žalbe (tarifni br. 6)",
+        },
+        "hearings": 0,
+    },
+    {
+        "code": "revizioni",
+        "court_note": "Revizioni: 50% e taksës së padisë (vetëm mbi 3.000 €, neni 211 i LPK-së)",
+        "court_rate": "0.5",
+        "name": {
+            "sq": "Revizioni (Gjykata Supreme)",
+            "en": "Revision (Supreme Court)",
+            "de": "Revision (Oberster Gerichtshof)",
+            "zh": "再审（最高法院）",
+            "sr": "Revizija (Vrhovni sud)",
+            "tr": "Temyiz (Yüksek Mahkeme)",
+            "bs": "Revizija (Vrhovni sud)",
+        },
+        "submission_label": {
+            "sq": "Përpilimi i revizionit (nr. tarifor 6)",
+            "en": "Drafting the revision (tariff no. 6)",
+            "de": "Revisionsschrift (Tarif Nr. 6)",
+            "zh": "起草再审申请（第6号资费）",
+            "sr": "Sastavljanje revizije (tarifni br. 6)",
+            "tr": "Temyiz dilekçesi (tarife no. 6)",
+            "bs": "Sastavljanje revizije (tarifni br. 6)",
+        },
+        "hearings": 0,
+    },
+]

@@ -10,6 +10,30 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01u — D-047 B1: Kalkulatori i kostos gjyqësore për Kosovën (Cursor / Fable 5)
+
+- Done: seed `XK_COURT_FEE_TABLE` (UA Nr. 03/2025 i KGJK-së, në fuqi nga
+  01.01.2026 — brezat civilë 60/150/200/300 € + 0,5% cap 2.500 €;
+  komercialë 200/300/500/1.000 € + 0,5% cap 10.000 €; ankesa/revizioni
+  50%) dhe `XK_COST_RISK_INSTANCES` (shkalla I me 2 seanca, apeli,
+  revizioni). Servis i ri `xk_cost_risk.py`: taksë gjykate + të dy
+  avokatët sipas Tarifës së OAK (nr. 6/7, paushalli 30%, TVSH 18) —
+  humbësi-paguan (nenet 449/452 LPK).
+- Done: `/fee-calc/process-cost` tani per-juridiksion (XK → xk_cost_risk,
+  DE i pandryshuar); `/public/tools/process-cost` per-host me `track`
+  civil/komercial. Faqe publike e re `/kostoja` (host XK, SEO shqip,
+  layout me metadata) + kartë te billing → faturat për zyrat XK;
+  çelësat `kst*` në 7 gjuhë; lidhje në footer + dropdown vegla; sitemap
+  `only: XK`.
+- Verified: 11 teste të reja (breza, cap, matematika e instancave,
+  përzgjedhja, fallback i track-ut) + testet DE të pandryshuara; live:
+  POST publik XK (8.000 € → taksa 150 €, avokati 368,16 €), meta me
+  tracks, DE POST i pandryshuar, /kostoja 200.
+- Shënim burimi: PDF zyrtar i UA 03/2025 s'gjendet online (kalkulatori i
+  vetë KGJK-së ende me vlerat 2017); brezat u verifikuan nga shtypi
+  juridik — dokumentuar te D-047.
+- Left open / next: B2 — udhëzuesit publikë shqip (/udhezues).
+
 ## 2026-08-01t — D-046 Faza A: Auto-verifikim BRAV për avokatët gjermanë (Cursor / Fable 5)
 
 - Done: klient i ri `app/services/brav.py` për portalin JSF bravsearch.bea-brak.de

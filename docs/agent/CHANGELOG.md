@@ -3,6 +3,33 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Kosovo litigation cost calculator (D-047, B1)
+
+- New: `XK_COURT_FEE_TABLE` + `XK_COST_RISK_INSTANCES` in
+  `backend/app/seeds/kosovo.py` — court fees per UA Nr. 03/2025 of the
+  KGJK (in force 2026-01-01), civil + commercial tracks, appeal and
+  revision at 50%; sourcing caveat documented in D-047.
+- New: `backend/app/services/xk_cost_risk.py` — per-instance cost risk
+  (court fee + both lawyers per OAK tariff nr. 6/7 + 30% paushall +
+  VAT 18), loser-pays per nenet 449/452 LPK; mirrors the DE cost_risk
+  response shape.
+- Changed: `POST /fee-calc/process-cost` resolves per tenant country
+  (XK → xk_cost_risk, DE unchanged); `GET/POST /public/tools/process-cost`
+  resolves per host and accepts `track` (civil|commercial) with
+  localized track names in the meta response.
+- New (frontend): public page `/kostoja` (XK host only, Albanian SEO
+  metadata via layout, uses shared pkr* labels + new `kst*` keys ×7
+  locales); cost-risk card on billing → invoices for XK offices; links
+  in the public footer and tools dropdown (XK only); sitemap entry
+  `only: XK`.
+- Tests: `tests/test_xk_cost_risk.py` (11). Live: public XK POST/meta,
+  DE POST unchanged, /kostoja 200.
+- Files: `backend/app/seeds/kosovo.py`, `backend/app/services/xk_cost_risk.py`,
+  `backend/app/api/{billing,public_tools}.py`, `frontend/src/app/kostoja/*`,
+  `frontend/src/app/(app)/billing/page.tsx`, `frontend/src/components/
+  {public-footer,public-shell}.tsx`, `frontend/src/app/sitemap.ts`,
+  `frontend/src/lib/dictionaries.ts`, `backend/tests/test_xk_cost_risk.py`.
+
 ## 2026-08-01 — BRAV auto-verification for German lawyers (D-046, phase A)
 
 - New: `backend/app/services/brav.py` — client for the official BRAV

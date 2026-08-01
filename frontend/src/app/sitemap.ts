@@ -18,6 +18,7 @@ const ROUTES: { path: string; priority: number; only?: Country }[] = [
   { path: "/afatet", priority: 0.7 },
   { path: "/rvg", priority: 0.7, only: "DE" },
   { path: "/ratgeber", priority: 0.7, only: "DE" },
+  { path: "/kostoja", priority: 0.7, only: "XK" },
   { path: "/dokumentet", priority: 0.7 },
   { path: "/regjistrohu", priority: 0.6 },
   { path: "/kontakti", priority: 0.5 },

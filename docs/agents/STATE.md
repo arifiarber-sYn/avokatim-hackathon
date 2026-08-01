@@ -484,6 +484,15 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   seeded from the Kosovo Bar tariff (in force 01.01.2015) in
   `seeds/kosovo.py::XK_FEE_TARIFF`; `GET /fee-tariff?jurisdiction_code=XK`;
   invoice-form picker prefills description + price. Amounts are editable data.
+- **XK litigation cost calculator** (2026-08-01, D-047): court fees per
+  UA Nr. 03/2025 of the KGJK (in force 01.01.2026) as data
+  (`seeds/kosovo.py::XK_COURT_FEE_TABLE`, civil + commercial tracks,
+  appeal/revision 50%; >band rule 0.5% capped 2,500/10,000 € — sourcing
+  caveat in D-047); `services/xk_cost_risk.py` = per-instance risk
+  (court fee + both lawyers per OAK nr. 6/7 + 30% paushall + VAT 18,
+  loser-pays nenet 449/452 LPK). `/fee-calc/process-cost` resolves per
+  tenant country, `/public/tools/process-cost` per host (`track` param);
+  public page `/kostoja` (XK host, `kst*` keys ×7) + billing card.
 - **.docx export** (2026-07-09): `POST /templates/render-docx` via
   `app/services/docx_render.py` (python-docx; court-filing layout); "Shkarko
   .docx" button next to the PDF/save actions on the templates page.

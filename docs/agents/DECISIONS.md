@@ -1135,3 +1135,29 @@
   client degrades to None and verification falls back to manual, never
   blocking signup; if BRAV ever changes its JSF markup the fixtures in
   `tests/fixtures/brav_*.xml` and `_CARD_RE` must be re-recorded.
+
+## D-047: Kosovo litigation cost calculator over UA 03/2025 (2026-08-01)
+
+- Context: DE has a Prozesskostenrechner (D-040); Kosovo had nothing
+  although its court fees just changed drastically — the KGJK's UA
+  Nr. 03/2025 on the unification of court fees is in force since
+  2026-01-01 (fees up 200–900%), which makes "sa do të më kushtojë?"
+  a high-value public question.
+- Decision: same data-not-code pattern as DE. `XK_COURT_FEE_TABLE` in
+  `seeds/kosovo.py` (civil + commercial tracks, appeal/extraordinary =
+  50%), `services/xk_cost_risk.py` computes per instance (court fee +
+  both lawyers per the OAK tariff nr. 6/7 + 30% paushall + VAT 18,
+  loser-pays per nenet 449/452 LPK). One shared endpoint pair, resolved
+  per jurisdiction: `/fee-calc/process-cost` by tenant country,
+  `/public/tools/process-cost` by host. Public page `/kostoja` (XK host
+  only, Albanian SEO), billing card for XK offices.
+- Sourcing caveat: the KGJK has not published the UA 03/2025 PDF at a
+  stable URL (its own online calculator still serves the 2017 values).
+  Bands were cross-verified from detailed legal-press coverage
+  (Betimi për Drejtësi, KosovaPress, Bar commentary). The >100k€ civil /
+  >500k€ commercial rule is encoded as 0.5% capped at 2,500/10,000 €
+  (caps are reported verbatim; 0.5% continues the 2017 methodology and
+  reproduces both caps exactly). When the official PDF surfaces, verify
+  and adjust the seed.
+- Consequences: fee updates are seed edits, no code change; the DE
+  calculator behavior is unchanged (regression-tested).

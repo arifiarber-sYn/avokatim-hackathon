@@ -497,7 +497,8 @@ async def rvg_calc(
 class ProcessCostIn(BaseModel):
     value_eur: Decimal = Field(gt=0, le=Decimal("100000000"))
     instances: list[str] | None = Field(default=None, max_length=3)
-    vat_rate: int = Field(default=19, ge=0, le=30)
+    vat_rate: int | None = Field(default=None, ge=0, le=30)
+    track: str = Field(default="civil", max_length=16)  # XK: civil|commercial
 
 
 @router.post("/fee-calc/process-cost")
@@ -506,12 +507,24 @@ async def process_cost_calc(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Litigation cost risk per instance (RVG + GKG, § 91 ZPO model) —
-    for advising clients on whether a lawsuit is worth the exposure."""
+    """Litigation cost risk per instance — DE: RVG + GKG (§ 91 ZPO model);
+    XK: Tarifa e OAK + UA 03/2025 (loser pays per LPK). For advising
+    clients on whether a lawsuit is worth the exposure."""
+    tenant = await db.get(Tenant, user.tenant_id)
+    if tenant is not None and tenant.country == "XK":
+        from app.services import xk_cost_risk
+
+        return xk_cost_risk.cost_risk(
+            body.value_eur, track=body.track, instance_codes=body.instances,
+            vat_rate=body.vat_rate if body.vat_rate is not None else 18,
+        )
     await _require_de_tenant(db, user)
     from app.services import prozesskosten
 
-    return prozesskosten.cost_risk(body.value_eur, body.instances, vat_rate=body.vat_rate)
+    return prozesskosten.cost_risk(
+        body.value_eur, body.instances,
+        vat_rate=body.vat_rate if body.vat_rate is not None else 19,
+    )
 
 
 @router.get("/invoices", response_model=list[InvoiceOut])

@@ -134,17 +134,30 @@ async def public_fee_calc(body: FeeCalcIn, request: Request):
     return result
 
 
-# ---------- Prozesskostenrechner (DE host, D-040) ----------
+# ---------- litigation cost calculator (DE host D-040, XK host B1) ----------
 
 
 class ProcessCostIn(BaseModel):
     value_eur: float = Field(gt=0, le=100_000_000)
     instances: list[str] | None = Field(default=None, max_length=3)
+    track: str = Field(default="civil", max_length=16)  # XK: civil|commercial
 
 
 @router.get("/process-cost")
 async def public_process_cost_meta(request: Request):
-    """Instances the litigation cost-risk tool covers (localized names)."""
+    """Instances/tracks the litigation cost-risk tool covers, per host."""
+    country = country_from_request(request)
+    if country == "XK":
+        from app.seeds.kosovo import XK_COST_RISK_INSTANCES, XK_COURT_FEE_TABLE
+
+        return {
+            "instances": XK_COST_RISK_INSTANCES,
+            "tracks": [
+                {"code": code, "name": track["name"]}
+                for code, track in XK_COURT_FEE_TABLE["tracks"].items()
+            ],
+            "legal_basis": XK_COURT_FEE_TABLE["legal_basis"],
+        }
     _require_de(request)
     from app.seeds.germany import DE_GKG_TABLE, DE_PROZESSKOSTEN_INSTANCES
 
@@ -156,15 +169,25 @@ async def public_process_cost_meta(request: Request):
 
 @router.post("/process-cost")
 async def public_process_cost(body: ProcessCostIn, request: Request):
-    """Litigation cost risk per instance (RVG + GKG, § 91 ZPO model).
-    Informative only, not legal advice."""
-    _require_de(request)
+    """Litigation cost risk per instance — DE: RVG + GKG (§ 91 ZPO); XK:
+    Tarifa e OAK + UA 03/2025 (loser pays, LPK). Informative only."""
+    country = country_from_request(request)
+    if country not in ("DE", "XK"):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Not available")
     await _rate_limit("public_process_cost", _ip(request), limit=60, window_seconds=3600)
     from decimal import Decimal
 
-    from app.services import prozesskosten
+    if country == "XK":
+        from app.services import xk_cost_risk
 
-    result = prozesskosten.cost_risk(Decimal(str(body.value_eur)), body.instances)
+        result = xk_cost_risk.cost_risk(
+            Decimal(str(body.value_eur)), track=body.track,
+            instance_codes=body.instances,
+        )
+    else:
+        from app.services import prozesskosten
+
+        result = prozesskosten.cost_risk(Decimal(str(body.value_eur)), body.instances)
     result["estimate"] = True
     return result
 
