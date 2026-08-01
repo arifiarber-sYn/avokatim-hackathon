@@ -1,7 +1,8 @@
 import uuid
-from datetime import date
+from datetime import UTC, date, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy import func, or_, select, true
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -416,3 +417,151 @@ async def online_verfahren_export(
     )
     await db.commit()
     return payload
+
+
+# ---------- Rechtsschutzversicherung / Deckungsanfrage (DE, D-045) ----------
+
+INSURANCE_STATUSES = ("angefragt", "bestaetigt", "abgelehnt")
+
+
+class DeckungAnfrageIn(BaseModel):
+    insurer_code: str
+    policy_number: str = ""
+    dispute_subject: str = ""
+    claim_value: str = ""
+    facts: str = ""
+
+
+class InsuranceStatusIn(BaseModel):
+    # None clears the tracking (e.g. request created by mistake)
+    status: str | None = None
+
+
+@router.get("/{matter_id}/deckung")
+async def deckung_info(
+    matter_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Coverage-request state of the matter + the insurer directory the
+    one-click Deckungsanfrage can address."""
+    from app.models import DocumentTemplate
+    from app.seeds.germany import DE_INSURERS, INSURANCE_FOLLOWUP_DAYS
+
+    matter = await _require_de_matter(db, user, matter_id)
+    followup_due = False
+    if matter.insurance_status == "angefragt" and matter.insurance_requested_at:
+        age = datetime.now(UTC) - matter.insurance_requested_at
+        followup_due = age.days >= INSURANCE_FOLLOWUP_DAYS
+    tpl = (
+        await db.execute(
+            select(DocumentTemplate).where(
+                DocumentTemplate.code == "general.deckungsanfrage",
+                DocumentTemplate.tenant_id.is_(None),
+                DocumentTemplate.jurisdiction_id == matter.jurisdiction_id,
+            )
+        )
+    ).scalar_one_or_none()
+    return {
+        "insurer_code": matter.insurer_code,
+        "insurance_status": matter.insurance_status,
+        "insurance_requested_at": matter.insurance_requested_at,
+        "followup_due": followup_due,
+        "followup_days": INSURANCE_FOLLOWUP_DAYS,
+        "template_id": str(tpl.id) if tpl else None,
+        "insurers": DE_INSURERS,
+    }
+
+
+@router.post("/{matter_id}/deckung/anfrage", status_code=201)
+async def deckung_anfrage(
+    matter_id: uuid.UUID,
+    body: DeckungAnfrageIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """One-click Deckungsanfrage: render the coverage-request letter into the
+    matter as a PDF and start tracking the insurer's answer. The letter is
+    filed as a draft — the lawyer sends it (email/beA) themselves."""
+    from app.api.templates import _matter_variables, _render, file_content_as_pdf
+    from app.models import DocumentTemplate
+    from app.seeds.germany import DE_INSURERS
+
+    matter = await _require_de_matter(db, user, matter_id)
+    insurer = next((i for i in DE_INSURERS if i["code"] == body.insurer_code), None)
+    if insurer is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Unknown insurer")
+    template = (
+        await db.execute(
+            select(DocumentTemplate).where(
+                DocumentTemplate.code == "general.deckungsanfrage",
+                DocumentTemplate.tenant_id.is_(None),
+                DocumentTemplate.jurisdiction_id == matter.jurisdiction_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if template is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Deckungsanfrage template not seeded")
+
+    variables = await _matter_variables(db, user, matter)
+    variables["insurer_name"] = insurer["name"]
+    variables.update(
+        {
+            k: v
+            for k, v in {
+                "policy_number": body.policy_number,
+                "dispute_subject": body.dispute_subject or matter.title,
+                "claim_value": body.claim_value,
+                "facts": body.facts or (matter.description or ""),
+            }.items()
+            if v
+        }
+    )
+    content, _missing = _render(template, variables)
+    doc = await file_content_as_pdf(
+        db, user, matter, content,
+        filename=f"Deckungsanfrage {insurer['name']} - {matter.reference}.pdf",
+    )
+    matter.insurer_code = insurer["code"]
+    matter.insurance_status = "angefragt"
+    matter.insurance_requested_at = datetime.now(UTC)
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id,
+        action="matter.deckungsanfrage", entity_type="matter", entity_id=str(matter.id),
+        details={"insurer": insurer["code"], "document_id": str(doc.id)},
+    )
+    await db.commit()
+    return {
+        "document_id": str(doc.id),
+        "filename": doc.filename,
+        "insurer": insurer,
+        "insurance_status": matter.insurance_status,
+    }
+
+
+@router.post("/{matter_id}/deckung/status")
+async def deckung_set_status(
+    matter_id: uuid.UUID,
+    body: InsuranceStatusIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Record the insurer's answer (bestätigt/abgelehnt) or reset tracking."""
+    matter = await _require_de_matter(db, user, matter_id)
+    if body.status is not None and body.status not in INSURANCE_STATUSES:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid insurance status")
+    matter.insurance_status = body.status
+    if body.status is None:
+        matter.insurer_code = None
+        matter.insurance_requested_at = None
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id,
+        action="matter.insurance_status", entity_type="matter", entity_id=str(matter.id),
+        details={"status": body.status},
+    )
+    await db.commit()
+    return {
+        "insurer_code": matter.insurer_code,
+        "insurance_status": matter.insurance_status,
+        "insurance_requested_at": matter.insurance_requested_at,
+    }

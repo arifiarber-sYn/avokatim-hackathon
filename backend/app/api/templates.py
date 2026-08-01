@@ -232,37 +232,21 @@ _DOC_PAGE = """<!DOCTYPE html>
 </style></head><body>{content}</body></html>"""
 
 
-@router.post("/render-to-matter", response_model=DocumentOut, status_code=201)
-async def render_to_matter(
-    body: RenderToMatterIn,
-    user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """Render (or take the lawyer's edited text) and file it into the matter
-    as a PDF document — versioned, searchable and shareable like any upload."""
+async def file_content_as_pdf(
+    db: AsyncSession,
+    user: User,
+    matter: Matter,
+    content: str,
+    filename: str,
+    *,
+    ai_generated: bool = False,
+) -> Document:
+    """Turn rendered text into a PDF and file it into the matter — the shared
+    tail of render-to-matter and one-click letters (e.g. Deckungsanfrage)."""
     from weasyprint import HTML
-
-    template = await db.get(DocumentTemplate, body.template_id)
-    if template is None or (
-        template.tenant_id is not None and template.tenant_id != user.tenant_id
-    ):
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Template not found")
-    if body.matter_id is None:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "matter_id is required")
-    matter = await get_owned_matter(db, user, body.matter_id)
-
-    if body.content:
-        content = body.content
-    else:
-        variables = await _matter_variables(db, user, matter)
-        variables.update({k: v for k, v in body.variables.items() if v})
-        content, _ = _render(template, variables)
 
     pdf = HTML(string=_DOC_PAGE.format(content=html.escape(content))).write_pdf()
     rel_path, sha, encrypted = storage.save_file(pdf, user.tenant_id)
-
-    name = template.name.get("sq") or template.code
-    filename = f"{name} - {matter.reference}.pdf"
     doc = Document(
         tenant_id=user.tenant_id,
         matter_id=matter.id,
@@ -279,10 +263,46 @@ async def render_to_matter(
         uploaded_by_id=user.id,
         text_content=content,
         ocr_status="none",
+        # D-044: AI-assisted drafts need explicit human review before they
+        # can be shared with the client or sent for signature
+        ai_generated=ai_generated,
     )
     db.add(doc)
     await db.flush()
     await rag.index_document_chunks(db, doc)
+    return doc
+
+
+@router.post("/render-to-matter", response_model=DocumentOut, status_code=201)
+async def render_to_matter(
+    body: RenderToMatterIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Render (or take the lawyer's edited text) and file it into the matter
+    as a PDF document — versioned, searchable and shareable like any upload."""
+    template = await db.get(DocumentTemplate, body.template_id)
+    if template is None or (
+        template.tenant_id is not None and template.tenant_id != user.tenant_id
+    ):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Template not found")
+    if body.matter_id is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "matter_id is required")
+    matter = await get_owned_matter(db, user, body.matter_id)
+
+    if body.content:
+        content = body.content
+    else:
+        variables = await _matter_variables(db, user, matter)
+        variables.update({k: v for k, v in body.variables.items() if v})
+        content, _ = _render(template, variables)
+
+    name = template.name.get("sq") or template.code
+    doc = await file_content_as_pdf(
+        db, user, matter, content,
+        filename=f"{name} - {matter.reference}.pdf",
+        ai_generated=body.ai_generated,
+    )
     await log_action(
         db, tenant_id=user.tenant_id, user_id=user.id, action="template.render_to_matter",
         entity_type="document", entity_id=str(doc.id),

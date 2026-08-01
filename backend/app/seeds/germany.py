@@ -528,6 +528,30 @@ OV_MAX_VALUE = 10_000  # EUR — Amtsgericht ceiling of the pilot
 OV_PORTAL_URL = "https://service.justiz.de/klagen-ohne-anwalt"
 
 
+# Major German legal expense insurers (Rechtsschutzversicherer) the office
+# sends Deckungsanfragen to (D-045). Data, not code — the `email` is the
+# public service address; verify it before first use in production, insurers
+# occasionally move coverage intake to portals.
+DE_INSURERS = [
+    {"code": "arag", "name": "ARAG SE", "email": "service@arag.de", "website": "https://www.arag.de"},
+    {"code": "allianz", "name": "Allianz Versicherungs-AG", "email": "service@allianz.de", "website": "https://www.allianz.de"},
+    {"code": "advocard", "name": "ADVOCARD Rechtsschutzversicherung AG", "email": "service@advocard.de", "website": "https://www.advocard.de"},
+    {"code": "roland", "name": "ROLAND Rechtsschutz-Versicherungs-AG", "email": "service@roland-rechtsschutz.de", "website": "https://www.roland-rechtsschutz.de"},
+    {"code": "oerag", "name": "ÖRAG Rechtsschutzversicherungs-AG", "email": "service@oerag.de", "website": "https://www.oerag.de"},
+    {"code": "devk", "name": "DEVK Rechtsschutz-Versicherungs-AG", "email": "info@devk.de", "website": "https://www.devk.de"},
+    {"code": "huk", "name": "HUK-COBURG Rechtsschutzversicherung AG", "email": "info@huk-coburg.de", "website": "https://www.huk.de"},
+    {"code": "ruv", "name": "R+V Allgemeine Versicherung AG (Rechtsschutz)", "email": "ruv@ruv.de", "website": "https://www.ruv.de"},
+    {"code": "adac", "name": "ADAC Rechtsschutz Versicherungs-AG", "email": "rechtsschutz@adac.de", "website": "https://www.adac.de"},
+    {"code": "auxilia", "name": "AUXILIA Rechtsschutz-Versicherungs-AG", "email": "service@auxilia.de", "website": "https://www.auxilia.de"},
+    {"code": "wgv", "name": "WGV-Versicherung AG (Rechtsschutz)", "email": "info@wgv.de", "website": "https://www.wgv.de"},
+    {"code": "dmb", "name": "DMB Rechtsschutz-Versicherung AG", "email": "info@dmb-rechtsschutz.de", "website": "https://www.dmb-rechtsschutz.de"},
+]
+
+# How long a Deckungsanfrage may sit unanswered before the UI nudges the
+# lawyer to follow up with the insurer.
+INSURANCE_FOLLOWUP_DAYS = 14
+
+
 # Value-fee items (Nr. 3100 etc.) depend on the Gegenstandswert; the amounts
 # here are the fixed statutory anchors a solo lawyer reaches for first.
 DE_FEE_TARIFF = [
@@ -994,6 +1018,85 @@ Mit freundlichen Grüßen
 _____________________
 {{ lawyer_name }}
 Rechtsanwalt/Rechtsanwältin
+{{ firm_name }}""",
+    },
+    {
+        # BRAK KI-Leitfaden / Art. 30 DSGVO (D-044): a ready-to-fill record
+        # of processing activities covering the AI features of the platform.
+        # Rendered as an office document; the guidance is embedded up top.
+        "code": "compliance.verarbeitungsverzeichnis",
+        "locale": "de",
+        "practice_area": "other",
+        "name": {
+            "de": "Verarbeitungsverzeichnis KI-Einsatz (Art. 30 DSGVO)",
+            "en": "Record of processing activities, AI use (Art. 30 GDPR)",
+            "sq": "Regjistri i përpunimit për përdorimin e AI-së (neni 30 GDPR)",
+        },
+        "variables": [
+            {"name": "dpo_name", "label": {"de": "Datenschutzbeauftragte/r (falls benannt)", "en": "Data protection officer (if appointed)", "sq": "Zyrtari për mbrojtjen e të dhënave (nëse ka)"}},
+            {"name": "llm_provider", "label": {"de": "KI-Anbieter (z. B. lokal / externer API-Anbieter)", "en": "AI provider (e.g. local / external API)", "sq": "Provideri i AI-së (lokal / API i jashtëm)"}},
+            {"name": "retention_years", "label": {"de": "Aufbewahrungsfrist (Jahre)", "en": "Retention period (years)", "sq": "Afati i ruajtjes (vjet)"}},
+        ],
+        "body": """VERARBEITUNGSVERZEICHNIS — KI-GESTÜTZTE VERARBEITUNGEN
+(Art. 30 Abs. 1 DSGVO)
+
+Hinweis: Dieses Muster deckt die KI-Funktionen der Kanzleisoftware ab
+(Recherche-Assistent, Dokumentanalyse, Fristvorschläge, Entwurfshilfe).
+Ergänzen Sie kanzleispezifische Angaben und prüfen Sie das Verzeichnis
+bei jeder Änderung der eingesetzten KI-Dienste (BRAK-KI-Leitfaden).
+
+1. VERANTWORTLICHER
+Name/Kanzlei: {{ firm_name }}
+Vertreten durch: {{ lawyer_name }}
+Datenschutzbeauftragte/r: {{ dpo_name }}
+
+2. VERARBEITUNGSTÄTIGKEIT
+Bezeichnung: KI-gestützte Mandatsbearbeitung (Recherche, Dokumentanalyse,
+Fristvorschläge, Textentwürfe mit anwaltlicher Prüfung)
+
+3. ZWECKE DER VERARBEITUNG
+- Juristische Recherche in Gesetzen und Rechtsprechung
+- Analyse und Zusammenfassung von Mandatsdokumenten
+- Erkennung von Fristen aus zugestellten Dokumenten (Vorschlag, keine
+  automatische Entscheidung — anwaltliche Bestätigung erforderlich)
+- Unterstützung bei Schriftsatzentwürfen (menschliche Prüfung vor Versand)
+
+4. KATEGORIEN BETROFFENER PERSONEN
+Mandanten, Gegenparteien, Zeugen, sonstige in Mandatsunterlagen genannte
+Personen
+
+5. KATEGORIEN PERSONENBEZOGENER DATEN
+Stammdaten, Kontaktdaten, Vertrags- und Falldaten aus Mandatsunterlagen;
+ggf. besondere Kategorien (Art. 9 DSGVO), soweit im Mandat enthalten
+
+6. EMPFÄNGER / KI-ANBIETER
+LLM-Anbieter: {{ llm_provider }}
+Dokumentenindexierung/Embeddings: ausschließlich lokal auf Kanzlei-
+Infrastruktur — Dokumenttexte verlassen die Maschine zur Indexierung nicht.
+Die Software führt ein KI-Nutzungsregister (Auditprotokoll aller
+KI-Aktionen, exportierbar als CSV).
+
+7. DRITTLANDSÜBERMITTLUNG
+Nur soweit ein externer KI-Anbieter eingesetzt wird — Anbieter, Sitz und
+Garantien (Art. 44 ff. DSGVO) hier dokumentieren. Bei lokalem Betrieb:
+keine Übermittlung.
+
+8. LÖSCHFRISTEN
+Mandatsakten: {{ retention_years }} Jahre (§ 50 BRAO); KI-Protokolle werden
+mit der Akte gelöscht. Geparkte E-Mail-Vorschläge werden bei Ablehnung
+sofort gelöscht.
+
+9. TECHNISCHE UND ORGANISATORISCHE MASSNAHMEN (Art. 32 DSGVO)
+- Verschlüsselung der Dokumente im Ruhezustand (Fernet/AES)
+- Zugriff nur mit Konto und rollenbasierten Rechten; optional 2FA
+- Append-only-Auditprotokoll aller mandatsbezogenen Aktionen
+- KI-Ausgaben nur mit menschlicher Bestätigung wirksam
+  (Vorschlag-und-Bestätigung-Prinzip; Prüfvermerk vor Freigabe)
+
+{{ city }}, den {{ date }}
+
+_____________________
+{{ lawyer_name }}
 {{ firm_name }}""",
     },
 ]

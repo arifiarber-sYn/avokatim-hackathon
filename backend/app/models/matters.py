@@ -90,6 +90,13 @@ class Matter(Base, TenantMixin, TimestampMixin):
     # generated lazily the first time the lawyer asks for the address.
     email_token: Mapped[str | None] = mapped_column(String(32), unique=True, index=True)
 
+    # Legal expense insurance cover (DE Rechtsschutzversicherung, D-045):
+    # which insurer the Deckungsanfrage went to and where it stands.
+    insurer_code: Mapped[str | None] = mapped_column(String(32))
+    # angefragt | bestaetigt | abgelehnt (None = no coverage request)
+    insurance_status: Mapped[str | None] = mapped_column(String(16))
+    insurance_requested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
     client: Mapped[Contact | None] = relationship(foreign_keys=[client_id])
     parties: Mapped[list["MatterParty"]] = relationship(
         back_populates="matter", cascade="all, delete-orphan"

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { LocaleSwitcher } from "@/components/ui";
+import { clientCountry } from "@/lib/country";
 
 interface PublicStats {
   cases_posted: number;
@@ -15,8 +16,10 @@ interface PublicStats {
 export default function ForLawyersPage() {
   const { t } = useI18n();
   const [stats, setStats] = useState<PublicStats | null>(null);
+  const [isDE, setIsDE] = useState(false);
 
   useEffect(() => {
+    setIsDE(clientCountry() === "DE");
     fetch("/api/public/stats")
       .then((res) => res.json())
       .then(setStats)
@@ -108,6 +111,28 @@ export default function ForLawyersPage() {
             </div>
           ))}
         </div>
+
+        {/* DE market positioning: fixed subscription, 0% commission (D-045).
+            Careful legal wording — no competitor named in the UI. */}
+        {isDE && (
+          <div className="max-w-3xl mx-auto space-y-4">
+            <div className="bg-gradient-to-br from-emerald-500/10 to-slate-800/60 rounded-2xl border border-emerald-500/30 p-6 space-y-2 text-center">
+              <h2 className="text-xl font-bold text-white">{t.lpDe0T}</h2>
+              <p className="text-sm text-slate-300 leading-relaxed max-w-2xl mx-auto">{t.lpDe0B}</p>
+            </div>
+            <div className="bg-slate-800/60 rounded-2xl border border-slate-700/60 p-6 space-y-3">
+              <h2 className="text-lg font-bold text-white text-center">⚖️ {t.lpDeBrakT}</h2>
+              <ul className="grid sm:grid-cols-2 gap-3">
+                {[t.lpDeBrak1, t.lpDeBrak2, t.lpDeBrak3, t.lpDeBrak4].map((item, i) => (
+                  <li key={i} className="flex gap-2 text-sm text-slate-300">
+                    <span className="text-emerald-400 shrink-0">✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
 
         {/* How the marketplace works for the lawyer */}
         <div className="max-w-3xl mx-auto space-y-4">

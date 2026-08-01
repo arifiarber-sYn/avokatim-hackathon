@@ -170,6 +170,10 @@ async def request_signature(
     document = await db.get(Document, body.document_id)
     if document is None or document.tenant_id != user.tenant_id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Document not found")
+    # D-044: AI-generated drafts need confirmed human review before signature
+    from app.api.documents import require_ai_review
+
+    require_ai_review(document)
     contact = await db.get(Contact, body.contact_id)
     if contact is None or contact.tenant_id != user.tenant_id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Contact not found")

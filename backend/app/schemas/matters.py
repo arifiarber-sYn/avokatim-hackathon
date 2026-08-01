@@ -90,6 +90,10 @@ class MatterOut(BaseModel):
     closed_on: date | None
     restricted: bool = False
     extra: dict
+    # Rechtsschutz cover tracking (DE, D-045)
+    insurer_code: str | None = None
+    insurance_status: str | None = None
+    insurance_requested_at: datetime | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}

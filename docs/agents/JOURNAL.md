@@ -10,6 +10,57 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01s — D-045 F6: Pozicionimi DE + RSV Deckung + Ratgeber (Cursor / Fable 5)
+
+- Done (pozicionimi): seksion i ri te /per-avokatet vetëm në hostin DE —
+  "Festes Abo. 0 % Provision pro Mandat." (formulim i kujdesshëm, pa emër
+  konkurrenti) + karta "Konform mit den BRAK-KI-Leitlinien" me 4 pika
+  (regjistri KI, rishikimi njerëzor, indeksimi lokal, template Art. 30).
+- Done (RSV): seed `DE_INSURERS` (12 sigurues me kontakte service) +
+  `INSURANCE_FOLLOWUP_DAYS=14`; fusha `insurer_code`/`insurance_status`/
+  `insurance_requested_at` te `Matter` (migrimi `3f644bf7eddb`); API
+  `GET /matters/{id}/deckung`, `POST .../deckung/anfrage` (rendon
+  `general.deckungsanfrage` në PDF te dokumentet — helper i ri
+  `file_content_as_pdf` i përbashkët me render-to-matter — dhe vë statusin
+  angefragt), `POST .../deckung/status` (bestätigt/abgelehnt/reset,
+  audituar). Kartë "Rechtsschutzversicherung" te tab-i Përmbledhja e
+  lëndës DE me rikujtesë follow-up pas 14 ditësh; 14 çelësa `dkg*` në 7 gjuhë.
+- Done (Ratgeber): 10 artikuj gjermanë të kuruar (Kündigung, Mietminderung,
+  Fluggastrechte, Abmahnung, Mahnbescheid, Kaution, Nebenkosten,
+  Aufhebungsvertrag, Widerruf, Verkehrsunfall/Prozesskosten) si të dhëna në
+  `frontend/src/lib/ratgeber.ts`; faqe server-side `/ratgeber` +
+  `/ratgeber/[slug]` me metadata per-host, Article JSON-LD, disclaimer
+  RDG-safe dhe CTA → Ava / posto-rastin; hyrje në sitemap (vetëm DE),
+  footer dhe dropdown-in e veglave.
+- Verified: smoke live — 12 sigurues në API, anfrage krijoi PDF-në
+  "Deckungsanfrage ARAG SE - 2026-C-0001.pdf" me status angefragt →
+  bestätigt; /ratgeber 200, artikull 200 me titull SEO, slug i panjohur
+  404. 181 teste (test_deckung.py i ri); health + frontend OK.
+- Left open: verifikimi i email-eve të siguruesve para përdorimit real
+  (shënuar në koment të seed-it); gjenerimi i artikujve nga korpusi me
+  rishikim avokati shtyhet (pa CMS).
+
+## 2026-08-01r — D-044 F5 (pjesa 2): ai_generated + rishikimi njerëzor + Art. 30 (Cursor / Fable 5)
+
+- Done: kolona `ai_generated`/`ai_reviewed_by_id`/`ai_reviewed_at` te
+  `documents` (migrimi `01ed9e4e7fe8`); render-to-matter e vë flamurin kur
+  drafti kaloi nëpër AI-assist (UI e gjurmon pranimin e tekstit të
+  përmirësuar); porta `require_ai_review` bllokon ndarjen me klientin
+  (`/documents/{id}/visibility`) dhe kërkesën për nënshkrim
+  (`/collab/.../signatures`) derisa avokati të konfirmojë me
+  `POST /documents/{id}/confirm-ai-review` (audituar
+  `document.ai_review_confirm`). Vulë vizuale "KI-Entwurf" me buton
+  konfirmimi te tabela e dokumenteve (vjollcë → jeshile pas rishikimit);
+  4 çelësa `aig*` në 7 gjuhë.
+- Done: template i ri zyre në seeds DE `compliance.verarbeitungsverzeichnis`
+  (Art. 30 DSGVO) — verzeichnis i gatshëm për funksionet AI të platformës
+  me udhëzim të integruar (BRAK KI-Leitfaden), i plotësueshëm si çdo
+  dokument tjetër.
+- Verified: teste të reja `test_ai_review_gate.py` (3) — dokument i
+  thjeshtë kalon, AI pa rishikim bllokohet 400, AI i rishikuar kalon;
+  template-i u seed-ua në DB pas restartit; build + health OK.
+- Left open: asgjë për F5.
+
 ## 2026-08-01q — D-044 F5 (pjesa 1): Regjistri KI-Nutzung (Cursor / Fable 5)
 
 - Done: `GET /firm/ai-usage` (vetëm admin) — regjistri i përdorimit të

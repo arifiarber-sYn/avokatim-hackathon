@@ -118,7 +118,12 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
         ))}
       </div>
 
-      {tab === "overview" && <Overview matter={matter} onChanged={setMatter} />}
+      {tab === "overview" && (
+        <>
+          <Overview matter={matter} onChanged={setMatter} />
+          <DeckungCard matterId={id} />
+        </>
+      )}
       {tab === "parties" && <Parties matterId={id} />}
       {tab === "documents" && <Documents matterId={id} clientId={matter.client?.id || null} />}
       {tab === "deadlines" && <Deadlines matterId={id} practiceArea={matter.practice_area} />}
@@ -286,6 +291,161 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   }
 }
 
+interface DeckungInfo {
+  insurer_code: string | null;
+  insurance_status: string | null;
+  insurance_requested_at: string | null;
+  followup_due: boolean;
+  followup_days: number;
+  insurers: { code: string; name: string; email: string; website: string }[];
+}
+
+/** Rechtsschutz cover tracking (DE matters, D-045): one-click Deckungsanfrage
+ * into the documents + insurer answer tracking. Hidden for non-DE matters
+ * (the endpoint 404s there). */
+function DeckungCard({ matterId }: { matterId: string }) {
+  const { t } = useI18n();
+  const [info, setInfo] = useState<DeckungInfo | null>(null);
+  const [insurerCode, setInsurerCode] = useState("");
+  const [policy, setPolicy] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [created, setCreated] = useState(false);
+  const [error, setError] = useState("");
+
+  const load = useCallback(() => {
+    apiGet<DeckungInfo>(`/matters/${matterId}/deckung`).then(setInfo).catch(() => {});
+  }, [matterId]);
+
+  useEffect(load, [load]);
+
+  if (!info) return null;
+
+  async function createAnfrage() {
+    if (!insurerCode) return;
+    setBusy(true);
+    setError("");
+    setCreated(false);
+    try {
+      await apiPost(`/matters/${matterId}/deckung/anfrage`, {
+        insurer_code: insurerCode,
+        policy_number: policy,
+      });
+      setCreated(true);
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function setStatus(status: string | null) {
+    setError("");
+    try {
+      await apiPost(`/matters/${matterId}/deckung/status`, { status });
+      setCreated(false);
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  const statusLabel: Record<string, string> = {
+    angefragt: t.dkgStatusAngefragt,
+    bestaetigt: t.dkgStatusBestaetigt,
+    abgelehnt: t.dkgStatusAbgelehnt,
+  };
+  const statusColor: Record<string, string> = {
+    angefragt: "bg-amber-50 text-amber-700 border-amber-200",
+    bestaetigt: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    abgelehnt: "bg-red-50 text-red-700 border-red-200",
+  };
+  const insurerName =
+    info.insurers.find((i) => i.code === info.insurer_code)?.name || info.insurer_code;
+
+  return (
+    <Card className="p-5 mt-4 space-y-3">
+      <div className="flex items-center gap-2 flex-wrap">
+        <h3 className="font-semibold text-sm">🛡️ {t.dkgTitle}</h3>
+        {info.insurance_status && (
+          <span
+            className={`px-2 py-0.5 rounded-full text-xs font-medium border ${statusColor[info.insurance_status]}`}
+          >
+            {statusLabel[info.insurance_status]} · {insurerName}
+          </span>
+        )}
+      </div>
+      <ErrorNote message={error} />
+      {created && <p className="text-sm text-emerald-700">✓ {t.dkgCreated}</p>}
+
+      {!info.insurance_status ? (
+        <>
+          <p className="text-xs text-slate-500">{t.dkgHint}</p>
+          <div className="flex flex-wrap items-end gap-3">
+            <div>
+              <Label>{t.dkgInsurer}</Label>
+              <Select
+                value={insurerCode}
+                onChange={(e) => setInsurerCode(e.target.value)}
+                className="min-w-56"
+              >
+                <option value="">—</option>
+                {info.insurers.map((i) => (
+                  <option key={i.code} value={i.code}>{i.name}</option>
+                ))}
+              </Select>
+            </div>
+            <div>
+              <Label>{t.dkgPolicy}</Label>
+              <Input value={policy} onChange={(e) => setPolicy(e.target.value)} />
+            </div>
+            <Button onClick={createAnfrage} disabled={!insurerCode || busy}>
+              {busy ? t.loading : t.dkgCreate}
+            </Button>
+          </div>
+        </>
+      ) : (
+        <div className="space-y-2">
+          {info.insurance_requested_at && (
+            <p className="text-xs text-slate-500">
+              {t.dkgRequestedOn.replace(
+                "{date}",
+                new Date(info.insurance_requested_at).toLocaleDateString()
+              )}
+            </p>
+          )}
+          {info.followup_due && info.insurance_status === "angefragt" && (
+            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+              ⏰ {t.dkgFollowup.replace("{n}", String(info.followup_days))}
+            </p>
+          )}
+          <div className="flex gap-3 text-xs">
+            {info.insurance_status === "angefragt" && (
+              <>
+                <button
+                  onClick={() => setStatus("bestaetigt")}
+                  className="text-emerald-700 hover:underline"
+                >
+                  {t.dkgMarkConfirmed}
+                </button>
+                <button
+                  onClick={() => setStatus("abgelehnt")}
+                  className="text-red-600 hover:underline"
+                >
+                  {t.dkgMarkDeclined}
+                </button>
+              </>
+            )}
+            <button onClick={() => setStatus(null)} className="text-slate-500 hover:underline">
+              {t.dkgReset}
+            </button>
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
 function Parties({ matterId }: { matterId: string }) {
   const { t } = useI18n();
   const [parties, setParties] = useState<Party[]>([]);
@@ -401,6 +561,41 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
     } catch (err) {
       setError(err instanceof Error ? err.message : t.error);
     }
+  }
+
+  async function confirmAiReview(doc: Doc) {
+    setError("");
+    try {
+      await apiPost(`/documents/${doc.id}/confirm-ai-review`, {});
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  function aiStamp(d: Doc) {
+    if (!d.ai_generated) return null;
+    if (d.ai_reviewed_at) {
+      return (
+        <span
+          className="ml-2 inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200"
+          title={t.aigReviewedOn.replace("{date}", new Date(d.ai_reviewed_at).toLocaleDateString())}
+        >
+          {t.aigBadge} ✓
+        </span>
+      );
+    }
+    return (
+      <span
+        className="ml-2 inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-violet-50 text-violet-700 border border-violet-200"
+        title={t.aigNeedsReview}
+      >
+        {t.aigBadge}
+        <button onClick={() => confirmAiReview(d)} className="underline hover:no-underline">
+          {t.aigConfirm}
+        </button>
+      </span>
+    );
   }
 
   function reviewCell(d: Doc) {
@@ -677,7 +872,10 @@ function Documents({ matterId, clientId }: { matterId: string; clientId: string 
               const sig = sigFor(d.id);
               return (
                 <tr key={d.id} className="border-b border-slate-100">
-                  <td className="px-4 py-3">{d.filename}</td>
+                  <td className="px-4 py-3">
+                    {d.filename}
+                    {aiStamp(d)}
+                  </td>
                   <td className="px-4 py-3">v{d.version}</td>
                   <td className="px-4 py-3 text-xs text-slate-500">
                     {d.has_text ? "✓" : d.ocr_status}

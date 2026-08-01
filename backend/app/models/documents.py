@@ -46,6 +46,17 @@ class Document(Base, TenantMixin, TimestampMixin):
     ocr_status: Mapped[str] = mapped_column(String(16), default="none")
     # none | pending | done | failed
 
+    # BRAK KI-Leitfaden human oversight (D-044): documents produced from AI
+    # output carry this flag; sharing with the client or requesting an
+    # e-signature is blocked until a human confirms they reviewed it.
+    ai_generated: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="false"
+    )
+    ai_reviewed_by_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL")
+    )
+    ai_reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
     # Internal review workflow: draft goes to a partner before it leaves the firm.
     # none | in_review | approved | changes_requested
     approval_status: Mapped[str] = mapped_column(

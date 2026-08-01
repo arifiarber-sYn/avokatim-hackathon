@@ -17,6 +17,8 @@ class DocumentOut(BaseModel):
     ocr_status: str
     has_text: bool = False
     visible_to_client: bool = False
+    ai_generated: bool = False
+    ai_reviewed_at: datetime | None = None
     approval_status: str = "none"
     reviewer_id: uuid.UUID | None = None
     approval_note: str | None = None
@@ -55,6 +57,9 @@ class RenderTemplateIn(BaseModel):
 class RenderToMatterIn(RenderTemplateIn):
     # Edited text from the preview; if omitted the template is re-rendered
     content: str | None = None
+    # True when the content passed through Ava (ai-assist) — the saved
+    # document then requires human review before it leaves the firm (D-044)
+    ai_generated: bool = False
 
 
 class RenderTemplateOut(BaseModel):

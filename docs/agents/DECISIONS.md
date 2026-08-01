@@ -1056,3 +1056,49 @@
 - Consequences: Mahnwesen drafts and sender→matter email classification
   (F4 parts 2–3) reuse the same suggest/accept contract; nothing sends or
   files automatically.
+
+## D-044: BRAK compliance is a product feature — register + review gate (2026-08-01)
+
+- Context: DSGVO/confidentiality worry is the #1 adoption blocker for AI
+  in German firms (38.9%), and the BRAK KI-Leitfaden asks for documented
+  AI use and human oversight. Competitors treat compliance as paperwork;
+  we can sell it as a feature.
+- Decision: two mechanisms, both on by default. (1) A per-office
+  **KI-Nutzung register** derived from the existing append-only audit log
+  (no new tracking) with CSV export — documentation duty solved from data
+  we already keep. (2) A **human-review gate**: AI-assisted documents get
+  `ai_generated=true` at creation; `require_ai_review` blocks the two
+  exits from the firm (client-portal visibility, signature request) until
+  `confirm-ai-review` sets `ai_reviewed_by/at`. Enforced in the API, not
+  the UI, so future exit paths inherit the gate by calling the same
+  helper. Complemented by a seeded Art. 30 DSGVO Verarbeitungsverzeichnis
+  template covering the platform's AI features.
+- Alternatives rejected: a blocking review modal before every AI output
+  (friction, would be clicked away); flagging at send-time by content
+  heuristics (unreliable — provenance at creation is exact).
+- Consequences: new AI-generated document paths must set `ai_generated`
+  and new outbound paths must call `require_ai_review`; the review stamp
+  is user-visible, so the flag must never be set speculatively.
+
+## D-045: DE go-to-market in-product — 0% positioning, RSV tracking, static Ratgeber (2026-08-01)
+
+- Context: the dominant German marketplace charges lawyers a per-mandate
+  "Infrastrukturgebühr" (~34%); legal-expense insurance (RSV) initiates a
+  large share of consumer mandates; and consumer-law guides are the main
+  organic acquisition channel (SEO/GEO).
+- Decision: (1) state our model — fixed subscription, 0% commission per
+  mandate — explicitly on /per-avokatet for the DE host, with careful
+  wording and **no competitor named in the UI**. (2) Treat the
+  Deckungsanfrage as a first-class workflow on the matter: insurer
+  directory as seed data (`DE_INSURERS`), one-click letter via the
+  existing template into the documents, and a 3-state
+  `insurance_status` on `Matter` with a 14-day follow-up nudge — no email
+  automation, the lawyer sends the letter (D-043 principle). (3) Ship the
+  10 highest-demand consumer guides as **static TS data** rendered
+  server-side at /ratgeber/[slug] with Article JSON-LD and RDG-safe
+  disclaimers — no CMS, no LLM-generated content without lawyer review;
+  articles are German-only and appear only in the DE sitemap.
+- Consequences: insurer contact data must be verified before production
+  use (noted in seed); new guides are added by editing `ratgeber.ts`
+  (reviewed content only); if the guide count grows past ~30, revisit the
+  no-CMS decision.

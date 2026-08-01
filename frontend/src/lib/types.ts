@@ -82,6 +82,8 @@ export interface Doc {
   reviewer_id: string | null;
   approval_note: string | null;
   reviewed_at: string | null;
+  ai_generated: boolean;
+  ai_reviewed_at: string | null;
   created_at: string;
 }
 

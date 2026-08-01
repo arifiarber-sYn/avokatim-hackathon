@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import type { Country } from "@/lib/country";
 import { COUNTRY_BASE_URL, serverCountry } from "@/lib/seo";
+import { RATGEBER_ARTICLES } from "@/lib/ratgeber";
 
 // Public, indexable pages only (see robots.ts for what stays out). Served
 // per host (D-039): the DE sitemap must list German pages on the DE domain,
@@ -16,6 +17,7 @@ const ROUTES: { path: string; priority: number; only?: Country }[] = [
   { path: "/posto-rastin", priority: 0.8 },
   { path: "/afatet", priority: 0.7 },
   { path: "/rvg", priority: 0.7, only: "DE" },
+  { path: "/ratgeber", priority: 0.7, only: "DE" },
   { path: "/dokumentet", priority: 0.7 },
   { path: "/regjistrohu", priority: 0.6 },
   { path: "/kontakti", priority: 0.5 },
@@ -37,6 +39,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: path === "/avokatet" || path === "/noteret" ? "daily" : "weekly",
     priority,
   }));
+
+  // Ratgeber guides are German-market content — DE sitemap only (D-045)
+  if (country === "DE") {
+    for (const a of RATGEBER_ARTICLES) {
+      entries.push({
+        url: `${base}/ratgeber/${a.slug}`,
+        lastModified: new Date(a.updated),
+        changeFrequency: "monthly",
+        priority: 0.6,
+      });
+    }
+  }
 
   // Every lawyer profile is its own citable URL (GEO/SEO), scoped to the
   // host's country so the DE sitemap never lists Kosovo profiles.

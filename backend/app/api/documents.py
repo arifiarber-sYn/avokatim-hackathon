@@ -215,6 +215,38 @@ class VisibilityIn(BaseModel):
     visible: bool
 
 
+def require_ai_review(doc: Document) -> None:
+    """BRAK KI-Leitfaden human oversight (D-044): an AI-generated document
+    may not leave the firm before a human confirms they reviewed it."""
+    if doc.ai_generated and doc.ai_reviewed_at is None:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "AI-generated document requires human review confirmation first",
+        )
+
+
+@router.post("/documents/{document_id}/confirm-ai-review", response_model=DocumentOut)
+async def confirm_ai_review(
+    document_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """The lawyer confirms they reviewed the AI-generated document — the
+    review point required before sharing/signature (BRAK KI-Leitfaden)."""
+    doc = await _get_owned_document(db, user, document_id)
+    if not doc.ai_generated:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Document is not AI-generated")
+    doc.ai_reviewed_by_id = user.id
+    doc.ai_reviewed_at = datetime.now(UTC)
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="document.ai_review_confirm",
+        entity_type="document", entity_id=str(doc.id), details={"filename": doc.filename},
+    )
+    await db.commit()
+    await db.refresh(doc)
+    return _to_out(doc)
+
+
 @router.post("/documents/{document_id}/visibility", response_model=DocumentOut)
 async def set_document_visibility(
     document_id: uuid.UUID,
@@ -224,6 +256,8 @@ async def set_document_visibility(
 ):
     """Share/unshare a document with the client in the portal."""
     doc = await _get_owned_document(db, user, document_id)
+    if body.visible:
+        require_ai_review(doc)
     doc.visible_to_client = body.visible
     await log_action(
         db, tenant_id=user.tenant_id, user_id=user.id, action="document.visibility",

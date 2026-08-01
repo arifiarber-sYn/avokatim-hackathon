@@ -30,6 +30,9 @@ export default function TemplatesPage() {
   const [aiInstruction, setAiInstruction] = useState("");
   const [aiBusy, setAiBusy] = useState(false);
   const [aiResult, setAiResult] = useState<AiAssistResult | null>(null);
+  // True once an AI-improved draft was accepted into `output` — the saved
+  // document then carries the ai_generated flag (BRAK human-review gate).
+  const [aiUsed, setAiUsed] = useState(false);
 
   useEffect(() => {
     apiGet<Template[]>("/templates?jurisdiction_code=XK").then(setTemplates).catch(() => {});
@@ -50,6 +53,7 @@ export default function TemplatesPage() {
         variables: values,
       });
       setOutput(result.content);
+      setAiUsed(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.error);
     } finally {
@@ -84,6 +88,7 @@ export default function TemplatesPage() {
         matter_id: matterId,
         variables: values,
         content: output,
+        ai_generated: aiUsed,
       });
       setSavedDoc(doc);
     } catch (err) {
@@ -268,6 +273,7 @@ export default function TemplatesPage() {
                           setOutput(aiResult.improved_text);
                           setAiResult(null);
                           setSavedDoc(null);
+                          setAiUsed(true);
                         }}
                       >
                         {t.aiAssistAccept}

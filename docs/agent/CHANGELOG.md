@@ -3,6 +3,61 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — DE market pack: 0% positioning, RSV Deckung tracking, Ratgeber (D-045 F6)
+
+- New (positioning): DE-host-only sections on /per-avokatet — "Festes Abo.
+  0 % Provision pro Mandat." (careful wording, competitor not named) and a
+  "Konform mit den BRAK-KI-Leitlinien" checklist (register, review gate,
+  local indexing, Art. 30 template). 7 new `lpDe*` keys in all locales.
+- New (RSV): `DE_INSURERS` seed (12 legal-expense insurers with service
+  contacts, verify before production) + `INSURANCE_FOLLOWUP_DAYS=14`;
+  `insurer_code`/`insurance_status`/`insurance_requested_at` on `Matter`
+  (migration `3f644bf7eddb`); endpoints `GET /matters/{id}/deckung`,
+  `POST .../deckung/anfrage` (renders `general.deckungsanfrage` into the
+  matter as PDF via new shared helper `file_content_as_pdf`, sets status
+  `angefragt`, audited), `POST .../deckung/status`. "Rechtsschutz-
+  versicherung" card on the DE matter overview with a follow-up nudge
+  after 14 unanswered days. 14 new `dkg*` keys (renamed from `rsv*` —
+  collision with existing marketplace keys).
+- New (content): 10 curated German consumer-law guides as static data
+  (`frontend/src/lib/ratgeber.ts`) served at `/ratgeber` +
+  `/ratgeber/[slug]` (server components, per-host canonical, Article
+  JSON-LD, RDG-safe disclaimer, CTA → Ava/posto-rastin); DE-only sitemap
+  entries; links in the public footer and tools dropdown.
+- Tests: `tests/test_deckung.py` (3). Live smoke: anfrage → PDF filed +
+  status angefragt → bestätigt; /ratgeber 200 / unknown slug 404.
+- Files: `backend/app/{models,schemas}/matters.py`, `api/matters.py`,
+  `api/templates.py`, `seeds/germany.py`, migration `3f644bf7eddb` (new),
+  `tests/test_deckung.py` (new); `frontend/src/lib/{ratgeber.ts (new),
+  dictionaries.ts,types.ts}`, `app/per-avokatet/page.tsx`,
+  `app/ratgeber/**` (new), `app/sitemap.ts`, `(app)/matters/[id]/page.tsx`,
+  `components/{public-footer,public-shell}.tsx`.
+
+## 2026-08-01 — AI-generated documents: human-review gate + Art. 30 template (D-044 F5, part 2)
+
+- New: `ai_generated`, `ai_reviewed_by_id`, `ai_reviewed_at` on
+  `documents` (migration `01ed9e4e7fe8`). `render-to-matter` sets the flag
+  when the draft went through AI-assist (the templates page tracks
+  acceptance of the improved text and resets on a fresh render).
+- New: `require_ai_review` gate — client-portal visibility
+  (`POST /documents/{id}/visibility`) and signature requests
+  (`POST /collab/matters/{id}/signatures`) return 400 for unreviewed
+  AI-generated documents; `POST /documents/{id}/confirm-ai-review`
+  records the reviewer + timestamp (audited `document.ai_review_confirm`).
+- UI: "KI-Entwurf" stamp next to the filename in the matter Documents tab
+  — violet with an inline confirm button while unreviewed, green check
+  with review date after. 4 new `aig*` keys in all 7 locales.
+- New: seeded DE office template `compliance.verarbeitungsverzeichnis` —
+  a ready-to-fill Art. 30 DSGVO record of processing activities covering
+  the platform's AI features, with embedded guidance (BRAK KI-Leitfaden).
+- Tests: `tests/test_ai_review_gate.py` (3: plain passes, unreviewed AI
+  blocked 400, reviewed AI passes).
+- Files: `backend/app/models/documents.py`, `schemas/documents.py`,
+  `api/{documents,templates,collab}.py`, `seeds/germany.py`, migration
+  `01ed9e4e7fe8` (new), `tests/test_ai_review_gate.py` (new);
+  `frontend/src/lib/{types,dictionaries}.ts`,
+  `(app)/{matters/[id],templates}/page.tsx`.
+
 ## 2026-08-01 — KI-Nutzung register: per-office AI usage report + CSV (D-044 F5, part 1)
 
 - New: `GET /firm/ai-usage?days=` (admin) — the office's own AI usage

@@ -353,6 +353,28 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   user, effective LLM provider + data locality) with CSV export
   (`GET /firm/ai-usage`, `/firm/ai-usage.csv`) — BRAK KI-Leitfaden / DSGVO
   documentation duty.
+- **AI-review gate on documents** (2026-08-01, D-044): documents rendered
+  with AI assistance carry `ai_generated`; sharing with the client or
+  requesting a signature is blocked until a human confirms review
+  (`POST /documents/{id}/confirm-ai-review`, sets `ai_reviewed_by/at`,
+  audited). UI: violet "KI-Entwurf" stamp with one-click confirm, turns
+  green once reviewed. Plus a seeded DE office template
+  `compliance.verarbeitungsverzeichnis` (Art. 30 DSGVO record covering the
+  platform's AI features).
+- **Rechtsschutz / Deckungsanfrage tracking** (2026-08-01, D-045, DE
+  matters): overview tab card — pick an insurer from the seeded
+  `DE_INSURERS` directory (12 carriers with service contacts), one click
+  renders the `general.deckungsanfrage` letter into the matter as PDF and
+  sets `insurance_status=angefragt`; lawyer records bestätigt/abgelehnt;
+  after 14 days without answer the card nudges a follow-up
+  (`GET/POST /matters/{id}/deckung[/anfrage|/status]`).
+- **DE market positioning + Ratgeber** (2026-08-01, D-045): /per-avokatet
+  on the DE host gets a "fixed subscription, 0 % commission per mandate"
+  section (careful wording, no competitor named) and a BRAK-KI-Leitlinien
+  compliance checklist. New public content: 10 curated German consumer-law
+  guides at `/ratgeber/[slug]` (static data in `frontend/src/lib/ratgeber.ts`,
+  Article JSON-LD, per-host canonical, DE-only sitemap entries, RDG-safe
+  disclaimer, CTA → Ava / posto-rastin).
 - **Token-less email classification** (2026-08-01, D-043): inbound mail
   without a matter alias whose sender matches a contact is parked as an
   `EmailSuggestion` (raw message encrypted on disk); dashboard card lets the
