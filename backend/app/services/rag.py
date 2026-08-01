@@ -8,7 +8,7 @@ import logging
 import re
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -109,6 +109,7 @@ async def search_corpus(
     limit: int = 6,
     language: str | None = None,
     fallback_language: str | None = None,
+    region: str | None = None,
 ) -> list[dict]:
     """Semantic (or fallback text) search over the legal corpus.
 
@@ -117,6 +118,9 @@ async def search_corpus(
     (sq for Kosovo, de for Germany — see JurisdictionProfile, D-034); cosine
     ranking naturally prefers the chunks that match the query's language.
     When `fallback_language` is None it is resolved from the jurisdiction.
+
+    `region` widens the scope to a Bundesland's Landesrecht (D-035): federal
+    docs (region IS NULL) are always searched; docs of OTHER regions never.
     """
     if fallback_language is None:
         from app.jurisdictions import profile_for
@@ -131,6 +135,11 @@ async def search_corpus(
         if language and language != fallback_language
         else LegalCorpusDoc.language == fallback_language
     )
+    region_filter = (
+        LegalCorpusDoc.region.is_(None)
+        if region is None
+        else or_(LegalCorpusDoc.region.is_(None), LegalCorpusDoc.region == region)
+    )
     vectors = embed([query])
     if vectors:
         stmt = (
@@ -139,6 +148,7 @@ async def search_corpus(
             .where(
                 LegalCorpusDoc.jurisdiction_id == jurisdiction_id,
                 lang_filter,
+                region_filter,
                 LegalCorpusChunk.embedding.isnot(None),
             )
             .order_by(LegalCorpusChunk.embedding.cosine_distance(vectors[0]))
@@ -153,7 +163,11 @@ async def search_corpus(
         stmt = (
             select(LegalCorpusChunk, LegalCorpusDoc)
             .join(LegalCorpusDoc, LegalCorpusDoc.id == LegalCorpusChunk.doc_id)
-            .where(LegalCorpusDoc.jurisdiction_id == jurisdiction_id, lang_filter)
+            .where(
+                LegalCorpusDoc.jurisdiction_id == jurisdiction_id,
+                lang_filter,
+                region_filter,
+            )
             .limit(2000)
         )
         rows = _score_rows((await db.execute(stmt)).all(), query, limit)
@@ -164,6 +178,7 @@ async def search_corpus(
             "section": chunk.section,
             "doc_title": doc.title,
             "reference": doc.reference,
+            "region": doc.region,
         }
         for chunk, doc in rows
     ]

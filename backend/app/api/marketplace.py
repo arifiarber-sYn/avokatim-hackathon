@@ -1220,12 +1220,17 @@ PUBLIC_AVA_SYSTEM_PROMPT_DE = (
     "mitgelieferten Gesetzesauszüge und allgemeine Rechtsgrundsätze; nenne "
     "beim Zitieren die Norm genau (z.B. '§ 573 BGB' oder 'Art. 13 GG'). Wenn "
     "du dir nicht sicher bist, sage es offen — erfinde niemals Normen oder "
-    "Fristen. Deine Quellen umfassen Bundesrecht und die DSGVO, aber KEIN "
-    "Landesrecht und KEINE Rechtsprechung: wenn eine Frage Landesrecht "
-    "betrifft (z.B. Polizeirecht, Bauordnung, Schulrecht — das jeweilige "
-    "Bundesland regelt es selbst) oder wesentlich von Gerichtsentscheidungen "
-    "(BGH, BAG, BVerfG) abhängt, sage das ausdrücklich und verweise auf "
-    "anwaltliche Prüfung. Erkläre einfach, ohne unnötigen Jargon. Sobald eine Frage eine "
+    "Fristen. Deine Quellen umfassen Bundesrecht, die DSGVO sowie das "
+    "Landesrecht der Länder Nordrhein-Westfalen und Bayern (u.a. Polizei-, "
+    "Bau-, Schul-, Nachbar-, Kita-, Ladenöffnungs-, Feiertags-, Datenschutz-, "
+    "Kommunal- und Presserecht); Auszüge aus Landesrecht sind mit dem "
+    "jeweiligen Bundesland gekennzeichnet und gelten NUR dort. Betrifft eine "
+    "Frage Landesrecht eines anderen Bundeslandes (jedes Land regelt diese "
+    "Bereiche selbst), sage ausdrücklich, dass dieses Land noch nicht in "
+    "deinen Quellen ist, und beantworte nur, was bundesrechtlich gilt. "
+    "Rechtsprechung (BGH, BAG, BVerfG) hast du KEINE: hängt eine Frage "
+    "wesentlich von Gerichtsentscheidungen ab, sage das ausdrücklich und "
+    "verweise auf anwaltliche Prüfung. Erkläre einfach, ohne unnötigen Jargon. Sobald eine Frage eine "
     "Einzelfallprüfung, laufende Fristen oder Vertretung berührt, empfiehl "
     "der Person den Button 'Anwalt finden', um den Fall zugelassenen "
     "Rechtsanwältinnen und Rechtsanwälten der Plattform vorzulegen. Frage "
@@ -1253,6 +1258,9 @@ class AvaAskIn(BaseModel):
     # UI locale — picks the corpus language for citations (official gazette
     # texts exist in sq/sr/tr/bs/en; Albanian is always the fallback)
     locale: str | None = Field(default=None, max_length=8)
+    # Bundesland (D-035, DE host): widens retrieval to that Land's
+    # Landesrecht on top of federal law; kept client-side (localStorage)
+    region: str | None = Field(default=None, max_length=8)
 
 
 async def _optional_citizen(
@@ -1348,18 +1356,29 @@ async def _ava_prepare(
             "Nga ligji", "BAZA LIGJORE", "PYETJA E QYTETARIT"
         )
 
+    profile = profile_for(country)
+    region = (body.region or "").upper() or None
+    if region and region not in profile.regions:
+        region = None
+
     context_blocks: list[str] = []
     citations: list[dict] = []
     if jurisdiction is not None:
         for hit in await rag.search_corpus(
             db, jurisdiction.id, body.question, language=body.locale,
-            fallback_language=profile_for(country).corpus_fallback_language,
+            fallback_language=profile.corpus_fallback_language,
+            region=region,
         ):
             label = hit["doc_title"] + (f", {hit['section']}" if hit["section"] else "")
+            # Landesrecht excerpts carry their Land so model and citizen see
+            # the territorial scope (e.g. "BauO NRW § 61 [Nordrhein-Westfalen]")
+            region_name = profile.regions.get(hit.get("region") or "")
+            if region_name:
+                label = f"{label} [{region_name}]"
             context_blocks.append(f"[{from_law}: {label}]\n{hit['text']}")
             citations.append(
                 {"type": "law", "title": hit["doc_title"], "section": hit["section"],
-                 "reference": hit["reference"]}
+                 "reference": hit["reference"], "region": hit.get("region")}
             )
 
     user_content = body.question

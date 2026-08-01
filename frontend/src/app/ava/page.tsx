@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
 import { getCitizenToken } from "@/lib/citizen";
+import { clientCountry, DE_REGIONS } from "@/lib/country";
 import { Button, Card, ErrorNote, Textarea, TypingDots } from "@/components/ui";
 import PublicShell from "@/components/public-shell";
 import PageIntro from "@/components/page-intro";
@@ -39,10 +40,27 @@ export default function PublicAvaPage() {
   const [limit, setLimit] = useState<number | null>(null);
   const [isCitizen, setIsCitizen] = useState(false);
   const [structuring, setStructuring] = useState(false);
+  // DE host: optional Bundesland — widens Ava's sources to that Land's
+  // Landesrecht (D-035); remembered in localStorage
+  const [isDE, setIsDE] = useState(false);
+  const [region, setRegion] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const busyRef = useRef(false);
   const messagesRef = useRef<ChatMsg[]>([]);
   messagesRef.current = messages;
+  const regionRef = useRef("");
+  regionRef.current = region;
+
+  useEffect(() => {
+    if (clientCountry() !== "DE") return;
+    setIsDE(true);
+    setRegion(localStorage.getItem("avokatim_ava_region") || "");
+  }, []);
+
+  function pickRegion(code: string) {
+    setRegion(code);
+    localStorage.setItem("avokatim_ava_region", code);
+  }
 
   useEffect(() => {
     const headers: Record<string, string> = {};
@@ -86,7 +104,10 @@ export default function PublicAvaPage() {
       const res = await fetch("/api/public/ava/ask-stream", {
         method: "POST",
         headers,
-        body: JSON.stringify({ question, history, session_id: sessionId(), locale }),
+        body: JSON.stringify({
+          question, history, session_id: sessionId(), locale,
+          region: regionRef.current || undefined,
+        }),
       });
       if (!res.ok || !res.body) {
         let detail = t.error;
@@ -207,6 +228,22 @@ export default function PublicAvaPage() {
         <PageIntro k="ava" title={t.avaIntroT} body={t.avaIntro} />
 
         <p className="text-xs bg-amber-50 text-amber-800 rounded-lg p-3">{t.mkAvaDisclaimer}</p>
+
+        {isDE && (
+          <label className="flex items-center gap-2 text-xs text-slate-500">
+            <span>{t.avaRegionLabel}</span>
+            <select
+              value={region}
+              onChange={(e) => pickRegion(e.target.value)}
+              className="border border-slate-200 rounded-lg px-2 py-1 bg-white text-slate-700"
+            >
+              <option value="">—</option>
+              {DE_REGIONS.map((r) => (
+                <option key={r.code} value={r.code}>{r.name}</option>
+              ))}
+            </select>
+          </label>
+        )}
 
         {remaining !== null && limit !== null && (
           <p className="text-xs text-slate-400">

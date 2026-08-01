@@ -3,6 +3,20 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Landesrecht (D-035) phase 4: region-aware retrieval + Ava
+
+- `search_corpus` takes `region`: federal docs (region IS NULL) always,
+  the given Land's docs on top; no region → federal only (lawyer assistant
+  unchanged/safe). Hits and citations now carry `region`.
+- Public Ava: `AvaAskIn.region` (validated against the profile registry),
+  Landesrecht context labels show the Land ("NachbG NRW, § 15
+  [Nordrhein-Westfalen]"); DE prompt updated — NRW+BY Landesrecht now in
+  scope, other Länder explicitly declared as not yet covered.
+- DE Ava page: "Bundesland (optional)" dropdown (localStorage-persisted,
+  `avaRegionLabel` in 7 locales), sent with each question.
+- Verified live: NW question → NachbG NRW citations; BY → AGBGB Bayern +
+  BGB; no region → BGB only; XK Ava unaffected.
+
 ## 2026-08-01 — Landesrecht (D-035) phases 1–3: region schema, Land holidays, NRW+BY corpus
 
 - New `region` dimension (Bundesland codes, NULL = nation-wide/federal):
