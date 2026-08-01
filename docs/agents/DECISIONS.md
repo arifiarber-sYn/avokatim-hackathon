@@ -1204,3 +1204,35 @@
   market does not exist there in any practical form, so the flow would
   be dead UI. This is a documented decision, not an omission — revisit
   only if an XK insurer starts selling RSV-type policies.
+
+## D-050: Kosovo case law in the corpus via the KGJK publication portal (2026-08-01)
+
+- Context (B3): hybrid search + judgment citations shipped with D-042,
+  but the XK corpus held 0 judgments. Feasibility spike on the official
+  publication portal gjyqesori-rks.org/aktgjykimet/ came back a clear
+  GO: 290k+ published decisions (Supreme alone 21k), server-rendered
+  listing that accepts STATELESS GET filters
+  (?r=M&courtId=<id>&judgeStatus=1&ordBy=v.publicationDtTm&ordDir=DESC
+  &offset=<n>, 20 rows/page), rows carry case type/number, decision +
+  publication dates, judge, court and a direct PDF link; the PDFs are
+  text-native Albanian (no OCR needed for the sampled majority).
+- Decision: importer `backend/scripts/import_xk_judgments.py` modeled
+  on the DE one — listing page → Albanian (_SQ) PDF → pypdf text →
+  corpus API (doc_type="judgment", language "sq", reference = the
+  official designation printed in the judgment, e.g. "Rev.nr.46/2026",
+  falling back to portal type code + number). Defaults: Supreme Court,
+  last 5 years; --courts supreme,apeli,komerciale,<7 basic courts>,
+  --years, --limit. Resumable twice over: processed PDF URLs in
+  data/xk_judgments_state.txt + reference dedup against the corpus.
+- Constraints found: Cloudflare rate-limits bursts (429 after ~15 quick
+  requests, then 503) — the importer paces at 2.5s/doc and backs off
+  60/120/180/240s on 429/503. Some rows publish only the Serbian PDF —
+  skipped to keep the judgment corpus consistently Albanian ("sq" FTS
+  config); revisit if SR-language retrieval becomes a priority.
+- Ava: the public XK prompt now names published Kosovo case law among
+  its sources and requires citing court + case number ONLY when the
+  decision is provided as an excerpt (same anti-hallucination rule as
+  the DE prompt, D-042). Eval `scripts/eval_xk_recherche.py` guards
+  both directions: 12 statute questions must not regress (max_judgments
+  cap in _rrf_fuse) and case-law questions should start retrieving
+  judgments.

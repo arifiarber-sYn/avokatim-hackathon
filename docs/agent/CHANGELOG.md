@@ -3,6 +3,25 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Kosovo case law import + Albanian retrieval eval (D-050, B3)
+
+- New: `backend/scripts/import_xk_judgments.py` — imports published
+  judgments from the KGJK portal (gjyqesori-rks.org/aktgjykimet/,
+  stateless GET filters) as `doc_type="judgment"`; Albanian PDFs only,
+  official case designation as reference, 2.5s pacing + 429/503
+  backoff, resumable via `data/xk_judgments_state.txt` + reference
+  dedup. First batch: 150 Supreme Court decisions.
+- New: `backend/scripts/eval_xk_recherche.py` — 12 statute + 4 case-law
+  Albanian questions; before/after: statutes unchanged (7/9, 2/3),
+  case-law presence 0/4 → 4/4.
+- Changed: public XK Ava prompt (`backend/app/api/marketplace.py`) now
+  includes published Kosovo case law among sources; citations with
+  court + case number only when the decision is provided as an excerpt.
+- Tests: `backend/tests/test_import_xk_judgments.py` (7) with fixture
+  `tests/fixtures/xk_judgments_listing.html`; suite 219 passed.
+- Files: `backend/scripts/{import_xk_judgments,eval_xk_recherche}.py`,
+  `backend/app/api/marketplace.py`, `backend/tests/**`.
+
 ## 2026-08-01 — 0% positioning on both hosts, RSV documented DE-only (D-049, B4)
 
 - Changed: /per-avokatet "fixed subscription, 0 % commission" card now

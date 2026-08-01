@@ -45,7 +45,17 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   3 legs (pgvector cosine, plainto AND, rare-word prefix OR with df ≤ 2%);
   judgments capped at limit//3 slots. Eval `scripts/eval_de_recherche.py`:
   §-citation queries 1/6 → 5/6; known limit: German compounds
-  (Kündigungsschutzklage) still need better embeddings. **DE seed data**
+  (Kündigungsschutzklage) still need better embeddings.
+  **XK case law** (2026-08-01, D-050): `import_xk_judgments.py` scrapes the
+  KGJK publication portal (gjyqesori-rks.org/aktgjykimet/, stateless GET
+  filters, 290k+ decisions, Supreme 21k) — Albanian PDFs → pypdf →
+  `doc_type="judgment"`, reference = official designation (Rev.nr./Pml.nr.…);
+  paced 2.5s/doc with 429/503 backoff, resumable via
+  `data/xk_judgments_state.txt` + reference dedup; first batch of 150
+  Supreme decisions imported. Eval `scripts/eval_xk_recherche.py`:
+  statute questions 7/9 + 2/3 unchanged before/after, case-law questions
+  0/4 → 4/4 with ≥1 judgment in top-6. Public XK Ava prompt cites
+  court + case number only from provided excerpts. **DE seed data**
   (`seeds/germany.py`): federal holidays (incl. Easter calc) + per-Land
   holidays 2026–27 (whole-Land only; deadline engine uses `tenant.region`
   via the settings Bundesland picker), 14 deadline
@@ -919,7 +929,10 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
 ## Jurisdictions
 
-- **XK (Kosovo): active** — deadline rules, holidays, templates seeded.
+- **XK (Kosovo): active** — deadline rules, holidays, templates seeded;
+  litigation cost calculator (D-047), Albanian public guides /udhezues
+  (D-048), Supreme Court case law in the corpus via
+  `import_xk_judgments.py` (D-050, first 150 imported, resumable).
 - **DE (Germany): active** (2026-08-01, D-034) — profile in
   `app/jurisdictions.py`, seed data in `seeds/germany.py`, 99-act corpus
   (78 federal laws + DSGVO + 20 Landesrecht acts NW/BY, D-035) + federal

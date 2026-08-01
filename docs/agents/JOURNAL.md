@@ -10,6 +10,29 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01x — D-050 B3: Jurisprudenca e Kosovës në korpus (Cursor / Fable 5)
+
+- Done: spike feasibiliteti mbi gjyqesori-rks.org/aktgjykimet/ → GO
+  (290k+ vendime të publikuara, Supremja 21k; listim server-side me
+  filtra GET pa sesion; PDF shqip me tekst nativ). Importues i ri
+  `scripts/import_xk_judgments.py` (model i DE-së): listim → PDF _SQ →
+  pypdf → corpus API me `doc_type="judgment"`, referencë = shenja
+  zyrtare nga vetë aktgjykimi (Rev.nr./Pml.nr./ARJ.nr.…); ritëm 2,5s
+  për dokument + backoff 60–240s ndaj 429/503 të Cloudflare; i
+  rifillueshëm dyfish (data/xk_judgments_state.txt + dedup referencash).
+  Rreshtat vetëm-serbisht kapërcehen.
+- Done: eval i ri `scripts/eval_xk_recherche.py` (12 pyetje ligjesh +
+  3 citime nenesh + 4 pyetje praktike gjyqësore) dhe përditësimi i
+  prompt-it publik të Ava-s XK: praktika gjyqësore ndër burimet, citim
+  me gjykatë + numër lënde VETËM kur vendimi jepet si fragment.
+- Verified: import i parë 150 vendime të Supremes (ok=150 skip=12
+  fail=0); eval para/pas — ligjet 7/9 e 2/3 të pandryshuara (cap-i
+  limit//3 i mbron slotet e ligjeve), pyetjet e praktikës 0/4 → 4/4 me
+  ≥1 aktgjykim në top-6; 219 teste kalojnë (7 të reja për parser-in);
+  health OK pas restart-it.
+- Left open / next: vazhdimi i importit të plotë (Supremja 5 vjet ≈
+  21k, riekzekuto skriptin — vazhdon vetë), pastaj apeli/komerciale.
+
 ## 2026-08-01w — D-049 B4: Pozicionimi 0% në të dy hostet + RSV mbetet DE-only (Cursor / Fable 5)
 
 - Done: karta «Abonim fiks. 0 % komision» te /per-avokatet shfaqet tani
