@@ -3,6 +3,16 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — 0% positioning on both hosts, RSV documented DE-only (D-049, B4)
+
+- Changed: /per-avokatet "fixed subscription, 0 % commission" card now
+  renders for XK too (dictionary keys renamed `lpDe0*` → `lp0*`, same
+  market-neutral wording); the BRAK-KI checklist stays DE-only.
+- Decision: RSV/Deckungsanfrage deliberately not ported to Kosovo (no
+  RSV market) — recorded as D-049 in `docs/agents/DECISIONS.md`.
+- Files: `frontend/src/app/per-avokatet/page.tsx`,
+  `frontend/src/lib/dictionaries.ts`.
+
 ## 2026-08-01 — Albanian public legal guides /udhezues (D-048, B2)
 
 - Changed: `frontend/src/lib/ratgeber.ts` — `RatgeberArticle` gains a

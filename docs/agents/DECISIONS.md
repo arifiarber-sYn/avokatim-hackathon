@@ -1187,3 +1187,20 @@
 - Consequences: adding a guide = one array entry; a future third
   jurisdiction adds its own data file and route pair without touching
   the article components.
+
+## D-049: 0%-commission positioning on both hosts; RSV stays DE-only (2026-08-01)
+
+- Context (parity pass B4): the "fixed subscription, 0 % commission per
+  mandate" section on /per-avokatet was DE-only (D-045), yet the claim
+  is true of the product everywhere and referral platforms taking fee
+  shares exist in Kosovo too. Conversely the Deckungsanfrage/RSV flow
+  (insurer directory, coverage-request letters, /posto-rastin insurance
+  question) could have been ported to XK for symmetry.
+- Decision: (1) the positioning card renders on both hosts with the
+  same market-neutral wording (keys renamed lpDe0* → lp0*); the BRAK-KI
+  compliance checklist below it stays DE-only since it cites German
+  professional rules. (2) The RSV/Deckungsanfrage feature set is
+  deliberately NOT ported to Kosovo: a private legal-expenses-insurance
+  market does not exist there in any practical form, so the flow would
+  be dead UI. This is a documented decision, not an omission — revisit
+  only if an XK insurer starts selling RSV-type policies.

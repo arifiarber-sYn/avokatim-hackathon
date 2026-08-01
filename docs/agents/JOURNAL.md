@@ -10,6 +10,16 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01w — D-049 B4: Pozicionimi 0% në të dy hostet + RSV mbetet DE-only (Cursor / Fable 5)
+
+- Done: karta «Abonim fiks. 0 % komision» te /per-avokatet shfaqet tani
+  edhe për hostin XK (çelësat u riemëruan lpDe0* → lp0*, formulimi
+  neutral ndaj tregut i pandryshuar); checklist-i BRAK-KI mbetet vetëm
+  DE. Vendimi që RSV/Deckungsanfrage NUK bartet në Kosovë (s'ka treg
+  RSV) u dokumentua si D-049 — vendim, jo harresë.
+- Verified: build OK, /per-avokatet 200 me kartën 0% në SSR-in e hostit XK.
+- Left open / next: B3 — spike feasibiliteti i jurisprudencës XK.
+
 ## 2026-08-01v — D-048 B2: Udhëzuesit publikë shqip /udhezues (Cursor / Fable 5)
 
 - Done: `RatgeberArticle` merr fushën `country` ("DE"|"XK"); artikujt

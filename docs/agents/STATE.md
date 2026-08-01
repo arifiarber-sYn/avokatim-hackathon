@@ -374,10 +374,12 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   sets `insurance_status=angefragt`; lawyer records bestätigt/abgelehnt;
   after 14 days without answer the card nudges a follow-up
   (`GET/POST /matters/{id}/deckung[/anfrage|/status]`).
-- **DE market positioning + Ratgeber** (2026-08-01, D-045): /per-avokatet
-  on the DE host gets a "fixed subscription, 0 % commission per mandate"
-  section (careful wording, no competitor named) and a BRAK-KI-Leitlinien
-  compliance checklist. New public content: 10 curated German consumer-law
+- **Market positioning + Ratgeber** (2026-08-01, D-045/D-049): /per-avokatet
+  shows a "fixed subscription, 0 % commission per mandate" section on both
+  hosts (careful wording, no competitor named; keys `lp0T`/`lp0B`) and, on
+  the DE host only, a BRAK-KI-Leitlinien compliance checklist. RSV /
+  Deckungsanfrage deliberately stays DE-only (no RSV market in Kosovo,
+  D-049). New public content: 10 curated German consumer-law
   guides at `/ratgeber/[slug]` (static data in `frontend/src/lib/ratgeber.ts`,
   Article JSON-LD, per-host canonical, DE-only sitemap entries, RDG-safe
   disclaimer, CTA → Ava / posto-rastin).
