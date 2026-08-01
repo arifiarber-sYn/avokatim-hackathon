@@ -12,6 +12,7 @@ import {
 } from "@/lib/citizen";
 import { Button, Card, ErrorNote, Input, Label, Select, Spinner, Textarea } from "@/components/ui";
 import { clientCountry } from "@/lib/country";
+import { ovCaseMatch, OV_PORTAL_URL } from "@/lib/ov";
 import PublicShell from "@/components/public-shell";
 import PageIntro from "@/components/page-intro";
 import CitizenAuthForm from "@/components/citizen-auth";
@@ -233,6 +234,22 @@ function PostCaseInner() {
                   minLength={20}
                 />
               </div>
+              {isDE && ovCaseMatch(form.description) && (
+                <div className="rounded-lg border border-sky-200 bg-sky-50 p-3 space-y-1">
+                  <p className="text-sm font-semibold text-sky-800">{t.ovCitT}</p>
+                  <p className="text-xs text-sky-700">
+                    {t.ovCitBody}{" "}
+                    <a
+                      href={OV_PORTAL_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline font-medium"
+                    >
+                      service.justiz.de
+                    </a>
+                  </p>
+                </div>
+              )}
               {isDE && (
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-2">
                   <Label>{t.rsvQuestion}</Label>

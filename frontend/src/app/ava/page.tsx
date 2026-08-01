@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
 import { getCitizenToken } from "@/lib/citizen";
 import { clientCountry, DE_REGIONS } from "@/lib/country";
+import { ovCaseMatch, OV_PORTAL_URL } from "@/lib/ov";
 import { Button, Card, ErrorNote, Textarea, TypingDots } from "@/components/ui";
 import PublicShell from "@/components/public-shell";
 import PageIntro from "@/components/page-intro";
@@ -334,6 +335,28 @@ export default function PublicAvaPage() {
             </Button>
           </Card>
         )}
+
+        {/* Online-Verfahren pointer (DE, D-041) — information only, RDG-safe */}
+        {isDE &&
+          !busy &&
+          ovCaseMatch(
+            messages.filter((m) => m.role === "user").map((m) => m.content).join(" ")
+          ) && (
+            <div className="rounded-lg border border-sky-200 bg-sky-50 p-3 space-y-1">
+              <p className="text-sm font-semibold text-sky-800">{t.ovCitT}</p>
+              <p className="text-xs text-sky-700">
+                {t.ovCitBody}{" "}
+                <a
+                  href={OV_PORTAL_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline font-medium"
+                >
+                  service.justiz.de
+                </a>
+              </p>
+            </div>
+          )}
 
         <ErrorNote message={error} />
         <form onSubmit={ask} className="flex gap-2 items-end sticky bottom-24 md:bottom-4">

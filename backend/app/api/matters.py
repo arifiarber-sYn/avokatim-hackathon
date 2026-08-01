@@ -330,3 +330,89 @@ async def add_note(
     await db.commit()
     await db.refresh(note)
     return note
+
+
+# ---------- Zivilgerichtliches Online-Verfahren (DE, D-041) ----------
+
+
+async def _require_de_matter(
+    db: AsyncSession, user: User, matter_id: uuid.UUID
+) -> Matter:
+    matter = await get_owned_matter(db, user, matter_id)
+    jurisdiction = await db.get(Jurisdiction, matter.jurisdiction_id)
+    if jurisdiction is None or jurisdiction.code != "DE":
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, "Online-Verfahren is a German procedure"
+        )
+    return matter
+
+
+@router.get("/{matter_id}/online-verfahren")
+async def online_verfahren_check(
+    matter_id: uuid.UUID,
+    value_eur: float | None = None,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Eligibility of the matter for the civil online procedure: value cap,
+    pilot-court participation, reduced court fees, suggested Klageschrift
+    template. The lawyer confirms claim type — this is decision support."""
+    from decimal import Decimal
+
+    from app.models import DocumentTemplate
+    from app.services.online_verfahren import check_eligibility
+
+    matter = await _require_de_matter(db, user, matter_id)
+    value = Decimal(str(value_eur)) if value_eur else None
+    result = check_eligibility(
+        value_eur=value,
+        court_name=matter.court_name,
+        title=matter.title,
+        description=matter.description,
+    )
+    # Attach the template id so the UI can jump straight to rendering
+    tpl = (
+        await db.execute(
+            select(DocumentTemplate).where(
+                DocumentTemplate.code == result["suggested_template"],
+                DocumentTemplate.tenant_id.is_(None),
+                DocumentTemplate.jurisdiction_id == matter.jurisdiction_id,
+            )
+        )
+    ).scalar_one_or_none()
+    result["template_id"] = str(tpl.id) if tpl else None
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id,
+        action="matter.ov_check", entity_type="matter", entity_id=str(matter.id),
+        details={"eligible": result["eligible"], "value_eur": value_eur},
+    )
+    await db.commit()
+    return result
+
+
+@router.get("/{matter_id}/ov-export")
+async def online_verfahren_export(
+    matter_id: uuid.UUID,
+    value_eur: float | None = None,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Structured claim JSON (avokatim.ov-export/v1) — groundwork for the
+    XJustiz submission once the BMJV opens the lawyer-side system."""
+    from decimal import Decimal
+
+    from app.api.templates import _matter_variables
+    from app.services.online_verfahren import export_payload
+
+    matter = await _require_de_matter(db, user, matter_id)
+    variables = await _matter_variables(db, user, matter)
+    payload = export_payload(
+        matter, variables, Decimal(str(value_eur)) if value_eur else None
+    )
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id,
+        action="matter.ov_export", entity_type="matter", entity_id=str(matter.id),
+        details={"claim_type": payload["claim_type"]},
+    )
+    await db.commit()
+    return payload

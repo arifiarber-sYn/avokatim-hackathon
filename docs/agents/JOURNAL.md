@@ -10,6 +10,29 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01l — D-041 F2: Asistenti i Online-Verfahren (procedura civile online) (Cursor / Fable 5)
+
+- Done: faza 2. Seed `DE_OV_COURTS` — 18 gjykatat pilote me datat e nisjes
+  dhe fushën (payment/flight; burimi: BMJV 15.4.2026 + service.justiz.de) +
+  dy template `civil.ov_klageschrift` / `civil.ov_fluggastrechte` (Jinja2,
+  seed-ohen automatikisht). Service `online_verfahren.py`: `check_eligibility`
+  (vlera ≤ 10k, përputhja e gjykatës me listën pilote, detektimi i rasteve
+  të fluturimit, taksat e reduktuara 2,0 kundrejt 3,0) + `export_payload`
+  (JSON i strukturuar "avokatim.ov-export/v1" — terreni për XJustiz).
+  API: `GET /matters/{id}/online-verfahren` + `GET /matters/{id}/ov-export`
+  (vetëm lëndë DE, audit log). UI avokati: buton "Online-Verfahren prüfen"
+  në tab-in AI (probe → i fshehur për XK), kartë me kontrollet ✓/✗/•,
+  krahasimi i paradhënies, shkarkim .docx i Klageschrift-it me variablat e
+  lëndës + eksport JSON. Ana e qytetarit (RDG-safe, vetëm informim):
+  kartë "mund ta bësh vetë në service.justiz.de" te /posto-rastin dhe te
+  Ava DE kur rasti duket pagesë ≤ 10k ose fluturim (`lib/ov.ts`).
+  20 çelësa `ov*` në 7 gjuhët.
+- Verified: 6 teste të reja (156 gjithsej kalojnë); test live: zyrë e re DE →
+  lëndë me "AG Frankfurt am Main" → eligible=true, kursimi 170,50 € te
+  5.000/4.200 €, template i lidhur, eksporti JSON i saktë; template-t
+  u seed-uan në DB pas restart-it.
+- Left open: F3 (kërkimi hibrid + jurisprudenca).
+
 ## 2026-08-01k — D-040 F1: Prozesskostenrechner (RVG + GKG + rreziku § 91 ZPO) (Cursor / Fable 5)
 
 - Done: faza 1 e valës së avancimit DE. Seed `DE_GKG_TABLE` (Anlage 2 GKG,

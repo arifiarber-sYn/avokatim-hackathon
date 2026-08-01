@@ -496,6 +496,38 @@ DE_PROZESSKOSTEN_INSTANCES = [
     },
 ]
 
+# Zivilgerichtliches Online-Verfahren (D-041): the 18 pilot local courts
+# per the BMJV announcement of 2026-04-15 (source: bmjv.de + service.justiz.de,
+# court lists set by Rechtsverordnung of each Land). `scope` is either
+# "payment" (general payment claims <= 10,000 € — includes air passenger
+# rights) or "flight" (air passenger rights only). `live_from` is the date
+# the court joined the pilot. Court fee in the OV: 2.0 instead of 3.0
+# (reduced Gerichtskostenvorschuss, service.justiz.de).
+DE_OV_COURTS = [
+    {"name": "AG Mannheim", "state": "BW", "scope": "payment", "live_from": "2026-04-20"},
+    {"name": "AG Nürtingen", "state": "BW", "scope": "payment", "live_from": "2026-04-20"},
+    {"name": "AG Nürnberg", "state": "BY", "scope": "payment", "live_from": "2026-04-15"},
+    {"name": "AG Schöneberg", "state": "BE", "scope": "payment", "live_from": "2026-04-15"},
+    {"name": "AG Bremen", "state": "HB", "scope": "payment", "live_from": "2026-04-15"},
+    {"name": "AG Hamburg-Mitte", "state": "HH", "scope": "payment", "live_from": "2026-04-15"},
+    {"name": "AG Frankfurt am Main", "state": "HE", "scope": "payment", "live_from": "2026-04-15"},
+    {"name": "AG Leipzig", "state": "SN", "scope": "payment", "live_from": "2026-04-15"},
+    {"name": "AG Bonn", "state": "NW", "scope": "payment", "live_from": "2026-06-01"},
+    {"name": "AG Essen", "state": "NW", "scope": "payment", "live_from": "2026-06-01"},
+    {"name": "AG Dortmund", "state": "NW", "scope": "payment", "live_from": "2026-06-01"},
+    {"name": "AG Bitburg", "state": "RP", "scope": "payment", "live_from": "2026-06-01"},
+    {"name": "AG Sinzig", "state": "RP", "scope": "payment", "live_from": "2026-06-01"},
+    {"name": "AG Erding", "state": "BY", "scope": "flight", "live_from": "2026-04-15"},
+    {"name": "AG Eilenburg", "state": "SN", "scope": "flight", "live_from": "2026-04-15"},
+    {"name": "AG Düsseldorf", "state": "NW", "scope": "flight", "live_from": "2026-06-01"},
+    {"name": "AG Steinfurt", "state": "NW", "scope": "flight", "live_from": "2026-06-01"},
+    {"name": "AG Königs Wusterhausen", "state": "BB", "scope": "flight", "live_from": "2026-10-01"},
+]
+
+OV_MAX_VALUE = 10_000  # EUR — Amtsgericht ceiling of the pilot
+OV_PORTAL_URL = "https://service.justiz.de/klagen-ohne-anwalt"
+
+
 # Value-fee items (Nr. 3100 etc.) depend on the Gegenstandswert; the amounts
 # here are the fixed statutory anchors a solo lawyer reaches for first.
 DE_FEE_TARIFF = [
@@ -664,6 +696,149 @@ II. Beweismittel
 III. Rechtliche Würdigung
 
 Der Anspruch ergibt sich aus dem dargestellten Sachverhalt.
+
+{{ city }}, den {{ date }}
+
+_____________________
+{{ lawyer_name }}
+Rechtsanwalt/Rechtsanwältin""",
+    },
+    {
+        "code": "civil.ov_klageschrift",
+        "locale": "de",
+        "practice_area": "civil",
+        "name": {
+            "de": "Klageschrift Online-Verfahren (Zahlungsklage ≤ 10.000 €)",
+            "en": "Statement of claim, online procedure (payment ≤ €10,000)",
+            "sq": "Padi për procedurën online (pagesë ≤ 10.000 €)",
+        },
+        "variables": [
+            {"name": "court_name", "label": {"de": "Pilot-Amtsgericht", "en": "Pilot local court", "sq": "Gjykata pilote"}},
+            {"name": "claim_amount", "label": {"de": "Forderung (€)", "en": "Amount claimed (€)", "sq": "Shuma e kërkuar (€)"}},
+            {"name": "claim_basis", "label": {"de": "Anspruchsgrund (z. B. Rechnung, Mietvertrag)", "en": "Basis of claim (e.g. invoice, lease)", "sq": "Baza e kërkesës (p.sh. fatura, kontrata)"}},
+            {"name": "due_since", "label": {"de": "Fällig seit", "en": "Due since", "sq": "E maturuar që nga"}},
+            {"name": "facts", "label": {"de": "Sachverhalt", "en": "Facts", "sq": "Faktet"}},
+            {"name": "evidence", "label": {"de": "Beweismittel", "en": "Evidence", "sq": "Provat"}},
+        ],
+        "body": """An das
+{{ court_name }}
+— Online-Verfahren —
+
+KLAGE IM ONLINE-VERFAHREN
+(Zahlungsklage nach dem Gesetz zur Entwicklung und Erprobung
+eines Online-Verfahrens in der Zivilgerichtsbarkeit)
+
+des/der {{ client_name }}, {{ client_address }},
+— Kläger/in —
+Prozessbevollmächtigte/r: {{ lawyer_name }}, {{ firm_name }}
+
+gegen
+
+{{ opposing_name }}
+— Beklagte/r —
+
+wegen: Zahlungsanspruch aus {{ claim_basis }}
+Streitwert: {{ claim_amount }} €
+
+Wir beantragen,
+
+1. die Beklagtenseite zu verurteilen, an die Klagepartei {{ claim_amount }} €
+   nebst Zinsen in Höhe von 5 Prozentpunkten über dem Basiszinssatz
+   seit dem {{ due_since }} zu zahlen;
+2. der Beklagtenseite die Kosten des Rechtsstreits aufzuerlegen.
+
+Begründung:
+
+I. Sachverhalt
+
+{{ facts }}
+
+Der Anspruch ist seit dem {{ due_since }} fällig. Die Beklagtenseite wurde
+zur Zahlung aufgefordert; eine Zahlung ist nicht erfolgt.
+
+II. Beweismittel
+
+{{ evidence }}
+
+III. Zulässigkeit des Online-Verfahrens
+
+Es handelt sich um eine Zahlungsklage mit einem Streitwert bis 10.000 €.
+Das angerufene Amtsgericht nimmt an der Erprobung des zivilgerichtlichen
+Online-Verfahrens teil.
+
+{{ city }}, den {{ date }}
+
+_____________________
+{{ lawyer_name }}
+Rechtsanwalt/Rechtsanwältin""",
+    },
+    {
+        "code": "civil.ov_fluggastrechte",
+        "locale": "de",
+        "practice_area": "civil",
+        "name": {
+            "de": "Klageschrift Online-Verfahren (Fluggastrechte, VO (EG) 261/2004)",
+            "en": "Statement of claim, online procedure (air passenger rights)",
+            "sq": "Padi për procedurën online (të drejtat e pasagjerëve ajrorë)",
+        },
+        "variables": [
+            {"name": "court_name", "label": {"de": "Pilot-Amtsgericht (Start- oder Zielflughafen)", "en": "Pilot court (departure or arrival airport)", "sq": "Gjykata pilote (aeroporti i nisjes/mbërritjes)"}},
+            {"name": "airline", "label": {"de": "Luftfahrtunternehmen (Beklagte)", "en": "Airline (defendant)", "sq": "Kompania ajrore (e paditura)"}},
+            {"name": "flight_number", "label": {"de": "Flugnummer", "en": "Flight number", "sq": "Numri i fluturimit"}},
+            {"name": "flight_date", "label": {"de": "Flugdatum", "en": "Flight date", "sq": "Data e fluturimit"}},
+            {"name": "route", "label": {"de": "Strecke (von — nach)", "en": "Route (from — to)", "sq": "Linja (nga — për)"}},
+            {"name": "disruption", "label": {"de": "Störung (Annullierung / Verspätung > 3 h / Nichtbeförderung)", "en": "Disruption (cancellation / delay > 3 h / denied boarding)", "sq": "Problemi (anulim / vonesë > 3 orë / mospranim)"}},
+            {"name": "compensation", "label": {"de": "Ausgleichszahlung (€ — 250/400/600 je Entfernung)", "en": "Compensation (€ — 250/400/600 by distance)", "sq": "Kompensimi (€ — 250/400/600 sipas distancës)"}},
+            {"name": "facts", "label": {"de": "Sachverhalt", "en": "Facts", "sq": "Faktet"}},
+        ],
+        "body": """An das
+{{ court_name }}
+— Online-Verfahren —
+
+KLAGE IM ONLINE-VERFAHREN
+(Fluggastrechte, Verordnung (EG) Nr. 261/2004)
+
+des/der {{ client_name }}, {{ client_address }},
+— Kläger/in —
+Prozessbevollmächtigte/r: {{ lawyer_name }}, {{ firm_name }}
+
+gegen
+
+{{ airline }}
+— Beklagte —
+
+wegen: Ausgleichszahlung nach Art. 7 VO (EG) Nr. 261/2004
+Streitwert: {{ compensation }} €
+
+Wir beantragen,
+
+1. die Beklagte zu verurteilen, an die Klagepartei {{ compensation }} €
+   nebst Zinsen in Höhe von 5 Prozentpunkten über dem Basiszinssatz
+   seit Rechtshängigkeit zu zahlen;
+2. der Beklagten die Kosten des Rechtsstreits aufzuerlegen.
+
+Begründung:
+
+I. Sachverhalt
+
+Die Klagepartei verfügte über eine bestätigte Buchung für den Flug
+{{ flight_number }} am {{ flight_date }} ({{ route }}), ausgeführt durch
+die Beklagte. Störung: {{ disruption }}.
+
+{{ facts }}
+
+II. Anspruch
+
+Der Anspruch auf Ausgleichszahlung in Höhe von {{ compensation }} € ergibt
+sich aus Art. 5 bzw. Art. 4 i. V. m. Art. 7 der Verordnung (EG)
+Nr. 261/2004. Außergewöhnliche Umstände im Sinne des Art. 5 Abs. 3 sind
+nicht ersichtlich.
+
+III. Zuständigkeit und Online-Verfahren
+
+Das angerufene Amtsgericht ist als Gericht des Abflug- bzw. Ankunftsorts
+zuständig und nimmt an der Erprobung des zivilgerichtlichen
+Online-Verfahrens für Fluggastrechte teil.
 
 {{ city }}, den {{ date }}
 

@@ -983,3 +983,26 @@
   endpoint gives offices the same numbers for client advice. The § 12a
   ArbGG labor-court exception is a UI note, not modeled — acceptable for
   an informative tool.
+
+## D-041: Online-Verfahren assistant — pilot courts as data, RDG-safe citizen side (2026-08-01)
+
+- Context: Germany's civil online procedure went live 2026-04-15 (payment
+  claims ≤ 10,000 € + air passenger rights, 18 pilot local courts,
+  service.justiz.de, reduced 2.0 court fee). No practice-management tool
+  owns this workflow yet — first-mover window.
+- Decision: pilot courts live in `seeds/germany.py` (`DE_OV_COURTS` with
+  scope + live_from, set by Land ordinances and expected to grow) — the
+  service (`online_verfahren.py`) only evaluates: value cap, court match,
+  flight detection, fee comparison. Eligibility `checks` use stable codes
+  localized client-side. Klageschrift generation reuses the existing
+  DocumentTemplate machinery (two new seeded templates), no new renderer.
+  `ov-export` returns format-neutral JSON (`avokatim.ov-export/v1`) until
+  the BMJV publishes the lawyer-side XJustiz submission spec — we don't
+  guess a schema we'd have to break.
+- Citizen side is information-only (RDG § 2: no individual legal advice):
+  a static pointer card to the official portal, shown when a deterministic
+  matcher (flight keywords or € amount ≤ 10k) fires on the case text —
+  no LLM judgment, no recommendation of a course of action.
+- Consequences: when courts join/leave the pilot, we edit a seed list.
+  The lawyer endpoints 404 for non-DE matters, and the app button hides
+  itself by probing. Both OV endpoints write audit-log entries (rule §5.8).

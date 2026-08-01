@@ -1233,6 +1233,23 @@ function Notes({ matterId }: { matterId: string }) {
 
 const DRAFT_MARKER = "=== DRAFT-SHKRESA ===";
 
+interface OvCheck {
+  code: string;
+  ok: boolean | null;
+  court?: { name: string; state: string; scope: string; live_from: string };
+}
+
+interface OvResult {
+  eligible: boolean;
+  is_flight_case: boolean;
+  suggested_template: string;
+  template_id: string | null;
+  checks: OvCheck[];
+  matched_court: { name: string } | null;
+  portal_url: string;
+  fees: { regular_advance: string; ov_advance: string; saving: string } | null;
+}
+
 function MatterAI({ matterId }: { matterId: string }) {
   const { t, locale } = useI18n();
   const [output, setOutput] = useState("");
@@ -1243,6 +1260,42 @@ function MatterAI({ matterId }: { matterId: string }) {
   const [copiedText, setCopiedText] = useState(false);
   const [prepStep, setPrepStep] = useState("");
   const [copiedDraft, setCopiedDraft] = useState(false);
+  // Zivilgerichtliches Online-Verfahren (DE matters, D-041)
+  const [ovOpen, setOvOpen] = useState(false);
+  const [ovValue, setOvValue] = useState("");
+  const [ov, setOv] = useState<OvResult | null>(null);
+  const [ovBusy, setOvBusy] = useState(false);
+  const [ovAvailable, setOvAvailable] = useState(false);
+
+  useEffect(() => {
+    // The endpoint 404s for non-DE matters — probe once to decide visibility
+    apiGet<OvResult>(`/matters/${matterId}/online-verfahren`)
+      .then(() => setOvAvailable(true))
+      .catch(() => setOvAvailable(false));
+  }, [matterId]);
+
+  async function checkOv() {
+    setOvBusy(true);
+    setError("");
+    try {
+      const query = ovValue ? `?value_eur=${encodeURIComponent(ovValue)}` : "";
+      setOv(await apiGet<OvResult>(`/matters/${matterId}/online-verfahren${query}`));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setOvBusy(false);
+    }
+  }
+
+  const OV_CHECK_LABELS: Record<string, string> = {
+    value_ok: t.ovcValueOk,
+    value_too_high: t.ovcValueHigh,
+    value_unknown: t.ovcValueUnknown,
+    court_pilot: t.ovcCourtPilot,
+    court_flight_only: t.ovcCourtFlightOnly,
+    court_unknown: t.ovcCourtUnknown,
+    payment_claim_manual: t.ovcPaymentManual,
+  };
 
   /** Agentic preparation: Ava reads the file, researches each legal question
    * in the corpus and streams back analysis + next steps + a draft document. */
@@ -1323,8 +1376,104 @@ function MatterAI({ matterId }: { matterId: string }) {
         <Button onClick={() => run("clientUpdate")} disabled={busy} variant="secondary">
           {t.draftClientUpdate}
         </Button>
+        {ovAvailable && (
+          <Button onClick={() => setOvOpen((v) => !v)} disabled={busy} variant="secondary">
+            ⚖ {t.ovCheckBtn}
+          </Button>
+        )}
       </div>
       <ErrorNote message={error} />
+      {ovOpen && (
+        <Card className="p-5 space-y-3">
+          <h3 className="text-sm font-semibold">{t.ovTitle}</h3>
+          <div className="flex gap-2 items-end flex-wrap">
+            <div>
+              <Label>{t.rvgValue}</Label>
+              <Input
+                type="number"
+                min="1"
+                value={ovValue}
+                onChange={(e) => setOvValue(e.target.value)}
+                className="w-40"
+              />
+            </div>
+            <Button onClick={checkOv} disabled={ovBusy}>
+              {ovBusy ? t.loading : t.ovCheckBtn}
+            </Button>
+          </div>
+          {ov && (
+            <div className="space-y-3">
+              <p
+                className={`text-sm font-semibold ${
+                  ov.eligible ? "text-emerald-700" : "text-amber-700"
+                }`}
+              >
+                {ov.eligible ? t.ovEligible : t.ovNotEligible}
+              </p>
+              <ul className="space-y-1">
+                {ov.checks.map((check) => (
+                  <li key={check.code} className="flex items-start gap-2 text-sm text-slate-600">
+                    <span>
+                      {check.ok === true ? "✓" : check.ok === false ? "✗" : "•"}
+                    </span>
+                    <span>
+                      {OV_CHECK_LABELS[check.code] || check.code}
+                      {check.court ? ` — ${check.court.name}` : ""}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {ov.fees && (
+                <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-sm text-slate-700 space-y-0.5">
+                  <div className="flex justify-between">
+                    <span>{t.ovFeeRegular}</span>
+                    <span className="font-mono">{Number(ov.fees.regular_advance).toFixed(2)} €</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t.ovFeeOv}</span>
+                    <span className="font-mono">{Number(ov.fees.ov_advance).toFixed(2)} €</span>
+                  </div>
+                  <div className="flex justify-between font-semibold text-emerald-700">
+                    <span>{t.ovFeeSaving}</span>
+                    <span className="font-mono">−{Number(ov.fees.saving).toFixed(2)} €</span>
+                  </div>
+                </div>
+              )}
+              <div className="flex gap-2 flex-wrap">
+                {ov.template_id && (
+                  <Button
+                    variant="secondary"
+                    onClick={() =>
+                      apiDownload("/templates/render-docx", "ov-klageschrift.docx", {
+                        method: "POST",
+                        body: {
+                          template_id: ov.template_id,
+                          matter_id: matterId,
+                          variables: ovValue ? { claim_amount: ovValue, claim_value: ovValue, compensation: ovValue } : {},
+                        },
+                      })
+                    }
+                  >
+                    {t.ovOpenTemplate}
+                  </Button>
+                )}
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    apiDownload(
+                      `/matters/${matterId}/ov-export${ovValue ? `?value_eur=${encodeURIComponent(ovValue)}` : ""}`,
+                      "ov-export.json"
+                    )
+                  }
+                >
+                  {t.ovExportJson}
+                </Button>
+              </div>
+              <p className="text-xs text-slate-400">{t.ovSubmitHint}</p>
+            </div>
+          )}
+        </Card>
+      )}
       {busy && (
         <p className="text-sm text-slate-500 animate-pulse">{prepStep || t.thinking}</p>
       )}

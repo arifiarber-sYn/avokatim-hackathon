@@ -3,6 +3,28 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Online-Verfahren assistant: eligibility, Klageschrift, citizen pointer (D-041 F2)
+
+- New: support for Germany's civil online procedure (live 2026-04-15).
+  Seeds: `DE_OV_COURTS` (18 pilot courts, scope payment/flight, go-live
+  dates) + templates `civil.ov_klageschrift` / `civil.ov_fluggastrechte`.
+  Service `online_verfahren.py`: eligibility (≤ 10,000 €, pilot-court
+  match, flight-case detection), reduced-fee comparison (2.0 vs 3.0),
+  structured `avokatim.ov-export/v1` JSON as XJustiz groundwork.
+- API: `GET /matters/{id}/online-verfahren` + `/ov-export` (DE matters
+  only, audited). Lawyer UI: "Online-Verfahren prüfen" in the matter AI
+  tab — checks, fee saving, .docx Klageschrift download, JSON export.
+  Citizen UI (RDG-safe, information only): pointer card to
+  service.justiz.de on /posto-rastin and Ava DE when the case matches
+  (`lib/ov.ts`). 20 new `ov*` dictionary keys in all 7 locales.
+- Tests: `tests/test_online_verfahren.py` (6) — 156 total green; live E2E
+  check against a fresh DE office (court match, fees, template, export).
+- Files: `backend/app/seeds/germany.py`, `backend/app/services/
+  online_verfahren.py` (new), `api/matters.py`, `tests/
+  test_online_verfahren.py` (new), `frontend/src/lib/ov.ts` (new),
+  `matters/[id]/page.tsx`, `posto-rastin/page.tsx`, `ava/page.tsx`,
+  `lib/dictionaries.ts`.
+
 ## 2026-08-01 — Prozesskostenrechner: GKG court fees + litigation cost risk (D-040 F1)
 
 - New: full German litigation cost-risk calculator on top of the existing
