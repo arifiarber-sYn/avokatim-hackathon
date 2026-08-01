@@ -11,6 +11,7 @@ import {
   setCitizenToken,
 } from "@/lib/citizen";
 import { Button, Card, ErrorNote, Input, Label, Select, Spinner, Textarea } from "@/components/ui";
+import { clientCountry } from "@/lib/country";
 import PublicShell from "@/components/public-shell";
 import PageIntro from "@/components/page-intro";
 import CitizenAuthForm from "@/components/citizen-auth";
@@ -62,6 +63,12 @@ function PostCaseInner() {
   const [checking, setChecking] = useState(true);
   const [form, setForm] = useState({ category: "civil", description: "", city: "", urgency: "normal" });
 
+  // Rechtsschutzversicherung — asked on the German host only (D-037)
+  const [isDE, setIsDE] = useState(false);
+  useEffect(() => setIsDE(clientCountry() === "DE"), []);
+  const [insured, setInsured] = useState<"" | "yes" | "no">("");
+  const [insurerName, setInsurerName] = useState("");
+
   // Prefill from a public Ava conversation ("Më lidh me avokat"): either the
   // structured JSON draft from /ava/structure-case, or a plain-text fallback.
   useEffect(() => {
@@ -78,6 +85,10 @@ function PostCaseInner() {
           city: typeof parsed.city === "string" ? parsed.city : f.city,
           urgency: parsed.urgency === "urgent" ? "urgent" : f.urgency,
         }));
+        if (typeof parsed.has_legal_insurance === "boolean") {
+          setInsured(parsed.has_legal_insurance ? "yes" : "no");
+          if (parsed.insurer_name) setInsurerName(String(parsed.insurer_name));
+        }
         return;
       }
     } catch {
@@ -112,6 +123,8 @@ function PostCaseInner() {
         city: form.city || null,
         urgency: form.urgency,
         directed_tenant_id: directedTenantId,
+        has_legal_insurance: insured === "" ? null : insured === "yes",
+        insurer_name: insured === "yes" && insurerName ? insurerName : null,
       });
       setPosted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -220,6 +233,36 @@ function PostCaseInner() {
                   minLength={20}
                 />
               </div>
+              {isDE && (
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-2">
+                  <Label>{t.rsvQuestion}</Label>
+                  <div className="flex gap-4">
+                    {(["yes", "no"] as const).map((value) => (
+                      <label key={value} className="flex items-center gap-1.5 text-sm text-slate-700">
+                        <input
+                          type="radio"
+                          name="rsv"
+                          checked={insured === value}
+                          onChange={() => setInsured(value)}
+                        />
+                        {value === "yes" ? t.rsvYes : t.rsvNo}
+                      </label>
+                    ))}
+                  </div>
+                  {insured === "yes" && (
+                    <div>
+                      <Label>{t.rsvInsurer}</Label>
+                      <Input
+                        value={insurerName}
+                        onChange={(e) => setInsurerName(e.target.value)}
+                        placeholder="ARAG, Allianz, …"
+                        maxLength={120}
+                      />
+                    </div>
+                  )}
+                  <p className="text-xs text-slate-400">{t.rsvHint}</p>
+                </div>
+              )}
               <ErrorNote message={error} />
               <Button type="submit" disabled={busy} className="w-full">
                 {busy ? t.loading : t.mkPostCase}

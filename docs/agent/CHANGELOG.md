@@ -3,6 +3,21 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Rechtsschutzversicherung in the case flow (D-037 phase 3)
+
+- `CaseRequest.has_legal_insurance` + `insurer_name` (migration f13891b21e80);
+  accepted on `POST /citizen/cases`, returned by `_case_out` to both citizen
+  and lawyer views.
+- /posto-rastin asks the question on the DE host (yes/no + insurer, optional);
+  Ava DE now casually asks about Rechtsschutz when someone wants a lawyer, and
+  /ava/structure-case extracts `has_legal_insurance`/`insurer_name` from the
+  conversation into the case draft (prefills the form via localStorage).
+- Lawyer marketplace card shows a "Rechtsschutz vorhanden · <insurer>" badge
+  (Advocado-style conversion signal). New lawyer template
+  `general.deckungsanfrage` (coverage inquiry letter) in DE_TEMPLATES.
+- 6 new rsv* keys in 7 locales. Suite 147 green + tsc clean; template seeded
+  and verified live after restart.
+
 ## 2026-08-01 — E-Rechnung: ZUGFeRD/Factur-X hybrid invoices (D-037 phase 2)
 
 - New `services/einvoice.py` (drafthorse): EN 16931 CII XML from the invoice

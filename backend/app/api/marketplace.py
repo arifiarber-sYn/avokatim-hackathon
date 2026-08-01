@@ -593,6 +593,9 @@ class CaseRequestIn(BaseModel):
     city: str | None = Field(default=None, max_length=120)
     urgency: str = "normal"
     directed_tenant_id: uuid.UUID | None = None
+    # Rechtsschutzversicherung (DE): None = unknown / not asked
+    has_legal_insurance: bool | None = None
+    insurer_name: str | None = Field(default=None, max_length=120)
 
 
 def _case_out(case: CaseRequest, firm_name: str | None = None) -> dict:
@@ -604,6 +607,8 @@ def _case_out(case: CaseRequest, firm_name: str | None = None) -> dict:
         "urgency": case.urgency,
         "status": case.status,
         "directed": case.directed_tenant_id is not None,
+        "has_legal_insurance": case.has_legal_insurance,
+        "insurer_name": case.insurer_name,
         "claimed_by": firm_name,
         "claimed_at": case.claimed_at.isoformat() if case.claimed_at else None,
         "closed_reason": case.closed_reason,
@@ -656,6 +661,8 @@ async def citizen_create_case(
         urgency=body.urgency,
         directed_tenant_id=body.directed_tenant_id,
         quality_flag=quality_flag,
+        has_legal_insurance=body.has_legal_insurance,
+        insurer_name=(body.insurer_name or None) if body.has_legal_insurance else None,
     )
     db.add(case)
     await db.flush()
@@ -1233,7 +1240,10 @@ PUBLIC_AVA_SYSTEM_PROMPT_DE = (
     "verweise auf anwaltliche Prüfung. Erkläre einfach, ohne unnötigen Jargon. Sobald eine Frage eine "
     "Einzelfallprüfung, laufende Fristen oder Vertretung berührt, empfiehl "
     "der Person den Button 'Anwalt finden', um den Fall zugelassenen "
-    "Rechtsanwältinnen und Rechtsanwälten der Plattform vorzulegen. Frage "
+    "Rechtsanwältinnen und Rechtsanwälten der Plattform vorzulegen. Wenn "
+    "jemand einen Anwalt sucht, frage einmal beiläufig, ob eine "
+    "Rechtsschutzversicherung besteht (und bei welchem Versicherer) — das "
+    "hilft bei der Deckungsanfrage; dränge aber nicht nach. Frage "
     "keine unnötigen personenbezogenen Daten ab und speichere keine."
 )
 
@@ -1487,7 +1497,10 @@ _STRUCTURE_CASE_PROMPT = (
     '{{"category": "civil|criminal|family|commercial|labor|administrative|other", '
     '"description": "përshkrimi i rastit në gjuhën e qytetarit", '
     '"city": "qyteti nëse përmendet, ndryshe null", '
-    '"urgency": "normal|urgent"}}\n\n'
+    '"urgency": "normal|urgent", '
+    '"has_legal_insurance": "true nëse qytetari thotë se ka sigurim juridik '
+    '(Rechtsschutzversicherung), false nëse thotë se s\'ka, ndryshe null", '
+    '"insurer_name": "emri i siguruesit nëse përmendet, ndryshe null"}}\n\n'
     "BISEDA:\n{conversation}"
 )
 
@@ -1530,11 +1543,18 @@ async def ava_structure_case(body: StructureCaseIn, request: Request):
 
     category = data.get("category")
     urgency = data.get("urgency")
+    insured = data.get("has_legal_insurance")
+    if isinstance(insured, str):
+        insured = {"true": True, "false": False}.get(insured.lower())
     return {
         "category": category if category in PRACTICE_AREAS else "other",
         "description": str(data.get("description") or "")[:8000],
         "city": (str(data["city"])[:120] if data.get("city") else None),
         "urgency": urgency if urgency in ("normal", "urgent") else "normal",
+        "has_legal_insurance": insured if isinstance(insured, bool) else None,
+        "insurer_name": (
+            str(data["insurer_name"])[:120] if data.get("insurer_name") else None
+        ),
     }
 
 

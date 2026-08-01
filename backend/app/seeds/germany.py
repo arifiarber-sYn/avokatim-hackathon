@@ -655,6 +655,53 @@ Die Vollmacht umfasst insbesondere die Prozessführung (u.a. §§ 81 ff. ZPO) ei
 _____________________
 {{ client_name }}""",
     },
+    {
+        "code": "general.deckungsanfrage",
+        "locale": "de",
+        "practice_area": "other",
+        "name": {
+            "de": "Deckungsanfrage Rechtsschutzversicherung",
+            "en": "Coverage inquiry to legal insurer",
+            "sq": "Kërkesë mbulimi te sigurimi juridik",
+        },
+        "variables": [
+            {"name": "insurer_name", "label": {"de": "Versicherer", "en": "Insurer", "sq": "Siguruesi"}},
+            {"name": "policy_number", "label": {"de": "Versicherungsschein-Nr.", "en": "Policy number", "sq": "Numri i policës"}},
+            {"name": "dispute_subject", "label": {"de": "Gegenstand der Streitigkeit", "en": "Subject of dispute", "sq": "Objekti i kontestit"}},
+            {"name": "facts", "label": {"de": "Kurzdarstellung des Sachverhalts", "en": "Brief facts", "sq": "Përshkrimi i shkurtër i faktrave"}},
+            {"name": "claim_value", "label": {"de": "Gegenstandswert (€)", "en": "Value in dispute (€)", "sq": "Vlera e kontestit (€)"}},
+        ],
+        "body": """{{ insurer_name }}
+— Leistungsabteilung Rechtsschutz —
+
+Deckungsanfrage
+Versicherungsschein-Nr.: {{ policy_number }}
+Versicherungsnehmer/in: {{ client_name }}, {{ client_address }}
+
+Sehr geehrte Damen und Herren,
+
+wir zeigen an, dass uns der/die oben genannte Versicherungsnehmer/in mit der Wahrnehmung seiner/ihrer rechtlichen Interessen beauftragt hat. Ordnungsgemäße Bevollmächtigung wird anwaltlich versichert.
+
+Gegenstand: {{ dispute_subject }}
+Gegenstandswert: {{ claim_value }} €
+
+Zum Sachverhalt:
+
+{{ facts }}
+
+Wir bitten um Erteilung der Deckungszusage für die außergerichtliche Interessenwahrnehmung sowie — soweit erforderlich — für das gerichtliche Verfahren erster Instanz, und um Bestätigung der Kostenübernahme nach dem RVG. Bitte teilen Sie uns auch eine etwaige Selbstbeteiligung mit.
+
+Um kurzfristige Rückäußerung — gern per E-Mail — wird gebeten.
+
+Mit freundlichen Grüßen
+
+{{ city }}, den {{ date }}
+
+_____________________
+{{ lawyer_name }}
+Rechtsanwalt/Rechtsanwältin
+{{ firm_name }}""",
+    },
 ]
 
 # Citizen self-service letters for the public /dokumentet tool on the DE

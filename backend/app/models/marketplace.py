@@ -200,6 +200,11 @@ class CaseRequest(Base, TimestampMixin):
     # Pre-publication quality assessment: "ok" (LLM approved),
     # "heuristic" (LLM unavailable, heuristics passed), NULL (legacy rows)
     quality_flag: Mapped[str | None] = mapped_column(String(16))
+    # Legal expense insurance (DE Rechtsschutzversicherung, D-037): asked on
+    # the German posting form / by Ava. NULL = unknown or not applicable (XK).
+    # A strong conversion signal for lawyers — fees are covered by the insurer.
+    has_legal_insurance: Mapped[bool | None] = mapped_column(Boolean)
+    insurer_name: Mapped[str | None] = mapped_column(String(120))
 
 
 class CaseReview(Base, TimestampMixin):

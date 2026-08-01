@@ -21,6 +21,8 @@ interface OpenCase {
   citizen_locale: string;
   directed_to_me: boolean;
   matches_profile?: boolean;
+  has_legal_insurance?: boolean | null;
+  insurer_name?: string | null;
 }
 
 interface MyCase extends OpenCase {
@@ -260,6 +262,15 @@ export default function MarketplacePage() {
                     {c.matches_profile && !c.directed_to_me && (
                       <span className="text-xs bg-emerald-50 text-emerald-700 rounded-full px-2 py-0.5">
                         {t.mkMatch}
+                      </span>
+                    )}
+                    {c.has_legal_insurance && (
+                      <span
+                        className="text-xs bg-sky-50 text-sky-700 rounded-full px-2 py-0.5"
+                        title={c.insurer_name || undefined}
+                      >
+                        {t.rsvBadge}
+                        {c.insurer_name ? ` · ${c.insurer_name}` : ""}
                       </span>
                     )}
                   </div>
