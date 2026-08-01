@@ -833,3 +833,29 @@
 - Consequences: deadline math is now Land-correct for offices that pick
   their Bundesland; public Ava has a "Bundesland (optional)" selector
   (localStorage); every future Land is data + one adapter, no schema work.
+
+## D-036: Exact calendar-month deadline math (`day_type="months"`) (2026-08-01)
+
+- Context: German statutory month deadlines (ZPO § 517/§ 520, VwGO § 70/§ 74,
+  SGG § 84, AO § 355) were approximated as 30/60 calendar days with a warning
+  note. The 2026 industry comparison flagged this as the highest-risk gap:
+  missed deadlines are the #1 malpractice source, and every German
+  Kanzleisoftware does exact month math. Kosovo's LPK art. 124 uses the same
+  rule, so the fix is generic, not DE-specific.
+- Decision: extend `DeadlineRule.day_type` with a third value `"months"`
+  (`days` then holds the month count) instead of adding a new column — one
+  field describes the counting mode: calendar days | business days |
+  calendar months. `add_months()` in `services/deadlines.py` implements
+  §§ 187–188 BGB: the period ends on the day of the target month with the
+  same number as the trigger day; when that month is shorter, on its last
+  day (Jan 31 + 1M → Feb 28/29). The existing `extend_to_business_day` loop
+  covers § 222 (2) ZPO (weekend/holiday → next business day, Land holidays
+  included via D-035).
+- Seeder change: `_seed_country` now syncs `days`, `day_type`, `legal_basis`,
+  `notes`, `trigger_event` from seeds for existing rules (rules are platform
+  data, never tenant-edited) — existing DBs convert on next startup without
+  a migration; only `name` keeps the merge-don't-overwrite behaviour.
+- Consequences: DE month rules are exact (6 rules converted, warning note
+  replaced with the § 188 explanation); the public calculator and matter
+  deadline picker show "X Monate/muaj" (new dcMonths* keys in 7 locales);
+  any future jurisdiction can use month periods as data.

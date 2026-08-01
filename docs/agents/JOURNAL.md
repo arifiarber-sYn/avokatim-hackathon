@@ -10,6 +10,26 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01e — Afatet me muaj kalendarikë ekzaktë (D-036) (Cursor / Fable 5)
+
+- Done: krahasim me industrinë gjermane 2026 (kanavaca
+  `krahasimi-tregu-gjerman-2026`) → boshllëqet e reja në ROADMAP (E-Rechnung,
+  RVG i plotë, sigurimi juridik, DATEV, beA). Zëri më urgjent u zbatua:
+  `day_type="months"` në motorin e afateve — `add_months()` sipas
+  §§ 187–188 BGB (dita e njëjtë e muajit të synuar; po mungoi, dita e fundit
+  e muajit; fundjava/festa → dita e parë e punës, § 222 Abs. 2 ZPO, me festat
+  e landit nga D-035). 6 rregullat gjermane të muajve u kthyen nga përafrimi
+  30/60 ditë në 1–2 muaj ekzaktë; seeder-i tani sinkronizon
+  days/day_type/legal_basis/notes/trigger_event nga seeds (rregullat janë të
+  dhëna të platformës) — DB-të ekzistuese konvertohen në startup pa migrim.
+  Frontend: çelësat dcMonthsCal/dcMonthsShort në 7 gjuhë; kalkulatori publik
+  (/afatet) dhe zgjedhësi i rregullit te lënda shfaqin muajt.
+- Verified: pytest 139/139 (5 teste të reja add_months: fund muaji, shkurt,
+  vit i brishtë, rrokullisje viti, ndryshimi nga 30-ditëshi), tsc pa gabime,
+  build + restart + health OK, llogaritje live në /afatet.
+- Left open / next: zërat e tjerë të krahasimit (E-Rechnung ZUGFeRD, RVG i
+  plotë, fusha e sigurimit juridik, DATEV, beA) — në ROADMAP.
+
 ## 2026-08-01d — Landesrecht: dimensioni region + piloti NRW/Bayern (D-035) (Cursor / Fable 5)
 
 - Done: kolona `region` (kodi i landit NW/BY/…, NULL = federal) te

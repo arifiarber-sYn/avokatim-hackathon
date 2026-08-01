@@ -6,10 +6,9 @@ Scope:
   Land's holidays (§ 222 ZPO -> §§ 187 ff. BGB). Only whole-Land holidays
   are seeded; municipal/partial ones are omitted (conservative for
   deadline math, see de_holidays).
-- Month-based statutory deadlines (ZPO/VwGO "1 Monat") are approximated as
-  30/60 calendar days because the deadline engine counts days. Every such
-  rule carries an explicit note; the computed date can be off by 1-3 days
-  around month ends — the note tells the lawyer to verify.
+- Month-based statutory deadlines (ZPO/VwGO/AO "1 Monat") use exact
+  calendar-month math (day_type="months", §§ 187-188 BGB): same day number
+  in the target month, or its last day when that day is missing.
 - Initial RVG anchors, not the full Vergütungsverzeichnis.
 """
 from datetime import date, timedelta
@@ -93,9 +92,10 @@ DE_JURISDICTION = {
 }
 
 _MONTH_NOTE = (
-    "Monatsfrist (§ 222 ZPO i.V.m. §§ 187 ff. BGB) — hier als 30 Tage/Monat "
-    "angenähert. Um Monatsenden kann das exakte Fristende um wenige Tage "
-    "abweichen: immer gegen den Kalender prüfen."
+    "Monatsfrist (§ 222 ZPO i.V.m. §§ 187 ff. BGB): Fristende am Tag des "
+    "Zielmonats mit derselben Zahl wie der Zustellungstag; fehlt dieser Tag, "
+    "am Monatsende (§ 188 Abs. 3 BGB). Fällt das Ende auf Samstag, Sonntag "
+    "oder Feiertag, endet die Frist am nächsten Werktag."
 )
 
 DE_DEADLINE_RULES = [
@@ -109,8 +109,8 @@ DE_DEADLINE_RULES = [
         "legal_basis": "ZPO § 517",
         "practice_area": "civil",
         "trigger_event": "judgment_served",
-        "days": 30,
-        "day_type": "calendar",
+        "days": 1,
+        "day_type": "months",
         "notes": _MONTH_NOTE,
     },
     {
@@ -123,8 +123,8 @@ DE_DEADLINE_RULES = [
         "legal_basis": "ZPO § 520 Abs. 2",
         "practice_area": "civil",
         "trigger_event": "judgment_served",
-        "days": 60,
-        "day_type": "calendar",
+        "days": 2,
+        "day_type": "months",
         "notes": _MONTH_NOTE,
     },
     {
@@ -243,8 +243,8 @@ DE_DEADLINE_RULES = [
         "legal_basis": "VwGO § 70",
         "practice_area": "administrative",
         "trigger_event": "act_notified",
-        "days": 30,
-        "day_type": "calendar",
+        "days": 1,
+        "day_type": "months",
         "notes": _MONTH_NOTE,
     },
     {
@@ -257,8 +257,8 @@ DE_DEADLINE_RULES = [
         "legal_basis": "VwGO § 74",
         "practice_area": "administrative",
         "trigger_event": "decision_served",
-        "days": 30,
-        "day_type": "calendar",
+        "days": 1,
+        "day_type": "months",
         "notes": _MONTH_NOTE,
     },
     {
@@ -271,8 +271,8 @@ DE_DEADLINE_RULES = [
         "legal_basis": "SGG § 84",
         "practice_area": "administrative",
         "trigger_event": "act_notified",
-        "days": 30,
-        "day_type": "calendar",
+        "days": 1,
+        "day_type": "months",
         "notes": _MONTH_NOTE,
     },
     {
@@ -285,8 +285,8 @@ DE_DEADLINE_RULES = [
         "legal_basis": "AO § 355",
         "practice_area": "administrative",
         "trigger_event": "act_notified",
-        "days": 30,
-        "day_type": "calendar",
+        "days": 1,
+        "day_type": "months",
         "notes": _MONTH_NOTE,
     },
 ]

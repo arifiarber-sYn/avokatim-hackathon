@@ -3,6 +3,27 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Exact calendar-month deadline math (D-036)
+
+- Industry comparison vs the German market (RA-MICRO/Actaport, Advocado,
+  beA/E-Rechnung mandates) → new ROADMAP items; the top-risk gap fixed now:
+  German month deadlines were 30/60-day approximations.
+- `day_type="months"` in the deadline engine: `add_months()` per §§ 187–188
+  BGB (same day number in the target month, else last day; § 222 (2) ZPO
+  weekend/holiday extension incl. Land holidays already handled). 6 DE rules
+  converted (ZPO 517/520, VwGO 70/74, SGG 84, AO 355); seeder now syncs
+  rule substance (days/day_type/legal_basis/notes/trigger_event) from seeds
+  so existing DBs convert at startup. Frontend shows months (dcMonths* keys
+  in 7 locales, /afatet + matter deadline picker).
+- Verified: pytest 139/139 (5 new month-math tests), tsc clean, build +
+  restart + live /afatet calc OK.
+- Files: `backend/app/services/deadlines.py`,
+  `backend/app/models/jurisdiction.py`, `backend/app/seeds/{__init__,germany}.py`,
+  `backend/tests/test_deadline_engine.py`, `frontend/src/lib/dictionaries.ts`,
+  `frontend/src/app/afatet/page.tsx`,
+  `frontend/src/app/(app)/matters/[id]/page.tsx`; D-036 in DECISIONS,
+  JOURNAL 2026-08-01e.
+
 ## 2026-08-01 — Landesrecht (D-035) phase 5: tests + docs; remaining Länder blocked
 
 - 7 new tests in `tests/test_regions.py` (Länder registry, city prefill,

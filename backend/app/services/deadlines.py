@@ -1,5 +1,6 @@
 """Generic deadline engine. Rules are data (per jurisdiction); this module
 only does date math."""
+import calendar
 from datetime import date, datetime, time, timedelta
 
 from sqlalchemy import or_, select
@@ -27,13 +28,27 @@ def _is_business_day(d: date, holidays: set[date]) -> bool:
     return d.weekday() < 5 and d not in holidays
 
 
+def add_months(d: date, months: int) -> date:
+    """Calendar-month deadline end per § 188 (2)-(3) BGB (same rule in
+    Kosovo's LPK art. 124): the period ends on the day of the target month
+    bearing the same number as the trigger day; when that month is shorter,
+    on its last day (Jan 31 + 1 month -> Feb 28/29)."""
+    month_index = d.month - 1 + months
+    year, month = d.year + month_index // 12, month_index % 12 + 1
+    return date(year, month, min(d.day, calendar.monthrange(year, month)[1]))
+
+
 async def compute_due_date(
     db: AsyncSession, rule: DeadlineRule, trigger_date: date,
     region: str | None = None,
 ) -> date:
     holidays = await _holiday_set(db, rule.jurisdiction_id, region)
 
-    if rule.day_type == "business":
+    if rule.day_type == "months":
+        # `days` holds the month count for month-based statutory periods
+        # (ZPO/VwGO/AO "ein Monat"); exact math, not a 30-day approximation.
+        d = add_months(trigger_date, rule.days)
+    elif rule.day_type == "business":
         d = trigger_date
         remaining = rule.days
         while remaining > 0:

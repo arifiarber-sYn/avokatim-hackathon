@@ -39,8 +39,9 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   (`seeds/germany.py`): federal holidays (incl. Easter calc) + per-Land
   holidays 2026–27 (whole-Land only; deadline engine uses `tenant.region`
   via the settings Bundesland picker), 14 deadline
-  rules (ZPO/StPO/KSchG/VwGO/SGG/AO — month rules approximated 30 d with
-  warning note), 8 RVG tariff anchors, 4 lawyer templates, 4 German citizen
+  rules (ZPO/StPO/KSchG/VwGO/SGG/AO — month rules use exact calendar-month
+  math, `day_type="months"` per §§ 187–188 BGB, D-036), 8 RVG tariff
+  anchors, 4 lawyer templates, 4 German citizen
   doc templates (country-picked in `public_tools.py`). **DE Ava**:
   own prompt (RDG § 2 information-only + EU AI Act Art. 50 disclosure),
   per-jurisdiction LLM provider hook. **DE lawyers**: BRAV has no emails →

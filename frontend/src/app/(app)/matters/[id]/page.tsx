@@ -1122,7 +1122,9 @@ function Deadlines({ matterId, practiceArea }: { matterId: string; practiceArea:
                   <option value="">—</option>
                   {rules.map((r) => (
                     <option key={r.id} value={r.id}>
-                      {localized(r.name, locale)} ({r.days} d — {r.legal_basis})
+                      {localized(r.name, locale)} ({r.days}{" "}
+                      {r.day_type === "months" ? t.dcMonthsShort : t.dcDaysShort} —{" "}
+                      {r.legal_basis})
                     </option>
                   ))}
                 </Select>

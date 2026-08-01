@@ -68,9 +68,16 @@ async def _seed_country(
         if rule["code"] not in existing_rules:
             db.add(DeadlineRule(jurisdiction_id=jurisdiction.id, **rule))
         else:
-            merged = _merge_name(existing_rules[rule["code"]].name, rule["name"])
+            row = existing_rules[rule["code"]]
+            merged = _merge_name(row.name, rule["name"])
             if merged:
-                existing_rules[rule["code"]].name = merged
+                row.name = merged
+            # Rules are platform data (never tenant-edited): keep the legal
+            # substance in sync with the seed, e.g. the D-036 switch of German
+            # month deadlines from a 30-day approximation to exact months.
+            for field in ("days", "day_type", "legal_basis", "notes", "trigger_event"):
+                if field in rule and getattr(row, field) != rule[field]:
+                    setattr(row, field, rule[field])
 
     existing_holidays = {
         (h.day, h.region): h

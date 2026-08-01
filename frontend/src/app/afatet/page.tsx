@@ -115,7 +115,8 @@ export default function DeadlineCalcPage() {
                       : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-700"
                   }`}
                 >
-                  {ruleName(rule)} · {rule.days} {t.dcDaysShort}
+                  {ruleName(rule)} · {rule.days}{" "}
+                  {rule.day_type === "months" ? t.dcMonthsShort : t.dcDaysShort}
                 </button>
               ))}
             </div>
@@ -141,7 +142,11 @@ export default function DeadlineCalcPage() {
                 {selected && (
                   <p className="text-xs text-slate-500 mt-1">
                     {selected.days}{" "}
-                    {selected.day_type === "business" ? t.dcDaysBus : t.dcDaysCal}
+                    {selected.day_type === "months"
+                      ? t.dcMonthsCal
+                      : selected.day_type === "business"
+                        ? t.dcDaysBus
+                        : t.dcDaysCal}
                   </p>
                 )}
               </div>
@@ -174,7 +179,12 @@ export default function DeadlineCalcPage() {
                   })}
                 </p>
                 <p className="text-xs text-indigo-700">
-                  {result.days} {result.day_type === "business" ? t.dcDaysBus : t.dcDaysCal}
+                  {result.days}{" "}
+                  {result.day_type === "months"
+                    ? t.dcMonthsCal
+                    : result.day_type === "business"
+                      ? t.dcDaysBus
+                      : t.dcDaysCal}
                   {result.legal_basis ? ` · ${t.dcBasis}: ${result.legal_basis}` : ""}
                 </p>
               </div>

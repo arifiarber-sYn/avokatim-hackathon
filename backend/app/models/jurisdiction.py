@@ -43,8 +43,10 @@ class DeadlineRule(Base, TimestampMixin):
     legal_basis: Mapped[str | None] = mapped_column(String(255))  # e.g. "LPK neni 176"
     practice_area: Mapped[str | None] = mapped_column(String(32))  # civil | criminal | ...
     trigger_event: Mapped[str] = mapped_column(String(64))  # e.g. judgment_served
+    # Count of the period; for day_type="months" this is the month count
     days: Mapped[int] = mapped_column(Integer)
-    day_type: Mapped[str] = mapped_column(String(16), default="calendar")  # calendar | business
+    # calendar | business | months (exact month math, §§ 187-188 BGB / LPK 124)
+    day_type: Mapped[str] = mapped_column(String(16), default="calendar")
     # If the deadline lands on a weekend/holiday, move to next business day
     extend_to_business_day: Mapped[bool] = mapped_column(Boolean, default=True)
     notes: Mapped[str | None] = mapped_column(Text)

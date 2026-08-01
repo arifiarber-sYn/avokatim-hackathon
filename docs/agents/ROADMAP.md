@@ -160,9 +160,15 @@ Growth operations (running):
       with token-authenticated internal APIs — needs a headless-browser
       adapter or a juris data agreement (see LESSONS #1). Priority by
       population: BW, NI, HE, RP, SN…
-- [ ] DE deepening: exact calendar-month deadline arithmetic (§ 222 ZPO),
-      BRAV scraper when the portal stabilizes, German outreach campaign,
-      SOS/notary legal review.
+- [x] Exact calendar-month deadline arithmetic (§ 222 ZPO, §§ 187–188 BGB):
+      `day_type="months"` in the engine, DE month rules converted (D-036).
+- [ ] DE deepening: BRAV scraper when the portal stabilizes, German outreach
+      campaign, SOS/notary legal review.
+- [ ] DE market-standard gaps (industry comparison 2026-08-01): E-Rechnung
+      (XRechnung/ZUGFeRD, issuing mandatory 2027/28), full RVG fee tables
+      (§ 13 RVG + VV), Rechtsschutzversicherung field + Deckungsanfrage
+      template in the case flow, DATEV export, beA integration (BRAK
+      KSW-Schnittstelle — strategic project, registration required).
 - [ ] Retrieval quality: hybrid search (pgvector + Postgres full-text/BM25)
       or a stronger embedding model (e.g. multilingual-e5) with full
       re-embed — colloquial German questions sometimes miss the right §
