@@ -3,6 +3,31 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Token-less email classification: sender→matter suggestions (D-043 F4, part 3)
+
+- New: inbound mail without a plus-address token is no longer dropped —
+  if the sender's address matches a `Contact`, the full raw message is
+  stored encrypted and parked as an `EmailSuggestion` (migration
+  `4eb4cfbac653`) pointing at the contact's best matter (open first, then
+  most recently updated). Nothing is filed until the lawyer accepts.
+- API (`api/email_suggestions.py`, new): `GET /email-suggestions`
+  (pending, respects restricted visibility), `POST .../accept` (re-parses
+  the stored message and files it exactly like a token-addressed email —
+  note + attachments + deadline scan; audited), `POST .../dismiss`
+  (deletes the parked raw message; audited).
+- UI: dashboard card "E-Mails von bekannten Absendern" with per-item
+  file-into-matter / dismiss buttons and a link to the suggested matter.
+  6 new `ems*` dictionary keys in all 7 locales.
+- Tests: `tests/test_email_suggest.py` (2: sender parsing/normalization,
+  matter preference) — 175 total green. Live E2E: token-less German email
+  from a known client → suggestion with correct matter, accept filed the
+  note + attachment (category `email`), pending list emptied.
+- Files: `backend/alembic/versions/20260801_4eb4cfbac653_*.py` (new),
+  `models/matters.py`, `models/__init__.py`, `schemas/matters.py`,
+  `services/email_ingest.py`, `api/email_suggestions.py` (new),
+  `app/main.py`, `tests/test_email_suggest.py` (new),
+  `frontend/src/lib/dictionaries.ts`, `(app)/dashboard/page.tsx`.
+
 ## 2026-08-01 — Mahnwesen: one-click dunning drafts on overdue invoices (D-043 F4, part 2)
 
 - New: `Invoice.mahnung_level` (0–3) + `last_mahnung_at` (migration

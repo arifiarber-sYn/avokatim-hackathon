@@ -18,6 +18,7 @@ from app.api import (
     corpus,
     deadlines,
     documents,
+    email_suggestions,
     evidence,
     exports,
     feedback,
@@ -82,6 +83,7 @@ app.include_router(matters.router, prefix=api_prefix)
 app.include_router(intake.router, prefix=api_prefix)
 app.include_router(deadlines.router, prefix=api_prefix)
 app.include_router(documents.router, prefix=api_prefix)
+app.include_router(email_suggestions.router, prefix=api_prefix)
 app.include_router(templates.router, prefix=api_prefix)
 app.include_router(assistant.router, prefix=api_prefix)
 app.include_router(corpus.router, prefix=api_prefix)

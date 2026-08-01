@@ -14,14 +14,15 @@ import logging
 import re
 import secrets
 import uuid
+from email.utils import parseaddr
 
 import redis.asyncio as aioredis
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import SessionLocal
-from app.models import Document, Matter, MatterNote
+from app.models import Contact, Document, EmailSuggestion, Matter, MatterNote
 from app.services import deadline_suggest, storage
 from app.services.audit import log_action
 
@@ -143,6 +144,81 @@ async def _file_message(db: AsyncSession, matter: Matter, msg: email.message.Ema
     )
 
 
+# ---------- Token-less classification (D-043): sender ↔ contact match ----------
+
+
+def _sender_address(msg: email.message.EmailMessage) -> str:
+    return (parseaddr(msg.get("from", ""))[1] or "").strip().lower()
+
+
+def _best_matter(matters: list[Matter]) -> Matter | None:
+    """Prefer open matters; among equals, the most recently updated one."""
+    if not matters:
+        return None
+    return min(
+        matters,
+        key=lambda m: (
+            m.status != "open",
+            -(m.updated_at.timestamp() if m.updated_at else 0),
+        ),
+    )
+
+
+async def _suggest_from_sender(
+    db: AsyncSession, msg: email.message.EmailMessage, raw: bytes
+) -> bool:
+    """Inbound mail without a matter token: if the sender is a known contact
+    with a matter, park the message as an EmailSuggestion. Nothing is filed
+    until the lawyer accepts (suggest → accept, D-043)."""
+    sender = _sender_address(msg)
+    if not sender:
+        return False
+    contacts = (
+        await db.execute(select(Contact).where(func.lower(Contact.email) == sender))
+    ).scalars().all()
+    for contact in contacts:
+        matters = (
+            await db.execute(
+                select(Matter).where(
+                    Matter.tenant_id == contact.tenant_id,
+                    Matter.client_id == contact.id,
+                )
+            )
+        ).scalars().all()
+        matter = _best_matter(matters)
+        if matter is None:
+            continue
+        rel_path, _sha, encrypted = storage.save_file(raw, contact.tenant_id)
+        db.add(
+            EmailSuggestion(
+                tenant_id=contact.tenant_id,
+                matter_id=matter.id,
+                contact_id=contact.id,
+                sender=sender,
+                subject=(msg.get("subject") or "")[:500],
+                body_preview=_body_text(msg)[:2000],
+                raw_path=rel_path,
+                raw_encrypted=encrypted,
+            )
+        )
+        await db.commit()
+        logger.info(
+            "Inbound email from %s parked as suggestion for matter %s",
+            sender, matter.reference,
+        )
+        return True
+    return False
+
+
+async def file_suggested_message(db: AsyncSession, suggestion: EmailSuggestion) -> None:
+    """Accept path: parse the stored raw message and file it into the matter
+    (note + attachments + deadline scan) exactly like a token-addressed email."""
+    matter = await db.get(Matter, suggestion.matter_id)
+    raw = storage.load_file(suggestion.raw_path, suggestion.raw_encrypted)
+    msg = email.message_from_bytes(raw, policy=email.policy.default)
+    await _file_message(db, matter, msg)
+
+
 async def _poll_once(redis: aioredis.Redis) -> None:
     messages = await asyncio.to_thread(_fetch_unseen_sync)
     if not messages:
@@ -156,7 +232,8 @@ async def _poll_once(redis: aioredis.Redis) -> None:
                     continue  # already processed
             token = _extract_token(msg)
             if token is None:
-                logger.info("Inbound email without matter token — skipped")
+                if not await _suggest_from_sender(db, msg, raw):
+                    logger.info("Inbound email without matter token — skipped")
                 continue
             matter = (
                 await db.execute(select(Matter).where(Matter.email_token == token))

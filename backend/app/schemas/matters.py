@@ -173,6 +173,23 @@ class DeadlineSuggestionAcceptIn(BaseModel):
     title: str | None = None
 
 
+class EmailSuggestionOut(BaseModel):
+    id: uuid.UUID
+    matter_id: uuid.UUID
+    contact_id: uuid.UUID | None
+    sender: str
+    subject: str
+    body_preview: str
+    status: str
+    created_at: datetime
+    # Enriched for lists (not from ORM attributes)
+    matter_reference: str | None = None
+    matter_title: str | None = None
+    contact_name: str | None = None
+
+    model_config = {"from_attributes": True}
+
+
 class IntakeIn(BaseModel):
     client_name: str = Field(min_length=1, max_length=255)
     client_email: str | None = None

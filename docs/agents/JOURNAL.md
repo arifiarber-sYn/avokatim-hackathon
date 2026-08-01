@@ -10,6 +10,23 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01p — D-043 F4 (pjesa 3): Klasifikimi i email-it pa token (Cursor / Fable 5)
+
+- Done: email-et hyrëse pa plus-adresë nuk hidhen më — nëse dërguesi
+  përputhet me një `Contact`, mesazhi i plotë ruhet i enkriptuar dhe
+  parkohet si `EmailSuggestion` (migrimi `4eb4cfbac653`) drejt lëndës më
+  të mirë të kontaktit (të hapurat para, pastaj më e freskëta). Asgjë
+  s'futet në lëndë pa e pranuar avokati: `GET /email-suggestions`,
+  `POST .../accept` (e fut si email me token — notë + attachments + skanimi
+  i afateve, i audituar), `POST .../dismiss` (fshin mesazhin e parkuar).
+  Kartë e re në dashboard me butona prano/hidhe; 6 çelësa `ems*` në 7 gjuhë.
+  Me këtë mbyllet e gjithë F4 (agjentët back-office, D-043).
+- Verified: 175 teste (2 të reja). E2E live: email gjerman pa token nga
+  klient i njohur → sugjerim me lëndën e saktë, accept futi notën +
+  attachment-in (kategoria `email`), lista pending u zbraz. Health +
+  frontend 200.
+- Left open: F5 (paketa BRAK KI-konformitet) dhe F6.
+
 ## 2026-08-01o — D-043 F4 (pjesa 2): Mahnwesen — draft vërejtjesh pagese me një klik (Cursor / Fable 5)
 
 - Done: `Invoice.mahnung_level` (0–3) + `last_mahnung_at` (migrimi

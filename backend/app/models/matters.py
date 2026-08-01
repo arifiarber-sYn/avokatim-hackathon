@@ -202,6 +202,30 @@ class DeadlineSuggestion(Base, TenantMixin, TimestampMixin):
     )
 
 
+class EmailSuggestion(Base, TenantMixin, TimestampMixin):
+    """An inbound email without a matter token whose sender matched a known
+    contact (D-043). The full raw message is kept encrypted on disk; nothing
+    is filed into the matter until the lawyer accepts."""
+
+    __tablename__ = "email_suggestions"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    matter_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("matters.id", ondelete="CASCADE"), index=True
+    )
+    contact_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("contacts.id", ondelete="SET NULL")
+    )
+    sender: Mapped[str] = mapped_column(String(320))
+    subject: Mapped[str] = mapped_column(String(500), default="")
+    body_preview: Mapped[str] = mapped_column(Text, default="")
+    # Encrypted raw RFC822 message in document storage (filed on accept)
+    raw_path: Mapped[str] = mapped_column(String(500))
+    raw_encrypted: Mapped[bool] = mapped_column(Boolean, default=True)
+    status: Mapped[str] = mapped_column(String(16), default="pending", index=True)
+    # pending | accepted | dismissed
+
+
 class IntakeRequest(Base, TenantMixin, TimestampMixin):
     """A prospective case: captured, conflict-checked, AI-classified, then
     either converted into a Matter or declined."""

@@ -348,6 +348,10 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   or direct date, audited) or dismisses. Banner in the matter Deadlines tab
   + dashboard card; `GET /deadline-suggestions`, `.../accept`, `.../dismiss`.
   Never auto-creates anything.
+- **Token-less email classification** (2026-08-01, D-043): inbound mail
+  without a matter alias whose sender matches a contact is parked as an
+  `EmailSuggestion` (raw message encrypted on disk); dashboard card lets the
+  lawyer file it into the suggested matter or dismiss (`/email-suggestions`).
 - **Mahnwesen / dunning** (2026-08-01, D-043): overdue sent invoices carry
   `mahnung_level` 0–3; the billing page offers a one-click draft (client's
   locale, level-appropriate wording, +14-day deadline) that the lawyer edits
@@ -875,7 +879,8 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   e-invoices, Rechtsschutz flow, DATEV export, local LLM (gemma3:27b);
   DE advancement wave (D-040+): Prozesskostenrechner (F1),
   Online-Verfahren assistant (F2), deep research (F3),
-  back-office suggest→accept agents (F4, in progress);
+  back-office suggest→accept agents (F4: deadline suggestions,
+  Mahnwesen, token-less email classification);
   beA pending BRAK registration. SOS + notary off; public launch gated by
   `docs/legal/DE-LAUNCH-GATE.md`.
 - GB, CN, INTL: schema-ready, no data yet.

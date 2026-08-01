@@ -774,6 +774,13 @@ const sq = {
   dlsTitle: "Afate të propozuara nga AI",
   dlsHint: "Nga skanimi i dokumenteve të reja — asnjë afat s'krijohet pa e pranuar ti.",
   dlsDashBody: "{n} afate të propozuara nga dokumentet presin vendimin tënd.",
+  // Token-less email classification
+  emsTitle: "Email nga dërgues të njohur",
+  emsDashBody: "{n} email pa adresë lënde përputhen me kontakte ekzistuese.",
+  emsSuggested: "Duket e lëndës",
+  emsAccept: "Fute në lëndë",
+  emsDismiss: "Hidhe",
+  emsHint: "Asgjë s'futet në lëndë pa e pranuar ti.",
   // Mahnwesen (invoice dunning)
   mhnBtn: "Kujtesë pagese",
   mhnBadge: "Kujtesa {n}",
@@ -2013,6 +2020,13 @@ const en: typeof sq = {
   dlsTitle: "AI-suggested deadlines",
   dlsHint: "From scanning new documents — no deadline is created until you accept it.",
   dlsDashBody: "{n} deadline suggestions from documents await your decision.",
+  // Token-less email classification
+  emsTitle: "Emails from known senders",
+  emsDashBody: "{n} emails without a matter address match existing contacts.",
+  emsSuggested: "Looks like matter",
+  emsAccept: "File into matter",
+  emsDismiss: "Dismiss",
+  emsHint: "Nothing is filed until you accept it.",
   // Mahnwesen (invoice dunning)
   mhnBtn: "Payment reminder",
   mhnBadge: "Reminder {n}",
@@ -3242,6 +3256,13 @@ const zh: typeof sq = {
   dlsTitle: "AI 建议的期限",
   dlsHint: "来自新文档的扫描——未经您确认不会创建任何期限。",
   dlsDashBody: "有 {n} 条来自文档的期限建议等待您的决定。",
+  // Token-less email classification
+  emsTitle: "来自已知发件人的邮件",
+  emsDashBody: "{n} 封无案件地址的邮件与现有联系人匹配。",
+  emsSuggested: "疑似案件",
+  emsAccept: "归入案件",
+  emsDismiss: "忽略",
+  emsHint: "未经您确认，任何内容都不会归档。",
   // Mahnwesen (invoice dunning)
   mhnBtn: "付款提醒",
   mhnBadge: "提醒 {n}",
@@ -4480,6 +4501,13 @@ const sr: typeof sq = {
   dlsTitle: "Rokovi predloženi od AI",
   dlsHint: "Iz skeniranja novih dokumenata — nijedan rok se ne kreira dok ga ne prihvatite.",
   dlsDashBody: "{n} predloga rokova iz dokumenata čeka vašu odluku.",
+  // Token-less email classification
+  emsTitle: "Mejlovi od poznatih pošiljalaca",
+  emsDashBody: "{n} mejlova bez adrese predmeta odgovara postojećim kontaktima.",
+  emsSuggested: "Liči na predmet",
+  emsAccept: "Uloži u predmet",
+  emsDismiss: "Odbaci",
+  emsHint: "Ništa se ne ulaže dok vi ne prihvatite.",
   // Mahnwesen (invoice dunning)
   mhnBtn: "Podsetnik za plaćanje",
   mhnBadge: "Opomena {n}",
@@ -5718,6 +5746,13 @@ const tr: typeof sq = {
   dlsTitle: "YZ önerilen süreler",
   dlsHint: "Yeni belgelerin taranmasından — siz kabul etmeden hiçbir süre oluşturulmaz.",
   dlsDashBody: "Belgelerden {n} süre önerisi kararınızı bekliyor.",
+  // Token-less email classification
+  emsTitle: "Bilinen gönderenlerden e-postalar",
+  emsDashBody: "Dosya adresi olmayan {n} e-posta mevcut kişilerle eşleşiyor.",
+  emsSuggested: "Şu dosyaya benziyor",
+  emsAccept: "Dosyaya ekle",
+  emsDismiss: "Yoksay",
+  emsHint: "Siz onaylamadan hiçbir şey dosyalanmaz.",
   // Mahnwesen (invoice dunning)
   mhnBtn: "Ödeme hatırlatması",
   mhnBadge: "Hatırlatma {n}",
@@ -6956,6 +6991,13 @@ const bs: typeof sq = {
   dlsTitle: "Rokovi predloženi od AI",
   dlsHint: "Iz skeniranja novih dokumenata — nijedan rok se ne kreira dok ga ne prihvatite.",
   dlsDashBody: "{n} prijedloga rokova iz dokumenata čeka vašu odluku.",
+  // Token-less email classification
+  emsTitle: "Mejlovi od poznatih pošiljatelja",
+  emsDashBody: "{n} mejlova bez adrese predmeta odgovara postojećim kontaktima.",
+  emsSuggested: "Liči na predmet",
+  emsAccept: "Uloži u predmet",
+  emsDismiss: "Odbaci",
+  emsHint: "Ništa se ne ulaže dok vi ne prihvatite.",
   // Mahnwesen (invoice dunning)
   mhnBtn: "Podsjetnik za plaćanje",
   mhnBadge: "Opomena {n}",
@@ -8195,6 +8237,13 @@ const de: typeof sq = {
   dlsTitle: "KI-vorgeschlagene Fristen",
   dlsHint: "Aus dem Scan neuer Dokumente — keine Frist wird ohne Ihre Bestätigung angelegt.",
   dlsDashBody: "{n} Fristvorschläge aus Dokumenten warten auf Ihre Entscheidung.",
+  // Token-less email classification
+  emsTitle: "E-Mails von bekannten Absendern",
+  emsDashBody: "{n} E-Mails ohne Aktenadresse passen zu bestehenden Kontakten.",
+  emsSuggested: "Passt vermutlich zur Akte",
+  emsAccept: "In Akte ablegen",
+  emsDismiss: "Verwerfen",
+  emsHint: "Nichts wird abgelegt, bevor Sie es bestätigen.",
   // Mahnwesen (invoice dunning)
   mhnBtn: "Mahnung",
   mhnBadge: "Mahnstufe {n}",

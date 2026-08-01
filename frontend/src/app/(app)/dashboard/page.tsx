@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { apiGet, apiPatch } from "@/lib/api";
+import { apiGet, apiPatch, apiPost } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
 import BookingsPanel from "@/components/bookings-panel";
@@ -153,6 +153,16 @@ type DlSuggestion = {
   title: string;
 };
 
+type EmailSug = {
+  id: string;
+  matter_id: string;
+  matter_reference?: string | null;
+  matter_title?: string | null;
+  sender: string;
+  subject: string;
+  contact_name?: string | null;
+};
+
 export default function DashboardPage() {
   const { t, locale } = useI18n();
   const [data, setData] = useState<Dashboard | null>(null);
@@ -163,6 +173,11 @@ export default function DashboardPage() {
   const [profession, setProfession] = useState<string>("lawyer");
   const [timeSuggestions, setTimeSuggestions] = useState(0);
   const [dlSuggestions, setDlSuggestions] = useState<DlSuggestion[]>([]);
+  const [emailSugs, setEmailSugs] = useState<EmailSug[]>([]);
+
+  const loadEmailSugs = useCallback(() => {
+    apiGet<EmailSug[]>("/email-suggestions").then(setEmailSugs).catch(() => {});
+  }, []);
 
   const loadTasks = useCallback(() => {
     apiGet<Task[]>("/tasks?mine=true&open_only=true").then(setTasks).catch(() => {});
@@ -183,6 +198,7 @@ export default function DashboardPage() {
     apiGet<DlSuggestion[]>("/deadline-suggestions")
       .then(setDlSuggestions)
       .catch(() => {});
+    loadEmailSugs();
     loadTasks();
     if (
       new URLSearchParams(window.location.search).get("welcome") &&
@@ -190,7 +206,17 @@ export default function DashboardPage() {
     ) {
       setWelcome(true);
     }
-  }, [loadTasks]);
+  }, [loadTasks, loadEmailSugs]);
+
+  async function acceptEmailSug(id: string) {
+    await apiPost(`/email-suggestions/${id}/accept`);
+    loadEmailSugs();
+  }
+
+  async function dismissEmailSug(id: string) {
+    await apiPost(`/email-suggestions/${id}/dismiss`);
+    loadEmailSugs();
+  }
 
   async function completeTask(task: Task) {
     await apiPatch(`/tasks/${task.id}`, { status: "done" });
@@ -284,6 +310,53 @@ export default function DashboardPage() {
                   {s.matter_reference ? `${s.matter_reference} — ` : ""}
                   {s.title}
                 </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
+      {emailSugs.length > 0 && (
+        <Card className="p-5 border-sky-300 bg-sky-50/60">
+          <h2 className="font-semibold text-sky-900">{t.emsTitle}</h2>
+          <p className="text-sm text-sky-800 mt-1">
+            {t.emsDashBody.replace("{n}", String(emailSugs.length))} · {t.emsHint}
+          </p>
+          <ul className="mt-2 space-y-2">
+            {emailSugs.slice(0, 5).map((s) => (
+              <li
+                key={s.id}
+                className="flex items-center justify-between gap-3 flex-wrap rounded-lg border border-sky-200 bg-white/70 px-3 py-2"
+              >
+                <div className="min-w-0 text-sm">
+                  <p className="text-slate-800 truncate">
+                    <span className="font-medium">{s.contact_name || s.sender}</span>
+                    {s.subject ? ` — ${s.subject}` : ""}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {t.emsSuggested}:{" "}
+                    <Link
+                      href={`/matters/${s.matter_id}`}
+                      className="text-sky-700 hover:underline"
+                    >
+                      {s.matter_reference} — {s.matter_title}
+                    </Link>
+                  </p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => acceptEmailSug(s.id)}
+                    className="rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold px-3 py-1.5"
+                  >
+                    {t.emsAccept}
+                  </button>
+                  <button
+                    onClick={() => dismissEmailSug(s.id)}
+                    className="rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 text-xs font-semibold px-3 py-1.5"
+                  >
+                    {t.emsDismiss}
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
