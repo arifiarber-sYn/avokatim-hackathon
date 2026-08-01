@@ -3,6 +3,15 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Housekeeping: LiveKit 7881 → localhost, visibility-nudge script
+
+- LiveKit's TCP-ICE fallback port 7881 now binds to 127.0.0.1 only (LAN media
+  uses 7882/udp) — closes an unnecessary LAN-exposed port, D-033 spirit.
+- Committed the one-shot `backend/scripts/send_visibility_nudge.py` used on
+  07-31 to ask the two newly verified lawyers to publish their profiles
+  (already sent; kept for the record, noted in `docs/agents/COMMS.md`).
+- Files: `docker-compose.yml`, `backend/scripts/send_visibility_nudge.py`.
+
 ## 2026-07-31 — Fully automatic lawyer/notary verification (email = proof)
 
 - Owner's call: if the system finds the lawyer in the OAK registry, no extra

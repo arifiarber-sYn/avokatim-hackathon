@@ -59,6 +59,11 @@ Daily batch of 30 introduction emails to OAK lawyers (then ONK notaries) via
 `avokatim-outreach.timer` → `backend/scripts/oak_outreach_campaign.py`. Dedup +
 suppression of already-registered addresses; log `data/outreach.log`.
 
+One-off manual sends live in `backend/scripts/` and are kept for the record,
+e.g. `send_visibility_nudge.py` (2026-07-31: asked the two newly verified
+lawyers to flip their public-profile switch). Such scripts are run once by
+the owner/agent and never wired to a timer.
+
 ## Lane B — Halim (OpenClaw) correspondence protocol
 
 - `scripts/ops_inbox_triage.py` (cron every 10 min, read-only IMAP PEEK)

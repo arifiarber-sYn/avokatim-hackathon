@@ -10,6 +10,17 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01 — Housekeeping: LiveKit port + visibility-nudge script (Cursor / Fable 5)
+
+- Done: committed two leftovers from the 07-31 sessions — LiveKit's TCP-ICE
+  fallback port 7881 now binds to 127.0.0.1 only (LAN media flows over
+  7882/udp; belongs to the D-033 hardening spirit), and the one-shot
+  `backend/scripts/send_visibility_nudge.py` used to ask Betim Sijarina and
+  Marigona Gashi to publish their newly verified profiles (emails already
+  sent on 07-31; script kept for the record, noted in COMMS.md).
+- Verified: `docker compose config` renders; no service restart needed until
+  the next `docker compose up` recreates the LiveKit container.
+
 ## 2026-07-31b — Verifikimi OAK/ONK plotësisht automatik (Cursor / Fable 5)
 
 - Done: removed the "extra procedure" the owner flagged — verification no

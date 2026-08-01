@@ -42,7 +42,8 @@ services:
       - ./livekit.yaml:/etc/livekit.yaml:ro,z
     ports:
       - "127.0.0.1:7880:7880"
-      - "7881:7881"
+      # 7881 (TCP fallback per ICE) vetem localhost — media ne LAN kalon permes 7882/udp
+      - "127.0.0.1:7881:7881"
       - "7882:7882/udp"
 
   redis:
