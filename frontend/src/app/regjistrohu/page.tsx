@@ -1,9 +1,10 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiPost, setToken } from "@/lib/api";
+import { clientCountry } from "@/lib/country";
 import { useI18n } from "@/lib/i18n";
 import { Button, Card, ErrorNote, Input, Label, LocaleSwitcher } from "@/components/ui";
 
@@ -34,6 +35,14 @@ function SignupInner() {
   const [acceptTos, setAcceptTos] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  // The notary pillar is Kosovo-only in v1 (D-034)
+  const [isDE, setIsDE] = useState(false);
+  useEffect(() => {
+    if (clientCountry() === "DE") {
+      setIsDE(true);
+      setProfession("lawyer");
+    }
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -67,6 +76,7 @@ function SignupInner() {
           <LocaleSwitcher />
         </div>
         <form onSubmit={submit} className="space-y-4">
+          {!isDE && (
           <div>
             <Label>{t.signupProfession}</Label>
             <div className="grid grid-cols-2 gap-2 mt-1">
@@ -92,6 +102,7 @@ function SignupInner() {
               ))}
             </div>
           </div>
+          )}
           <div>
             <Label>{t.practiceName}</Label>
             <Input

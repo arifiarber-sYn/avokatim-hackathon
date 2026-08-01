@@ -139,6 +139,16 @@ Growth operations (running):
 
 ## Phase 4 — More jurisdictions
 
+- [x] **DE (Germany) ✅ (2026-08-01, D-034)** — one codebase, jurisdiction
+      profiles as data (`app/jurisdictions.py`), host `de.avokatiim.ai`,
+      German locale (7th), 58-law federal corpus, DE seeds (holidays,
+      ZPO/StPO/KSchG deadlines, RVG tariff, templates), RDG-safe DE Ava,
+      BRAV-assisted manual verification. Public launch gated by
+      `docs/legal/DE-LAUNCH-GATE.md` (EU server, GDPR Art. 27 rep, EU LLM,
+      German-lawyer review of AGB/Datenschutz/Impressum).
+- [ ] DE deepening: Bundesland holidays (needs `Holiday.region`), exact
+      calendar-month deadline arithmetic (§ 222 ZPO), BRAV scraper when the
+      portal stabilizes, German outreach campaign, SOS/notary legal review.
 - [ ] GB seeds (deadline rules, holidays, templates, corpus).
 - [ ] CN seeds; INTL (arbitration etc.).
 - [ ] Per-jurisdiction template/document language handling.

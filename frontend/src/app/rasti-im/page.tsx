@@ -18,6 +18,7 @@ import PublicShell from "@/components/public-shell";
 import CitizenAuthForm from "@/components/citizen-auth";
 import PageIntro from "@/components/page-intro";
 import SosPanel from "@/components/sos-panel";
+import { clientCountry } from "@/lib/country";
 import EvidenceVault from "@/components/evidence-vault";
 import { IconCalendar } from "@/components/icons";
 
@@ -95,6 +96,9 @@ function MyCaseInner() {
   const [sosOpen, setSosOpen] = useState(params.get("sos") === "1");
   const [vaultKey, setVaultKey] = useState(0);
   const [callCase, setCallCase] = useState<string | null>(null);
+  // SOS is Kosovo-only in v1 (D-034)
+  const [sosEnabled, setSosEnabled] = useState(true);
+  useEffect(() => setSosEnabled(clientCountry() !== "DE"), []);
 
   useEffect(() => {
     if (verifyToken) {
@@ -157,7 +161,7 @@ function MyCaseInner() {
       <main className="w-full max-w-2xl mx-auto px-4 py-8 space-y-4">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-2xl font-bold">{t.mkMyCases}</h1>
-          {citizen !== null && (
+          {citizen !== null && sosEnabled && (
             <button
               onClick={() => setSosOpen((v) => !v)}
               className="text-sm font-bold bg-red-600 text-white rounded-lg px-4 py-2 hover:bg-red-700 shadow-sm"
@@ -171,7 +175,7 @@ function MyCaseInner() {
         {verified && (
           <p className="text-sm bg-emerald-50 text-emerald-700 rounded-lg p-3">{t.mkEmailVerified}</p>
         )}
-        {citizen !== null && sosOpen && (
+        {citizen !== null && sosOpen && sosEnabled && (
           <SosPanel
             locale={locale}
             onCaseCreated={() => {

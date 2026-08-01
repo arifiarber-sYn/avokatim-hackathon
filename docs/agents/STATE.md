@@ -3,13 +3,41 @@
 > Update this file whenever the state changes (new module, dependency, behavior,
 > known issue). Keep it a snapshot, not a history — history lives in JOURNAL.md.
 
-**Last updated:** 2026-07-18
+**Last updated:** 2026-08-01
 
-## Status: live in production at https://avokatiim.ai — lawyer office + citizen marketplace + notary profession + growth ops (automated outreach, analytics); first real signups arriving (first outreach conversion 2026-07-13)
+## Status: live in production at https://avokatiim.ai (Kosovo) + https://de.avokatiim.ai (Germany, D-034) — lawyer office + citizen marketplace + notary profession + growth ops (automated outreach, analytics); first real signups arriving (first outreach conversion 2026-07-13)
 
 All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
 ## What exists and works
+
+- **Germany expansion** (2026-08-01, D-034): one codebase, two countries.
+  `app/jurisdictions.py` = declarative per-country profiles (XK/DE: currency,
+  VAT 18/19, timezone, locales, chamber registry OAK/BRAV, SOS+notary feature
+  switches, corpus fallback language, cities, public host). Host → country:
+  `de.avokatiim.ai` → DE (proxy.ts header `x-avokatim-country` +
+  `country_from_request`); `country` columns on tenants/citizen_users/
+  case_requests scope directory, marketplace, stats, SOS alerts, Ava.
+  **German locale (de)** is the 7th full language: `dictionaries.ts` (1,130
+  keys) + `app/i18n.py` (all email/SMS strings) + `supported_locales`;
+  DE host defaults to de, its picker offers de/en/tr (`COUNTRY_LOCALES`).
+  **German corpus**: `scripts/import_de_laws.py` — 58 core federal acts from
+  gesetze-im-internet.de XML (GG, BGB, ZPO, StGB, StPO, HGB, KSchG, VwGO,
+  SGB, RVG, BRAO…; 14,443 chunks, § heading per norm, resumable); RAG
+  fallback language is per-jurisdiction. **DE seed data**
+  (`seeds/germany.py`): federal holidays (incl. Easter calc), 14 deadline
+  rules (ZPO/StPO/KSchG/VwGO/SGG/AO — month rules approximated 30 d with
+  warning note), 8 RVG tariff anchors, 4 lawyer templates, 4 German citizen
+  doc templates (country-picked in `public_tools.py`). **DE Ava**:
+  own prompt (RDG § 2 information-only + EU AI Act Art. 50 disclosure),
+  per-jurisdiction LLM provider hook. **DE lawyers**: BRAV has no emails →
+  never auto-verified; ops/Halim get a BRAV search link for one-click manual
+  approval; onboarding shows German cities/languages, VAT 19 default,
+  notary signup blocked (400) and SOS hidden/guarded (403) for DE.
+  **Legal**: German AGB + Datenschutzerklärung drafts in `lib/legal.ts`,
+  `/impressum` page (§ 5 DDG, address placeholder), launch gate =
+  `docs/legal/DE-LAUNCH-GATE.md` (EU server, Art. 27 rep, EU LLM, lawyer
+  review — blocks public launch, not development).
 
 - **Security hardening wave** (2026-07-31, D-033): **Postgres RLS** on all 25
   tables with `tenant_id` — app connects as non-superuser `avokatim_app`
@@ -717,7 +745,8 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 ## Environment
 
 - Host: owner's Fedora Linux machine; everything runs locally.
-- **Public domain**: https://avokatiim.ai (+ www) via **Cloudflare Tunnel** —
+- **Public domain**: https://avokatiim.ai (+ www) and **https://de.avokatiim.ai**
+  (Germany, same app — country from hostname, D-034) via **Cloudflare Tunnel** —
   live since 2026-07-10 (old domain boraarifi.ai now serves only a static
   parking page via Caddy :8099; both zones on Cloudflare) —
   tunnel named `boralaw` on Cloudflare (legacy internal name, kept because the
@@ -769,4 +798,8 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 ## Jurisdictions
 
 - **XK (Kosovo): active** — deadline rules, holidays, templates seeded.
+- **DE (Germany): active** (2026-08-01, D-034) — profile in
+  `app/jurisdictions.py`, seed data in `seeds/germany.py`, 58-law corpus,
+  host `de.avokatiim.ai`. SOS + notary off; public launch gated by
+  `docs/legal/DE-LAUNCH-GATE.md`.
 - GB, CN, INTL: schema-ready, no data yet.

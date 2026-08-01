@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { clientCountry } from "./country";
 import { dictionaries, Dictionary, Locale } from "./dictionaries";
 
 interface I18nContextValue {
@@ -20,7 +21,12 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem("avokatim_locale") as Locale | null;
-    if (saved && dictionaries[saved]) setLocaleState(saved);
+    if (saved && dictionaries[saved]) {
+      setLocaleState(saved);
+    } else if (clientCountry() === "DE") {
+      // German host, no saved preference — German-first (D-034)
+      setLocaleState("de");
+    }
   }, []);
 
   const setLocale = (l: Locale) => {

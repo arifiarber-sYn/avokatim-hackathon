@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiGet, apiPut, getToken } from "@/lib/api";
+import { clientCountry, COUNTRY_UX } from "@/lib/country";
 import { useI18n } from "@/lib/i18n";
 import { Button, Card, ErrorNote, Input, Label, Textarea } from "@/components/ui";
 
@@ -21,6 +22,11 @@ const LANGS: { code: string; label: string }[] = [
   { code: "bs", label: "Bosanski" },
   { code: "en", label: "English" },
   { code: "zh", label: "中文" },
+];
+const LANGS_DE: { code: string; label: string }[] = [
+  { code: "de", label: "Deutsch" },
+  { code: "en", label: "English" },
+  { code: "tr", label: "Türkçe" },
 ];
 
 interface BookingWindow {
@@ -38,6 +44,14 @@ export default function OnboardingPage() {
   // Notary offices get a shorter variant: no practice areas, no custom
   // consultation fee (fixed tariffs), ONK license instead of OAK
   const [isNotary, setIsNotary] = useState(false);
+  // German host: German cities/languages, no SOS duty toggle (D-034)
+  const [isDE, setIsDE] = useState(false);
+  useEffect(() => setIsDE(clientCountry() === "DE"), []);
+  const langOptions = isDE ? LANGS_DE : LANGS;
+  const cityPlaceholder = COUNTRY_UX[isDE ? "DE" : "XK"].cities.slice(0, 2).join(", ");
+  useEffect(() => {
+    if (isDE) setProfile((p) => ({ ...p, languages: ["de"] }));
+  }, [isDE]);
   const [profile, setProfile] = useState({
     is_visible: true,
     sos_on_duty: false,
@@ -235,13 +249,13 @@ export default function OnboardingPage() {
               <Input
                 value={profile.cities}
                 onChange={(e) => setProfile({ ...profile, cities: e.target.value })}
-                placeholder="Prishtinë, Prizren"
+                placeholder={cityPlaceholder}
               />
             </div>
             <div>
               <Label>{t.mkLanguagesLabel}</Label>
               <div className="flex flex-wrap gap-2">
-                {LANGS.map((l) => (
+                {langOptions.map((l) => (
                   <button
                     key={l.code}
                     type="button"

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiDownload, apiGet, apiPatch, apiPost, apiPut, apiUpload, setToken } from "@/lib/api";
+import { clientCountry } from "@/lib/country";
 import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
 import { Contact } from "@/lib/types";
@@ -1384,14 +1385,23 @@ function PublicProfileSection({ isNotary = false }: { isNotary?: boolean }) {
   const [error, setError] = useState("");
 
   const AREAS = ["civil", "criminal", "family", "commercial", "labor", "administrative", "other"];
-  const LANGS: { code: string; label: string }[] = [
-    { code: "sq", label: "Shqip" },
-    { code: "sr", label: "Srpski" },
-    { code: "tr", label: "Türkçe" },
-    { code: "bs", label: "Bosanski" },
-    { code: "en", label: "English" },
-    { code: "zh", label: "中文" },
-  ];
+  // German offices: German-market languages, no SOS duty (D-034)
+  const [isDE, setIsDE] = useState(false);
+  useEffect(() => setIsDE(clientCountry() === "DE"), []);
+  const LANGS: { code: string; label: string }[] = isDE
+    ? [
+        { code: "de", label: "Deutsch" },
+        { code: "en", label: "English" },
+        { code: "tr", label: "Türkçe" },
+      ]
+    : [
+        { code: "sq", label: "Shqip" },
+        { code: "sr", label: "Srpski" },
+        { code: "tr", label: "Türkçe" },
+        { code: "bs", label: "Bosanski" },
+        { code: "en", label: "English" },
+        { code: "zh", label: "中文" },
+      ];
 
   useEffect(() => {
     apiGet<{
@@ -1497,7 +1507,7 @@ function PublicProfileSection({ isNotary = false }: { isNotary?: boolean }) {
           />
           {isNotary ? t.mkVisibleInNotaryDirectory : t.mkVisibleInDirectory}
         </label>
-        {!isNotary && (
+        {!isNotary && !isDE && (
         <label className="flex items-center gap-2 text-sm cursor-pointer" title={t.mkSosDutyHint}>
           <input
             type="checkbox"
@@ -1692,7 +1702,7 @@ function PublicProfileSection({ isNotary = false }: { isNotary?: boolean }) {
           <Input
             value={profile.cities}
             onChange={(e) => setProfile({ ...profile, cities: e.target.value })}
-            placeholder="Prishtinë, Prizren"
+            placeholder={isDE ? "Berlin, Hamburg" : "Prishtinë, Prizren"}
           />
         </div>
         <div>

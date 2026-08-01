@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.deps import bearer, get_current_user
-from app.jurisdictions import country_from_request
+from app.jurisdictions import country_from_request, profile_for
 from app.models import Tenant, User
 from app.schemas.auth import (
     AcceptInviteRequest,
@@ -192,6 +192,13 @@ async def signup(
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST, "Terms of service must be accepted"
         )
+    if body.profession == "notary" and not profile_for(
+        country_from_request(request)
+    ).notary_enabled:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "Notary accounts are not available in this country yet",
+        )
 
     # Referral program: record who brought this office (only valid codes)
     referred_by = None
@@ -212,6 +219,7 @@ async def signup(
         default_locale=body.locale,
         country=country,
         default_jurisdiction_code=country,
+        default_vat_rate=profile_for(country).vat_rate,
         plan="trial",
         status="active",
         seats_limit=3,

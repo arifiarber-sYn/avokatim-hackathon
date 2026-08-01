@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LOCALES } from "@/lib/dictionaries";
+import { COUNTRY_LOCALES, LOCALES } from "@/lib/dictionaries";
+import { clientCountry } from "@/lib/country";
 import { useI18n } from "@/lib/i18n";
 
 export function Card({
@@ -163,7 +164,11 @@ export function LocaleSwitcher({
             up ? "left-0 bottom-full mb-2" : "right-0 top-full mt-2"
           }`}
         >
-          {LOCALES.map((l) => (
+          {/* Only the current host's languages (menu renders client-side
+              after a click, so reading the hostname here is hydration-safe) */}
+          {LOCALES.filter((l) =>
+            (COUNTRY_LOCALES[clientCountry()] ?? LOCALES.map((x) => x.code)).includes(l.code)
+          ).map((l) => (
             <button
               key={l.code}
               role="option"

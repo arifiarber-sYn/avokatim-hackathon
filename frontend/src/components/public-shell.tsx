@@ -10,6 +10,7 @@ import { ReactNode, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
+import { clientCountry, type Country } from "@/lib/country";
 import { LocaleSwitcher } from "@/components/ui";
 import PublicFooter from "@/components/public-footer";
 import {
@@ -147,6 +148,13 @@ export default function PublicShell({
   const dict = t as unknown as Record<string, string>;
   const toolsActive = pathname.startsWith("/afatet") || pathname.startsWith("/dokumentet");
 
+  // SOS and the notary pillar are Kosovo-only in v1 (D-034); resolved after
+  // mount so SSR markup stays identical for both hosts.
+  const [country, setCountry] = useState<Country>("XK");
+  useEffect(() => setCountry(clientCountry()), []);
+  const sosEnabled = country !== "DE";
+  const notaryEnabled = country !== "DE";
+
   // Recognize a signed-in citizen so their credentials never lead them to
   // the lawyer login: valid token -> chip menu, stale token -> cleared.
   const [citizen, setCitizen] = useState<CitizenInfo | null>(null);
@@ -182,7 +190,9 @@ export default function PublicShell({
                 mobile bottom nav keeps its four core actions + SOS. */}
             {[
               ...NAV.slice(0, 2),
-              { href: "/noteret", label: (d: Record<string, string>) => d.pnNotaries },
+              ...(notaryEnabled
+                ? [{ href: "/noteret", label: (d: Record<string, string>) => d.pnNotaries }]
+                : []),
               ...NAV.slice(2),
             ].map(({ href, label }) => (
               <Link
@@ -215,12 +225,14 @@ export default function PublicShell({
                 </div>
               </div>
             </div>
-            <Link
-              href="/rasti-im?sos=1"
-              className="text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg px-3 py-1.5"
-            >
-              SOS
-            </Link>
+            {sosEnabled && (
+              <Link
+                href="/rasti-im?sos=1"
+                className="text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg px-3 py-1.5"
+              >
+                SOS
+              </Link>
+            )}
           </nav>
           {/* Right side, industry pattern (Airbnb/Avvo): three elements with
               distinct visual weights so nothing reads as a group — quiet
@@ -267,13 +279,15 @@ export default function PublicShell({
             <BottomItem key={href} href={href} label={label(dict)} Icon={Icon} active={pathname.startsWith(href)} />
           ))}
           {/* Elevated SOS in the dead center — the most thumb-reachable spot */}
-          <Link
-            href="/rasti-im?sos=1"
-            className="flex flex-col items-center justify-center -mt-5 h-14 w-14 rounded-full bg-red-600 text-white text-xs font-extrabold shadow-lg shrink-0"
-            aria-label="SOS"
-          >
-            SOS
-          </Link>
+          {sosEnabled && (
+            <Link
+              href="/rasti-im?sos=1"
+              className="flex flex-col items-center justify-center -mt-5 h-14 w-14 rounded-full bg-red-600 text-white text-xs font-extrabold shadow-lg shrink-0"
+              aria-label="SOS"
+            >
+              SOS
+            </Link>
+          )}
           {NAV.slice(2).map(({ href, label, Icon }) => (
             <BottomItem key={href} href={href} label={label(dict)} Icon={Icon} active={pathname.startsWith(href)} />
           ))}

@@ -3,6 +3,46 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Germany expansion (D-034), phases 1–4: locale, data, Ava, legal
+
+- German locale end-to-end: `de` added to `Locale` + ~1,130 translated keys in
+  `frontend/src/lib/dictionaries.ts`, per-country language menu
+  (`COUNTRY_LOCALES`: DE shows de/en/tr), host-aware default locale in
+  `i18n.tsx`; full `_DE` catalog in `backend/app/i18n.py` (emails/SMS) and
+  `de` in `supported_locales`.
+- Public pages host-aware: landing, per-qytetaret, rasti-im, onboarding,
+  settings, public shell + footer adapt copy/cities/languages for DE; SOS and
+  notary hidden on the DE host and blocked server-side (signup 400, SOS 403).
+- German legal data: `backend/app/seeds/germany.py` — DE jurisdiction active,
+  9 federal holidays (2026–2027), 12 deadline rules (ZPO §§ 517/520/339,
+  Mahnbescheid, KSchG § 4, StPO §§ 314/341, VwGO, ArbGG), RVG starter
+  tariff, 6 citizen document templates. `backend/scripts/import_de_laws.py`
+  imports federal laws from gesetze-im-internet.de (XML, public domain):
+  58 laws / 14,443 § chunks loaded with local embeddings. RAG fallback
+  language now resolves from the jurisdiction profile (`rag.py`).
+- DE Ava: Rechtsinformation-only system prompt (RDG § 2 boundary, EU AI Act
+  Art. 50 "you are talking to an AI" disclosure, § citations, lawyer
+  recommendation); LLM provider selectable per jurisdiction profile through
+  the existing router. German VAT (19%) set on DE signups.
+- German lawyers: BRAV registry has no emails → no auto-verify; signup
+  notifies ops with a prefilled BRAV search link for one-click approval
+  (`license_verify.py`); procedure added to Halim's AVOKATIM-OPS.md.
+- Legal: German AGB + Datenschutzerklärung (`legal.ts`), static `/impressum`
+  page (§ 5 DDG, address placeholders); `docs/legal/DE-LAUNCH-GATE.md`
+  documents the four conditions before public German promotion (EU server,
+  GDPR Art. 27 representative, EU LLM, German-lawyer text review).
+- Files: `backend/app/{i18n,config}.py`, `backend/app/api/{auth,marketplace,
+  public_tools}.py`, `backend/app/seeds/{__init__,germany}.py`,
+  `backend/app/services/{rag,license_verify}.py`,
+  `backend/scripts/import_de_laws.py` (new), `frontend/src/lib/
+  {dictionaries,i18n,legal,country}.ts*`, `frontend/src/app/{page,
+  per-qytetaret,rasti-im,onboarding,regjistrohu,impressum,(app)/settings}`,
+  `frontend/src/components/{public-shell,public-footer,ui}.tsx`,
+  `docs/legal/DE-LAUNCH-GATE.md` (new).
+- Verified: pytest 128/128, tsc clean, build 44 pages, both hosts 200,
+  DE stats show the German corpus, live German Ava answer correct
+  (Kündigungsschutzklage → 3 Wochen, § 4 KSchG, German citations).
+
 ## 2026-08-01 — Germany expansion (D-034), phase 0: country scoping
 
 - One codebase, two countries: new `app/jurisdictions.py` (declarative

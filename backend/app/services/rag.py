@@ -108,18 +108,28 @@ async def search_corpus(
     query: str,
     limit: int = 6,
     language: str | None = None,
+    fallback_language: str | None = None,
 ) -> list[dict]:
     """Semantic (or fallback text) search over the legal corpus.
 
     When `language` is given, the search runs over that language's official
-    texts plus Albanian as fallback (some laws only exist in sq); cosine
+    texts plus the jurisdiction's complete corpus language as fallback
+    (sq for Kosovo, de for Germany — see JurisdictionProfile, D-034); cosine
     ranking naturally prefers the chunks that match the query's language.
+    When `fallback_language` is None it is resolved from the jurisdiction.
     """
-    # Albanian is always included: it is the only complete corpus language.
+    if fallback_language is None:
+        from app.jurisdictions import profile_for
+        from app.models import Jurisdiction
+
+        jur = await db.get(Jurisdiction, jurisdiction_id)
+        fallback_language = profile_for(
+            getattr(jur, "code", None)
+        ).corpus_fallback_language
     lang_filter = (
-        LegalCorpusDoc.language.in_([language, "sq"])
-        if language and language != "sq"
-        else LegalCorpusDoc.language == "sq"
+        LegalCorpusDoc.language.in_([language, fallback_language])
+        if language and language != fallback_language
+        else LegalCorpusDoc.language == fallback_language
     )
     vectors = embed([query])
     if vectors:

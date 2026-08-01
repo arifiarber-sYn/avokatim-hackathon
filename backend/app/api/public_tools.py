@@ -19,6 +19,7 @@ from app.database import get_db
 from app.jurisdictions import country_from_request
 from app.models import DeadlineRule, Jurisdiction
 from app.seeds.citizen_docs import CITIZEN_DOC_TEMPLATES
+from app.seeds.germany import DE_CITIZEN_DOC_TEMPLATES
 from app.seeds.notary import (
     NOTARY_ACTS,
     NOTARY_CHECKLIST_LABELS,
@@ -220,9 +221,21 @@ async def notary_fee_estimate(body: NotaryFeeIn, request: Request):
 
 # ---------- simple citizen documents ----------
 
+# Per-country template sets (D-034): letter bodies are jurisdiction-specific
+# legal text, so DE gets its own list instead of translations of the XK one.
+_DOC_TEMPLATES_BY_COUNTRY: dict[str, list[dict]] = {
+    "XK": CITIZEN_DOC_TEMPLATES,
+    "DE": DE_CITIZEN_DOC_TEMPLATES,
+}
+_ALL_DOC_TEMPLATES = [t for lst in _DOC_TEMPLATES_BY_COUNTRY.values() for t in lst]
+
+
 @router.get("/documents")
-async def citizen_doc_templates():
+async def citizen_doc_templates(request: Request):
     """Available self-service templates with their plain-language fields."""
+    templates = _DOC_TEMPLATES_BY_COUNTRY.get(
+        country_from_request(request), CITIZEN_DOC_TEMPLATES
+    )
     return [
         {
             "code": tpl["code"],
@@ -232,7 +245,7 @@ async def citizen_doc_templates():
             "requires_notary": tpl.get("requires_notary", False),
             "notary_act": tpl.get("notary_act"),
         }
-        for tpl in CITIZEN_DOC_TEMPLATES
+        for tpl in templates
     ]
 
 
@@ -246,7 +259,7 @@ async def citizen_generate_document(
 ) -> Response:
     """Deterministic render (no LLM): fill the template, return a PDF."""
     await _rate_limit("public_citizen_doc", _ip(request), limit=20, window_seconds=3600)
-    tpl = next((t for t in CITIZEN_DOC_TEMPLATES if t["code"] == code), None)
+    tpl = next((t for t in _ALL_DOC_TEMPLATES if t["code"] == code), None)
     if tpl is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Template not found")
     values: dict[str, str] = {}
@@ -258,10 +271,16 @@ async def citizen_generate_document(
             )
         values[field["key"]] = value[:4000]
     values["date"] = datetime.now().strftime("%d.%m.%Y")
-    text = Template(tpl["body_sq"]).render(**values)
+    text = Template(tpl.get("body") or tpl["body_sq"]).render(**values)
 
     from weasyprint import HTML
 
+    footer = (
+        "Erstellt mit AvokatIM ({ts}) — informatives Dokument, vor dem "
+        "Einreichen prüfen."
+        if tpl.get("body")  # German-bodied template
+        else "Gjeneruar me AvokatIM ({ts}) — dokument informues, rishikoje para dorëzimit."
+    ).format(ts=datetime.now().strftime("%d.%m.%Y %H:%M"))
     doc_html = f"""<html><head><meta charset="utf-8"><style>
       @page {{ size: A4; margin: 2.5cm; }}
       body {{ font-family: serif; font-size: 12pt; color: #111; }}
@@ -269,8 +288,7 @@ async def citizen_generate_document(
       footer {{ font-size: 8pt; color: #999; margin-top: 2em; }}
     </style></head><body>
       <pre>{html.escape(text)}</pre>
-      <footer>Gjeneruar me AvokatIM ({datetime.now().strftime("%d.%m.%Y %H:%M")}) —
-      dokument informues, rishikoje para dorëzimit.</footer>
+      <footer>{footer}</footer>
     </body></html>"""
     pdf = HTML(string=doc_html).write_pdf()
     return Response(

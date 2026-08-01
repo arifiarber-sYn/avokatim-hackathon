@@ -1283,8 +1283,230 @@ _ZH = {
     "trial_ending_body": "您的 1 年免费试用将在 {days} 天后结束。请切换到付费方案（{price} €/用户/月——全部功能 + 市场案件不限量），路径：设置 → 订阅：\n{url}",
 }
 
+_DE = {
+    "sms_case_match": "AvokatIM: Neuer Fall ({category}, {city}) passend zu Ihrem Profil. Ansehen: de.avokatiim.ai/marketplace",
+    "sms_sos_alert": "AvokatIM SOS: Dringender Fall ({city})! Jetzt einloggen: de.avokatiim.ai/marketplace",
+    "case_quality_reject": "Die Beschreibung reicht nicht aus, damit ein Anwalt den Fall versteht. Schreiben Sie, was passiert ist, wann und wo — je mehr Details, desto schneller übernimmt ein Anwalt den Fall.",
+    # Lawyer onboarding emails
+    "lawyer_verify_subject": "AvokatIM — E-Mail bestätigen",
+    "lawyer_verify_body": (
+        "Guten Tag,\n\nbestätigen Sie Ihre E-Mail-Adresse über diesen Link:\n{url}\n\n"
+        "Der Link ist 3 Tage gültig.\n\n— AvokatIM"
+    ),
+    "lawyer_welcome_subject": "Willkommen bei AvokatIM, {name}!",
+    "lawyer_welcome_body": (
+        "Ihre digitale Kanzlei ist bereit. Drei Schritte zum Start:\n\n"
+        "1. Aktivieren Sie Ihr öffentliches Profil — Bürger finden Sie im Verzeichnis und Sie erhalten Fälle aus dem Marktplatz:\n{onboarding_url}\n\n"
+        "2. Die Verifizierung gegen das amtliche Anwaltsverzeichnis schaltet das Verifiziert-Abzeichen frei — Fälle gehen nur an verifizierte Anwälte.\n\n"
+        "3. Legen Sie Ihre erste Akte an und testen Sie die Assistentin Ava.\n\n"
+        "Die kostenlose Testphase dauert {trial_days} Tage — ohne Karte, ohne Verpflichtung.\n\n"
+        "Fragen? Wir antworten unter {contact_url}\n\n— Das AvokatIM-Team"
+    ),
+    "notary_welcome_subject": "Willkommen bei AvokatIM, {name}!",
+    "notary_welcome_body": (
+        "Ihr digitales Notariat ist bereit. Drei Schritte zum Start:\n\n"
+        "1. Vervollständigen Sie das Kanzleiprofil und den Terminplan:\n{onboarding_url}\n\n"
+        "2. Testen Sie die Assistentin Ava — sie kennt das Notarrecht und die "
+        "amtlichen Gebühren und hilft beim Entwerfen von Urkunden und beim Zusammenfassen von Dokumenten.\n\n"
+        "3. Legen Sie den ersten notariellen Vorgang an und laden Sie Ihr Team ein.\n\n"
+        "Die kostenlose Testphase dauert {trial_days} Tage — ohne Karte, ohne Verpflichtung.\n\n"
+        "Fragen? Wir antworten unter {contact_url}\n\n— Das AvokatIM-Team"
+    ),
+    "lawyer_profile_nudge_subject": "AvokatIM — Ihr öffentliches Profil ist noch nicht aktiv",
+    "lawyer_profile_nudge_body": (
+        "Bürger können Sie im Verzeichnis nicht finden und Sie erhalten keine Fälle aus dem Marktplatz.\n\n"
+        "Die Aktivierung dauert 2 Minuten:\n{url}\n\n— AvokatIM"
+    ),
+    "citizen_verify_reminder_subject": "AvokatIM — Erinnerung: E-Mail bestätigen",
+    "citizen_verify_reminder_body": (
+        "Ihr Konto ist bereit, aber Ihre E-Mail ist noch nicht bestätigt — ohne Bestätigung können Sie keine Fälle einstellen.\n\n"
+        "Hier bestätigen:\n{url}\n\nDer Link ist 3 Tage gültig.\n\n— AvokatIM"
+    ),
+    "citizen_case_followup_subject": "AvokatIM — Fall noch nicht eingestellt? Das können Sie kostenlos tun",
+    "citizen_case_followup_body": (
+        "Ihr AvokatIM-Konto ist bereit — aber Sie haben noch keinen Fall eingestellt.\n\n"
+        "Wenn Sie ein rechtliches Anliegen haben, beschreiben Sie es kurz, und verifizierte "
+        "Anwälte für Ihr Rechtsgebiet und Ihre Stadt melden sich direkt — kostenlos:\n{post_url}\n\n"
+        "Nicht sicher, ob es ein Fall für einen Anwalt ist? Fragen Sie Ava — unsere "
+        "Assistentin mit den vollständigen Gesetzen antwortet sofort, auch per Sprache:\n{ava_url}\n\n"
+        "Dies ist die einzige E-Mail dieser Art — wir stören Sie nicht weiter.\n\n— AvokatIM"
+    ),
+    "case_review_request_subject": "AvokatIM — Wie lief es mit Ihrem Anwalt? Ihre Bewertung hilft anderen",
+    "case_review_request_body": (
+        "Ihr Fall auf AvokatIM ist abgeschlossen.\n\n"
+        "Ihre Bewertung (Kommunikation, Tempo, Verständlichkeit) hilft anderen "
+        "Bürgern, den richtigen Anwalt zu finden — und guten Anwälten, gesehen zu "
+        "werden. Es dauert nur 30 Sekunden:\n{url}\n\n"
+        "Dies ist die einzige E-Mail dieser Art zu diesem Fall.\n\n— AvokatIM"
+    ),
+    "reminder_subject": "[AvokatIM] Frist in {days} Tagen: {title}",
+    "reminder_matter": "Akte",
+    "reminder_deadline": "Frist",
+    "reminder_expires": "Fällig",
+    "reminder_legal_basis": "Rechtsgrundlage",
+    "sms_hearing_reminder": (
+        "Erinnerung Ihres Anwalts: {title} am {when} (Akte {ref}). "
+        "Bitte erscheinen Sie pünktlich."
+    ),
+    "email_greeting": "Sehr geehrte/r {name},",
+    "email_signoff": "Mit freundlichen Grüßen,",
+    "email_open_portal": "Melden Sie sich in Ihrem Portal an:",
+    "email_invoice_subject": "Rechnung {number} — {firm}",
+    "email_invoice_attached": (
+        "Anbei erhalten Sie die Rechnung {number} über {total} {currency}"
+    ),
+    "email_invoice_due": ", fällig bis {due}",
+    "email_invoice_paylink": "Sie können online per Karte zahlen: {link}",
+    "email_signature_subject": "Dokument zur elektronischen Signatur",
+    "email_signature_body": (
+        '{lawyer} hat Ihnen das Dokument "{filename}" zur elektronischen Signatur gesendet.'
+    ),
+    "email_note": "Hinweis: {note}",
+    "inv_title": "RECHNUNG",
+    "inv_no": "Nr.",
+    "inv_billed_to": "Rechnungsempfänger",
+    "inv_details": "Angaben",
+    "inv_issued": "Rechnungsdatum",
+    "inv_due": "Zahlbar bis",
+    "inv_matter": "Akte",
+    "inv_desc": "Beschreibung",
+    "inv_qty": "Menge",
+    "inv_unit_price": "Einzelpreis",
+    "inv_amount": "Betrag",
+    "inv_subtotal": "Zwischensumme",
+    "inv_vat": "USt.",
+    "inv_total_due": "GESAMTBETRAG",
+    "inv_payment": "Zahlung.",
+    "inv_paid_on": "Bezahlt am {date}.",
+    "inv_paid": "Bezahlt.",
+    "inv_ref": "Verwendungszweck: {ref}.",
+    "inv_pay_head": "Zahlungshinweise.",
+    "inv_pay_body": (
+        "Bitte überweisen Sie den Betrag und geben Sie die Rechnungsnummer "
+        "{number} im Verwendungszweck an."
+    ),
+    "inv_national_id": "Ausweis-Nr.",
+    "inv_status_paid": "BEZAHLT",
+    "inv_status_draft": "ENTWURF",
+    "inv_status_sent": "VERSANDT",
+    "inv_status_void": "STORNIERT",
+    "cert_subtitle": "Zertifikat der elektronischen Signatur",
+    "email_new_message_subject": "[{ref}] Neue Nachricht vom Mandanten",
+    "email_new_message_body": '{client} hat Ihnen zur Akte "{title}" geschrieben:',
+    "email_signed_subject": "Dokument signiert",
+    "email_signed_body": "{client} hat soeben das angeforderte Dokument signiert (Anfrage {request_id}).",
+    # Marketplace (citizens)
+    "citizen_verify_subject": "AvokatIM — E-Mail bestätigen",
+    "citizen_verify_body": (
+        "Bestätigen Sie Ihre E-Mail-Adresse über diesen Link:\n{url}\n\n"
+        "Der Link ist 3 Tage gültig."
+    ),
+    "citizen_welcome_subject": "Danke, {name} — Ihr AvokatIM-Konto ist bereit!",
+    "citizen_welcome_body": (
+        "Guten Tag {name},\n\n"
+        "danke, dass Sie AvokatIM beigetreten sind — Ihr Konto ist bestätigt und "
+        "alles ist bereit.\n\n"
+        "Das haben Sie jetzt, völlig kostenlos:\n"
+        "• Ava, die Rechtsassistentin — fragen Sie alles zum geltenden Recht: {ava_url}\n"
+        "• Stellen Sie Ihren Fall ein und verifizierte Anwälte melden sich: {post_url}\n"
+        "• Verzeichnis verifizierter Anwälte: {dir_url}\n"
+        "• Ausfüllfertige Schreiben und Widersprüche: {docs_url}\n"
+        "• SOS für dringende Situationen — sofortige Hilfe.\n\n"
+        "Für Sie als Bürger ist und bleibt die Plattform kostenlos.\n\n"
+        "Mit freundlichen Grüßen,\nArbër Arifi — AvokatIM"
+    ),
+    "citizen_reset_subject": "AvokatIM — Passwort zurücksetzen",
+    "citizen_reset_body": (
+        "Sie haben das Zurücksetzen des Passworts angefordert. Öffnen Sie diesen Link, um ein neues Passwort zu setzen:\n{url}\n\n"
+        "Der Link ist 1 Stunde gültig. Falls Sie das nicht angefordert haben, ignorieren Sie diese E-Mail."
+    ),
+    "case_claimed_subject": "AvokatIM — Ein Anwalt hat Ihren Fall übernommen",
+    "case_claimed_body": (
+        "Ihr Fall wurde von {firm} übernommen. Der Anwalt meldet sich in Kürze — "
+        "Sie können ihm auch unter 'Mein Fall' schreiben:\n{url}"
+    ),
+    "case_directed_subject": "AvokatIM — Neue Anfrage von einem Bürger",
+    "case_directed_body": (
+        "Ein Bürger hat Ihnen eine Anfrage gesendet ({category}, {city}). "
+        "Ansehen im AvokatIM-Marktplatz:\n{url}"
+    ),
+    "case_message_subject": "AvokatIM — Neue Nachricht zu Ihrem Fall",
+    "case_message_body": "Sie haben eine neue Nachricht zu Ihrem Fall:\n{url}",
+    "case_portal_ready_subject": "AvokatIM — Fall angenommen, Ihr Portal ist bereit",
+    "case_portal_ready_body": (
+        "{firm} hat Ihren Fall angenommen. Sie haben jetzt Zugang zum "
+        "Mandantenportal mit derselben E-Mail und demselben Passwort:\n{url}"
+    ),
+    "booking_new_subject": "AvokatIM — Neue Beratungsanfrage",
+    "booking_new_body": (
+        "{citizen} hat eine Beratung am {when} angefragt. Bestätigen oder "
+        "ablehnen unter Marktplatz → Beratungen:\n{url}"
+    ),
+    "booking_confirmed_subject": "AvokatIM — Beratung bestätigt",
+    "booking_confirmed_body": "{lawyer} hat Ihre Beratung am {when} bestätigt.",
+    "booking_declined_subject": "AvokatIM — Beratung nicht bestätigt",
+    "booking_declined_body": (
+        "{lawyer} kann die Beratung am {when} nicht wahrnehmen. "
+        "Wählen Sie einen anderen Termin:\n{url}"
+    ),
+    "sos_alert_subject": "AvokatIM — SOS: ein Bürger braucht DRINGEND Hilfe",
+    "sos_alert_body": (
+        "Ein Bürger bittet um dringende Hilfe ({city}). Sie haben SOS-Bereitschaft — "
+        "öffnen Sie den Marktplatz und übernehmen Sie den Fall so schnell wie möglich:\n{url}"
+    ),
+    "case_match_subject": "AvokatIM — Neuer Fall passend zu Ihrem Profil",
+    "case_match_body": (
+        "Soeben wurde ein Fall eingestellt, der zu Ihrem Profil passt "
+        "({category}, {city}). Der schnellste Anwalt erhält den Zuschlag:\n{url}"
+    ),
+    "verify_approved_subject": "AvokatIM — Glückwunsch, {name}! Ihre Zulassung ist verifiziert",
+    "verify_approved_body": (
+        "Sehr geehrte/r {name},\n\n"
+        "Ihre Zulassung wurde erfolgreich verifiziert — danke für Ihr Vertrauen "
+        "in AvokatIM!\n\n"
+        "Ab sofort trägt Ihr Profil das Verifiziert-Abzeichen, erscheint im "
+        "öffentlichen Verzeichnis und Bürger können Sie direkt kontaktieren. "
+        "Verifizierte Anwälte erhalten außerdem Marktplatz-Fälle und SOS-Alarme.\n\n"
+        "Ihr Profil: {url}\n"
+        "Profileinstellungen: {settings_url}\n\n{founder}"
+        "Wir bauen die Brücke zwischen Bürgern und Rechtsprofis — und Sie sind "
+        "jetzt Teil davon. Schreiben Sie uns bei jeder Frage, wir antworten schnell.\n\n"
+        "Mit freundlichen Grüßen,\nArbër Arifi — AvokatIM"
+    ),
+    "verify_approved_founder": (
+        "Etwas Besonderes: Sie gehören zu den ersten 20 verifizierten Kanzleien "
+        "auf der Plattform und behalten das 'Founder'-Abzeichen für immer — "
+        "unser Dank für Ihr frühes Vertrauen."
+    ),
+    "verify_rejected_subject": "AvokatIM — Zulassungsverifizierung nicht genehmigt",
+    "verify_rejected_body": (
+        "Ihre Zulassungsverifizierung wurde nicht genehmigt. Hinweis: {note}\n"
+        "Korrigieren Sie die Angaben in den Einstellungen, um sie erneut einzureichen:\n{url}"
+    ),
+    "platform_invoice_subject": "AvokatIM — Abonnementrechnung {number}",
+    "platform_invoice_body": (
+        "Abonnementrechnung {number} für {period}:\n"
+        "{seats} Nutzer × {price} € = {amount} €\n"
+        "Fällig am: {due}\n\n"
+        "Zahlung per Überweisung (Rechnungsnummer als Verwendungszweck):\n{bank}\n\n"
+        "Details und Kartenzahlung (sofern aktiviert) unter Einstellungen → Abonnement:\n{url}"
+    ),
+    "platform_overdue_subject": "AvokatIM — Rechnung {number} ist überfällig",
+    "platform_overdue_body": (
+        "Die Abonnementrechnung {number} ({amount} €) ist {days} Tage überfällig. "
+        "Nach {grace} Tagen Verzug werden neue Marktplatz-Fälle pausiert — Ihre "
+        "Daten bleiben immer zugänglich. Zahlen unter Einstellungen → Abonnement:\n{url}"
+    ),
+    "trial_ending_subject": "AvokatIM — Ihre kostenlose Testphase endet in {days} Tagen",
+    "trial_ending_body": (
+        "Ihre einjährige kostenlose Testphase endet in {days} Tagen. Wechseln Sie "
+        "zum bezahlten Plan ({price} €/Nutzer/Monat — alles inklusive + unbegrenzte "
+        "Marktplatz-Fälle) unter Einstellungen → Abonnement:\n{url}"
+    ),
+}
+
 CATALOG: dict[str, dict[str, str]] = {
-    "sq": _SQ, "sr": _SR, "tr": _TR, "bs": _BS, "en": _EN, "zh": _ZH,
+    "sq": _SQ, "sr": _SR, "tr": _TR, "bs": _BS, "en": _EN, "zh": _ZH, "de": _DE,
 }
 
 

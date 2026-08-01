@@ -952,6 +952,10 @@ async def citizen_sos(
 ):
     """Emergency request: needs a citizen account but NOT a verified email
     (emergencies can't wait for an inbox); hard rate limit instead."""
+    if not profile_for(citizen.country).sos_enabled:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, "SOS is not available in this country yet"
+        )
     await _rate_limit("citizen_sos", str(citizen.id), limit=2, window_seconds=24 * 3600)
     case = CaseRequest(
         citizen_id=citizen.id,
@@ -1332,7 +1336,8 @@ async def _ava_prepare(
     citations: list[dict] = []
     if jurisdiction is not None:
         for hit in await rag.search_corpus(
-            db, jurisdiction.id, body.question, language=body.locale
+            db, jurisdiction.id, body.question, language=body.locale,
+            fallback_language=profile_for(country).corpus_fallback_language,
         ):
             label = hit["doc_title"] + (f", {hit['section']}" if hit["section"] else "")
             context_blocks.append(f"[Nga ligji: {label}]\n{hit['text']}")
@@ -1376,8 +1381,11 @@ async def ava_ask(
     key, limit = _ava_quota_key(citizen, _ip(request), body.session_id)
     remaining = await _ava_take_quota(key, limit)
 
-    messages, citations = await _ava_prepare(db, body, country_from_request(request))
-    provider = get_provider(None)
+    country = country_from_request(request)
+    messages, citations = await _ava_prepare(db, body, country)
+    # Provider is per-jurisdiction (D-034): DE can point to an EU provider
+    # via JurisdictionProfile.llm_provider once a key is configured.
+    provider = get_provider(profile_for(country).llm_provider)
     try:
         result = await provider.chat(messages)
     except RuntimeError as exc:
@@ -1410,7 +1418,7 @@ async def ava_ask_stream(
         async with SessionLocal() as db:
             messages, citations = await _ava_prepare(db, body, country)
         yield sse({"type": "meta", "citations": citations, "remaining": remaining})
-        provider = get_provider(None)
+        provider = get_provider(profile_for(country).llm_provider)
         try:
             async for kind, text in provider.chat_stream(messages):
                 if kind == "thinking":

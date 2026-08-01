@@ -214,10 +214,44 @@ const privZh: LegalDoc = {
   ],
 };
 
+// Germany (D-034): German legal texts are drafts pending review by a German
+// lawyer before the public DE launch (see docs/legal/DE-LAUNCH-GATE.md).
+const tosDe: LegalDoc = {
+  title: "Allgemeine Geschäftsbedingungen (AGB)",
+  updated: "Version 1.0 · August 2026 · Entwurf — vor dem öffentlichen Start in Deutschland durch eine deutsche Anwältin/einen deutschen Anwalt zu prüfen",
+  note: "Für Konten in Deutschland gilt diese deutsche Fassung.",
+  sections: [
+    { h: "Der Dienst", p: "AvokatIM bietet Aktenverwaltung, Fristen, Dokumente, Abrechnung, Mandantenkommunikation und KI-Unterstützung. Die KI-Unterstützung ist unterstützender Natur und stellt keine Rechtsberatung im Sinne des RDG dar — die berufliche Verantwortung verbleibt bei der Rechtsanwältin/dem Rechtsanwalt." },
+    { h: "Konto", p: "Die Kanzlei ist für die Richtigkeit der Registrierungsdaten und die Sicherung der Zugangsdaten verantwortlich. Unbefugte Zugriffe sind unverzüglich zu melden." },
+    { h: "Daten", p: "Aktendaten und Dokumente sind Eigentum der Kanzlei. Sie werden ausschließlich nach dem Auftragsverarbeitungsvertrag (Art. 28 DSGVO) verarbeitet. Dokumente werden verschlüsselt gespeichert und mit lokalen Modellen indexiert." },
+    { h: "Externe KI", p: "Die Nutzung externer KI ist optional und wird von der Kanzlei in den Einstellungen gesteuert; bei Deaktivierung wird nur das lokale Modell verwendet, das nichts an Dritte übermittelt." },
+    { h: "Pflichten der Nutzer", p: "Die Plattform darf nicht für rechtswidrige Zwecke genutzt werden; schädliche Inhalte dürfen nicht hochgeladen werden. Die Kanzlei stellt eine Rechtsgrundlage für die von ihr eingegebenen personenbezogenen Daten sicher." },
+    { h: "Vergütungsmodell", p: "Die Preise werden gesondert veröffentlicht. Es handelt sich um ein festes monatliches Abonnement je Kanzlei — keine Provision für einzelne Mandate (§ 49b Abs. 3 BRAO). Nach Kontoeinschränkung wegen Zahlungsverzugs bleiben die Daten mindestens 90 Tage exportierbar." },
+    { h: "Haftung", p: "Der Betreiber haftet nicht für die beruflichen Entscheidungen der Anwältin/des Anwalts oder höhere Gewalt. Die Höchsthaftung ist auf den in den letzten 12 Monaten gezahlten Betrag begrenzt." },
+    { h: "Anwendbares Recht", p: "Es gilt das Recht der Bundesrepublik Deutschland. Änderungen werden 30 Tage im Voraus angekündigt." },
+  ],
+};
+
+const privDe: LegalDoc = {
+  title: "Datenschutzerklärung",
+  updated: "Version 1.0 · August 2026 · Nach DSGVO · Entwurf — vor dem öffentlichen Start in Deutschland durch eine deutsche Anwältin/einen deutschen Anwalt zu prüfen",
+  note: "Für Konten in Deutschland gilt diese deutsche Fassung.",
+  sections: [
+    { h: "Wer Ihre Daten verarbeitet", p: "Verantwortlicher ist die Kanzlei, die Sie vertritt. Der Betreiber von AvokatIM ist Auftragsverarbeiter und handelt ausschließlich auf Weisung der Kanzlei nach Art. 28 DSGVO." },
+    { h: "Was verarbeitet wird", p: "Identifikationsdaten (Name, Kontakt), Aktendaten (Schriftsätze, Beweise, Korrespondenz), Finanzdaten (Rechnungen) und technische Daten (Logs, IP, Einwilligungen)." },
+    { h: "Wie gespeichert wird", p: "Dokumente werden verschlüsselt gespeichert. Die Indexierung erfolgt mit lokalen Modellen — der Text verlässt den Server nicht. Kartenzahlungen verarbeitet der Zahlungsdienstleister; Kartendaten werden nicht gespeichert." },
+    { h: "KI-Transparenz", p: "Ava ist ein KI-System (Art. 50 EU-KI-Verordnung). Sie liefert allgemeine Rechtsinformationen, keine Rechtsberatung im Einzelfall. Wenn die Kanzlei externe KI aktiviert, können Frage- und Kontextfragmente an den externen KI-Anbieter übermittelt werden; dies ist im Assistenten klar gekennzeichnet und vollständig abschaltbar." },
+    { h: "Ihre Rechte", p: "Auskunft, Berichtigung, Löschung (soweit keine gesetzliche Aufbewahrungspflicht besteht), Einschränkung, Datenübertragbarkeit und jederzeitiger Widerruf von Einwilligungen (Art. 15–21 DSGVO). Anfragen werden innerhalb von 30 Tagen bearbeitet. Beschwerden: die zuständige Datenschutzaufsichtsbehörde Ihres Bundeslandes." },
+    { h: "Aufbewahrung", p: "Akten werden so lange aufbewahrt, wie berufsrechtliche und steuerliche Pflichten es verlangen (§ 50 BRAO: 6 Jahre; steuerlich bis 10 Jahre). Nach Ablauf werden Akten zur Prüfung markiert; die Anwältin/der Anwalt entscheidet." },
+    { h: "Internationale Übermittlungen", p: "Einige optionale Unterauftragsverarbeiter befinden sich außerhalb der EU (externe KI, Zahlungen, E-Mail). Die vollständige Liste mit Garantien nach Kapitel V DSGVO wird im Anhang des Auftragsverarbeitungsvertrags geführt." },
+    { h: "Einwilligungen", p: "Einwilligungen für Portal, E-Mail, SMS und KI werden mit Datum, Art und IP protokolliert und können jederzeit widerrufen werden." },
+  ],
+};
+
 export const TOS: Record<Locale, LegalDoc> = {
-  sq: tosSq, sr: tosSr, tr: tosTr, bs: tosBs, en: tosEn, zh: tosZh,
+  sq: tosSq, sr: tosSr, tr: tosTr, bs: tosBs, en: tosEn, zh: tosZh, de: tosDe,
 };
 
 export const PRIVACY: Record<Locale, LegalDoc> = {
-  sq: privSq, sr: privSr, tr: privTr, bs: privBs, en: privEn, zh: privZh,
+  sq: privSq, sr: privSr, tr: privTr, bs: privBs, en: privEn, zh: privZh, de: privDe,
 };

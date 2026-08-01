@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getToken, setToken } from "@/lib/api";
+import { clientCountry, type Country } from "@/lib/country";
 import { useI18n } from "@/lib/i18n";
 import PublicShell from "@/components/public-shell";
 import {
@@ -34,6 +35,10 @@ export default function Home() {
   // null = not signed in; "lawyer" | "admin" pick the banner wording/target
   const [staffRole, setStaffRole] = useState<"lawyer" | "admin" | null>(null);
   const [stats, setStats] = useState<PublicStats | null>(null);
+  // Germany host: no SOS/notary pillar in v1, 3 UI languages (D-034)
+  const [country, setCountry] = useState<Country>("XK");
+  useEffect(() => setCountry(clientCountry()), []);
+  const isDE = country === "DE";
 
   useEffect(() => {
     // The landing always renders — even for a signed-in lawyer/administrator
@@ -89,7 +94,7 @@ export default function Home() {
             <div className="fade-in-up inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-white/80 backdrop-blur px-4 py-1.5 shadow-sm">
               <IconScale className="h-4 w-4 text-indigo-600" />
               <span className="text-xs font-semibold tracking-wide text-indigo-700">
-                Avokat<span className="text-slate-900">IM</span> · Kosovë
+                Avokat<span className="text-slate-900">IM</span> · {isDE ? "Deutschland" : "Kosovë"}
               </span>
             </div>
             <h1 className="fade-in-up text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.08] text-hero-gradient bg-clip-text text-transparent pb-1">
@@ -101,7 +106,9 @@ export default function Home() {
             <div className="fade-in-up-d1 flex flex-wrap items-center justify-center gap-2 pt-1">
               {[
                 { Icon: IconCheck, label: t.landTrust1 },
-                { Icon: IconGlobe, label: t.landTrust2 },
+                // Every locale writes the language count as the digit 6;
+                // the German host serves 3 UI languages (de/en/tr)
+                { Icon: IconGlobe, label: isDE ? t.landTrust2.replace("6", "3") : t.landTrust2 },
                 { Icon: IconLock, label: t.landTrust3 },
               ].map(({ Icon, label }) => (
                 <span
@@ -166,7 +173,10 @@ export default function Home() {
                 <h3 className="text-lg font-bold text-slate-900">{t.umbFnCitT}</h3>
               </div>
               <ul className="space-y-2.5 text-sm text-slate-600">
-                {[t.umbFnC1, t.umbFnC2, t.umbFnC3, t.umbFnC4, t.umbFnC8, t.umbFnC5, t.umbFnC6, t.umbFnC7].map(
+                {(isDE
+                  ? [t.umbFnC1.replace("6", "3"), t.umbFnC2, t.umbFnC4, t.umbFnC5, t.umbFnC6, t.umbFnC7]
+                  : [t.umbFnC1, t.umbFnC2, t.umbFnC3, t.umbFnC4, t.umbFnC8, t.umbFnC5, t.umbFnC6, t.umbFnC7]
+                ).map(
                   (f) => (
                     <li key={f} className="flex items-start gap-2.5">
                       <IconCheck className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
@@ -205,13 +215,15 @@ export default function Home() {
                 {t.umbLawyerCta}
                 <IconArrowRight className="h-4 w-4" />
               </Link>
-              {/* Second paying profession: the notary's digital office */}
-              <Link
-                href="/per-noteret"
-                className="block text-xs text-violet-300/90 hover:text-violet-200 underline underline-offset-2"
-              >
-                {t.umbFnL9}
-              </Link>
+              {/* Second paying profession (Kosovo-only): the notary's office */}
+              {!isDE && (
+                <Link
+                  href="/per-noteret"
+                  className="block text-xs text-violet-300/90 hover:text-violet-200 underline underline-offset-2"
+                >
+                  {t.umbFnL9}
+                </Link>
+              )}
             </div>
           </div>
         </section>
@@ -245,12 +257,12 @@ export default function Home() {
         {/* Public stats — lawyers and notaries side by side (owner's call:
             show the real directory count even while it is small) */}
         {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center max-w-3xl mx-auto">
+          <div className={`grid grid-cols-2 ${isDE ? "md:grid-cols-3" : "md:grid-cols-4"} gap-4 text-center max-w-3xl mx-auto`}>
             {[
               { value: stats.laws_in_corpus, label: t.mkStatsLaws },
               { value: stats.lawyers_in_directory, label: t.mkStatsLawyers },
-              { value: stats.notaries_licensed, label: t.mkStatsNotaries },
-              { value: 6, label: t.mkStatsLangs },
+              ...(isDE ? [] : [{ value: stats.notaries_licensed, label: t.mkStatsNotaries }]),
+              { value: isDE ? 3 : 6, label: t.mkStatsLangs },
             ].map((s) => (
               <div
                 key={s.label}

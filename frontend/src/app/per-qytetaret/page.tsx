@@ -4,9 +4,10 @@
  * The citizen story page: everything a citizen gets, told as a narrative —
  * ask Ava right away, four feature sections, how it works, free tools.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { clientCountry, type Country } from "@/lib/country";
 import { useI18n } from "@/lib/i18n";
 import { Button, Textarea } from "@/components/ui";
 import PublicShell from "@/components/public-shell";
@@ -25,6 +26,10 @@ export default function ForCitizensPage() {
   const router = useRouter();
   const { t } = useI18n();
   const [question, setQuestion] = useState("");
+  // SOS and the notary pillar are Kosovo-only in v1 (D-034)
+  const [country, setCountry] = useState<Country>("XK");
+  useEffect(() => setCountry(clientCountry()), []);
+  const isDE = country === "DE";
 
   function askAva(e: React.FormEvent) {
     e.preventDefault();
@@ -72,7 +77,7 @@ export default function ForCitizensPage() {
           </div>
 
           {/* Secondary paths */}
-          <div className="fade-in-up-d1 grid sm:grid-cols-3 gap-4 max-w-3xl mx-auto mt-10">
+          <div className={`fade-in-up-d1 grid ${isDE ? "sm:grid-cols-2" : "sm:grid-cols-3"} gap-4 max-w-3xl mx-auto mt-10`}>
             <Link
               href="/avokatet"
               className="bg-white/90 backdrop-blur rounded-2xl ring-1 ring-slate-200 p-5 hover:ring-indigo-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
@@ -89,14 +94,16 @@ export default function ForCitizensPage() {
               <p className="font-semibold text-slate-900">{t.mkPostCase}</p>
               <p className="text-xs text-slate-500 mt-1">{t.mkHeroCitizen.split("—")[0]}</p>
             </Link>
-            <Link
-              href="/rasti-im?sos=1"
-              className="bg-gradient-to-br from-red-600 to-red-700 rounded-2xl p-5 shadow-md shadow-red-200 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
-            >
-              <IconShield className="h-6 w-6 text-red-100 mb-2" />
-              <p className="font-bold text-white">{t.mkSos}</p>
-              <p className="text-xs text-red-100 mt-1">{t.mkSosDutyHint}</p>
-            </Link>
+            {!isDE && (
+              <Link
+                href="/rasti-im?sos=1"
+                className="bg-gradient-to-br from-red-600 to-red-700 rounded-2xl p-5 shadow-md shadow-red-200 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+              >
+                <IconShield className="h-6 w-6 text-red-100 mb-2" />
+                <p className="font-bold text-white">{t.mkSos}</p>
+                <p className="text-xs text-red-100 mt-1">{t.mkSosDutyHint}</p>
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -113,14 +120,19 @@ export default function ForCitizensPage() {
               cta: { href: "/ava", label: t.landAvaCta },
               links: undefined,
             },
-            {
-              Icon: IconShield,
-              tone: "red",
-              title: t.landSosT,
-              body: t.landSosB,
-              cta: { href: "/rasti-im?sos=1", label: t.landSosCta },
-              links: [{ href: "/siguria", label: t.landSosSecLink, Icon: IconLock }],
-            },
+            // SOS and the notary sections are Kosovo-only in v1 (D-034)
+            ...(isDE
+              ? []
+              : [
+                  {
+                    Icon: IconShield,
+                    tone: "red",
+                    title: t.landSosT,
+                    body: t.landSosB,
+                    cta: { href: "/rasti-im?sos=1", label: t.landSosCta },
+                    links: [{ href: "/siguria", label: t.landSosSecLink, Icon: IconLock }],
+                  },
+                ]),
             {
               Icon: IconUsers,
               tone: "emerald",
@@ -140,14 +152,18 @@ export default function ForCitizensPage() {
                 { href: "/dokumentet", label: t.landToolsDocs, Icon: IconDoc },
               ],
             },
-            {
-              Icon: IconScale,
-              tone: "violet",
-              title: t.landNotaryT,
-              body: t.landNotaryB,
-              cta: { href: "/noteret", label: t.landNotaryCta },
-              links: [{ href: "/dokumentet", label: t.landNotaryDocsLink, Icon: IconDoc }],
-            },
+            ...(isDE
+              ? []
+              : [
+                  {
+                    Icon: IconScale,
+                    tone: "violet",
+                    title: t.landNotaryT,
+                    body: t.landNotaryB,
+                    cta: { href: "/noteret", label: t.landNotaryCta },
+                    links: [{ href: "/dokumentet", label: t.landNotaryDocsLink, Icon: IconDoc }],
+                  },
+                ]),
           ].map((f, i) => {
             const tones: Record<string, string> = {
               indigo: "bg-indigo-50 text-indigo-600",

@@ -752,3 +752,49 @@
   headers), sharp overridden to >=0.35.0, pip upgraded. Left open: torch
   2.12.1 → 2.13.0 (PYSEC-2025-194) — big dependency, needs its own session;
   `setuptools` stays <82 until then (torch pin).
+
+## D-034: Germany expansion — one codebase, jurisdiction profiles as data (2026-08-01)
+
+- Context: the owner wants everything achieved for Kosovo replicated for
+  Germany. Options were a separate fork or a multi-country single codebase.
+- Decision: **single codebase, single brand, per-country "jurisdiction
+  profile"** (`backend/app/jurisdictions.py`) — the architecture already kept
+  jurisdiction *rules* as data (hard rule #4); this adds the code-side
+  complement (currency, VAT 18/19, timezone, locales, chamber registry,
+  feature switches, cities, public host). A fork would double every future
+  improvement. Key sub-decisions:
+  1. **Host = country.** `de.avokatiim.ai` (Cloudflare tunnel ingress + DNS)
+     resolves to DE in proxy.ts (`x-avokatim-country`) and in
+     `country_from_request` for public endpoints; authenticated paths trust
+     only `Tenant.country`. `country` columns on tenants / citizen_users /
+     case_requests (default XK) scope directory, marketplace, stats, SOS
+     alerts and Ava — German lawyers and Kosovar lawyers never mix.
+  2. **German corpus from gesetze-im-internet.de** (official BMJ portal,
+     public domain, structured XML — one `<norm>` per §):
+     `scripts/import_de_laws.py`, 58 core federal acts (GG, BGB, ZPO, StGB,
+     StPO, HGB, KSchG, VwGO, SGB, RVG, BRAO…, 14 443 chunks), resumable like
+     the GZK importer. RAG fallback language is now per-jurisdiction
+     (`corpus_fallback_language`: sq for XK, de for DE) resolved inside
+     `search_corpus`.
+  3. **DE Ava is a different prompt, not a translation**: strictly
+     Rechtsinformation (RDG § 2 boundary), AI-system disclosure (EU AI Act
+     Art. 50, in force 2026-08-02), never invent norms; LLM provider is
+     per-jurisdiction via `JurisdictionProfile.llm_provider` (EU provider
+     before public launch; default until a key exists).
+  4. **BRAV has no emails → no auto-verification for DE lawyers.** The OAK
+     email-match rule cannot port; German signups notify the operator/Halim
+     with a prefilled BRAV search link for one-click manual approval
+     (bravsearch.bea-brak.de returned 503 during the session — scraping
+     deferred, link-assisted manual flow is v1).
+  5. **SOS and the notary pillar are OFF for DE** (feature switches +
+     backend guards + hidden UI) until each gets its own legal review.
+  6. **Month-based German deadlines approximated as 30 days** in seed data
+     with an explicit warning note in every affected rule (§ 222 ZPO month
+     arithmetic differs around month ends) — honest approximation over
+     false precision until the deadline engine learns calendar months.
+  7. **Public launch gate documented, not blocking** development:
+     EU server + GDPR Art. 27 representative + EU LLM + German-lawyer review
+     of AGB/Datenschutz/Impressum (docs/legal/DE-LAUNCH-GATE.md).
+- Consequences: adding country #3 is now data + one profile entry; the de
+  locale is the 7th UI/email language; German legal texts (AGB, Datenschutz,
+  Impressum at /impressum) are drafts pending professional review.

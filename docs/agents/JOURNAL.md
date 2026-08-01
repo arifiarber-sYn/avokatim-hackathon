@@ -10,6 +10,39 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01b — Zgjerimi në Gjermani, fazat 1–4 (D-034) (Cursor / Fable 5)
+
+- Done: Germany is live on https://de.avokatiim.ai — same code, same DB,
+  country from hostname. German is the 7th locale end-to-end: ~1,130 frontend
+  keys in `dictionaries.ts` (host-aware default + per-country language menu
+  DE: de/en/tr), full `_DE` catalog in backend `i18n.py` (emails/SMS), German
+  AGB + Datenschutzerklärung in `legal.ts` and a static `/impressum` page
+  (§ 5 DDG). Landing/per-qytetaret/rasti-im/onboarding/settings/footer are
+  host-aware; SOS + notary are hidden and server-side-blocked on DE (v1).
+- Done: German legal data — `seeds/germany.py` (DE jurisdiction active,
+  9 federal holidays 2026–2027, 12 deadline rules ZPO/StPO/KSchG/VwGO/ArbGG,
+  RVG starter tariff, 6 citizen doc templates Widerspruch/Kündigung/Mahnung/
+  Art.-15-Auskunft…) and `scripts/import_de_laws.py` — 58 federal laws
+  (GG, BGB, ZPO, StGB, StPO, HGB, KSchG, VwGO, SGB I–XII…) from
+  gesetze-im-internet.de, 14,443 § chunks, local embeddings; RAG fallback
+  language now comes from the jurisdiction profile (de for DE).
+- Done: DE Ava uses a Rechtsinformation-only prompt (RDG § 2 boundary,
+  EU-AI-Act Art. 50 disclosure, always cites §, always recommends a lawyer);
+  LLM provider is selectable per jurisdiction via the existing router
+  (EU provider is a launch-gate item). German lawyer verification: BRAV has
+  no emails, so signup notifies ops with a prefilled BRAV search link for
+  one-click manual approval (`license_verify.py`); Halim's AVOKATIM-OPS.md
+  teaches the procedure. `docs/legal/DE-LAUNCH-GATE.md` records the four
+  public-launch conditions (EU server, GDPR Art. 27 rep, EU LLM, German
+  lawyer review).
+- Verified: pytest 128/128, `tsc` clean, `next build` 44 pages, both hosts
+  200 via Cloudflare, `/api/public/stats` on the DE host shows the German
+  corpus (58 laws), live German Ava answer correct (§ 4 KSchG, 3 weeks, in
+  German with citations).
+- Left open / next: Bundesland holidays (`Holiday.region`), calendar-month
+  deadline arithmetic § 222 ZPO, EU LLM key, German outreach — see ROADMAP
+  Phase 4.
+
 ## 2026-08-01 — Housekeeping: LiveKit port + visibility-nudge script (Cursor / Fable 5)
 
 - Done: committed two leftovers from the 07-31 sessions — LiveKit's TCP-ICE

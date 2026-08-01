@@ -17,6 +17,11 @@ the check can be automated with a conservative rule:
 - A name-only match is NEVER auto-approved (namesakes exist); it is surfaced
   in the operator queue as a hint instead.
 - No match -> stays pending for manual review, exactly as before.
+
+Germany (D-034): the official BRAV registry (bea-brak.de/bravsearch) publishes
+NO email addresses, so the email proof does not exist there. German lawyers
+are never auto-approved; instead the operator/Halim gets a notification with
+a prefilled BRAV search link for a one-click manual approval in /platform.
 """
 import csv
 import logging
@@ -33,6 +38,14 @@ logger = logging.getLogger(__name__)
 
 OAK_REGISTRY_FILE: Path = PROJECT_DIR / "data" / "oak_registry.csv"
 _oak_cache: dict = {"mtime": None, "rows": []}
+
+# Public search of the Bundesweites Amtliches Anwaltsverzeichnis. No API and
+# no emails — used as a one-click link for the human/Halim approval step.
+BRAV_SEARCH_URL = "https://bravsearch.bea-brak.de/bravsearch/"
+
+
+def brav_search_hint(full_name: str) -> str:
+    return f"BRAV: {BRAV_SEARCH_URL} (kërko: {full_name})"
 
 
 def _norm_name(name: str) -> str:
@@ -112,6 +125,24 @@ async def try_auto_verify(user_id) -> bool:
             await db.flush()
         if profile.verification_status not in ("none", "pending"):
             # already verified, or explicitly rejected by the operator
+            return False
+
+        from app.jurisdictions import profile_for as jurisdiction_profile
+
+        if jurisdiction_profile(tenant.country).bar_registry == "brav":
+            # Germany: BRAV publishes no emails, so there is no email proof to
+            # automate on. Surface a one-click search link to the operator and
+            # leave the profile pending for the manual /platform approval.
+            from app.services.ops_notify import notify_ops
+
+            profile.verification_note = brav_search_hint(user.full_name)
+            await db.commit()
+            await notify_ops(
+                "verifikim DE",
+                f"Avokat gjerman për verifikim manual: {user.full_name} "
+                f"({user.email}). Kontrolloje në {BRAV_SEARCH_URL} dhe "
+                f"aprovoje te {settings.public_base_url}/platform",
+            )
             return False
 
         match = registry_match(profession, user.full_name, user.email)
