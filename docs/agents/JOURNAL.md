@@ -10,6 +10,25 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01h — Zëri shumëgjuhësh: Whisper standard për jo-shqip + Piper 6 gjuhë (D-038) (Cursor / Fable 5)
+
+- Done: matje me audio reale gjermane (Piper thorsten si sinjal testi) —
+  fine-tune-i shqip i Whisper del i papërdorshëm për gjermanisht
+  ("Kündigung"→"kindikung", fjalia me § 195 BGB krejt e palexueshme);
+  `large-v3-turbo` standard i njëjtat klipe: gati perfekt (0.14–0.47 s në
+  CUDA). STT tani ruton sipas gjuhës: sq → fine-tune, gjithçka tjetër →
+  turbo standard (`voice_stt_fallback_model` u implementua më në fund).
+- Done: TTS i serverit në 6 gjuhë — zëra Piper de/en/tr/sr/zh në
+  `data/models/piper-voices/` (+ sq ekzistues); `/voice/tts` merr
+  `language`, `/voice/status` kthen `tts_langs`, klienti bie te browser-i
+  vetëm për bs. Gjuhë e re = një .onnx në folder, pa kod.
+- Verified: pytest 152/152 ×3 (roundtrip i ri gjerman TTS→STT; asserti
+  shqip u bë rezistent ndaj luhatjes së dekodimit CUDA), tsc + build,
+  restart + health; live: STT gjermane 0.27 s e ngrohtë me tekst juridik
+  të saktë, WAV gjerman 1.3 s, shqipja e paprekur.
+- Left open / next: zë Piper për bs s'ekziston (mbetet browser); duplex
+  real-time (LiveKit Agents) është hapi i ardhshëm i madh i zërit.
+
 ## 2026-08-01g — Auditimi i zërit të Ava-s + DE në DeepSeek për demo (Cursor / Fable 5)
 
 - Done: auditim i plotë i rrjedhës me zë (mic → MediaRecorder →

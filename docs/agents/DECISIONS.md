@@ -906,3 +906,34 @@
 - Consequences: feature parity with the German incumbents except beA;
   DE positioning until beA lands: "AI + marketplace layer over the
   existing Kanzleisoftware".
+
+## D-038: Two STT models + per-language Piper voices for multilingual voice (2026-08-01)
+
+- Context: the voice audit showed the Albanian Whisper fine-tune is
+  unusable for German ("Kündigung" → "kindikung"; a § 195 BGB sentence came
+  out as gibberish), and server TTS existed only for Albanian — German
+  users got whatever their browser's speechSynthesis ships. Not
+  competitive for the DE launch, where voice Ava is a differentiator
+  (incumbents only sell dictation software, no public voice assistant).
+- Decision:
+  1. **STT routes by language**: `sq` → the Albanian fine-tune
+     (`whisper-sq-ct2`); every other language (and auto-detect) → the stock
+     multilingual `large-v3-turbo` (the previously dead
+     `voice_stt_fallback_model` setting now does what its docstring always
+     claimed; cache in `data/models/whisper-cache`). Both are lazy
+     singletons (`lru_cache(maxsize=2)`), CUDA float16 with CPU int8
+     fallback (`voice_stt_device="auto"`) — ~1.6 GB VRAM each, warm
+     transcription ~0.3 s on the RTX 5090.
+  2. **Server TTS per language**: Piper voices as data files in
+     `data/models/piper-voices/{lang}.onnx` — de (thorsten), en (lessac),
+     tr (dfki), sr (serbski_institut), zh (huayan) downloaded from
+     rhasspy/piper-voices; sq keeps its dedicated model. `/voice/status`
+     returns `tts_langs`; the client uses server TTS when the locale is
+     listed, browser speechSynthesis otherwise (bs has no Piper voice).
+     A new language = drop in an .onnx file, no code.
+- Verified: German TTS→STT roundtrip test in the suite (152 green ×3);
+  live: § 195 BGB sentence transcribed correctly in 0.27 s warm, German
+  Piper WAV in 1.3 s. Everything still local — no audio leaves the machine.
+- Consequences: voice Ava is fully functional in sq/de/en/tr/sr/zh with
+  local neural voices; CUDA greedy decode is not bit-stable word-for-word
+  (tests assert sentence frames, not single words).

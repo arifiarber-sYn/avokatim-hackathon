@@ -23,7 +23,11 @@ MAX_UPLOAD_BYTES = 15 * 1024 * 1024  # ~2 min of opus with headroom
 
 @router.get("/status")
 async def voice_status():
-    return {"stt": voice.stt_enabled(), "tts": voice.tts_enabled()}
+    return {
+        "stt": voice.stt_enabled(),
+        "tts": voice.tts_enabled(),
+        "tts_langs": voice.tts_languages(),
+    }
 
 
 def _staff_sub(request: Request) -> str | None:
@@ -81,6 +85,7 @@ async def transcribe_audio(
 
 class TtsIn(BaseModel):
     text: str = Field(min_length=1, max_length=2000)
+    language: str = Field(default="sq", pattern=r"^[a-z]{2}$")
 
 
 @router.post("/tts")
@@ -89,15 +94,16 @@ async def text_to_speech(
     request: Request,
     citizen: CitizenUser | None = Depends(_optional_citizen),
 ):
-    """Albanian text -> WAV. Non-Albanian locales use the browser's own
-    speechSynthesis client-side, so this endpoint is sq-only by design."""
+    """Text -> WAV with the Piper voice for the requested language
+    (sq/de/en/tr/sr/zh). Locales without a voice use the browser's own
+    speechSynthesis client-side."""
     key, authed = _voice_rl_key(citizen, request)
     await _rate_limit("voice_tts", key, limit=120 if authed else 20,
                       window_seconds=3600)
     if not voice.tts_enabled():
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "TTS not installed")
     try:
-        wav = await voice.synthesize(body.text)
+        wav = await voice.synthesize(body.text, language=body.language)
     except (RuntimeError, ValueError) as exc:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc))
     return Response(content=wav, media_type="audio/wav",

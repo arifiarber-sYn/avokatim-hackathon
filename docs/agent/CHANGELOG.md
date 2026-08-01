@@ -3,6 +3,26 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Multilingual voice (D-038): stock Whisper for non-sq STT, Piper voices in 6 languages
+
+- Measured German quality of the Albanian Whisper fine-tune with real
+  German audio (Piper thorsten voice as test signal): unusable —
+  "Kündigung"→"kindikung", a § 195 BGB sentence came out as gibberish.
+  Stock `large-v3-turbo` on the same clips: near-perfect legal German in
+  0.14–0.47 s on CUDA.
+- STT now routes by language (`services/voice.py`): sq → fine-tune,
+  everything else → stock turbo (`voice_stt_fallback_model` finally
+  implemented, cache `data/models/whisper-cache`, ~1.6 GB VRAM each).
+- Server TTS beyond Albanian: Piper voices de/en/tr/sr/zh in
+  `data/models/piper-voices/{lang}.onnx` (rhasspy/piper-voices;
+  de=thorsten). `POST /voice/tts` takes `language`; `/voice/status`
+  returns `tts_langs`; `voice.ts` uses server TTS when the locale is
+  listed, browser speechSynthesis otherwise (bs). New language = drop in
+  an .onnx, no code.
+- Tests: German TTS→STT roundtrip + tts_languages test; Albanian roundtrip
+  assertion made robust to CUDA decode wobble. 152 green ×3 runs; tsc +
+  build clean. Live: German STT 0.27 s warm via API, German WAV 1.3 s.
+
 ## 2026-08-01 — Ava voice audit: STT on CUDA, German whitelist, lawyer tier; DE demo on DeepSeek
 
 - Full audit of the voice pipeline (mic → `/api/public/voice/transcribe`

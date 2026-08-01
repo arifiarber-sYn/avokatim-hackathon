@@ -575,17 +575,17 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   /marketplace banner. Migration `16241f40c7cc`.
 - **AI protection by phone — local voice + evidence vault + SOS screen**
   (2026-07-12, D-018): `app/services/voice.py` + `/api/public/voice/*` —
-  faster-whisper Albanian CT2 (one model serves all locales; the
-  `voice_stt_fallback_model` setting is unused) + Piper `sq_AL` subprocess
-  TTS, all local (no audio leaves the machine), rate-limited; models in
-  `data/models/`, settings `voice_*` in config. Voice audit 2026-08-01:
-  STT runs on **CUDA** (`voice_stt_device="auto"`, RTX 5090 float16 —
-  warm transcribe ~0.3 s vs ~9.6 s CPU; auto-falls back to CPU int8);
-  `de` added to the STT language whitelist; logged-in **lawyers** now get
-  the citizen-tier rate limits (staff JWT recognized on voice endpoints,
-  `voice.ts` sends whichever token exists); browser TTS maps `de`→`de-DE`.
-  Piper server TTS stays sq-only by design (other locales use browser
-  speechSynthesis).
+  **two STT models routed by language** (D-038): sq → Albanian CT2
+  fine-tune, all other languages → stock `large-v3-turbo`
+  (`data/models/whisper-cache`) because the fine-tune is unusable for
+  German; both CUDA float16 (`voice_stt_device="auto"`, warm ~0.3 s on the
+  RTX 5090, CPU int8 fallback). **Server TTS in 6 languages**: Piper
+  voices in `data/models/piper-voices/{lang}.onnx` (de/en/tr/sr/zh +
+  dedicated sq model); `/voice/status` returns `tts_langs`, client falls
+  back to browser speechSynthesis for the rest (bs). All local (no audio
+  leaves the machine), rate-limited — logged-in **lawyers** get the
+  citizen-tier limits (staff JWT recognized, `voice.ts` sends whichever
+  token exists). Settings `voice_*` in config.
   Evidence vault: `EvidenceSession`/`EvidenceChunk` — MediaRecorder chunks
   every 5 s, SHA-256 + `prev_hash` chain, strict seq (409), Fernet
   encryption, audit log, chain-of-custody PDF, background transcription;

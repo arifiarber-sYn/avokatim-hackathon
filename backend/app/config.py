@@ -139,12 +139,19 @@ class Settings(BaseSettings):
     # "auto" = try CUDA (float16), fall back to CPU (int8). The RTX 5090 cuts
     # a 5 s utterance from ~9.6 s to ~1.2 s (voice audit 2026-08-01).
     voice_stt_device: str = "auto"
-    # Fallback Whisper model for non-Albanian speech (downloaded on demand
-    # by faster-whisper into its cache); empty = Albanian model handles all.
+    # Stock multilingual Whisper for non-Albanian speech — the sq fine-tune
+    # badly degrades other languages (voice audit 2026-08-01: German WER was
+    # unusable). Downloaded once into voice_stt_cache_dir; empty = disabled
+    # (sq model then serves everything, old behaviour).
     voice_stt_fallback_model: str = "large-v3-turbo"
+    voice_stt_cache_dir: Path = PROJECT_DIR / "data" / "models" / "whisper-cache"
     voice_tts_model: Path = (
         PROJECT_DIR / "data" / "models" / "piper-sq" / "sq_AL-edon-medium.onnx"
     )
+    # Per-language Piper voices ({lang}.onnx + {lang}.onnx.json) for server
+    # TTS beyond Albanian: de/en/tr/sr/zh downloaded from rhasspy/piper-voices.
+    # Missing file = that locale falls back to browser speechSynthesis.
+    voice_tts_voices_dir: Path = PROJECT_DIR / "data" / "models" / "piper-voices"
     # Piper runs as a subprocess (CLI) — GPL-3 isolation + no blocking imports
     voice_piper_bin: Path = BASE_DIR / ".venv" / "bin" / "piper"
     voice_stt_threads: int = 8

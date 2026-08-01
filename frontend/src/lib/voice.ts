@@ -6,13 +6,20 @@ import { getCitizenToken } from "./citizen";
 export interface VoiceStatus {
   stt: boolean;
   tts: boolean;
+  tts_langs?: string[];
 }
+
+// Languages the server can speak (Piper voices); filled by voiceStatus()
+// so speak() knows whether to use server TTS for the current locale.
+let serverTtsLangs: string[] = ["sq"];
 
 export async function voiceStatus(): Promise<VoiceStatus> {
   try {
     const res = await fetch("/api/public/voice/status");
     if (!res.ok) return { stt: false, tts: false };
-    return await res.json();
+    const status: VoiceStatus = await res.json();
+    if (status.tts_langs) serverTtsLangs = status.tts_langs;
+    return status;
   } catch {
     return { stt: false, tts: false };
   }
@@ -64,7 +71,7 @@ export function stopSpeaking() {
   }
 }
 
-/** Speak text out loud: Piper (server, Albanian) or browser voices. */
+/** Speak text out loud: Piper (server, per-language voice) or browser voices. */
 export async function speak(
   text: string,
   locale: string,
@@ -72,11 +79,11 @@ export async function speak(
 ): Promise<void> {
   stopSpeaking();
   const clean = text.replace(/\*\*?|__|##+|\[.*?\]\(.*?\)/g, "").slice(0, 900);
-  if (locale === "sq" && serverTts) {
+  if (serverTts && serverTtsLangs.includes(locale)) {
     const res = await fetch("/api/public/voice/tts", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
-      body: JSON.stringify({ text: clean }),
+      body: JSON.stringify({ text: clean, language: locale }),
     });
     if (res.ok) {
       const url = URL.createObjectURL(await res.blob());
