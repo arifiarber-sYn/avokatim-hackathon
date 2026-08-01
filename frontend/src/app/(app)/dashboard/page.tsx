@@ -146,6 +146,13 @@ function WhatsNewCard() {
   );
 }
 
+type DlSuggestion = {
+  id: string;
+  matter_id: string;
+  matter_reference?: string | null;
+  title: string;
+};
+
 export default function DashboardPage() {
   const { t, locale } = useI18n();
   const [data, setData] = useState<Dashboard | null>(null);
@@ -155,6 +162,7 @@ export default function DashboardPage() {
   const [profileVisible, setProfileVisible] = useState<boolean | null>(null);
   const [profession, setProfession] = useState<string>("lawyer");
   const [timeSuggestions, setTimeSuggestions] = useState(0);
+  const [dlSuggestions, setDlSuggestions] = useState<DlSuggestion[]>([]);
 
   const loadTasks = useCallback(() => {
     apiGet<Task[]>("/tasks?mine=true&open_only=true").then(setTasks).catch(() => {});
@@ -171,6 +179,9 @@ export default function DashboardPage() {
       .catch(() => {});
     apiGet<unknown[]>("/time-suggestions")
       .then((s) => setTimeSuggestions(s.length))
+      .catch(() => {});
+    apiGet<DlSuggestion[]>("/deadline-suggestions")
+      .then(setDlSuggestions)
       .catch(() => {});
     loadTasks();
     if (
@@ -254,6 +265,28 @@ export default function DashboardPage() {
               {t.tsDashCta}
             </Link>
           </div>
+        </Card>
+      )}
+
+      {dlSuggestions.length > 0 && (
+        <Card className="p-5 border-indigo-300 bg-indigo-50/60">
+          <h2 className="font-semibold text-indigo-900">{t.dlsTitle}</h2>
+          <p className="text-sm text-indigo-800 mt-1">
+            {t.dlsDashBody.replace("{n}", String(dlSuggestions.length))}
+          </p>
+          <ul className="mt-2 space-y-1 text-sm">
+            {dlSuggestions.slice(0, 4).map((s) => (
+              <li key={s.id}>
+                <Link
+                  href={`/matters/${s.matter_id}`}
+                  className="text-indigo-700 hover:underline"
+                >
+                  {s.matter_reference ? `${s.matter_reference} — ` : ""}
+                  {s.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </Card>
       )}
 

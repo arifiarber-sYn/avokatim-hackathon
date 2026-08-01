@@ -543,7 +543,7 @@ EXTRACT_DEADLINES_PROMPT = """Analizo këtë dokument gjyqësor dhe nxirr TË GJ
 dhe afatet procedurale që përmban ose që rrjedhin prej tij.
 
 Kthe VETËM JSON të vlefshëm — një listë objektesh me këto fusha:
-- title: emërtim i shkurtër i afatit/ngjarjes në shqip (p.sh. "Afati i ankesës", "Seanca kryesore")
+- title: emërtim i shkurtër i afatit/ngjarjes NË GJUHËN E DOKUMENTIT (p.sh. "Afati i ankesës", "Berufungsfrist")
 - kind: një nga [deadline, hearing, meeting]
 - date: data në format YYYY-MM-DD (nëse dokumenti e cek direkt), ose null
 - trigger_date: data e ngjarjes nga e cila rrjedh afati (p.sh. data e pranimit të vendimit), format YYYY-MM-DD, ose null

@@ -342,6 +342,12 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - **AI deadline extraction**: button on any document with text — Ava proposes
   deadlines (title/date/legal basis/confidence), lawyer reviews and accepts →
   `POST .../extract-deadlines` + `POST .../deadlines/bulk`.
+- **AI deadline suggestions** (2026-08-01, D-043): automatic background scan
+  on document upload / email attachment → `DeadlineSuggestion` rows matched
+  against `DeadlineRule`; lawyer accepts (creates deadline via rule engine
+  or direct date, audited) or dismisses. Banner in the matter Deadlines tab
+  + dashboard card; `GET /deadline-suggestions`, `.../accept`, `.../dismiss`.
+  Never auto-creates anything.
 - **Calendar sync**: ICS feed (`/api/calendar/feed.ics?token=...`, signed token,
   URL in Settings) for Google Calendar/Outlook/phone subscriptions.
 - **Documents**: encrypted storage (Fernet), versioning, text extraction + OCR,
@@ -863,7 +869,8 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   host `de.avokatiim.ai`. Market parity D-037: RVG engine, ZUGFeRD
   e-invoices, Rechtsschutz flow, DATEV export, local LLM (gemma3:27b);
   DE advancement wave (D-040+): Prozesskostenrechner (F1),
-  Online-Verfahren assistant (F2), deep research (F3);
+  Online-Verfahren assistant (F2), deep research (F3),
+  back-office suggest→accept agents (F4, in progress);
   beA pending BRAK registration. SOS + notary off; public launch gated by
   `docs/legal/DE-LAUNCH-GATE.md`.
 - GB, CN, INTL: schema-ready, no data yet.

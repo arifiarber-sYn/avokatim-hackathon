@@ -6,7 +6,17 @@ from datetime import date
 from decimal import Decimal
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    Date,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -147,6 +157,9 @@ class LegalCorpusDoc(Base, TimestampMixin):
 
 class LegalCorpusChunk(Base):
     __tablename__ = "legal_corpus_chunks"
+    __table_args__ = (
+        Index("ix_legal_corpus_chunks_tsv", "tsv", postgresql_using="gin"),
+    )
 
     id: Mapped[uuid.UUID] = uuid_pk()
     doc_id: Mapped[uuid.UUID] = mapped_column(

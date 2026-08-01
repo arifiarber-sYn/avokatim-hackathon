@@ -22,7 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import SessionLocal
 from app.models import Document, Matter, MatterNote
-from app.services import storage
+from app.services import deadline_suggest, storage
 from app.services.audit import log_action
 
 logger = logging.getLogger(__name__)
@@ -97,6 +97,7 @@ async def _file_message(db: AsyncSession, matter: Matter, msg: email.message.Ema
     db.add(note)
 
     saved = 0
+    scan_docs: list[Document] = []
     for part in msg.iter_attachments():
         filename = part.get_filename()
         content = part.get_payload(decode=True)
@@ -105,25 +106,25 @@ async def _file_message(db: AsyncSession, matter: Matter, msg: email.message.Ema
         rel_path, sha, encrypted = storage.save_file(content, matter.tenant_id)
         mime = part.get_content_type() or "application/octet-stream"
         text, ocr_status = storage.extract_text(content, mime, filename)
-        db.add(
-            Document(
-                tenant_id=matter.tenant_id,
-                matter_id=matter.id,
-                family_id=uuid.uuid4(),
-                version=1,
-                is_latest=True,
-                filename=filename,
-                mime_type=mime,
-                size_bytes=len(content),
-                sha256=sha,
-                storage_path=rel_path,
-                encrypted=encrypted,
-                category="email",
-                uploaded_by_id=matter.responsible_user_id,
-                text_content=text or None,
-                ocr_status=ocr_status,
-            )
+        doc = Document(
+            tenant_id=matter.tenant_id,
+            matter_id=matter.id,
+            family_id=uuid.uuid4(),
+            version=1,
+            is_latest=True,
+            filename=filename,
+            mime_type=mime,
+            size_bytes=len(content),
+            sha256=sha,
+            storage_path=rel_path,
+            encrypted=encrypted,
+            category="email",
+            uploaded_by_id=matter.responsible_user_id,
+            text_content=text or None,
+            ocr_status=ocr_status,
         )
+        db.add(doc)
+        scan_docs.append(doc)
         saved += 1
 
     await log_action(
@@ -132,6 +133,11 @@ async def _file_message(db: AsyncSession, matter: Matter, msg: email.message.Ema
         details={"from": sender, "subject": subject, "attachments": saved},
     )
     await db.commit()
+    # D-043: propose deadlines from attachments that carry text (background,
+    # suggest→accept — nothing auto-created).
+    for doc in scan_docs:
+        if doc.text_content:
+            deadline_suggest.scan_document_background(doc.id, source="email")
     logger.info(
         "Email filed into matter %s (%s attachment(s))", matter.reference, saved
     )

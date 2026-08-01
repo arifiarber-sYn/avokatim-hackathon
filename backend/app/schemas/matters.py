@@ -142,6 +142,37 @@ class DeadlineOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class DeadlineSuggestionOut(BaseModel):
+    id: uuid.UUID
+    matter_id: uuid.UUID
+    document_id: uuid.UUID | None
+    source: str
+    kind: str
+    title: str
+    due_date: date | None
+    rule_id: uuid.UUID | None
+    trigger_date: date | None
+    legal_basis: str | None
+    confidence: str
+    status: str
+    created_at: datetime
+    # Enriched for lists (not from ORM attributes)
+    matter_reference: str | None = None
+    matter_title: str | None = None
+    document_filename: str | None = None
+    rule_name: dict | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class DeadlineSuggestionAcceptIn(BaseModel):
+    # Optional overrides — defaults come from the suggestion itself
+    rule_id: uuid.UUID | None = None
+    trigger_date: date | None = None
+    due_date: date | None = None
+    title: str | None = None
+
+
 class IntakeIn(BaseModel):
     client_name: str = Field(min_length=1, max_length=255)
     client_email: str | None = None

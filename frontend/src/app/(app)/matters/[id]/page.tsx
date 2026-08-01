@@ -1050,9 +1050,27 @@ function Messages({ matterId }: { matterId: string }) {
   );
 }
 
+type DlSuggestion = {
+  id: string;
+  kind: string;
+  title: string;
+  due_date: string | null;
+  rule_id: string | null;
+  trigger_date: string | null;
+  legal_basis: string | null;
+  confidence: string;
+  document_filename: string | null;
+  rule_name: Record<string, string> | null;
+  matter_id: string;
+  matter_reference?: string | null;
+  matter_title?: string | null;
+};
+
 function Deadlines({ matterId, practiceArea }: { matterId: string; practiceArea: string }) {
   const { t, locale } = useI18n();
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
+  const [suggestions, setSuggestions] = useState<DlSuggestion[]>([]);
+  const [sugDates, setSugDates] = useState<Record<string, string>>({});
   const [rules, setRules] = useState<DeadlineRule[]>([]);
   const [mode, setMode] = useState<"rule" | "manual">("rule");
   const [ruleId, setRuleId] = useState("");
@@ -1064,6 +1082,9 @@ function Deadlines({ matterId, practiceArea }: { matterId: string; practiceArea:
 
   const load = useCallback(() => {
     apiGet<Deadline[]>(`/matters/${matterId}/deadlines`).then(setDeadlines).catch(() => {});
+    apiGet<DlSuggestion[]>(`/matters/${matterId}/deadline-suggestions`)
+      .then(setSuggestions)
+      .catch(() => {});
   }, [matterId]);
 
   useEffect(() => {
@@ -1102,8 +1123,86 @@ function Deadlines({ matterId, practiceArea }: { matterId: string; practiceArea:
     load();
   }
 
+  async function acceptSuggestion(s: DlSuggestion) {
+    setError("");
+    const body: Record<string, string> = {};
+    // Rule matched but no trigger date extracted → the lawyer supplies it
+    if (s.rule_id && !s.trigger_date && !s.due_date) {
+      const picked = sugDates[s.id];
+      if (!picked) return;
+      body.trigger_date = picked;
+    }
+    try {
+      await apiPost(`/deadline-suggestions/${s.id}/accept`, body);
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    }
+  }
+
+  async function dismissSuggestion(id: string) {
+    try {
+      await apiPost(`/deadline-suggestions/${id}/dismiss`);
+      load();
+    } catch {}
+  }
+
   return (
     <div className="space-y-4">
+      {suggestions.length > 0 && (
+        <Card className="p-4 border-indigo-200 bg-indigo-50/50">
+          <p className="font-semibold text-sm text-indigo-900">{t.dlsTitle}</p>
+          <p className="text-xs text-indigo-700 mb-2">{t.dlsHint}</p>
+          <div className="divide-y divide-indigo-100">
+            {suggestions.map((s) => (
+              <div key={s.id} className="py-2 flex flex-wrap items-center gap-2 text-sm">
+                <div className="flex-1 min-w-48">
+                  <p className="font-medium">{s.title}</p>
+                  <p className="text-xs text-slate-500">
+                    {[
+                      s.legal_basis,
+                      s.due_date || s.trigger_date
+                        ? new Date(s.due_date || s.trigger_date!).toLocaleDateString()
+                        : null,
+                      s.document_filename,
+                      `${t.confidence}: ${
+                        (t as Record<string, string>)[
+                          `confidence${s.confidence.charAt(0).toUpperCase()}${s.confidence.slice(1)}`
+                        ] || s.confidence
+                      }`,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                </div>
+                {s.rule_id && !s.trigger_date && !s.due_date && (
+                  <Input
+                    type="date"
+                    className="w-40"
+                    title={t.triggerDate}
+                    value={sugDates[s.id] || ""}
+                    onChange={(e) =>
+                      setSugDates((prev) => ({ ...prev, [s.id]: e.target.value }))
+                    }
+                  />
+                )}
+                <button
+                  onClick={() => acceptSuggestion(s)}
+                  className="text-xs font-medium text-emerald-700 hover:underline"
+                >
+                  {t.tsAccept}
+                </button>
+                <button
+                  onClick={() => dismissSuggestion(s.id)}
+                  className="text-xs text-slate-500 hover:underline"
+                >
+                  {t.tsDismiss}
+                </button>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
       <Card className="p-4">
         <div className="flex gap-2 mb-3">
           <Button variant={mode === "rule" ? "primary" : "secondary"} onClick={() => setMode("rule")}>

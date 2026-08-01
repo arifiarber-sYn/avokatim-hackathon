@@ -3,6 +3,37 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — AI deadline suggestions from document/email scans (D-043 F4, part 1)
+
+- New: `DeadlineSuggestion` model + migration `1dd3e30e543f` — every
+  document upload (and email attachment) with text is scanned in the
+  background by the LLM (existing `EXTRACT_DEADLINES_PROMPT`, now asks
+  for titles in the document's language); extracted deadlines are matched
+  against `DeadlineRule` (legal-basis normalization + weighted title-token
+  overlap) and stored as pending suggestions. Nothing is ever created
+  without the lawyer clicking accept (suggest → human accept, D-043).
+- API: `GET /deadline-suggestions` (office-wide) +
+  `GET /matters/{id}/deadline-suggestions`, `POST .../accept` (rule-based
+  via engine when matched + trigger date, else direct date; audited),
+  `POST .../dismiss`. Accepting stores the created `deadline_id` on the
+  suggestion; duplicate scans are skipped per document.
+- UI: amber suggestions banner in the matter Deadlines tab (accept /
+  dismiss per item, shows rule + § + confidence) and a dashboard card
+  listing pending suggestions across matters. 12 new `dls*` dictionary
+  keys in all 7 locales.
+- Tests: `tests/test_deadline_suggest.py` (13: rule matching, date
+  parsing) — 169 total green. Live E2E: German Urteil upload → 3
+  suggestions (Berufungsfrist matched to rule, § 517 ZPO), accept
+  created the deadline 2026-08-28 from Zustellung 28.07, dismiss OK.
+- Files: `backend/alembic/versions/20260801_1dd3e30e543f_*.py` (new),
+  `models/matters.py`, `schemas/matters.py`,
+  `services/deadline_suggest.py` (new), `services/assistant.py`,
+  `services/email_ingest.py`, `api/documents.py`, `api/deadlines.py`,
+  `tests/test_deadline_suggest.py` (new), `frontend/src/app/(app)/
+  matters/[id]/page.tsx`, `(app)/dashboard/page.tsx`,
+  `lib/dictionaries.ts`; `models/jurisdiction.py` (GIN index moved into
+  model `__table_args__` so autogenerate stops fighting it).
+
 ## 2026-08-01 — Deep research: hybrid retrieval + federal case law with Aktenzeichen (D-042 F3)
 
 - New: hybrid corpus retrieval. Migration `d858e0f31af4` adds

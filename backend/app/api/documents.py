@@ -12,7 +12,7 @@ from app.database import get_db
 from app.deps import get_current_user
 from app.models import Document, User
 from app.schemas.documents import DocumentOut, ReviewDecisionIn, ReviewRequestIn
-from app.services import rag, storage
+from app.services import deadline_suggest, rag, storage
 from app.services.audit import log_action
 
 router = APIRouter(tags=["documents"])
@@ -155,6 +155,10 @@ async def upload_document(
     )
     await db.commit()
     await db.refresh(doc)
+    if doc.text_content and (category or "") != "draft":
+        # D-043: propose deadlines from the document in the background;
+        # the lawyer accepts/dismisses — nothing is auto-created.
+        deadline_suggest.scan_document_background(doc.id)
     return _to_out(doc)
 
 

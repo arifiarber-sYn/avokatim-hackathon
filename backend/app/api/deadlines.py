@@ -8,12 +8,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.matters import get_owned_matter, restricted_visibility_filter
 from app.database import get_db
 from app.deps import get_current_user
-from app.models import Deadline, DeadlineRule, Jurisdiction, Matter, Tenant, User
+from app.models import (
+    Deadline,
+    DeadlineRule,
+    DeadlineSuggestion,
+    Document,
+    Jurisdiction,
+    Matter,
+    Tenant,
+    User,
+)
 from app.schemas.matters import (
     DeadlineFromRuleIn,
     DeadlineIn,
     DeadlineOut,
     DeadlineRuleOut,
+    DeadlineSuggestionAcceptIn,
+    DeadlineSuggestionOut,
     JurisdictionOut,
 )
 from app.services.audit import log_action
@@ -161,6 +172,167 @@ async def add_deadline_from_rule(
     await db.commit()
     await db.refresh(deadline)
     return deadline
+
+
+# --- AI deadline suggestions (D-043): scan → suggest → accept/dismiss -----
+
+
+def _suggestion_out(
+    sug: DeadlineSuggestion,
+    matter: Matter | None = None,
+    doc: Document | None = None,
+    rule: DeadlineRule | None = None,
+) -> DeadlineSuggestionOut:
+    out = DeadlineSuggestionOut.model_validate(sug)
+    if matter is not None:
+        out.matter_reference = matter.reference
+        out.matter_title = matter.title
+    if doc is not None:
+        out.document_filename = doc.filename
+    if rule is not None:
+        out.rule_name = rule.name
+    return out
+
+
+@router.get("/deadline-suggestions", response_model=list[DeadlineSuggestionOut])
+async def pending_deadline_suggestions(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Pending AI-proposed deadlines across the office (dashboard card)."""
+    stmt = (
+        select(DeadlineSuggestion, Matter, Document, DeadlineRule)
+        .join(Matter, Matter.id == DeadlineSuggestion.matter_id)
+        .outerjoin(Document, Document.id == DeadlineSuggestion.document_id)
+        .outerjoin(DeadlineRule, DeadlineRule.id == DeadlineSuggestion.rule_id)
+        .where(
+            DeadlineSuggestion.tenant_id == user.tenant_id,
+            DeadlineSuggestion.status == "pending",
+            restricted_visibility_filter(user),
+        )
+        .order_by(DeadlineSuggestion.created_at.desc())
+        .limit(50)
+    )
+    return [
+        _suggestion_out(sug, matter, doc, rule)
+        for sug, matter, doc, rule in (await db.execute(stmt)).all()
+    ]
+
+
+@router.get(
+    "/matters/{matter_id}/deadline-suggestions",
+    response_model=list[DeadlineSuggestionOut],
+)
+async def matter_deadline_suggestions(
+    matter_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    matter = await get_owned_matter(db, user, matter_id)
+    stmt = (
+        select(DeadlineSuggestion, Document, DeadlineRule)
+        .outerjoin(Document, Document.id == DeadlineSuggestion.document_id)
+        .outerjoin(DeadlineRule, DeadlineRule.id == DeadlineSuggestion.rule_id)
+        .where(
+            DeadlineSuggestion.matter_id == matter_id,
+            DeadlineSuggestion.status == "pending",
+        )
+        .order_by(DeadlineSuggestion.created_at.desc())
+    )
+    return [
+        _suggestion_out(sug, matter, doc, rule)
+        for sug, doc, rule in (await db.execute(stmt)).all()
+    ]
+
+
+async def _get_owned_suggestion(
+    db: AsyncSession, user: User, suggestion_id: uuid.UUID
+) -> DeadlineSuggestion:
+    sug = await db.get(DeadlineSuggestion, suggestion_id)
+    if sug is None or sug.tenant_id != user.tenant_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Suggestion not found")
+    await get_owned_matter(db, user, sug.matter_id)  # enforces restricted access
+    if sug.status != "pending":
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Suggestion already handled")
+    return sug
+
+
+@router.post(
+    "/deadline-suggestions/{suggestion_id}/accept", response_model=DeadlineOut
+)
+async def accept_deadline_suggestion(
+    suggestion_id: uuid.UUID,
+    body: DeadlineSuggestionAcceptIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Turn a suggestion into a real deadline: via the rule engine when a
+    procedural rule + trigger date are known, otherwise at the direct date."""
+    sug = await _get_owned_suggestion(db, user, suggestion_id)
+    title = (body.title or sug.title).strip()[:500]
+    rule_id = body.rule_id or sug.rule_id
+    trigger = body.trigger_date or sug.trigger_date
+    due_date = body.due_date or sug.due_date
+
+    rule = await db.get(DeadlineRule, rule_id) if rule_id else None
+    if rule is not None and trigger is not None:
+        tenant = await db.get(Tenant, user.tenant_id)
+        due = await compute_due_date(
+            db, rule, trigger, region=getattr(tenant, "region", None)
+        )
+        deadline = Deadline(
+            tenant_id=user.tenant_id,
+            matter_id=sug.matter_id,
+            kind=sug.kind,
+            title=title,
+            due_at=due_datetime(due),
+            rule_id=rule.id,
+            trigger_date=trigger,
+            legal_basis=rule.legal_basis,
+        )
+    elif due_date is not None:
+        deadline = Deadline(
+            tenant_id=user.tenant_id,
+            matter_id=sug.matter_id,
+            kind=sug.kind,
+            title=title,
+            due_at=due_datetime(due_date),
+            legal_basis=sug.legal_basis,
+        )
+    else:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "Provide a due_date, or a rule with a trigger_date",
+        )
+    db.add(deadline)
+    await db.flush()
+    sug.status = "accepted"
+    sug.deadline_id = deadline.id
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id,
+        action="deadline.suggestion_accept", entity_type="deadline",
+        entity_id=str(deadline.id),
+        details={"suggestion": str(sug.id), "title": title},
+    )
+    await db.commit()
+    await db.refresh(deadline)
+    return deadline
+
+
+@router.post("/deadline-suggestions/{suggestion_id}/dismiss", status_code=204)
+async def dismiss_deadline_suggestion(
+    suggestion_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    sug = await _get_owned_suggestion(db, user, suggestion_id)
+    sug.status = "dismissed"
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id,
+        action="deadline.suggestion_dismiss", entity_type="deadline_suggestion",
+        entity_id=str(sug.id),
+    )
+    await db.commit()
 
 
 @router.patch("/deadlines/{deadline_id}/status", response_model=DeadlineOut)

@@ -12,6 +12,7 @@ from app.models.jurisdiction import (
 from app.models.matters import (
     Contact,
     Deadline,
+    DeadlineSuggestion,
     IntakeRequest,
     Matter,
     MatterMember,
@@ -61,6 +62,7 @@ __all__ = [
     "MatterParty",
     "MatterNote",
     "Deadline",
+    "DeadlineSuggestion",
     "IntakeRequest",
     "Document",
     "DocumentChunk",

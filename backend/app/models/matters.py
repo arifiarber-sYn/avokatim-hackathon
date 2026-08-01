@@ -169,6 +169,39 @@ class Deadline(Base, TenantMixin, TimestampMixin):
     matter: Mapped[Matter] = relationship(back_populates="deadlines")
 
 
+class DeadlineSuggestion(Base, TenantMixin, TimestampMixin):
+    """An AI-proposed deadline extracted from an uploaded document or email
+    attachment (D-043, suggest→accept model like TimeSuggestion — never
+    auto-created). Accepting one creates a real Deadline."""
+
+    __tablename__ = "deadline_suggestions"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    matter_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("matters.id", ondelete="CASCADE"), index=True
+    )
+    document_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("documents.id", ondelete="CASCADE"), index=True
+    )
+    source: Mapped[str] = mapped_column(String(16), default="document")  # document | email
+    kind: Mapped[str] = mapped_column(String(16), default="deadline")  # deadline | hearing | meeting
+    title: Mapped[str] = mapped_column(String(500))
+    # Either a direct date from the document…
+    due_date: Mapped[date | None] = mapped_column(Date)
+    # …or a matched procedural rule + its trigger date (engine computes due)
+    rule_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("deadline_rules.id", ondelete="SET NULL")
+    )
+    trigger_date: Mapped[date | None] = mapped_column(Date)
+    legal_basis: Mapped[str | None] = mapped_column(String(255))
+    confidence: Mapped[str] = mapped_column(String(8), default="low")  # high | medium | low
+    status: Mapped[str] = mapped_column(String(16), default="pending", index=True)
+    # pending | accepted | dismissed
+    deadline_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("deadlines.id", ondelete="SET NULL")
+    )
+
+
 class IntakeRequest(Base, TenantMixin, TimestampMixin):
     """A prospective case: captured, conflict-checked, AI-classified, then
     either converted into a Matter or declined."""

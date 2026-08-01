@@ -10,6 +10,27 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01n — D-043 F4 (pjesa 1): Sugjerime afatesh nga skanimi i dokumenteve (Cursor / Fable 5)
+
+- Done: model i ri `DeadlineSuggestion` (migrimi `1dd3e30e543f`) + service
+  `deadline_suggest.py`: në çdo ngarkim dokumenti me tekst (dhe attachment
+  email-i) niset skanim në sfond me LLM (vetëm përmes `app/llm/`),
+  afatet e nxjerra përputhen me `DeadlineRule` (normalizim i bazës ligjore
+  "§ 517 ZPO" ↔ "ZPO § 517" + mbivendosje token-ash të titullit me peshë
+  sipas gjatësisë — kompozitat gjermane peshojnë më shumë) dhe ruhen si
+  sugjerime pending. Asgjë s'krijohet pa klikuar avokati "prano" —
+  pranimi me rregull + trigger përdor motorin ekzistues të afateve
+  (festat/notfrist në një vend), përndryshe afat direkt nga data.
+- API: `GET /deadline-suggestions` (gjithë zyra) + per-lëndë, `accept`
+  (i audituar) + `dismiss`. UI: banner i verdhë te tab-i Afatet e lëndës
+  + kartë në dashboard; 12 çelësa `dls*` në 7 gjuhët.
+- Verified: 169 teste (13 të reja). E2E live: ngarkim Urteil gjermane →
+  3 sugjerime (Berufungsfrist e përputhur me rregullën, § 517 ZPO),
+  accept krijoi afatin 2026-08-28 nga Zustellung 28.07, dismiss OK.
+  Health + frontend 200 pas restart-it.
+- Left open: F4 pjesa 2 (Mahnwesen) dhe pjesa 3 (klasifikimi i email-it
+  pa token) — i njëjti kontratë sugjero→prano (D-043).
+
 ## 2026-08-01m — D-042 F3: Recherche e thelluar — kërkim hibrid + jurisprudenca federale (Cursor / Fable 5)
 
 - Done: faza 3. **Kërkimi hibrid**: migrim Alembic `d858e0f31af4` — kolonë

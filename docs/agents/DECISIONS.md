@@ -1031,3 +1031,28 @@
 - tsv column is populated in Python on insert (corpus API) + backfilled by
   migration; a generated column was rejected because the ts config depends
   on the parent doc's language (cross-table).
+
+## D-043: Back-office agents — suggest → human accept, never auto-execute (2026-08-01)
+
+- Context: German lawyers report ~49.5% of their time is non-billable
+  admin. The biggest wins are automating intake of court mail (deadlines),
+  dunning (Mahnwesen) and email filing — but a legal tool must never act
+  on its own (BRAK KI-Leitfaden human-oversight principle, and a wrong
+  auto-created deadline is worse than none).
+- Decision: every back-office automation follows the `TimeSuggestion`
+  pattern — a *Suggestion row with `status=pending` that the lawyer
+  explicitly accepts or dismisses. First instance: `DeadlineSuggestion` —
+  background LLM scan on document upload / email attachment (through the
+  `app/llm/` abstraction only), matched against `DeadlineRule` by
+  normalized legal basis (§/Art. + law code, e.g. "§ 517 ZPO" ↔
+  "ZPO § 517") plus weighted title-token overlap (longer tokens weigh
+  more, so German compounds like "Berufungsbegründungsfrist" carry the
+  match). Accept path reuses the rule engine (`create_deadline_from_rule`)
+  when a rule + trigger date matched, so holiday/notfrist logic stays in
+  one place; otherwise a plain deadline from the extracted date.
+- Scan is fire-and-forget (`asyncio.create_task`) with its own DB session;
+  failures only log — an LLM outage must never break a document upload.
+  Suggestions are per-document deduped (skip if any suggestion exists).
+- Consequences: Mahnwesen drafts and sender→matter email classification
+  (F4 parts 2–3) reuse the same suggest/accept contract; nothing sends or
+  files automatically.

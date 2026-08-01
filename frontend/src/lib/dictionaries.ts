@@ -770,6 +770,10 @@ const sq = {
   tsDismiss: "Hidhe",
   tsDashTitle: "Kohë e pafaturuar e gjetur",
   tsDashBody: "{n} sugjerime kohe nga aktiviteti presin miratimin tënd në faturim.",
+  // AI deadline suggestions (document/email scan)
+  dlsTitle: "Afate të propozuara nga AI",
+  dlsHint: "Nga skanimi i dokumenteve të reja — asnjë afat s'krijohet pa e pranuar ti.",
+  dlsDashBody: "{n} afate të propozuara nga dokumentet presin vendimin tënd.",
   tsDashCta: "Shikoji",
   // Office-level Ava
   oaModeLegal: "Ligjore",
@@ -1991,6 +1995,10 @@ const en: typeof sq = {
   tsDismiss: "Dismiss",
   tsDashTitle: "Unbilled time found",
   tsDashBody: "{n} time suggestions from your activity await your approval in billing.",
+  // AI deadline suggestions (document/email scan)
+  dlsTitle: "AI-suggested deadlines",
+  dlsHint: "From scanning new documents — no deadline is created until you accept it.",
+  dlsDashBody: "{n} deadline suggestions from documents await your decision.",
   tsDashCta: "Review",
   // Office-level Ava
   oaModeLegal: "Legal",
@@ -3202,6 +3210,10 @@ const zh: typeof sq = {
   tsDismiss: "忽略",
   tsDashTitle: "发现未计费时间",
   tsDashBody: "有 {n} 条来自活动的时间建议等待您在计费页面确认。",
+  // AI deadline suggestions (document/email scan)
+  dlsTitle: "AI 建议的期限",
+  dlsHint: "来自新文档的扫描——未经您确认不会创建任何期限。",
+  dlsDashBody: "有 {n} 条来自文档的期限建议等待您的决定。",
   tsDashCta: "查看",
   // Office-level Ava
   oaModeLegal: "法律",
@@ -4422,6 +4434,10 @@ const sr: typeof sq = {
   tsDismiss: "Odbaci",
   tsDashTitle: "Pronađeno nefakturisano vreme",
   tsDashBody: "{n} predloga vremena iz aktivnosti čeka vaše odobrenje u fakturisanju.",
+  // AI deadline suggestions (document/email scan)
+  dlsTitle: "Rokovi predloženi od AI",
+  dlsHint: "Iz skeniranja novih dokumenata — nijedan rok se ne kreira dok ga ne prihvatite.",
+  dlsDashBody: "{n} predloga rokova iz dokumenata čeka vašu odluku.",
   tsDashCta: "Pregledaj",
   // Office-level Ava
   oaModeLegal: "Pravno",
@@ -5642,6 +5658,10 @@ const tr: typeof sq = {
   tsDismiss: "Yoksay",
   tsDashTitle: "Faturalanmamış süre bulundu",
   tsDashBody: "Aktivitenizden {n} süre önerisi faturalama sayfasında onayınızı bekliyor.",
+  // AI deadline suggestions (document/email scan)
+  dlsTitle: "YZ önerilen süreler",
+  dlsHint: "Yeni belgelerin taranmasından — siz kabul etmeden hiçbir süre oluşturulmaz.",
+  dlsDashBody: "Belgelerden {n} süre önerisi kararınızı bekliyor.",
   tsDashCta: "İncele",
   // Office-level Ava
   oaModeLegal: "Hukuki",
@@ -6862,6 +6882,10 @@ const bs: typeof sq = {
   tsDismiss: "Odbaci",
   tsDashTitle: "Pronađeno nefakturisano vrijeme",
   tsDashBody: "{n} prijedloga vremena iz aktivnosti čeka vaše odobrenje u fakturisanju.",
+  // AI deadline suggestions (document/email scan)
+  dlsTitle: "Rokovi predloženi od AI",
+  dlsHint: "Iz skeniranja novih dokumenata — nijedan rok se ne kreira dok ga ne prihvatite.",
+  dlsDashBody: "{n} prijedloga rokova iz dokumenata čeka vašu odluku.",
   tsDashCta: "Pregledaj",
   // Office-level Ava
   oaModeLegal: "Pravno",
@@ -8083,6 +8107,10 @@ const de: typeof sq = {
   tsDismiss: "Verwerfen",
   tsDashTitle: "Nicht abgerechnete Zeit gefunden",
   tsDashBody: "{n} Zeitvorschläge aus Ihrer Aktivität warten in der Abrechnung auf Ihre Freigabe.",
+  // AI deadline suggestions (document/email scan)
+  dlsTitle: "KI-vorgeschlagene Fristen",
+  dlsHint: "Aus dem Scan neuer Dokumente — keine Frist wird ohne Ihre Bestätigung angelegt.",
+  dlsDashBody: "{n} Fristvorschläge aus Dokumenten warten auf Ihre Entscheidung.",
   tsDashCta: "Prüfen",
   // Office-level Ava
   oaModeLegal: "Recht",
