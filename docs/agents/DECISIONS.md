@@ -958,3 +958,28 @@
   its base URL to `COUNTRY_BASE_URL`. Legal pages (kushtet/privatesia/
   impressum/kontakti) still have static Albanian metadata — acceptable for
   now, tracked in JOURNAL 2026-08-01i.
+
+## D-040: Prozesskostenrechner — GKG table as data, § 91 ZPO risk model (2026-08-01)
+
+- Context: German citizens' first question before suing is "what does it
+  cost me if I lose?". Established market calculators (ERGO, Deubner)
+  combine RVG lawyer fees with GKG court fees per instance. We already had
+  the RVG side (D-037); court fees and the risk composition were missing.
+- Decision: the § 34 GKG / Anlage 2 fee table lives in
+  `seeds/germany.py` as `DE_GKG_TABLE` in the exact same band format as
+  `DE_RVG_TABLE` (base fee up to 500 €, fixed increment per started step;
+  values of the KostBRÄG 2025 version in force since 2025-06-01, verified
+  against gesetze-im-internet.de and BGBl. 2025 I Nr. 109). The band
+  walker was generalized (`rvg.banded_fee`) so both tables share one
+  implementation. Per-instance composition is data too
+  (`DE_PROZESSKOSTEN_INSTANCES`): KV 1210/1220/1230 court rates and the
+  lawyer VV items per instance (3100/3104, 3200/3202, 3208/3210 — the
+  same convention the market calculators use, incl. 2.3 for the mandatory
+  BGH counsel in revision). `services/prozesskosten.py` only computes:
+  loser pays both lawyers + court fees (§ 91 ZPO), VAT on lawyers only,
+  VV 7002 per instance/lawyer, § 12 GKG filing advance.
+- Consequences: a future fee amendment is a seed edit, no code. The public
+  endpoint is DE-host-only (`_require_de`) like the RVG one; the lawyer
+  endpoint gives offices the same numbers for client advice. The § 12a
+  ArbGG labor-court exception is a UI note, not modeled — acceptable for
+  an informative tool.

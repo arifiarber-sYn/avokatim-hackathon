@@ -134,6 +134,41 @@ async def public_fee_calc(body: FeeCalcIn, request: Request):
     return result
 
 
+# ---------- Prozesskostenrechner (DE host, D-040) ----------
+
+
+class ProcessCostIn(BaseModel):
+    value_eur: float = Field(gt=0, le=100_000_000)
+    instances: list[str] | None = Field(default=None, max_length=3)
+
+
+@router.get("/process-cost")
+async def public_process_cost_meta(request: Request):
+    """Instances the litigation cost-risk tool covers (localized names)."""
+    _require_de(request)
+    from app.seeds.germany import DE_GKG_TABLE, DE_PROZESSKOSTEN_INSTANCES
+
+    return {
+        "instances": DE_PROZESSKOSTEN_INSTANCES,
+        "legal_basis": DE_GKG_TABLE["legal_basis"],
+    }
+
+
+@router.post("/process-cost")
+async def public_process_cost(body: ProcessCostIn, request: Request):
+    """Litigation cost risk per instance (RVG + GKG, § 91 ZPO model).
+    Informative only, not legal advice."""
+    _require_de(request)
+    await _rate_limit("public_process_cost", _ip(request), limit=60, window_seconds=3600)
+    from decimal import Decimal
+
+    from app.services import prozesskosten
+
+    result = prozesskosten.cost_risk(Decimal(str(body.value_eur)), body.instances)
+    result["estimate"] = True
+    return result
+
+
 # ---------- notary helper ----------
 
 NOTARIES_FILE = PROJECT_DIR / "data" / "notaries.json"

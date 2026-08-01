@@ -24,13 +24,15 @@ def _round(x: Decimal) -> Decimal:
     return x.quantize(_CENT, rounding=ROUND_HALF_UP)
 
 
-def base_fee(value: Decimal) -> Decimal:
-    """The 1.0 fee for a Gegenstandswert per § 13 Abs. 1 RVG."""
+def banded_fee(value: Decimal, table: dict) -> Decimal:
+    """Walk a banded value/fee table (§ 13 RVG or § 34 GKG format): the base
+    fee up to `base_up_to`, then a fixed increment per *started* step until
+    each band ceiling."""
     if value <= 0:
-        return Decimal(DE_RVG_TABLE["minimum_fee"])
-    fee = Decimal(DE_RVG_TABLE["base_fee"])
-    reached = Decimal(DE_RVG_TABLE["base_up_to"])
-    for step_s, ceiling_s, increment_s in DE_RVG_TABLE["bands"]:
+        return Decimal(table["minimum_fee"])
+    fee = Decimal(table["base_fee"])
+    reached = Decimal(table["base_up_to"])
+    for step_s, ceiling_s, increment_s in table["bands"]:
         step, increment = Decimal(step_s), Decimal(increment_s)
         ceiling = Decimal(ceiling_s) if ceiling_s else None
         while value > reached and (ceiling is None or reached < ceiling):
@@ -38,7 +40,12 @@ def base_fee(value: Decimal) -> Decimal:
             reached += step
         if value <= reached:
             break
-    return max(fee, Decimal(DE_RVG_TABLE["minimum_fee"]))
+    return max(fee, Decimal(table["minimum_fee"]))
+
+
+def base_fee(value: Decimal) -> Decimal:
+    """The 1.0 fee for a Gegenstandswert per § 13 Abs. 1 RVG."""
+    return banded_fee(value, DE_RVG_TABLE)
 
 
 def compute(

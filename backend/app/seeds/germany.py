@@ -377,6 +377,125 @@ DE_RVG_VV_ITEMS = [
     },
 ]
 
+# § 34 GKG court-fee table (Anlage 2, Stand KostBRÄG 2025, in force
+# 2025-06-01) in the same band format as DE_RVG_TABLE: the 1.0 court fee is
+# 40.00 € up to 500 €, then grows per *started* step. Verified against the
+# published Anlage 2: 2.000 € -> 103.00, 10.000 € -> 283.00,
+# 25.000 € -> 435.50, 50.000 € -> 638.00, 200.000 € -> 2.038.00,
+# 500.000 € -> 4.138.00.
+DE_GKG_TABLE = {
+    "base_up_to": "500",
+    "base_fee": "40.00",
+    "bands": [
+        ("500", "2000", "21.00"),
+        ("1000", "10000", "22.50"),
+        ("3000", "25000", "30.50"),
+        ("5000", "50000", "40.50"),
+        ("15000", "200000", "140.00"),
+        ("30000", "500000", "210.00"),
+        ("50000", None, "210.00"),
+    ],
+    "minimum_fee": "15.00",  # § 34 Abs. 2 GKG
+    "legal_basis": "§ 34 GKG, Anlage 2 (KostBRÄG 2025)",
+}
+
+# Per-instance data for the Prozesskostenrechner: the GKG court-fee rate
+# (KV GKG Anlage 1) and the RVG lawyer items that arise in that instance.
+# Same convention as the established market calculators: 1st instance
+# VV 3100/3104, appeal VV 3200/3202, revision before the BGH VV 3208/3210.
+DE_PROZESSKOSTEN_INSTANCES = [
+    {
+        "code": "erste_instanz",
+        "court_kv": "KV 1210 GKG",
+        "court_rate": "3.0",
+        "name": {
+            "de": "1. Instanz",
+            "en": "First instance",
+            "sq": "Shkalla e parë",
+        },
+        "lawyer_items": [
+            {
+                "vv": "VV 3100",
+                "rate": "1.3",
+                "name": {
+                    "de": "Verfahrensgebühr",
+                    "en": "Procedure fee",
+                    "sq": "Tarifa procedurale",
+                },
+            },
+            {
+                "vv": "VV 3104",
+                "rate": "1.2",
+                "name": {
+                    "de": "Terminsgebühr",
+                    "en": "Hearing fee",
+                    "sq": "Tarifa e seancës",
+                },
+            },
+        ],
+    },
+    {
+        "code": "berufung",
+        "court_kv": "KV 1220 GKG",
+        "court_rate": "4.0",
+        "name": {
+            "de": "Berufung (2. Instanz)",
+            "en": "Appeal (second instance)",
+            "sq": "Apeli (shkalla e dytë)",
+        },
+        "lawyer_items": [
+            {
+                "vv": "VV 3200",
+                "rate": "1.6",
+                "name": {
+                    "de": "Verfahrensgebühr",
+                    "en": "Procedure fee",
+                    "sq": "Tarifa procedurale",
+                },
+            },
+            {
+                "vv": "VV 3202",
+                "rate": "1.2",
+                "name": {
+                    "de": "Terminsgebühr",
+                    "en": "Hearing fee",
+                    "sq": "Tarifa e seancës",
+                },
+            },
+        ],
+    },
+    {
+        "code": "revision",
+        "court_kv": "KV 1230 GKG",
+        "court_rate": "5.0",
+        "name": {
+            "de": "Revision (BGH)",
+            "en": "Revision (Federal Court of Justice)",
+            "sq": "Revizioni (Gjykata Federale)",
+        },
+        "lawyer_items": [
+            {
+                "vv": "VV 3208",
+                "rate": "2.3",
+                "name": {
+                    "de": "Verfahrensgebühr (BGH-Anwalt)",
+                    "en": "Procedure fee (BGH counsel)",
+                    "sq": "Tarifa procedurale (avokat i BGH)",
+                },
+            },
+            {
+                "vv": "VV 3210",
+                "rate": "1.5",
+                "name": {
+                    "de": "Terminsgebühr",
+                    "en": "Hearing fee",
+                    "sq": "Tarifa e seancës",
+                },
+            },
+        ],
+    },
+]
+
 # Value-fee items (Nr. 3100 etc.) depend on the Gegenstandswert; the amounts
 # here are the fixed statutory anchors a solo lawyer reaches for first.
 DE_FEE_TARIFF = [

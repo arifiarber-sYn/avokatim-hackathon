@@ -494,6 +494,26 @@ async def rvg_calc(
     )
 
 
+class ProcessCostIn(BaseModel):
+    value_eur: Decimal = Field(gt=0, le=Decimal("100000000"))
+    instances: list[str] | None = Field(default=None, max_length=3)
+    vat_rate: int = Field(default=19, ge=0, le=30)
+
+
+@router.post("/fee-calc/process-cost")
+async def process_cost_calc(
+    body: ProcessCostIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Litigation cost risk per instance (RVG + GKG, § 91 ZPO model) —
+    for advising clients on whether a lawsuit is worth the exposure."""
+    await _require_de_tenant(db, user)
+    from app.services import prozesskosten
+
+    return prozesskosten.cost_risk(body.value_eur, body.instances, vat_rate=body.vat_rate)
+
+
 @router.get("/invoices", response_model=list[InvoiceOut])
 async def list_invoices(
     user: User = Depends(get_current_user),

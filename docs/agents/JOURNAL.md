@@ -10,6 +10,29 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01k — D-040 F1: Prozesskostenrechner (RVG + GKG + rreziku § 91 ZPO) (Cursor / Fable 5)
+
+- Done: faza 1 e valës së avancimit DE. Seed `DE_GKG_TABLE` (Anlage 2 GKG,
+  KostBRÄG 2025 — verifikuar kundër gesetze-im-internet.de dhe tekstit të
+  ligjit BGBl. 2025 I Nr. 109) + `DE_PROZESSKOSTEN_INSTANCES` (KV 1210/1220/
+  1230 me VV 3100/3104, 3200/3202, 3208/3210 — njësoj si kalkulatorët
+  standardë të tregut). Service i ri `prozesskosten.py` (court_fee_unit +
+  cost_risk sipas modelit § 91 ZPO: avokati im + i palës + gjykata, TVSH
+  vetëm mbi avokatët, VV 7002 për instancë/avokat, § 12 GKG paradhënia).
+  `banded_fee` u gjeneralizua në rvg.py që GKG ta ripërdorë ecjen e brezave.
+  API publike GET/POST `/public/tools/process-cost` (vetëm host DE, rate
+  limit 60/h) + endpoint avokati POST `/billing/fee-calc/process-cost`.
+  Frontend: seksion "Prozesskostenrisiko" te /rvg (kartë per-instancë me
+  taksën, dy avokatët, "po humbe", kumulative + paradhënia dhe totali) +
+  12 çelësa `pkr*` në 7 gjuhët + metadata SEO e /rvg e zgjeruar.
+- Verified: 4 teste të reja me vlera referuese zyrtare (GKG 5.000 € →
+  170,50 njësi / 511,50 shkalla I; rreziku 3 instanca 5.000 € → 9.866,56 €);
+  150 teste kalojnë; API live OK në header DE, 404 në XK; faqja e ndërtuar
+  e shfaq seksionin.
+- Shënim: vlera "483 €" në plan ishte tabela e vjetër (para 1.6.2025) —
+  u implementua tabela në fuqi (511,50 € për 5.000 €).
+- Left open: F2 (Online-Verfahren) e tutje.
+
 ## 2026-08-01j — Analizë strategjike: si ta avancojmë platformën për peshën e tregut DE (Cursor / Fable 5)
 
 - Done: hulumtim tregu (Wolters Kluwer Benchmark 2026, BRAK, Legal Tech

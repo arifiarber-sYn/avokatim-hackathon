@@ -3,6 +3,25 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Prozesskostenrechner: GKG court fees + litigation cost risk (D-040 F1)
+
+- New: full German litigation cost-risk calculator on top of the existing
+  RVG engine. `DE_GKG_TABLE` (§ 34 GKG / Anlage 2, KostBRÄG 2025) +
+  `DE_PROZESSKOSTEN_INSTANCES` as seeds; `services/prozesskosten.py`
+  computes per instance (1st, appeal, BGH revision): court fee, own +
+  opponent lawyer (statutory RVG, VAT), loser-pays total (§ 91 ZPO),
+  cumulative risk and the § 12 GKG filing advance.
+- API: `GET/POST /public/tools/process-cost` (DE host only, rate-limited)
+  and `POST /billing/fee-calc/process-cost` for offices. UI: new
+  "Prozesskostenrisiko" section on `/rvg` with per-instance cards; 12 new
+  `pkr*` dictionary keys in all 7 locales; /rvg SEO metadata extended.
+- Tests: `tests/test_prozesskosten.py` with official reference values
+  (5,000 € → unit 170.50 / KV 1210 511.50; 3-instance risk 9,866.56).
+- Files: `backend/app/seeds/germany.py`, `backend/app/services/
+  prozesskosten.py` (new), `services/rvg.py` (banded_fee), `api/
+  public_tools.py`, `api/billing.py`, `frontend/src/app/rvg/page.tsx`,
+  `rvg/layout.tsx`, `lib/dictionaries.ts`.
+
 ## 2026-08-01 — Full mobile web audit (DE first, then XK) + per-host SEO (D-039)
 
 - Audited both hosts on a real mobile viewport (Playwright, iPhone 14):

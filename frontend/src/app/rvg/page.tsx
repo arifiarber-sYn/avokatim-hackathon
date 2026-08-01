@@ -38,6 +38,33 @@ interface FeeResult {
   total: string;
 }
 
+interface RiskLawyer {
+  lines: { vv: string; rate: string | null; name: Record<string, string>; amount: string }[];
+  net: string;
+  vat: string;
+  total: string;
+}
+
+interface RiskInstance {
+  code: string;
+  name: Record<string, string>;
+  court_kv: string;
+  court_rate: string;
+  court_fee: string;
+  own_lawyer: RiskLawyer;
+  opponent_lawyer_total: string;
+  total_if_lose: string;
+  cumulative_if_lose: string;
+}
+
+interface RiskResult {
+  value: string;
+  legal_basis: string;
+  court_fee_advance: string;
+  instances: RiskInstance[];
+  total_risk: string;
+}
+
 const GG_RATES = ["0.5", "0.8", "1.0", "1.3", "1.5", "1.8", "2.0", "2.5"];
 
 export default function RvgCalcPage() {
@@ -50,6 +77,10 @@ export default function RvgCalcPage() {
   const [result, setResult] = useState<FeeResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [riskValue, setRiskValue] = useState("");
+  const [risk, setRisk] = useState<RiskResult | null>(null);
+  const [riskBusy, setRiskBusy] = useState(false);
+  const [riskError, setRiskError] = useState("");
 
   useEffect(() => {
     if (clientCountry() !== "DE") {
@@ -97,6 +128,26 @@ export default function RvgCalcPage() {
       setError(err instanceof Error ? err.message : t.error);
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function calcRisk(e: React.FormEvent) {
+    e.preventDefault();
+    setRiskBusy(true);
+    setRiskError("");
+    setRisk(null);
+    try {
+      const res = await fetch("/api/public/tools/process-cost", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value_eur: Number(riskValue) }),
+      });
+      if (!res.ok) throw new Error((await res.json()).detail || t.error);
+      setRisk(await res.json());
+    } catch (err) {
+      setRiskError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setRiskBusy(false);
     }
   }
 
@@ -203,6 +254,81 @@ export default function RvgCalcPage() {
                   <span>{t.rvgTotalGross}</span>
                   <span className="font-mono">{Number(result.total).toFixed(2)} €</span>
                 </div>
+              </div>
+            </div>
+          )}
+        </Card>
+
+        {/* Prozesskostenrisiko (D-040): court fees + both lawyers per instance */}
+        <Card className="p-5 space-y-4">
+          <div>
+            <h2 className="text-lg font-bold">{t.pkrTitle}</h2>
+            <p className="text-sm text-slate-500 mt-1">{t.pkrIntro}</p>
+          </div>
+          <form onSubmit={calcRisk} className="space-y-3">
+            <div>
+              <Label>{t.rvgValue}</Label>
+              <Input
+                type="number"
+                min="1"
+                step="1"
+                value={riskValue}
+                onChange={(e) => { setRiskValue(e.target.value); setRisk(null); }}
+                required
+              />
+            </div>
+            <ErrorNote message={riskError} />
+            <Button type="submit" disabled={riskBusy || !riskValue} className="w-full">
+              {riskBusy ? t.loading : t.pkrCalc}
+            </Button>
+          </form>
+
+          {risk && (
+            <div className="space-y-3">
+              {risk.instances.map((inst) => (
+                <div key={inst.code} className="rounded-xl border border-slate-200 p-4 space-y-1.5">
+                  <p className="text-sm font-semibold text-slate-800">{label(inst.name)}</p>
+                  <div className="flex justify-between text-sm text-slate-600">
+                    <span>
+                      {t.pkrCourtFee}{" "}
+                      <span className="text-slate-400">({inst.court_kv} · {inst.court_rate})</span>
+                    </span>
+                    <span className="font-mono">{Number(inst.court_fee).toFixed(2)} €</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-slate-600">
+                    <span>
+                      {t.pkrOwnLawyer}{" "}
+                      <span className="text-slate-400">
+                        ({inst.own_lawyer.lines.filter((l) => l.rate).map((l) => `${l.vv} ${l.rate}`).join(" + ")})
+                      </span>
+                    </span>
+                    <span className="font-mono">{Number(inst.own_lawyer.total).toFixed(2)} €</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-slate-600">
+                    <span>{t.pkrOppLawyer}</span>
+                    <span className="font-mono">{Number(inst.opponent_lawyer_total).toFixed(2)} €</span>
+                  </div>
+                  <div className="flex justify-between text-sm font-semibold text-slate-800 border-t border-slate-100 pt-1.5">
+                    <span>{t.pkrIfLose}</span>
+                    <span className="font-mono">{Number(inst.total_if_lose).toFixed(2)} €</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-slate-400">
+                    <span>{t.pkrCumulative}</span>
+                    <span className="font-mono">{Number(inst.cumulative_if_lose).toFixed(2)} €</span>
+                  </div>
+                </div>
+              ))}
+              <div className="rounded-xl bg-indigo-50 border border-indigo-200 p-4 space-y-1.5">
+                <div className="flex justify-between text-sm text-indigo-900">
+                  <span>{t.pkrAdvance}</span>
+                  <span className="font-mono">{Number(risk.court_fee_advance).toFixed(2)} €</span>
+                </div>
+                <div className="flex justify-between font-bold text-base text-indigo-900">
+                  <span>{t.pkrTotalRisk}</span>
+                  <span className="font-mono">{Number(risk.total_risk).toFixed(2)} €</span>
+                </div>
+                <p className="text-xs text-indigo-700">{t.pkrWinNote}</p>
+                <p className="text-xs text-indigo-400">{risk.legal_basis}</p>
               </div>
             </div>
           )}
