@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiDownload, apiGet, apiPatch, apiPost, apiPut, apiUpload, setToken } from "@/lib/api";
-import { clientCountry } from "@/lib/country";
+import { clientCountry, DE_REGIONS } from "@/lib/country";
 import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
 import { Contact } from "@/lib/types";
@@ -526,10 +526,13 @@ function FirmSection() {
     address: "",
     bank_details: "",
     default_vat_rate: "18",
+    region: "",
   });
   const [logo, setLogo] = useState<string | null>(null);
   const [require2fa, setRequire2fa] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [firmIsDE, setFirmIsDE] = useState(false);
+  useEffect(() => setFirmIsDE(clientCountry() === "DE"), []);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -540,6 +543,7 @@ function FirmSection() {
       address: string | null;
       bank_details: string | null;
       default_vat_rate: number;
+      region: string | null;
       logo: string | null;
       require_2fa: boolean;
     }>("/firm")
@@ -551,6 +555,7 @@ function FirmSection() {
           address: r.address || "",
           bank_details: r.bank_details || "",
           default_vat_rate: String(r.default_vat_rate ?? 18),
+          region: r.region || "",
         });
         setLogo(r.logo || null);
         setRequire2fa(r.require_2fa || false);
@@ -570,6 +575,7 @@ function FirmSection() {
         address: form.address || null,
         bank_details: form.bank_details || null,
         default_vat_rate: Number(form.default_vat_rate),
+        region: form.region || null,
         logo,
         require_2fa: require2fa,
       });
@@ -641,6 +647,21 @@ function FirmSection() {
             onChange={(e) => setForm({ ...form, default_vat_rate: e.target.value })}
           />
         </div>
+        {firmIsDE && (
+          <div>
+            <Label>{t.firmRegion}</Label>
+            <Select
+              value={form.region}
+              onChange={(e) => setForm({ ...form, region: e.target.value })}
+            >
+              <option value="">—</option>
+              {DE_REGIONS.map((r) => (
+                <option key={r.code} value={r.code}>{r.name}</option>
+              ))}
+            </Select>
+            <p className="text-xs text-slate-400 mt-1">{t.firmRegionHint}</p>
+          </div>
+        )}
         <div className="sm:col-span-2 space-y-1">
           <Label>{t.firmLogo}</Label>
           <div className="flex items-center gap-3">

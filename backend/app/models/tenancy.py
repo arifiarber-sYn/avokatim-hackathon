@@ -38,6 +38,9 @@ class Tenant(Base, TimestampMixin):
     # Country the office operates in (D-034): scopes the directory,
     # marketplace and public stats; see app/jurisdictions.py for the profile
     country: Mapped[str] = mapped_column(String(8), default="XK", server_default="XK", index=True)
+    # Sub-national unit the office sits in (DE: Bundesland code NW/BY/…) —
+    # selects the regional holiday calendar for deadline math; NULL = none
+    region: Mapped[str | None] = mapped_column(String(8))
     # Opaque token for the public intake form URL; null = form disabled
     intake_token: Mapped[str | None] = mapped_column(String(64), unique=True)
     # Office "memory" for Ava (Vincent-Skills-lite): free-text preferences the

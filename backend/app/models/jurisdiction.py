@@ -53,10 +53,18 @@ class DeadlineRule(Base, TimestampMixin):
 
 
 class Holiday(Base):
-    """Public holidays per jurisdiction, used by business-day math."""
+    """Public holidays per jurisdiction, used by business-day math.
+
+    `region` scopes a holiday to a sub-national unit (German Bundesland codes
+    NW/BY/BW/…, ISO 3166-2 without the country prefix); NULL = nation-wide.
+    """
 
     __tablename__ = "holidays"
-    __table_args__ = (UniqueConstraint("jurisdiction_id", "day"),)
+    __table_args__ = (
+        UniqueConstraint(
+            "jurisdiction_id", "day", "region", postgresql_nulls_not_distinct=True
+        ),
+    )
 
     id: Mapped[uuid.UUID] = uuid_pk()
     jurisdiction_id: Mapped[uuid.UUID] = mapped_column(
@@ -64,6 +72,7 @@ class Holiday(Base):
     )
     day: Mapped[date] = mapped_column(Date)
     name: Mapped[dict] = mapped_column(JSONB, default=dict)
+    region: Mapped[str | None] = mapped_column(String(8), index=True)
 
 
 class DocumentTemplate(Base, TimestampMixin):
@@ -126,6 +135,8 @@ class LegalCorpusDoc(Base, TimestampMixin):
     reference: Mapped[str | None] = mapped_column(String(255))  # e.g. "Ligji Nr. 03/L-006"
     source_url: Mapped[str | None] = mapped_column(String(1000))
     language: Mapped[str] = mapped_column(String(8), default="sq")
+    # Sub-national scope (e.g. German Landesrecht: "NW", "BY"); NULL = federal
+    region: Mapped[str | None] = mapped_column(String(8), index=True)
 
     chunks: Mapped[list["LegalCorpusChunk"]] = relationship(
         back_populates="doc", cascade="all, delete-orphan"

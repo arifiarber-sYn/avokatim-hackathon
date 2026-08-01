@@ -14,6 +14,28 @@ export function clientCountry(): Country {
   return countryForHost(window.location.hostname);
 }
 
+/** German Bundesländer (ISO 3166-2 codes without "DE-") — mirrors the
+    `regions` map of the DE profile in backend/app/jurisdictions.py. The
+    office's Land selects the regional holiday calendar for deadlines. */
+export const DE_REGIONS: { code: string; name: string }[] = [
+  { code: "BW", name: "Baden-Württemberg" },
+  { code: "BY", name: "Bayern" },
+  { code: "BE", name: "Berlin" },
+  { code: "BB", name: "Brandenburg" },
+  { code: "HB", name: "Bremen" },
+  { code: "HH", name: "Hamburg" },
+  { code: "HE", name: "Hessen" },
+  { code: "MV", name: "Mecklenburg-Vorpommern" },
+  { code: "NI", name: "Niedersachsen" },
+  { code: "NW", name: "Nordrhein-Westfalen" },
+  { code: "RP", name: "Rheinland-Pfalz" },
+  { code: "SL", name: "Saarland" },
+  { code: "SN", name: "Sachsen" },
+  { code: "ST", name: "Sachsen-Anhalt" },
+  { code: "SH", name: "Schleswig-Holstein" },
+  { code: "TH", name: "Thüringen" },
+];
+
 /** Per-country UX hints for forms (phone prefix, city suggestions). */
 export const COUNTRY_UX: Record<Country, { phonePrefix: string; cities: string[] }> = {
   XK: {

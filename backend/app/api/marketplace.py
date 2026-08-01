@@ -1655,6 +1655,16 @@ async def update_my_profile(
     profile.bio = _scrub_bio(body.bio)
     profile.practice_areas = [a for a in body.practice_areas if a in PRACTICE_AREAS]
     profile.cities = [c.strip() for c in body.cities if c.strip()][:20]
+
+    # Prefill the office's sub-national region (DE Bundesland) from the first
+    # city, once — the explicit picker in settings stays the source of truth.
+    tenant = await db.get(Tenant, user.tenant_id)
+    if tenant is not None and tenant.region is None and profile.cities:
+        from app.jurisdictions import region_for_city
+
+        guess = region_for_city(tenant.country, profile.cities[0])
+        if guess:
+            tenant.region = guess
     profile.languages = [
         loc for loc in body.languages if loc in settings.supported_locales
     ]

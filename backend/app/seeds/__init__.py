@@ -36,11 +36,11 @@ def _merge_name(existing_name: dict | None, seed_name: dict) -> dict | None:
     return merged if merged != current else None
 
 
-def _xk_holidays(year: int) -> list[tuple[date, dict]]:
+def _xk_holidays(year: int) -> list[tuple[date, dict, str | None]]:
     out = []
     for mmdd, name in XK_HOLIDAYS_FIXED:
         month, day = (int(x) for x in mmdd.split("-"))
-        out.append((date(year, month, day), name))
+        out.append((date(year, month, day), name, None))
     return out
 
 
@@ -73,7 +73,7 @@ async def _seed_country(
                 existing_rules[rule["code"]].name = merged
 
     existing_holidays = {
-        h.day: h
+        (h.day, h.region): h
         for h in (
             await db.execute(
                 select(Holiday).where(Holiday.jurisdiction_id == jurisdiction.id)
@@ -82,13 +82,18 @@ async def _seed_country(
     }
     this_year = date.today().year
     for year in (this_year, this_year + 1):
-        for d, name in holidays_for_year(year):
-            if d not in existing_holidays:
-                db.add(Holiday(jurisdiction_id=jurisdiction.id, day=d, name=name))
+        for d, name, region in holidays_for_year(year):
+            if (d, region) not in existing_holidays:
+                db.add(
+                    Holiday(
+                        jurisdiction_id=jurisdiction.id, day=d, name=name,
+                        region=region,
+                    )
+                )
             else:
-                merged = _merge_name(existing_holidays[d].name, name)
+                merged = _merge_name(existing_holidays[(d, region)].name, name)
                 if merged:
-                    existing_holidays[d].name = merged
+                    existing_holidays[(d, region)].name = merged
 
     existing_templates = {
         (t.code, t.locale)

@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.deps import get_current_user
+from app.jurisdictions import is_valid_region
 from app.models import Tenant, User
 from app.services.audit import log_action
 
@@ -21,6 +22,8 @@ class FirmOut(BaseModel):
     address: str | None
     bank_details: str | None = None
     default_vat_rate: int
+    # Sub-national unit (DE: Bundesland code) — regional holiday calendar
+    region: str | None = None
     logo: str | None = None
     require_2fa: bool = False
     # Data protection (Law 06/L-082)
@@ -40,6 +43,7 @@ class FirmUpdate(BaseModel):
     # Bank name + IBAN printed in the payment instructions on invoices
     bank_details: str | None = Field(None, max_length=500)
     default_vat_rate: int | None = Field(None, ge=0, le=30)
+    region: str | None = Field(None, max_length=8)
     # Small logo as a data URL (~max 200 KB) shown on portal + public intake
     logo: str | None = Field(None, max_length=280_000)
     require_2fa: bool | None = None
@@ -67,6 +71,10 @@ async def update_firm(
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Admin only")
     tenant = await db.get(Tenant, user.tenant_id)
     changes = body.model_dump(exclude_unset=True)
+    if "region" in changes and changes["region"]:
+        changes["region"] = changes["region"].upper()
+        if not is_valid_region(tenant.country, changes["region"]):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown region code")
     for k, v in changes.items():
         setattr(tenant, k, v)
     await log_action(

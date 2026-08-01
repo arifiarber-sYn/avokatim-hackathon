@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.matters import get_owned_matter, restricted_visibility_filter
 from app.database import get_db
 from app.deps import get_current_user
-from app.models import Deadline, DeadlineRule, Jurisdiction, Matter, User
+from app.models import Deadline, DeadlineRule, Jurisdiction, Matter, Tenant, User
 from app.schemas.matters import (
     DeadlineFromRuleIn,
     DeadlineIn,
@@ -135,7 +135,10 @@ async def add_deadline_from_rule(
     if rule is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Rule not found")
 
-    due = await compute_due_date(db, rule, body.trigger_date)
+    tenant = await db.get(Tenant, user.tenant_id)
+    due = await compute_due_date(
+        db, rule, body.trigger_date, region=getattr(tenant, "region", None)
+    )
     title = rule.name.get("sq") or rule.code
     deadline = Deadline(
         tenant_id=user.tenant_id,

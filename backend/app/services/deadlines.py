@@ -2,14 +2,24 @@
 only does date math."""
 from datetime import date, datetime, time, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import DeadlineRule, Holiday
 
 
-async def _holiday_set(db: AsyncSession, jurisdiction_id) -> set[date]:
-    rows = await db.execute(select(Holiday.day).where(Holiday.jurisdiction_id == jurisdiction_id))
+async def _holiday_set(
+    db: AsyncSession, jurisdiction_id, region: str | None = None
+) -> set[date]:
+    """Nation-wide holidays, plus the region's own when one is given (DE:
+    court deadlines depend on the Bundesland's holidays, § 222 ZPO)."""
+    stmt = select(Holiday.day).where(
+        Holiday.jurisdiction_id == jurisdiction_id,
+        Holiday.region.is_(None)
+        if region is None
+        else or_(Holiday.region.is_(None), Holiday.region == region),
+    )
+    rows = await db.execute(stmt)
     return {r[0] for r in rows}
 
 
@@ -18,9 +28,10 @@ def _is_business_day(d: date, holidays: set[date]) -> bool:
 
 
 async def compute_due_date(
-    db: AsyncSession, rule: DeadlineRule, trigger_date: date
+    db: AsyncSession, rule: DeadlineRule, trigger_date: date,
+    region: str | None = None,
 ) -> date:
-    holidays = await _holiday_set(db, rule.jurisdiction_id)
+    holidays = await _holiday_set(db, rule.jurisdiction_id, region)
 
     if rule.day_type == "business":
         d = trigger_date

@@ -50,6 +50,14 @@ class JurisdictionProfile:
     # (settings.public_base_url). Used to build absolute links (emails,
     # OAuth returns) that must land on the right country's site.
     public_host: str | None = None
+    # Sub-national units (DE: the 16 Bundesländer, ISO 3166-2 codes without
+    # the "DE-" prefix). Empty = the country has no regional law dimension.
+    # Regional holidays and Landesrecht corpus docs carry these codes in
+    # their `region` column; NULL there means nation-wide/federal.
+    regions: dict[str, str] = field(default_factory=dict)
+    # Default region per city (lowercased key) — a UX prefill only, the
+    # user-picked region is always the source of truth.
+    city_regions: dict[str, str] = field(default_factory=dict)
 
 
 PROFILES: dict[str, JurisdictionProfile] = {
@@ -90,6 +98,42 @@ PROFILES: dict[str, JurisdictionProfile] = {
             "Stuttgart", "Düsseldorf", "Leipzig", "Dortmund", "Essen",
         ),
         public_host="de.avokatiim.ai",
+        regions={
+            "BW": "Baden-Württemberg",
+            "BY": "Bayern",
+            "BE": "Berlin",
+            "BB": "Brandenburg",
+            "HB": "Bremen",
+            "HH": "Hamburg",
+            "HE": "Hessen",
+            "MV": "Mecklenburg-Vorpommern",
+            "NI": "Niedersachsen",
+            "NW": "Nordrhein-Westfalen",
+            "RP": "Rheinland-Pfalz",
+            "SL": "Saarland",
+            "SN": "Sachsen",
+            "ST": "Sachsen-Anhalt",
+            "SH": "Schleswig-Holstein",
+            "TH": "Thüringen",
+        },
+        city_regions={
+            "berlin": "BE", "hamburg": "HH", "münchen": "BY", "köln": "NW",
+            "frankfurt am main": "HE", "frankfurt": "HE", "stuttgart": "BW",
+            "düsseldorf": "NW", "leipzig": "SN", "dortmund": "NW",
+            "essen": "NW", "bremen": "HB", "dresden": "SN", "hannover": "NI",
+            "nürnberg": "BY", "duisburg": "NW", "bochum": "NW",
+            "wuppertal": "NW", "bielefeld": "NW", "bonn": "NW",
+            "münster": "NW", "mannheim": "BW", "karlsruhe": "BW",
+            "augsburg": "BY", "wiesbaden": "HE", "mönchengladbach": "NW",
+            "gelsenkirchen": "NW", "aachen": "NW", "braunschweig": "NI",
+            "kiel": "SH", "chemnitz": "SN", "magdeburg": "ST",
+            "freiburg im breisgau": "BW", "freiburg": "BW", "krefeld": "NW",
+            "mainz": "RP", "lübeck": "SH", "erfurt": "TH",
+            "oberhausen": "NW", "rostock": "MV", "kassel": "HE",
+            "potsdam": "BB", "saarbrücken": "SL", "halle (saale)": "ST",
+            "regensburg": "BY", "würzburg": "BY", "ulm": "BW",
+            "heidelberg": "BW", "osnabrück": "NI", "oldenburg": "NI",
+        },
     ),
 }
 
@@ -110,6 +154,15 @@ def country_for_host(host: str | None) -> str:
 
 def is_valid_country(country: str | None) -> bool:
     return (country or "").upper() in PROFILES
+
+
+def is_valid_region(country: str | None, region: str | None) -> bool:
+    return (region or "").upper() in profile_for(country).regions
+
+
+def region_for_city(country: str | None, city: str | None) -> str | None:
+    """Best-effort region prefill from a free-text city name."""
+    return profile_for(country).city_regions.get((city or "").strip().lower())
 
 
 def public_base_url_for(country: str) -> str:

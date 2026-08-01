@@ -1,9 +1,11 @@
 """Germany (DE) jurisdiction data — D-034. Data, not code (AGENTS.md §5.4).
 
-v1 scope decided in the expansion plan:
-- Federal public holidays only. Court deadlines legally depend on the
-  Bundesland's holidays (§ 222 ZPO -> §§ 187 ff. BGB); Land-specific holidays
-  are a known limitation of v1 and require a `region` column on Holiday.
+Scope:
+- Holidays: the nine nationwide ones (region=None) plus each Bundesland's
+  own via `Holiday.region` (D-035) — court deadlines legally depend on the
+  Land's holidays (§ 222 ZPO -> §§ 187 ff. BGB). Only whole-Land holidays
+  are seeded; municipal/partial ones are omitted (conservative for
+  deadline math, see de_holidays).
 - Month-based statutory deadlines (ZPO/VwGO "1 Monat") are approximated as
   30/60 calendar days because the deadline engine counts days. Every such
   rule carries an explicit note; the computed date can be off by 1-3 days
@@ -28,20 +30,57 @@ def _easter(year: int) -> date:
     return date(year, month, day + 1)
 
 
-def de_holidays(year: int) -> list[tuple[date, dict]]:
-    """The nine nationwide German public holidays for a year."""
+def _buss_und_bettag(year: int) -> date:
+    """The Wednesday before November 23 (Saxony's Feiertagsgesetz § 1)."""
+    d = date(year, 11, 22)
+    while d.weekday() != 2:
+        d -= timedelta(days=1)
+    return d
+
+
+def de_holidays(year: int) -> list[tuple[date, dict, str | None]]:
+    """German public holidays for a year: the nine nationwide ones
+    (region=None) plus each Bundesland's own (region = NW/BY/…)."""
     easter = _easter(year)
-    return [
-        (date(year, 1, 1), {"de": "Neujahr", "en": "New Year", "sq": "Viti i Ri"}),
-        (easter - timedelta(days=2), {"de": "Karfreitag", "en": "Good Friday", "sq": "E Premtja e Zezë"}),
-        (easter + timedelta(days=1), {"de": "Ostermontag", "en": "Easter Monday", "sq": "E Hëna e Pashkëve"}),
-        (date(year, 5, 1), {"de": "Tag der Arbeit", "en": "Labour Day", "sq": "Dita e Punës"}),
-        (easter + timedelta(days=39), {"de": "Christi Himmelfahrt", "en": "Ascension Day", "sq": "Dita e Shëlbimit"}),
-        (easter + timedelta(days=50), {"de": "Pfingstmontag", "en": "Whit Monday", "sq": "E Hëna e Rrëshajëve"}),
-        (date(year, 10, 3), {"de": "Tag der Deutschen Einheit", "en": "German Unity Day", "sq": "Dita e Bashkimit Gjerman"}),
-        (date(year, 12, 25), {"de": "1. Weihnachtstag", "en": "Christmas Day", "sq": "Krishtlindjet"}),
-        (date(year, 12, 26), {"de": "2. Weihnachtstag", "en": "Second Christmas Day", "sq": "Dita e dytë e Krishtlindjeve"}),
+    out: list[tuple[date, dict, str | None]] = [
+        (date(year, 1, 1), {"de": "Neujahr", "en": "New Year", "sq": "Viti i Ri"}, None),
+        (easter - timedelta(days=2), {"de": "Karfreitag", "en": "Good Friday", "sq": "E Premtja e Zezë"}, None),
+        (easter + timedelta(days=1), {"de": "Ostermontag", "en": "Easter Monday", "sq": "E Hëna e Pashkëve"}, None),
+        (date(year, 5, 1), {"de": "Tag der Arbeit", "en": "Labour Day", "sq": "Dita e Punës"}, None),
+        (easter + timedelta(days=39), {"de": "Christi Himmelfahrt", "en": "Ascension Day", "sq": "Dita e Shëlbimit"}, None),
+        (easter + timedelta(days=50), {"de": "Pfingstmontag", "en": "Whit Monday", "sq": "E Hëna e Rrëshajëve"}, None),
+        (date(year, 10, 3), {"de": "Tag der Deutschen Einheit", "en": "German Unity Day", "sq": "Dita e Bashkimit Gjerman"}, None),
+        (date(year, 12, 25), {"de": "1. Weihnachtstag", "en": "Christmas Day", "sq": "Krishtlindjet"}, None),
+        (date(year, 12, 26), {"de": "2. Weihnachtstag", "en": "Second Christmas Day", "sq": "Dita e dytë e Krishtlindjeve"}, None),
     ]
+    # Land-specific holidays (Feiertagsgesetze der Länder). Deliberately
+    # conservative: only holidays valid in the WHOLE Land are seeded —
+    # partial ones (Mariä Himmelfahrt in Bavaria's Catholic municipalities,
+    # Augsburger Friedensfest) are omitted, because treating a working day
+    # as a holiday would compute a LATER due date than the real one.
+    # Ostersonntag/Pfingstsonntag (BB) fall on Sundays — no effect on
+    # business-day math, omitted.
+    for regions, d, name in [
+        (("BW", "BY", "ST"), date(year, 1, 6),
+         {"de": "Heilige Drei Könige", "en": "Epiphany", "sq": "Tre Mbretërit"}),
+        (("BE", "MV"), date(year, 3, 8),
+         {"de": "Internationaler Frauentag", "en": "International Women's Day", "sq": "Dita e Gruas"}),
+        (("BW", "BY", "HE", "NW", "RP", "SL"), easter + timedelta(days=60),
+         {"de": "Fronleichnam", "en": "Corpus Christi", "sq": "Korpus Kristi"}),
+        (("SL",), date(year, 8, 15),
+         {"de": "Mariä Himmelfahrt", "en": "Assumption Day", "sq": "Të Ngjiturit e Shën Marisë"}),
+        (("TH",), date(year, 9, 20),
+         {"de": "Weltkindertag", "en": "World Children's Day", "sq": "Dita Botërore e Fëmijëve"}),
+        (("BB", "HB", "HH", "MV", "NI", "SH", "SN", "ST", "TH"), date(year, 10, 31),
+         {"de": "Reformationstag", "en": "Reformation Day", "sq": "Dita e Reformacionit"}),
+        (("BW", "BY", "NW", "RP", "SL"), date(year, 11, 1),
+         {"de": "Allerheiligen", "en": "All Saints' Day", "sq": "Të Gjithë Shenjtorët"}),
+        (("SN",), _buss_und_bettag(year),
+         {"de": "Buß- und Bettag", "en": "Day of Repentance and Prayer", "sq": "Dita e Pendimit dhe Lutjes"}),
+    ]:
+        for region in regions:
+            out.append((d, name, region))
+    return out
 
 
 DE_JURISDICTION = {

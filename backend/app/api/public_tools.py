@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.marketplace import _ip, _rate_limit
 from app.config import PROJECT_DIR
 from app.database import get_db
-from app.jurisdictions import country_from_request
+from app.jurisdictions import country_from_request, is_valid_region
 from app.models import DeadlineRule, Jurisdiction
 from app.seeds.citizen_docs import CITIZEN_DOC_TEMPLATES
 from app.seeds.germany import DE_CITIZEN_DOC_TEMPLATES
@@ -63,6 +63,8 @@ async def public_deadline_rules(request: Request, db: AsyncSession = Depends(get
 class CalcIn(BaseModel):
     rule_id: uuid.UUID
     trigger_date: date
+    # Optional sub-national unit (DE Bundesland) for regional holidays
+    region: str | None = Field(default=None, max_length=8)
 
 
 @router.post("/deadline-calc")
@@ -73,7 +75,10 @@ async def public_deadline_calc(
     rule = await db.get(DeadlineRule, body.rule_id)
     if rule is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Rule not found")
-    due = await compute_due_date(db, rule, body.trigger_date)
+    region = body.region.upper() if body.region else None
+    if region and not is_valid_region(country_from_request(request), region):
+        region = None
+    due = await compute_due_date(db, rule, body.trigger_date, region=region)
     return {
         "due_date": due.isoformat(),
         "days": rule.days,

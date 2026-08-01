@@ -9,7 +9,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.jurisdictions import jurisdiction_row_for_tenant
+from app.jurisdictions import is_valid_region, jurisdiction_row_for_tenant
 from app.deps import get_current_user, require_superadmin
 from app.models import Jurisdiction, LegalCorpusChunk, LegalCorpusDoc, User
 from app.services import rag
@@ -36,6 +36,8 @@ class CorpusDocIn(BaseModel):
     reference: str | None = None
     source_url: str | None = None
     language: str = "sq"
+    # Sub-national scope (DE Landesrecht: Bundesland code); None = federal
+    region: str | None = Field(default=None, max_length=8)
     text: str = Field(min_length=10)
 
 
@@ -45,6 +47,7 @@ class CorpusDocOut(BaseModel):
     doc_type: str
     reference: str | None
     language: str
+    region: str | None = None
     chunk_count: int = 0
 
     model_config = {"from_attributes": True}
@@ -121,6 +124,9 @@ async def add_corpus_doc(
     ).scalar_one_or_none()
     if jurisdiction is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Jurisdiction not found")
+    region = body.region.upper() if body.region else None
+    if region and not is_valid_region(body.jurisdiction_code, region):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown region code")
 
     doc = LegalCorpusDoc(
         jurisdiction_id=jurisdiction.id,
@@ -129,6 +135,7 @@ async def add_corpus_doc(
         reference=body.reference,
         source_url=body.source_url,
         language=body.language,
+        region=region,
     )
     db.add(doc)
     await db.flush()

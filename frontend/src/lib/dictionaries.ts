@@ -344,6 +344,8 @@ const sq = {
   fiscalNumber: "Numri fiskal (NUI)",
   vatNumber: "Numri i TVSH-së",
   defaultVatRate: "Norma e TVSH-së (%)",
+  firmRegion: "Landi federal (Bundesland)",
+  firmRegionHint: "Përcakton kalendarin e festave për llogaritjen e afateve.",
   vat: "TVSH",
   // Data import
   dataImport: "Importi i të dhënave",
@@ -1512,6 +1514,8 @@ const en: typeof sq = {
   fiscalNumber: "Fiscal number (NUI)",
   vatNumber: "VAT number",
   defaultVatRate: "VAT rate (%)",
+  firmRegion: "Federal state (Bundesland)",
+  firmRegionHint: "Sets the holiday calendar used for deadline calculation.",
   vat: "VAT",
   dataImport: "Data import",
   dataImportHint:
@@ -2659,6 +2663,8 @@ const zh: typeof sq = {
   fiscalNumber: "税号（NUI）",
   vatNumber: "增值税号",
   defaultVatRate: "增值税率（%）",
+  firmRegion: "联邦州（Bundesland）",
+  firmRegionHint: "决定期限计算所用的节假日日历。",
   vat: "增值税",
   dataImport: "数据导入",
   dataImportHint: "从Excel/Word迁移现有客户和案件：保存为CSV后在此上传。下载模板查看正确格式。",
@@ -3808,6 +3814,8 @@ const sr: typeof sq = {
   fiscalNumber: "Fiskalni broj (NUI)",
   vatNumber: "PDV broj",
   defaultVatRate: "Stopa PDV-a (%)",
+  firmRegion: "Savezna pokrajina (Bundesland)",
+  firmRegionHint: "Određuje kalendar praznika za obračun rokova.",
   vat: "PDV",
   dataImport: "Uvoz podataka",
   dataImportHint:
@@ -4960,6 +4968,8 @@ const tr: typeof sq = {
   fiscalNumber: "Mali numara (NUI)",
   vatNumber: "KDV numarası",
   defaultVatRate: "KDV oranı (%)",
+  firmRegion: "Eyalet (Bundesland)",
+  firmRegionHint: "Süre hesaplamasında kullanılan tatil takvimini belirler.",
   vat: "KDV",
   dataImport: "Veri içe aktarma",
   dataImportHint:
@@ -6112,6 +6122,8 @@ const bs: typeof sq = {
   fiscalNumber: "Fiskalni broj (NUI)",
   vatNumber: "PDV broj",
   defaultVatRate: "Stopa PDV-a (%)",
+  firmRegion: "Savezna pokrajina (Bundesland)",
+  firmRegionHint: "Određuje kalendar praznika za obračun rokova.",
   vat: "PDV",
   dataImport: "Uvoz podataka",
   dataImportHint:
@@ -7264,6 +7276,8 @@ const de: typeof sq = {
   fiscalNumber: "Steuernummer",
   vatNumber: "USt-IdNr.",
   defaultVatRate: "MwSt.-Satz (%)",
+  firmRegion: "Bundesland",
+  firmRegionHint: "Bestimmt den Feiertagskalender für die Fristenberechnung.",
   vat: "MwSt.",
   dataImport: "Datenimport",
   dataImportHint:

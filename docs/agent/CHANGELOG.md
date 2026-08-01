@@ -3,6 +3,30 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Landesrecht (D-035) phases 1–3: region schema, Land holidays, NRW+BY corpus
+
+- New `region` dimension (Bundesland codes, NULL = nation-wide/federal):
+  columns on `Holiday` (unique now `(jurisdiction_id, day, region)` NULLS NOT
+  DISTINCT), `LegalCorpusDoc`, `Tenant`; Alembic `cb917eb4a318`. DE profile
+  in `jurisdictions.py` gains the 16-Länder registry + city→Land prefill map
+  (`region_for_city`); `POST /corpus` accepts validated `region`.
+- Land holidays 2026–27 seeded per Land (Heilige Drei Könige, Fronleichnam,
+  Allerheiligen, Reformationstag, Mariä Himmelfahrt SL, Frauentag BE/MV,
+  Buß- und Bettag SN, Weltkindertag TH) — whole-Land holidays only,
+  conservative for deadline math. `_holiday_set`/`compute_due_date` take
+  `region`; matter deadlines use `tenant.region`, public calculator accepts
+  optional `region`. Settings shows a Bundesland picker for DE offices
+  (`firmRegion` in all 7 locales); first saved profile city prefills it.
+- New `scripts/import_de_landesrecht.py`: portal-adapter architecture —
+  NRW (recht.nrw.de lrgv pages, § blocks from `field--field_num`/
+  `field--name-field-text`) and Bayern (gesetze-bayern.de
+  `/Content/Document/{slug}/true`, `paraheading` blocks). 20 curated acts
+  imported (10 per Land: Polizei, Bauordnung, Schule, Nachbarrecht, Kita,
+  Ladenöffnung, Feiertage, Datenschutz, Gemeindeordnung, Presse), ~2,900
+  chunks tagged with their region.
+- Verified: regional deadline test (Allerheiligen 2027-11-01: NW extends to
+  11-02, NI stays 11-01); clean chunk text on both portals.
+
 ## 2026-08-01 — DE corpus wave 2: +20 citizen-topic acts + DSGVO, Ava language fix
 
 - `import_de_laws.py`: 20 new federal acts for high-frequency citizen topics
