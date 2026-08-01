@@ -187,7 +187,7 @@ export default function Home() {
               </ul>
               <Link
                 href="/per-qytetaret"
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-700 hover:text-indigo-900"
+                className="inline-flex items-center gap-1.5 py-2 text-sm font-semibold text-indigo-700 hover:text-indigo-900"
               >
                 {t.umbCitizenCta}
                 <IconArrowRight className="h-4 w-4" />
@@ -210,7 +210,7 @@ export default function Home() {
               </ul>
               <Link
                 href="/per-avokatet"
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-300 hover:text-indigo-200"
+                className="inline-flex items-center gap-1.5 py-2 text-sm font-semibold text-indigo-300 hover:text-indigo-200"
               >
                 {t.umbLawyerCta}
                 <IconArrowRight className="h-4 w-4" />
@@ -295,7 +295,7 @@ export default function Home() {
           </ul>
           <Link
             href="/siguria"
-            className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-300 hover:text-indigo-200"
+            className="mt-5 inline-flex items-center gap-1.5 py-2 text-sm font-semibold text-indigo-300 hover:text-indigo-200"
           >
             {t.landPrivLink}
             <IconArrowRight className="h-4 w-4" />

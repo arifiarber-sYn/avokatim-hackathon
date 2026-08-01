@@ -817,6 +817,14 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
 ## Known issues / caveats
 
+- **Frontend restart discipline** (incident 2026-08-01): after `npm run
+  build` you MUST `systemctl --user restart avokatim-frontend` — restarting
+  `avokatim` (backend-only unit) leaves the old `next-server` serving 404
+  chunks over the new build. Mobile audit 2026-08-01 (JOURNAL i): SEO is
+  per-host now (D-039, `lib/seo.ts`); `/ava` no longer crashes on browsers
+  without `crypto.randomUUID`; tap-targets ≥ 24 px on public + app pages.
+  Legal pages (kushtet/privatesia/impressum/kontakti) still have static
+  Albanian metadata on the DE host.
 - ~~`start.sh` skips `npm run build`~~ fixed 2026-07-07: `start.sh` now rebuilds
   automatically when any file in `frontend/src`/`public` is newer than
   `.next/BUILD_ID`, and kills the stale `next-server` before starting a fresh one

@@ -10,6 +10,41 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01i — Auditim mobil i plotë (DE i pari, pastaj XK) — D-039 SEO per-host (Cursor / Fable 5)
+
+- Done: auditim i webit në telefon me Chromium headless (iPhone 14 viewport,
+  Playwright) mbi të dy hostet: DE publik (16 faqe), app-i i avokatit DE
+  (12 faqe pas login-it real në UI), XK publik + qytetar (17 faqe).
+  Screenshot + kontroll automatik për overflow horizontal, tap-targets < 24 px
+  (WCAG 2.2), fonte < 11 px, viewport meta, gabime konsole.
+- Gjetje kritike të rregulluara:
+  1. `/ava` crash-onte totalisht ("This page couldn't load") në browser-ë pa
+     `crypto.randomUUID` (iOS < 15.4, WebView të vjetër, http jo-lokal) —
+     tani ka fallback të thjeshtë hex për session id.
+  2. SEO/lang per-host (D-039): hosti DE jepte `<html lang="sq">`, tituj
+     shqip dhe JSON-LD "Kosovo". Tani root layout + 7 layout-et publike
+     (`ava`, `afatet`, `avokatet`, `dokumentet`, `per-avokatet`,
+     `per-qytetaret`, `posto-rastin`) lexojnë `x-avokatim-country` përmes
+     `serverCountry()` (lib/seo.ts) dhe japin gjermanisht në DE.
+  3. Sitemap/robots per-host: DE merrte URL-t e Kosovës + `/apliko` (404) në
+     sitemap; JSON-LD i drejtorisë listonte avokatët XK në hostin DE (fetch
+     pa country header). Të gjitha të ndara sipas vendit tani.
+  4. `next-server` i vjetër mbi build të ri (chunks 404) — shkaku: restart i
+     `avokatim` (vetëm backend) në vend të `avokatim-frontend` pas build-it.
+  5. `/platform` për tenant jo-pronar: spinner i pafund pas 403 → tani
+     shfaq gabimin.
+- Rregullime UX mobile: tap-targets u zmadhuan (footer links, PageIntro,
+  checkbox-et RVG/consent, lidhjet e dashboard-it, butonat e settings,
+  "Harrova fjalëkalimin", banner-i i verifikimit të email-it); etiketa DE e
+  tab-it "Einstellen" → "Fall posten" (lexohej si "cilësimet").
+- Verified: tsc + build OK; auditimi u ri-ekzekutua pas fix-eve — 0 gabime
+  konsole, 0 overflow, asnjë tap-target < 24 px përveç lidhjes inline
+  "Datenschutzerklärung" (përjashtim i lejuar WCAG); sitemap DE/XK të sakta;
+  titujt/lang SSR të saktë për të dy hostet. Tenant-i testues u fshi.
+- Left open: metadata e faqeve ligjore (kushtet/privatesia/impressum/kontakti)
+  ende statike shqip edhe në DE (noindex s'janë, por dëm i vogël); bottom-nav
+  10 px etiketa mbetet me vetëdije (konventë tab-bar iOS).
+
 ## 2026-08-01h — Zëri shumëgjuhësh: Whisper standard për jo-shqip + Piper 6 gjuhë (D-038) (Cursor / Fable 5)
 
 - Done: matje me audio reale gjermane (Piper thorsten si sinjal testi) —

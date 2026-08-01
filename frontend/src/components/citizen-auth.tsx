@@ -222,7 +222,7 @@ export default function CitizenAuthForm({
               checked={acceptPrivacy}
               onChange={(e) => setAcceptPrivacy(e.target.checked)}
               required
-              className="mt-0.5 accent-indigo-600"
+              className="mt-0.5 h-4 w-4 shrink-0 accent-indigo-600"
             />
             <span>
               {t.acceptPrivacyIntake} —{" "}
@@ -246,7 +246,7 @@ export default function CitizenAuthForm({
 
       {mode === "login" && (
         <button
-          className="text-xs text-slate-500 hover:text-indigo-600 hover:underline"
+          className="py-1.5 text-xs text-slate-500 hover:text-indigo-600 hover:underline"
           onClick={() => setMode("forgot")}
           type="button"
         >
@@ -255,7 +255,7 @@ export default function CitizenAuthForm({
       )}
       {mode === "forgot" && (
         <button
-          className="text-xs text-slate-500 hover:text-indigo-600 hover:underline"
+          className="py-1.5 text-xs text-slate-500 hover:text-indigo-600 hover:underline"
           onClick={() => setMode("login")}
           type="button"
         >

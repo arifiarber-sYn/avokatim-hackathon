@@ -106,7 +106,7 @@ function CitizenLoginInner() {
           </Card>
         )}
         <p className="text-center text-xs text-slate-400">
-          <Link href="/login" className="hover:text-indigo-600 hover:underline">
+          <Link href="/login" className="inline-block py-1.5 hover:text-indigo-600 hover:underline">
             {t.acctIsLawyer}
           </Link>
         </p>

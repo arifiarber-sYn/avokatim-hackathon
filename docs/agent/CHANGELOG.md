@@ -3,6 +3,30 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Full mobile web audit (DE first, then XK) + per-host SEO (D-039)
+
+- Audited both hosts on a real mobile viewport (Playwright, iPhone 14):
+  DE public (16 pages), DE lawyer app (12 pages, logged in through the UI),
+  XK public + citizen (17 pages). Automated checks: horizontal overflow,
+  tap targets < 24 px, fonts < 11 px, viewport meta, console errors.
+- Fixed critical: `/ava` hard-crashed on browsers without
+  `crypto.randomUUID` (iOS < 15.4, old WebViews) — hex fallback in
+  `app/ava/page.tsx`. DE host served Albanian `<html lang>`, titles,
+  JSON-LD, sitemap and even XK lawyers in the directory ItemList — new
+  `lib/seo.ts` (`serverCountry()`), root + 7 public layouts, `sitemap.ts`,
+  `robots.ts` now resolve per host; server-side JSON-LD/sitemap fetches
+  pass the country header. Removed dead `/apliko` from the sitemap.
+- Fixed UX: `/platform` showed an endless spinner on 403; tap targets
+  enlarged (footer, PageIntro, RVG/consent checkboxes, dashboard links,
+  settings buttons, citizen auth links, email-verification banner); DE
+  bottom-nav label "Einstellen" → "Fall posten".
+- Ops root-cause: a stale `next-server` over a new build (404 chunks) came
+  from restarting `avokatim` instead of `avokatim-frontend` after builds.
+- Files: `frontend/src/lib/seo.ts` (new), `app/layout.tsx`, 7 public
+  layouts, `sitemap.ts`, `robots.ts`, `app/ava/page.tsx`,
+  `app/(app)/platform/page.tsx`, tap-target touch-ups across public/app
+  pages, `lib/dictionaries.ts` (pnPost de).
+
 ## 2026-08-01 — Investor presentation for the German market (docs/pitch)
 
 - New `docs/pitch/prezantimi-investitori-gjermani.md`: full Albanian

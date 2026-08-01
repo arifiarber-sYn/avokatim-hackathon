@@ -21,7 +21,13 @@ interface ChatMsg {
 function sessionId(): string {
   let id = localStorage.getItem("avokatim_ava_session");
   if (!id) {
-    id = crypto.randomUUID().replace(/-/g, "").slice(0, 32);
+    // crypto.randomUUID only exists in secure contexts and newer browsers
+    // (iOS ≥ 15.4) — a hard crash here took the whole page down on old
+    // phones. This is a chat-session key, not a security token.
+    id =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID().replace(/-/g, "").slice(0, 32)
+        : Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
     localStorage.setItem("avokatim_ava_session", id);
   }
   return id;

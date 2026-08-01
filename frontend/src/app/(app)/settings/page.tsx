@@ -745,7 +745,7 @@ function FirmSection() {
             )}
             <input type="file" accept="image/*" onChange={onLogoFile} className="text-xs" />
             {logo && (
-              <button type="button" onClick={() => setLogo(null)} className="text-xs text-red-600 hover:underline">
+              <button type="button" onClick={() => setLogo(null)} className="py-1.5 text-xs text-red-600 hover:underline">
                 {t.remove}
               </button>
             )}
@@ -846,7 +846,7 @@ function ImportSection() {
             <button
               type="button"
               onClick={() => templateCsv(kind)}
-              className="block text-xs text-indigo-600 hover:underline"
+              className="block py-1.5 text-xs text-indigo-600 hover:underline"
             >
               {t.downloadTemplate}
             </button>
@@ -1073,14 +1073,14 @@ function TeamSection() {
               {m.invite_pending ? (
                 <button
                   onClick={() => resendInvite(m)}
-                  className="text-xs text-indigo-600 hover:underline"
+                  className="py-1.5 text-xs text-indigo-600 hover:underline"
                 >
                   {t.resendInvite}
                 </button>
               ) : (
                 <button
                   onClick={() => toggleActive(m)}
-                  className={`text-xs hover:underline ${m.is_active ? "text-red-600" : "text-emerald-600"}`}
+                  className={`py-1.5 text-xs hover:underline ${m.is_active ? "text-red-600" : "text-emerald-600"}`}
                 >
                   {m.is_active ? t.deactivate : t.activate}
                 </button>
@@ -1716,7 +1716,7 @@ function PublicProfileSection({ isNotary = false }: { isNotary?: boolean }) {
               <button
                 type="button"
                 onClick={() => setFlatServices((prev) => [...prev, { title: "", price: "" }])}
-                className="text-xs text-indigo-600 hover:underline font-medium"
+                className="py-1.5 text-xs text-indigo-600 hover:underline font-medium"
               >
                 + {t.fsAdd}
               </button>

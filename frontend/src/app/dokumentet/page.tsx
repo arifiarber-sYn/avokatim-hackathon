@@ -112,7 +112,7 @@ export default function CitizenDocsPage() {
                           <IconDoc className="h-5 w-5 text-indigo-600 shrink-0" />
                           <p className="font-semibold text-slate-900 flex-1">{loc(tpl.name)}</p>
                           {tpl.requires_notary && (
-                            <span className="text-[10px] font-semibold bg-amber-100 text-amber-800 rounded-full px-2 py-0.5 shrink-0">
+                            <span className="text-[11px] font-semibold bg-amber-100 text-amber-800 rounded-full px-2 py-0.5 shrink-0">
                               {t.pnNotaries}
                             </span>
                           )}

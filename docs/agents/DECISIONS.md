@@ -937,3 +937,24 @@
 - Consequences: voice Ava is fully functional in sq/de/en/tr/sr/zh with
   local neural voices; CUDA greedy decode is not bit-stable word-for-word
   (tests assert sentence frames, not single words).
+
+## D-039: Per-host SEO — dynamic root layout via x-avokatim-country (2026-08-01)
+
+- Context: the mobile audit found the DE host serving `<html lang="sq">`,
+  Albanian titles/descriptions, Kosovo JSON-LD, a sitemap with Kosovo URLs
+  (plus the dead `/apliko` link) and an Attorney ItemList containing XK
+  lawyers. For a German market launch this is disqualifying: crawlers and
+  AI assistants would classify de.avokatiim.ai as an Albanian site.
+- Decision: SEO surfaces are resolved per request from the
+  `x-avokatim-country` header the proxy already sets (D-034). New
+  `lib/seo.ts` exposes `serverCountry()` + `COUNTRY_BASE_URL`; the root
+  layout, the 7 public layouts with page metadata, `sitemap.ts` and
+  `robots.ts` switched from static exports to async `generateMetadata`/
+  functions reading it. Server-side fetches for JSON-LD/sitemap now pass
+  the country header explicitly (they'd otherwise fall back to XK).
+- Consequences: those routes render dynamically (headers() is a
+  request-time API) — fine, we serve through Next ourselves, no static
+  CDN. Adding a jurisdiction means adding its strings to the layouts and
+  its base URL to `COUNTRY_BASE_URL`. Legal pages (kushtet/privatesia/
+  impressum/kontakti) still have static Albanian metadata — acceptable for
+  now, tracked in JOURNAL 2026-08-01i.

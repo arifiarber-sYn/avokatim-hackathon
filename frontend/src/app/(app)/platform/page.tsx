@@ -71,7 +71,9 @@ export default function PlatformPage() {
     }
   }
 
-  if (tenants === null) return <Spinner />;
+  // A non-owner tenant gets 403 here — show the error instead of an
+  // endless spinner (found in the 2026-08 mobile audit).
+  if (tenants === null) return error ? <ErrorNote message={error} /> : <Spinner />;
 
   return (
     <div className="space-y-6">

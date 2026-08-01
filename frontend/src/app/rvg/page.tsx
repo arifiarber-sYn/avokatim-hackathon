@@ -138,12 +138,12 @@ export default function RvgCalcPage() {
                   {items
                     .filter((item) => item.group === group.key)
                     .map((item) => (
-                      <label key={item.code} className="flex items-center gap-2 text-sm text-slate-700">
+                      <label key={item.code} className="flex items-center gap-2 py-1 text-sm text-slate-700">
                         <input
                           type="checkbox"
                           checked={selected.includes(item.code)}
                           onChange={() => toggle(item.code)}
-                          className="rounded border-slate-300"
+                          className="h-4 w-4 shrink-0 rounded border-slate-300"
                         />
                         <span>
                           {label(item.name)}{" "}

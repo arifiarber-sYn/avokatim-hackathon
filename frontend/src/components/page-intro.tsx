@@ -61,7 +61,7 @@ export default function PageIntro({
       <button
         type="button"
         onClick={reopen}
-        className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-indigo-600 transition"
+        className="inline-flex items-center gap-1.5 py-1.5 text-xs text-slate-400 hover:text-indigo-600 transition"
       >
         <InfoIcon className="h-3.5 w-3.5" />
         {t.introShow}
@@ -81,7 +81,7 @@ export default function PageIntro({
           <button
             type="button"
             onClick={dismiss}
-            className="mt-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900"
+            className="mt-1 py-1.5 text-xs font-semibold text-indigo-700 hover:text-indigo-900"
           >
             {t.introHide}
           </button>

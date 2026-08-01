@@ -19,7 +19,8 @@ export default function PublicFooter() {
   const isDE = country === "DE";
 
   const col = "space-y-2 text-sm";
-  const link = "block text-slate-400 hover:text-white transition-colors";
+  // py-1 keeps every footer link at a ≥28px tap target on phones (WCAG 2.2)
+  const link = "block py-1 text-slate-400 hover:text-white transition-colors";
 
   return (
     <footer className="bg-slate-900 text-slate-300 mt-16">

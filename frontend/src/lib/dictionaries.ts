@@ -8267,7 +8267,8 @@ const de: typeof sq = {
   mkForLawyersLink: "Für Anwälte",
   mkHeroTitle: "Rechtshilfe, kostenlos und sofort",
   pnLawyers: "Anwälte",
-  pnPost: "Einstellen",
+  // "Einstellen" alone reads as "settings" in a tab bar — spell out the action
+  pnPost: "Fall posten",
   lpTitle: "Die ganze Kanzlei in Ihrer Hand — mit der Kraft der KI",
   lpSubtitle: "AvokatIM gibt Ihnen die Kraft einer ganzen Kanzlei: Akten, Fristen, Dokumente, Abrechnung und neue Mandanten von Bürgern — auf einer einzigen Plattform, in Ihrer Sprache.",
   obTitle: "Willkommen bei AvokatIM",

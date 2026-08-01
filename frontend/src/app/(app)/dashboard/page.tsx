@@ -122,7 +122,7 @@ function WhatsNewCard() {
         </h2>
         <button
           onClick={dismiss}
-          className="text-slate-400 hover:text-slate-600 text-lg leading-none shrink-0"
+          className="text-slate-400 hover:text-slate-600 text-lg leading-none shrink-0 p-2 -m-2"
           aria-label={t.introHide}
         >
           ×
@@ -131,13 +131,13 @@ function WhatsNewCard() {
       <div className="grid sm:grid-cols-2 gap-4 mt-3">
         <div className="text-sm space-y-1.5">
           <p className="text-slate-700">{t.wnPrepare}</p>
-          <Link href="/matters" className="inline-block font-semibold text-violet-700 hover:underline">
+          <Link href="/matters" className="inline-block py-1.5 font-semibold text-violet-700 hover:underline">
             {t.wnPrepareCta} →
           </Link>
         </div>
         <div className="text-sm space-y-1.5">
           <p className="text-slate-700">{t.wnStyle}</p>
-          <Link href="/settings#grp-ai" className="inline-block font-semibold text-violet-700 hover:underline">
+          <Link href="/settings#grp-ai" className="inline-block py-1.5 font-semibold text-violet-700 hover:underline">
             {t.wnStyleCta} →
           </Link>
         </div>
@@ -286,7 +286,7 @@ export default function DashboardPage() {
                 localStorage.setItem("avokatim_welcome_done", "1");
                 setWelcome(false);
               }}
-              className="text-slate-400 hover:text-slate-600 text-lg leading-none"
+              className="text-slate-400 hover:text-slate-600 text-lg leading-none p-2 -m-2"
             >
               ✕
             </button>

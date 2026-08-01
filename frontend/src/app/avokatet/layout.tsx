@@ -1,13 +1,23 @@
 import type { Metadata } from "next";
+import type { Country } from "@/lib/country";
+import { COUNTRY_BASE_URL, serverCountry } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Avokatët e verifikuar në Kosovë — drejtoria publike",
-  description:
-    "Gjej avokat të verifikuar nga Oda e Avokatëve të Kosovës sipas fushës, " +
-    "qytetit dhe gjuhës. Recensione klientësh, çmime transparente dhe kontakt " +
-    "i drejtpërdrejtë — falas për qytetarët.",
-  alternates: { canonical: "/avokatet" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const de = (await serverCountry()) === "DE";
+  return {
+    title: de
+      ? "Geprüfte Anwälte in Deutschland — das öffentliche Verzeichnis"
+      : "Avokatët e verifikuar në Kosovë — drejtoria publike",
+    description: de
+      ? "Finden Sie einen zugelassenen Anwalt nach Rechtsgebiet, Stadt und " +
+        "Sprache. Mandantenbewertungen, transparente Profile und direkter " +
+        "Kontakt — kostenlos für Bürger."
+      : "Gjej avokat të verifikuar nga Oda e Avokatëve të Kosovës sipas fushës, " +
+        "qytetit dhe gjuhës. Recensione klientësh, çmime transparente dhe kontakt " +
+        "i drejtpërdrejtë — falas për qytetarët.",
+    alternates: { canonical: "/avokatet" },
+  };
+}
 
 interface PublicLawyer {
   full_name: string;
@@ -22,10 +32,12 @@ interface PublicLawyer {
 
 /** ItemList of Attorney entries — the structured data AI search assistants
  * read when building "lawyer in Prishtinë" shortlists (GEO). Server-rendered
- * so crawlers that don't execute JS still see it; refreshed hourly. */
-async function directoryJsonLd(): Promise<string | null> {
+ * so crawlers that don't execute JS still see it; refreshed hourly. The
+ * country header keeps each host's list scoped to its own lawyers (D-034). */
+async function directoryJsonLd(country: Country): Promise<string | null> {
   try {
     const res = await fetch("http://127.0.0.1:8000/api/public/lawyers", {
+      headers: { "x-avokatim-country": country },
       next: { revalidate: 3600 },
     });
     if (!res.ok) return null;
@@ -33,7 +45,10 @@ async function directoryJsonLd(): Promise<string | null> {
     return JSON.stringify({
       "@context": "https://schema.org",
       "@type": "ItemList",
-      name: "Avokatët e verifikuar në AvokatIM",
+      name:
+        country === "DE"
+          ? "Geprüfte Anwälte bei AvokatIM"
+          : "Avokatët e verifikuar në AvokatIM",
       numberOfItems: lawyers.length,
       itemListElement: lawyers.map((l, i) => ({
         "@type": "ListItem",
@@ -41,9 +56,9 @@ async function directoryJsonLd(): Promise<string | null> {
         item: {
           "@type": "Attorney",
           name: l.firm_name || l.full_name,
-          url: "https://avokatiim.ai/avokatet",
+          url: `${COUNTRY_BASE_URL[country]}/avokatet`,
           address: l.cities.length
-            ? { "@type": "PostalAddress", addressLocality: l.cities[0], addressCountry: "XK" }
+            ? { "@type": "PostalAddress", addressLocality: l.cities[0], addressCountry: country }
             : undefined,
           knowsLanguage: l.languages,
           knowsAbout: l.practice_areas,
@@ -65,7 +80,7 @@ async function directoryJsonLd(): Promise<string | null> {
 }
 
 export default async function AvokatetLayout({ children }: { children: React.ReactNode }) {
-  const jsonLd = await directoryJsonLd();
+  const jsonLd = await directoryJsonLd(await serverCountry());
   return (
     <>
       {jsonLd && (

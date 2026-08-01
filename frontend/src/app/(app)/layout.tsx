@@ -215,7 +215,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               onClick={() => {
                 apiPost("/auth/resend-verification", {}).catch(() => {});
               }}
-              className="text-sky-700 underline text-xs"
+              className="text-sky-700 underline text-xs py-1.5 -my-1.5"
             >
               {t.resendVerification}
             </button>
