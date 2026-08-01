@@ -111,6 +111,7 @@ export default function SettingsPage() {
             <PortalSection />
             {isAdmin && <SubscriptionSection />}
             {isAdmin && <ComplianceSection />}
+            {isAdmin && <KiUsageSection />}
             {isAdmin && <AuditLogSection />}
             {isAdmin && <ExportSection />}
           </SettingsGroup>
@@ -484,6 +485,115 @@ function AuditLogSection() {
               </tbody>
             </table>
           </div>
+        </>
+      )}
+    </Card>
+  );
+}
+
+interface KiUsage {
+  since: string;
+  days: number;
+  total: number;
+  provider: {
+    name: string;
+    external: boolean;
+    embeddings: string;
+    allow_external_ai: boolean;
+  };
+  actions: { action: string; count: number; last_at: string }[];
+  users: { name: string; count: number }[];
+}
+
+/** BRAK KI-Leitfaden / GDPR: the office's own AI usage register, derived
+    from the audit trail — provider, data locality, per-action counts. */
+function KiUsageSection() {
+  const { t } = useI18n();
+  const [days, setDays] = useState("90");
+  const [data, setData] = useState<KiUsage | null>(null);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    apiGet<KiUsage>(`/firm/ai-usage?days=${days}`).then(setData).catch(() => {});
+  }, [open, days]);
+
+  return (
+    <Card className="p-5 space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="font-semibold">{t.kiuTitle}</h2>
+          <p className="text-xs text-slate-500 mt-0.5">{t.kiuHint}</p>
+        </div>
+        <Button variant="secondary" onClick={() => setOpen(!open)}>
+          {open ? t.close : t.show}
+        </Button>
+      </div>
+      {open && data && (
+        <>
+          <div className="flex items-end gap-3 flex-wrap">
+            <div className="w-36">
+              <Label>{t.kiuDays}</Label>
+              <Select value={days} onChange={(e) => setDays(e.target.value)}>
+                {["30", "90", "180", "365"].map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </Select>
+            </div>
+            <Button
+              variant="secondary"
+              onClick={() =>
+                apiDownload(`/firm/ai-usage.csv?days=${days}`, `ki-nutzung-${days}d.csv`)
+              }
+            >
+              {t.kiuExport}
+            </Button>
+          </div>
+          <p className="text-sm font-medium text-slate-700">
+            {t.kiuTotal
+              .replace("{n}", String(data.total))
+              .replace("{days}", String(data.days))}
+          </p>
+          <div className="text-xs text-slate-600 space-y-1">
+            <p>
+              {t.kiuProvider}:{" "}
+              <span className="font-mono">{data.provider.name}</span> —{" "}
+              {data.provider.external ? t.kiuExternal : t.kiuLocal}
+            </p>
+            <p>{t.kiuEmbeddings}</p>
+          </div>
+          {data.total === 0 ? (
+            <p className="text-xs text-slate-400">{t.kiuEmpty}</p>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 mb-1.5">
+                  {t.kiuByAction}
+                </p>
+                <ul className="space-y-1 text-xs">
+                  {data.actions.map((a) => (
+                    <li key={a.action} className="flex justify-between gap-2">
+                      <span className="font-mono truncate">{a.action}</span>
+                      <span className="text-slate-500 shrink-0">{a.count}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-500 mb-1.5">
+                  {t.kiuByUser}
+                </p>
+                <ul className="space-y-1 text-xs">
+                  {data.users.map((u) => (
+                    <li key={u.name} className="flex justify-between gap-2">
+                      <span className="truncate">{u.name}</span>
+                      <span className="text-slate-500 shrink-0">{u.count}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
         </>
       )}
     </Card>

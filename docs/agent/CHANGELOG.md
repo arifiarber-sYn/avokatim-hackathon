@@ -3,6 +3,28 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — KI-Nutzung register: per-office AI usage report + CSV (D-044 F5, part 1)
+
+- New: `GET /firm/ai-usage?days=` (admin) — the office's own AI usage
+  register per BRAK KI-Leitfaden / Art. 5 II DSGVO accountability, built
+  from the append-only audit trail (actions `assistant.*`, `ai.*`,
+  `template.ai_assist`, `deadline.bulk_create_ai`): totals, per-action
+  counts with last-use, per-user counts, plus the tenant's effective LLM
+  provider (jurisdiction override or default) with data-locality flag
+  (local vs external API; embeddings always local per hard rule §5.7).
+- New: `GET /firm/ai-usage.csv?days=` — full register as semicolon CSV
+  (timestamp, user, action, entity, provider, locality), capped at 20k
+  rows; the export itself is audit-logged (`firm.ai_usage_export`).
+- UI: new admin card "KI-Nutzungsregister" in settings → security group:
+  period picker (30/90/180/365 d), provider + locality summary, by-action
+  and by-user breakdowns, CSV download. 13 new `kiu*` dictionary keys in
+  all 7 locales.
+- Live E2E: fresh DE office + document upload → background deadline scan
+  logged `ai.deadline_suggest`, register shows total 1 with provider
+  `deepseek`/external, CSV row matches.
+- Files: `backend/app/api/firm.py`, `frontend/src/lib/dictionaries.ts`,
+  `(app)/settings/page.tsx`.
+
 ## 2026-08-01 — Token-less email classification: sender→matter suggestions (D-043 F4, part 3)
 
 - New: inbound mail without a plus-address token is no longer dropped —

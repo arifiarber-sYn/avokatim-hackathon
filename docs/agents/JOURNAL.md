@@ -10,6 +10,23 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01q — D-044 F5 (pjesa 1): Regjistri KI-Nutzung (Cursor / Fable 5)
+
+- Done: `GET /firm/ai-usage` (vetëm admin) — regjistri i përdorimit të
+  AI-së për zyrën sipas BRAK KI-Leitfaden / DSGVO, i ndërtuar nga audit
+  trail-i (veprimet `assistant.*`, `ai.*`, `template.ai_assist`,
+  `deadline.bulk_create_ai`): totale, per-veprim me last-use, per-përdorues,
+  provideri efektiv LLM me flamurin e lokalitetit të të dhënave (lokal vs
+  API i jashtëm; embeddings gjithmonë lokale). `GET /firm/ai-usage.csv` —
+  regjistri i plotë CSV, vetë-audituar. Kartë e re "KI-Nutzungsregister"
+  te settings → siguria me zgjedhës periudhe dhe eksport; 13 çelësa `kiu*`
+  në 7 gjuhë.
+- Verified: E2E live — zyrë e re DE + ngarkim dokumenti → skanimi në sfond
+  la `ai.deadline_suggest` në regjistër (provider deepseek/external, CSV
+  përputhet). 175 teste vazhdojnë të kalojnë; health + frontend 200.
+- Left open: F5 pjesa 2 — ai_generated + rishikimi njerëzor +
+  Verarbeitungsverzeichnis.
+
 ## 2026-08-01p — D-043 F4 (pjesa 3): Klasifikimi i email-it pa token (Cursor / Fable 5)
 
 - Done: email-et hyrëse pa plus-adresë nuk hidhen më — nëse dërguesi

@@ -1,14 +1,20 @@
 """Firm profile: name and fiscal identity printed on invoices (Kosovo NUI/VAT)."""
+import csv
+import io
 import uuid
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import Response
 from pydantic import BaseModel, Field
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.database import get_db
 from app.deps import get_current_user
-from app.jurisdictions import is_valid_region
-from app.models import Tenant, User
+from app.jurisdictions import is_valid_region, profile_for
+from app.models import AuditLog, Tenant, User
 from app.services.audit import log_action
 
 router = APIRouter(prefix="/firm", tags=["firm"])
@@ -62,6 +68,139 @@ class FirmUpdate(BaseModel):
     retention_years: int | None = Field(None, ge=1, le=100)
     allow_external_ai: bool | None = None
     compliance_officer_id: uuid.UUID | None = None
+
+
+# ---------- KI-Nutzung register (D-044, BRAK KI-Leitfaden) ----------
+# The office's own record of AI use, built from the append-only audit trail:
+# which AI actions ran, how often, by whom, through which provider and where
+# the data was processed. Document indexing/embeddings are always local.
+
+_AI_ACTION_FILTER = or_(
+    AuditLog.action.like("assistant.%"),
+    AuditLog.action.like("ai.%"),
+    AuditLog.action == "template.ai_assist",
+    AuditLog.action == "deadline.bulk_create_ai",
+)
+
+
+def _ai_provider_info(tenant: Tenant) -> dict:
+    name = profile_for(tenant.country).llm_provider or settings.llm_provider
+    return {
+        "name": name,
+        # LocalProvider (Ollama) runs on this machine; anything else is an
+        # external API. Embeddings/indexing are local by hard rule §5.7.
+        "external": name != "local",
+        "embeddings": "local",
+        "allow_external_ai": tenant.allow_external_ai,
+    }
+
+
+def _require_admin(user: User) -> None:
+    if user.role != "admin":
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Admin only")
+
+
+@router.get("/ai-usage")
+async def ai_usage_register(
+    days: int = 90,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Per-office AI usage summary for the given window (default 90 days)."""
+    _require_admin(user)
+    days = max(1, min(days, 730))
+    tenant = await db.get(Tenant, user.tenant_id)
+    since = datetime.now(UTC) - timedelta(days=days)
+    base = (
+        select(AuditLog)
+        .where(
+            AuditLog.tenant_id == user.tenant_id,
+            AuditLog.at >= since,
+            _AI_ACTION_FILTER,
+        )
+    ).subquery()
+
+    by_action = (
+        await db.execute(
+            select(base.c.action, func.count(), func.max(base.c.at))
+            .group_by(base.c.action)
+            .order_by(func.count().desc())
+        )
+    ).all()
+    by_user = (
+        await db.execute(
+            select(User.full_name, func.count())
+            .join_from(base, User, User.id == base.c.user_id)
+            .group_by(User.full_name)
+            .order_by(func.count().desc())
+        )
+    ).all()
+    total = sum(count for _, count, _ in by_action)
+    return {
+        "since": since.isoformat(),
+        "days": days,
+        "total": total,
+        "provider": _ai_provider_info(tenant),
+        "actions": [
+            {"action": action, "count": count, "last_at": last.isoformat()}
+            for action, count, last in by_action
+        ],
+        "users": [{"name": name, "count": count} for name, count in by_user],
+    }
+
+
+@router.get("/ai-usage.csv")
+async def ai_usage_csv(
+    days: int = 90,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """The full register as CSV — one row per AI action (Art. 5 II DSGVO
+    accountability; BRAK KI-Leitfaden documentation duty)."""
+    _require_admin(user)
+    days = max(1, min(days, 730))
+    tenant = await db.get(Tenant, user.tenant_id)
+    provider = _ai_provider_info(tenant)
+    since = datetime.now(UTC) - timedelta(days=days)
+    rows = (
+        await db.execute(
+            select(AuditLog, User.full_name)
+            .outerjoin(User, User.id == AuditLog.user_id)
+            .where(
+                AuditLog.tenant_id == user.tenant_id,
+                AuditLog.at >= since,
+                _AI_ACTION_FILTER,
+            )
+            .order_by(AuditLog.at.desc())
+            .limit(20000)
+        )
+    ).all()
+    buf = io.StringIO()
+    writer = csv.writer(buf, delimiter=";")
+    writer.writerow(
+        ["timestamp", "user", "action", "entity_type", "entity_id",
+         "provider", "provider_location", "embeddings"]
+    )
+    location = "local" if not provider["external"] else "external-api"
+    for entry, full_name in rows:
+        writer.writerow([
+            entry.at.isoformat(), full_name or "", entry.action,
+            entry.entity_type or "", entry.entity_id or "",
+            provider["name"], location, "local",
+        ])
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="firm.ai_usage_export",
+        entity_type="tenant", entity_id=str(user.tenant_id),
+        details={"days": days, "rows": len(rows)},
+    )
+    await db.commit()
+    return Response(
+        content=buf.getvalue(),
+        media_type="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": f'attachment; filename="ki-nutzung-{days}d.csv"'
+        },
+    )
 
 
 @router.get("", response_model=FirmOut)

@@ -348,6 +348,11 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   or direct date, audited) or dismisses. Banner in the matter Deadlines tab
   + dashboard card; `GET /deadline-suggestions`, `.../accept`, `.../dismiss`.
   Never auto-creates anything.
+- **KI-Nutzung register** (2026-08-01, D-044): admin card in settings →
+  security shows the office's AI usage from the audit trail (per action /
+  user, effective LLM provider + data locality) with CSV export
+  (`GET /firm/ai-usage`, `/firm/ai-usage.csv`) — BRAK KI-Leitfaden / DSGVO
+  documentation duty.
 - **Token-less email classification** (2026-08-01, D-043): inbound mail
   without a matter alias whose sender matches a contact is parked as an
   `EmailSuggestion` (raw message encrypted on disk); dashboard card lets the
