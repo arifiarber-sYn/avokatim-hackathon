@@ -386,6 +386,47 @@ interface ManualItem {
   unit_price: string;
 }
 
+// DATEV EXTF export for German offices (D-037): pick a period, download the
+// Buchungsstapel CSV for the Steuerberater. Accounts come from settings.
+function DatevExportCard() {
+  const { t } = useI18n();
+  const today = new Date();
+  const first = new Date(today.getFullYear(), today.getMonth(), 1);
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const [from, setFrom] = useState(iso(first));
+  const [to, setTo] = useState(iso(today));
+
+  return (
+    <Card className="p-4">
+      <div className="flex gap-3 items-end flex-wrap">
+        <p className="text-sm font-medium text-slate-700 w-full sm:w-auto sm:flex-1">
+          {t.datevTitle}
+        </p>
+        <div>
+          <Label>{t.datevFrom}</Label>
+          <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+        </div>
+        <div>
+          <Label>{t.datevTo}</Label>
+          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+        </div>
+        <Button
+          variant="secondary"
+          onClick={() =>
+            apiDownload(
+              `/export/datev?date_from=${from}&date_to=${to}`,
+              `EXTF_Buchungsstapel_${from}_${to}.csv`
+            )
+          }
+          disabled={!from || !to}
+        >
+          {t.datevExport}
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
 interface RvgVvItem {
   code: string;
   vv: string;
@@ -735,6 +776,8 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
         <ErrorNote message={error} />
         {notice && <p className="text-sm text-emerald-700">✓ {notice}</p>}
       </Card>
+
+      {rvgItems.length > 0 && <DatevExportCard />}
 
       {invoices === null ? (
         <Spinner />

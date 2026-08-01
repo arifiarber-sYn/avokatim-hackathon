@@ -24,6 +24,11 @@ class FirmOut(BaseModel):
     # Structured IBAN for e-invoices (ZUGFeRD SEPA payment means, DE)
     iban: str | None = None
     default_vat_rate: int
+    # DATEV export config (DE): Steuerberater + SKR03 accounts
+    datev_consultant_no: str | None = None
+    datev_client_no: str | None = None
+    datev_revenue_account: str | None = None
+    datev_debtor_account: str | None = None
     # Sub-national unit (DE: Bundesland code) — regional holiday calendar
     region: str | None = None
     logo: str | None = None
@@ -45,6 +50,10 @@ class FirmUpdate(BaseModel):
     # Bank name + IBAN printed in the payment instructions on invoices
     bank_details: str | None = Field(None, max_length=500)
     iban: str | None = Field(None, max_length=34)
+    datev_consultant_no: str | None = Field(None, max_length=7)
+    datev_client_no: str | None = Field(None, max_length=5)
+    datev_revenue_account: str | None = Field(None, max_length=9)
+    datev_debtor_account: str | None = Field(None, max_length=9)
     default_vat_rate: int | None = Field(None, ge=0, le=30)
     region: str | None = Field(None, max_length=8)
     # Small logo as a data URL (~max 200 KB) shown on portal + public intake

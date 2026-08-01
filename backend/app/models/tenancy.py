@@ -60,6 +60,14 @@ class Tenant(Base, TimestampMixin):
     # Default VAT percentage applied to new invoices (Kosovo standard: 18)
     default_vat_rate: Mapped[int] = mapped_column(Integer, default=18, server_default="18")
 
+    # DATEV export configuration (DE offices, D-037): consultant/client number
+    # of the office's Steuerberater and the SKR03 accounts used in the EXTF
+    # Buchungsstapel. NULL = code defaults (8400 revenue, 10000 debtor).
+    datev_consultant_no: Mapped[str | None] = mapped_column(String(7))
+    datev_client_no: Mapped[str | None] = mapped_column(String(5))
+    datev_revenue_account: Mapped[str | None] = mapped_column(String(9))
+    datev_debtor_account: Mapped[str | None] = mapped_column(String(9))
+
     # SaaS subscription (platform invoices in app/models/platform_billing.py)
     plan: Mapped[str] = mapped_column(
         String(20), default="trial", server_default="trial"

@@ -528,6 +528,10 @@ function FirmSection() {
     iban: "",
     default_vat_rate: "18",
     region: "",
+    datev_consultant_no: "",
+    datev_client_no: "",
+    datev_revenue_account: "",
+    datev_debtor_account: "",
   });
   const [logo, setLogo] = useState<string | null>(null);
   const [require2fa, setRequire2fa] = useState(false);
@@ -548,6 +552,10 @@ function FirmSection() {
       region: string | null;
       logo: string | null;
       require_2fa: boolean;
+      datev_consultant_no: string | null;
+      datev_client_no: string | null;
+      datev_revenue_account: string | null;
+      datev_debtor_account: string | null;
     }>("/firm")
       .then((r) => {
         setForm({
@@ -559,6 +567,10 @@ function FirmSection() {
           iban: r.iban || "",
           default_vat_rate: String(r.default_vat_rate ?? 18),
           region: r.region || "",
+          datev_consultant_no: r.datev_consultant_no || "",
+          datev_client_no: r.datev_client_no || "",
+          datev_revenue_account: r.datev_revenue_account || "",
+          datev_debtor_account: r.datev_debtor_account || "",
         });
         setLogo(r.logo || null);
         setRequire2fa(r.require_2fa || false);
@@ -580,6 +592,10 @@ function FirmSection() {
         iban: form.iban || null,
         default_vat_rate: Number(form.default_vat_rate),
         region: form.region || null,
+        datev_consultant_no: form.datev_consultant_no || null,
+        datev_client_no: form.datev_client_no || null,
+        datev_revenue_account: form.datev_revenue_account || null,
+        datev_debtor_account: form.datev_debtor_account || null,
         logo,
         require_2fa: require2fa,
       });
@@ -676,6 +692,48 @@ function FirmSection() {
               ))}
             </Select>
             <p className="text-xs text-slate-400 mt-1">{t.firmRegionHint}</p>
+          </div>
+        )}
+        {firmIsDE && (
+          <div className="sm:col-span-2 rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-2">
+            <p className="text-sm font-medium text-slate-700">{t.datevTitle}</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div>
+                <Label>{t.datevConsultant}</Label>
+                <Input
+                  value={form.datev_consultant_no}
+                  onChange={(e) => setForm({ ...form, datev_consultant_no: e.target.value })}
+                  maxLength={7}
+                />
+              </div>
+              <div>
+                <Label>{t.datevClient}</Label>
+                <Input
+                  value={form.datev_client_no}
+                  onChange={(e) => setForm({ ...form, datev_client_no: e.target.value })}
+                  maxLength={5}
+                />
+              </div>
+              <div>
+                <Label>{t.datevRevenue}</Label>
+                <Input
+                  value={form.datev_revenue_account}
+                  onChange={(e) => setForm({ ...form, datev_revenue_account: e.target.value })}
+                  placeholder="8400"
+                  maxLength={9}
+                />
+              </div>
+              <div>
+                <Label>{t.datevDebtor}</Label>
+                <Input
+                  value={form.datev_debtor_account}
+                  onChange={(e) => setForm({ ...form, datev_debtor_account: e.target.value })}
+                  placeholder="10000"
+                  maxLength={9}
+                />
+              </div>
+            </div>
+            <p className="text-xs text-slate-400">{t.datevHint}</p>
           </div>
         )}
         <div className="sm:col-span-2 space-y-1">

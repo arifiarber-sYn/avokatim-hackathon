@@ -3,6 +3,19 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — DATEV EXTF export (D-037 phase 4)
+
+- New `services/datev.py`: EXTF Buchungsstapel CSV (header 700 / format v13,
+  cp1252 + CRLF, decimal comma) built from two booking types per period —
+  issued invoices (debtor an Erlöskonto, gross) and payments (bank 1200 an
+  debtor). SKR03 defaults 8400/10000, no BU-Schlüssel (Automatikkonto).
+- New router `api/exports.py`: `GET /api/export/datev?date_from&date_to`
+  (DE offices only, audited). Tenant config columns
+  `datev_consultant_no/client_no/revenue_account/debtor_account`
+  (migration 39eb3d97a67c) editable in settings (DE block).
+- Frontend: DATEV card on the billing invoices tab (period + download);
+  9 new datev* keys in 7 locales. 2 new tests; suite 149 green, tsc clean.
+
 ## 2026-08-01 — Rechtsschutzversicherung in the case flow (D-037 phase 3)
 
 - `CaseRequest.has_legal_insurance` + `insurer_name` (migration f13891b21e80);
