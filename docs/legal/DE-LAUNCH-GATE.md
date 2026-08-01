@@ -27,11 +27,14 @@ rastit + shablloni Deckungsanfrage, eksporti DATEV EXTF. Verifikuar E2E me
    aktual në makinën e pronarit mjafton vetëm për beta të mbyllur.
 2. **Përfaqësues në BE sipas GDPR Art. 27** — i detyrueshëm për ofrues
    jashtë BE-së që përpunojnë të dhëna të banorëve të BE-së.
-3. ~~**LLM provider në BE për kërkesat DE**~~ ✅ **E MBYLLUR (D-037)**:
-   `PROFILES["DE"].llm_provider = "local"` — Ava DE punon me `gemma3:27b`
-   në Ollama lokalisht (testuar kundër qwen3:14b për cilësi gjermanishteje;
-   gemma3 fitoi: pa "thinking", latencë e parashikueshme, citim korrekt i
-   normave me kontekst RAG). Asnjë kërkesë qytetari DE s'del nga makina.
+3. **LLM lokal për kërkesat DE** — infrastruktura ✅ **GATI (D-037)**:
+   `gemma3:27b` në Ollama është instaluar, testuar dhe validuar
+   (kundër qwen3:14b për cilësi gjermanishteje; gemma3 fitoi: pa
+   "thinking", latencë e parashikueshme, citim korrekt me RAG).
+   **⚠️ PËRKOHËSISHT në DeepSeek** (kërkesa e pronarit 2026-08-01, për
+   demonstrimin e plotë të funksioneve). PARA lansimit publik kthe
+   `PROFILES["DE"].llm_provider = "local"` në `backend/app/jurisdictions.py`
+   — vetëm atëherë asnjë kërkesë qytetari DE s'del nga makina.
 4. **Rishikim ligjor nga avokat gjerman** i AGB-ve, Datenschutzerklärung
    dhe Impressum (draftet janë në `frontend/src/lib/legal.ts` dhe
    `frontend/src/app/impressum/page.tsx`). Plotëso adresën fizike te

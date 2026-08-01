@@ -53,9 +53,10 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   E2E check: `backend/scripts/de_simulation.py`. beA: BRAK registration
   guide + draft email in `docs/legal/BEA-KSW-REGISTRATION.md` (module after
   access). **DE Ava**:
-  own prompt (RDG § 2 information-only + EU AI Act Art. 50 disclosure),
-  **runs on the local LLM** (`PROFILES["DE"].llm_provider="local"` →
-  Ollama gemma3:27b, RTX 5090 — no German citizen data leaves the machine).
+  own prompt (RDG § 2 information-only + EU AI Act Art. 50 disclosure);
+  local LLM (Ollama gemma3:27b on the RTX 5090) is installed and validated
+  but DE runs **temporarily on DeepSeek** for the demo (see launch gate
+  item 3 — must return to `llm_provider="local"` before public launch).
   **DE lawyers**: BRAV has no emails →
   never auto-verified; ops/Halim get a BRAV search link for one-click manual
   approval; onboarding shows German cities/languages, VAT 19 default,
@@ -348,8 +349,10 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   contract, legal opinion, due-diligence checklist (all in `seeds/kosovo.py`).
 - **Assistant "Ava"**: RAG over legal corpus + matter documents, with citations.
   Providers: DeepSeek (default) or local OpenAI-compatible (Ollama/vLLM),
-  selectable per request; the DE jurisdiction is pinned to the local
-  provider (Ollama gemma3:27b, D-037).
+  selectable per request. DE ran on local gemma3:27b (D-037) but is
+  **temporarily back on DeepSeek** (owner request 2026-08-01, full-feature
+  demo); flip `PROFILES["DE"].llm_provider` to `"local"` before public
+  launch (gate item 3).
   **Answers stream (SSE)** via `/api/assistant/ask-stream` — the UI renders text
   progressively and no proxy/browser/Cloudflare idle timeout can drop long
   thinking-mode answers (see D-010). Non-streaming `/ask` kept for scripts.
@@ -572,9 +575,17 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   /marketplace banner. Migration `16241f40c7cc`.
 - **AI protection by phone — local voice + evidence vault + SOS screen**
   (2026-07-12, D-018): `app/services/voice.py` + `/api/public/voice/*` —
-  faster-whisper Albanian CT2 int8 (fallback turbo for other locales) +
-  Piper `sq_AL` subprocess TTS, all local (no audio leaves the machine),
-  rate-limited; models in `data/models/`, settings `voice_*` in config.
+  faster-whisper Albanian CT2 (one model serves all locales; the
+  `voice_stt_fallback_model` setting is unused) + Piper `sq_AL` subprocess
+  TTS, all local (no audio leaves the machine), rate-limited; models in
+  `data/models/`, settings `voice_*` in config. Voice audit 2026-08-01:
+  STT runs on **CUDA** (`voice_stt_device="auto"`, RTX 5090 float16 —
+  warm transcribe ~0.3 s vs ~9.6 s CPU; auto-falls back to CPU int8);
+  `de` added to the STT language whitelist; logged-in **lawyers** now get
+  the citizen-tier rate limits (staff JWT recognized on voice endpoints,
+  `voice.ts` sends whichever token exists); browser TTS maps `de`→`de-DE`.
+  Piper server TTS stays sq-only by design (other locales use browser
+  speechSynthesis).
   Evidence vault: `EvidenceSession`/`EvidenceChunk` — MediaRecorder chunks
   every 5 s, SHA-256 + `prev_hash` chain, strict seq (409), Fernet
   encryption, audit log, chain-of-custody PDF, background transcription;

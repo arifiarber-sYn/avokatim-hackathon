@@ -10,6 +10,28 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01g — Auditimi i zërit të Ava-s + DE në DeepSeek për demo (Cursor / Fable 5)
+
+- Done: auditim i plotë i rrjedhës me zë (mic → MediaRecorder →
+  `/public/voice/transcribe` faster-whisper → Ava → Piper sq /
+  speechSynthesis). Rregullime: STT në **CUDA** (`voice_stt_device="auto"`,
+  float16 në RTX 5090, fallback CPU int8) — transkriptimi i ngrohtë
+  4.6 s audio: ~9.6 s → **~0.3 s**; `de` në whitelist-in e gjuhëve STT
+  (gjermanishtja injorohej në heshtje); token-i i avokatit njihet te
+  endpoint-et e zërit (60/120 në orë si qytetarët, jo 10/20 si anonimët);
+  harta e browser-TTS `de`→`de-DE`.
+- Done: me kërkesë të pronarit, DE **përkohësisht në DeepSeek** për
+  demonstrimin e plotë (`llm_provider=None`); gemma3:27b mbetet i
+  instaluar e i validuar — kthimi te `"local"` është parakusht i gate-it
+  (pika 3) para lansimit publik.
+- Verified: pytest 150/150, tsc + build pa gabime, restart + health OK;
+  live: STT 0.3 s (log "on CUDA"), `language=de` respektohet, TTS me token
+  avokati 200, Ava DE përgjigjet § 4 KSchG përmes api.deepseek.com.
+- Left open / next: gjetjet e dokumentuara pa rregullim (push-to-talk, jo
+  duplex — LiveKit Agents në të ardhmen; `voice_stt_fallback_model` i
+  papërdorur; Piper vetëm sq; `_stt_lock` serializon STT-të konkurruese;
+  çelësi `vUnavailable` i papërdorur në UI).
+
 ## 2026-08-01f — Pariteti me tregun gjerman, 6 faza (D-037) (Cursor / Fable 5)
 
 - Done — Faza 1 (RVG): tabela § 13 RVG (KostBRÄG 2025) + 5 VV-Positionen si

@@ -1,5 +1,6 @@
 // Voice helpers: local STT/TTS via the backend (Albanian) with the
 // browser's speechSynthesis as fallback for the other locales.
+import { getToken } from "./api";
 import { getCitizenToken } from "./citizen";
 
 export interface VoiceStatus {
@@ -18,7 +19,8 @@ export async function voiceStatus(): Promise<VoiceStatus> {
 }
 
 function authHeaders(): Record<string, string> {
-  const token = getCitizenToken();
+  // Citizen or lawyer token — both lift the anonymous per-IP rate limit.
+  const token = getCitizenToken() || getToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
@@ -95,7 +97,7 @@ export async function speak(
   if (typeof window !== "undefined" && window.speechSynthesis) {
     await new Promise<void>((resolve) => {
       const utter = new SpeechSynthesisUtterance(clean);
-      utter.lang = { sq: "sq-AL", sr: "sr-RS", tr: "tr-TR", bs: "bs-BA", en: "en-US", zh: "zh-CN" }[locale] || locale;
+      utter.lang = { sq: "sq-AL", sr: "sr-RS", tr: "tr-TR", bs: "bs-BA", en: "en-US", zh: "zh-CN", de: "de-DE" }[locale] || locale;
       utter.onend = () => resolve();
       utter.onerror = () => resolve();
       window.speechSynthesis.speak(utter);

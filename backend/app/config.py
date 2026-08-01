@@ -136,6 +136,9 @@ class Settings(BaseSettings):
     # this machine. Models are downloaded once into data/models/ (git-ignored).
     # Empty/missing model dirs = voice endpoints report enabled=false.
     voice_stt_model_dir: Path = PROJECT_DIR / "data" / "models" / "whisper-sq-ct2"
+    # "auto" = try CUDA (float16), fall back to CPU (int8). The RTX 5090 cuts
+    # a 5 s utterance from ~9.6 s to ~1.2 s (voice audit 2026-08-01).
+    voice_stt_device: str = "auto"
     # Fallback Whisper model for non-Albanian speech (downloaded on demand
     # by faster-whisper into its cache); empty = Albanian model handles all.
     voice_stt_fallback_model: str = "large-v3-turbo"

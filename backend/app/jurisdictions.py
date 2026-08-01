@@ -92,10 +92,11 @@ PROFILES: dict[str, JurisdictionProfile] = {
         sos_enabled=False,
         notary_enabled=False,
         corpus_fallback_language="de",
-        # Local German-capable model via Ollama (D-037 phase 5): no citizen
-        # data leaves this machine. Model set by LOCAL_LLM_MODEL in .env
-        # (gemma3:27b chosen on the RTX 5090 — see DECISIONS D-037).
-        llm_provider="local",
+        # TEMPORARY (owner request 2026-08-01): DeepSeek for the full-feature
+        # demo — the local model (Ollama gemma3:27b, D-037 phase 5) stays
+        # installed and validated; set back to "local" before public launch
+        # (DE-LAUNCH-GATE item 3 requires it).
+        llm_provider=None,
         cities=(
             "Berlin", "Hamburg", "München", "Köln", "Frankfurt am Main",
             "Stuttgart", "Düsseldorf", "Leipzig", "Dortmund", "Essen",

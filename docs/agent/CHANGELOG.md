@@ -3,6 +3,31 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Ava voice audit: STT on CUDA, German whitelist, lawyer tier; DE demo on DeepSeek
+
+- Full audit of the voice pipeline (mic → `/api/public/voice/transcribe`
+  faster-whisper → Ava LLM → Piper sq / browser speechSynthesis). Fixes:
+  - STT now loads on **CUDA float16** when available
+    (`voice_stt_device="auto"` in config, CPU int8 fallback) — warm
+    transcription of a 4.6 s clip dropped from ~9.6 s to ~0.3 s on the
+    RTX 5090. Verified live on the running server (log: "on CUDA").
+  - `de` added to `_WHISPER_LANGS` — German UI locale was silently ignored
+    and decode fell back to auto-detect; now honored (verified via API).
+  - Voice endpoints now recognize the **staff JWT** for rate-limit tiering
+    (`_staff_sub` in `api/voice.py`): logged-in lawyers get 60 STT /
+    120 TTS per hour instead of the anonymous 10/20 per IP; `voice.ts`
+    sends the citizen or lawyer token, whichever exists.
+  - Browser TTS language map gets `de` → `de-DE`.
+  - Audit findings left as-is (documented): push-to-talk only (no duplex),
+    `voice_stt_fallback_model` setting unused, Piper TTS sq-only by design,
+    one STT at a time (`_stt_lock`), `vUnavailable` i18n key unused.
+- **DE temporarily on DeepSeek** (owner request, full-feature demo):
+  `PROFILES["DE"].llm_provider = None`. gemma3:27b stays installed and
+  validated; launch gate item 3 reverted to "ready but pending flip" —
+  must return to `"local"` before public launch. Verified live: DE Ava
+  answers § 4 KSchG via api.deepseek.com.
+- Tests: whitelist test updated; suite 150 green; tsc + build clean.
+
 ## 2026-08-01 — beA/KSW registration prepared (D-037 phase 6) + D-037 docs
 
 - New `docs/legal/BEA-KSW-REGISTRATION.md`: what the KSW-Schnittstelle is

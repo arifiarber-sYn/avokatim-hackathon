@@ -34,4 +34,4 @@ async def test_tts_roundtrip_albanian():
 def test_transcribe_language_whitelist():
     from app.services.voice import _WHISPER_LANGS
 
-    assert _WHISPER_LANGS == {"sq", "sr", "tr", "bs", "en", "zh"}
+    assert _WHISPER_LANGS == {"sq", "sr", "tr", "bs", "en", "zh", "de"}
