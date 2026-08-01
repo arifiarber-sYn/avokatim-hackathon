@@ -51,7 +51,8 @@ class MatterIn(BaseModel):
     title: str = Field(min_length=1, max_length=500)
     description: str | None = None
     practice_area: str = "civil"
-    jurisdiction_code: str = "XK"
+    # None = the office's default jurisdiction (Tenant.default_jurisdiction_code)
+    jurisdiction_code: str | None = None
     client_id: uuid.UUID | None = None
     court_name: str | None = None
     court_case_number: str | None = None

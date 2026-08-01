@@ -39,6 +39,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_db
+from app.jurisdictions import country_from_request, is_valid_country, public_base_url_for
 from app.models import CitizenUser
 from app.services.audit import log_action
 from app.services.notifications import _is_test_recipient
@@ -87,10 +88,11 @@ def _safe_next(path: str | None) -> str:
     return "/kycu"
 
 
-def _make_state(locale: str, next_path: str) -> str:
+def _make_state(locale: str, next_path: str, country: str = "XK") -> str:
     now = datetime.now(UTC)
     return pyjwt.encode(
         {"purpose": "oauth_state", "locale": locale, "next": _safe_next(next_path),
+         "country": country,
          "iat": now, "exp": now + timedelta(minutes=STATE_TTL_MINUTES)},
         settings.secret_key,
         algorithm="HS256",
@@ -129,10 +131,14 @@ async def list_providers():
 
 
 @router.get("/{provider}/start")
-async def oauth_start(provider: str, locale: str = "sq", next: str = "/kycu"):
+async def oauth_start(
+    provider: str, request: Request, locale: str = "sq", next: str = "/kycu"
+):
     if provider not in enabled_providers():
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Provider not configured")
-    state = _make_state(locale, next)
+    # Provider callbacks always land on the main registered redirect URI, so
+    # the originating country rides inside the signed state token.
+    state = _make_state(locale, next, country_from_request(request))
     redirect_uri = _redirect_uri(provider)
     if provider == "google":
         params = {
@@ -249,7 +255,8 @@ async def _fetch_identity(provider: str, code: str, user_json: str | None) -> di
 
 
 async def _find_or_create_citizen(
-    db, provider: str, ident: dict, locale: str, background: BackgroundTasks
+    db, provider: str, ident: dict, locale: str, background: BackgroundTasks,
+    country: str = "XK",
 ) -> CitizenUser:
     citizen = (
         await db.execute(
@@ -283,6 +290,7 @@ async def _find_or_create_citizen(
         full_name=ident["name"] or ident["email"].split("@")[0] or "Qytetar",
         password_hash=None,
         locale=locale,
+        country=country if is_valid_country(country) else "XK",
         oauth_provider=provider,
         oauth_sub=ident["sub"],
         email_verified_at=now if ident["email_verified"] else None,
@@ -313,10 +321,11 @@ async def _find_or_create_citizen(
     return citizen
 
 
-def _finish(next_path: str, fragment: str) -> RedirectResponse:
-    # 303 turns Apple's form_post POST into a GET at the app
+def _finish(next_path: str, fragment: str, country: str = "XK") -> RedirectResponse:
+    # 303 turns Apple's form_post POST into a GET at the app; the user
+    # returns to the country host they started from (de.avokatiim.ai / main)
     return RedirectResponse(
-        f"{settings.public_base_url}{_safe_next(next_path)}#{fragment}",
+        f"{public_base_url_for(country)}{_safe_next(next_path)}#{fragment}",
         status_code=status.HTTP_303_SEE_OTHER,
     )
 
@@ -334,26 +343,27 @@ async def _handle_callback(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Provider not configured")
     payload = _read_state(state or "")
     next_path = payload.get("next") or "/kycu"
+    country = payload.get("country") or "XK"
     if error or not code:  # user cancelled at the provider
-        return _finish(next_path, "oauth_error=cancelled")
+        return _finish(next_path, "oauth_error=cancelled", country)
     try:
         ident = await _fetch_identity(provider, code, user_json)
     except (httpx.HTTPError, KeyError) as exc:
         logger.warning("OAuth %s exchange failed: %s", provider, exc)
-        return _finish(next_path, "oauth_error=exchange")
+        return _finish(next_path, "oauth_error=exchange", country)
     if not ident["email"]:
         # e.g. a Meta account without a confirmed email
-        return _finish(next_path, "oauth_error=no_email")
+        return _finish(next_path, "oauth_error=no_email", country)
 
     citizen = await _find_or_create_citizen(
-        db, provider, ident, payload.get("locale") or "sq", background
+        db, provider, ident, payload.get("locale") or "sq", background, country
     )
     if not citizen.is_active:
-        return _finish(next_path, "oauth_error=disabled")
+        return _finish(next_path, "oauth_error=disabled", country)
 
     from app.api.marketplace import _citizen_token
 
-    return _finish(next_path, f"citizen_token={_citizen_token(citizen.id)}")
+    return _finish(next_path, f"citizen_token={_citizen_token(citizen.id)}", country)
 
 
 @router.get("/{provider}/callback")

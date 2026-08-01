@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.deps import bearer, get_current_user
+from app.jurisdictions import country_from_request
 from app.models import Tenant, User
 from app.schemas.auth import (
     AcceptInviteRequest,
@@ -203,11 +204,14 @@ async def signup(
         if referrer is not None:
             referred_by = referrer.referral_code
 
+    country = country_from_request(request)
     tenant = Tenant(
         name=body.practice_name,
         kind="solo",
         profession=body.profession,
         default_locale=body.locale,
+        country=country,
+        default_jurisdiction_code=country,
         plan="trial",
         status="active",
         seats_limit=3,

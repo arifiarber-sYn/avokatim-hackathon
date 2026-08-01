@@ -47,6 +47,23 @@ async def list_rules(
     return (await db.execute(stmt.order_by(DeadlineRule.code))).scalars().all()
 
 
+@router.get("/matters/{matter_id}/deadline-rules", response_model=list[DeadlineRuleOut])
+async def matter_deadline_rules(
+    matter_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Rules of the matter's OWN jurisdiction (D-034) — the UI must not
+    assume Kosovo now that offices can practice in other countries."""
+    matter = await get_owned_matter(db, user, matter_id)
+    stmt = (
+        select(DeadlineRule)
+        .where(DeadlineRule.jurisdiction_id == matter.jurisdiction_id)
+        .order_by(DeadlineRule.code)
+    )
+    return (await db.execute(stmt)).scalars().all()
+
+
 @router.get("/deadlines/upcoming", response_model=list[DeadlineOut])
 async def upcoming_deadlines(
     days: int = 30,

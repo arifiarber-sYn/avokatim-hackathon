@@ -13,12 +13,12 @@ from app.config import settings
 from app.database import get_db
 from app.deps import get_current_user
 from app.i18n import pick_locale, tr
+from app.jurisdictions import jurisdiction_row_for_tenant
 from app.models import (
     CaseRequest,
     CitizenUser,
     Contact,
     IntakeRequest,
-    Jurisdiction,
     Matter,
     MatterParty,
     Tenant,
@@ -116,9 +116,7 @@ async def accept_intake(
     await db.flush()
 
     practice_area = (intake.ai_classification or {}).get("practice_area", "civil")
-    jurisdiction = (
-        await db.execute(select(Jurisdiction).where(Jurisdiction.code == "XK"))
-    ).scalar_one()
+    jurisdiction = await jurisdiction_row_for_tenant(db, user.tenant_id)
     matter = Matter(
         tenant_id=user.tenant_id,
         reference=await _next_reference(db, user.tenant_id, practice_area),

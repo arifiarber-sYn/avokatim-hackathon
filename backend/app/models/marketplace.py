@@ -51,6 +51,9 @@ class CitizenUser(Base, TimestampMixin):
     oauth_provider: Mapped[str | None] = mapped_column(String(20))
     oauth_sub: Mapped[str | None] = mapped_column(String(255), index=True)
     locale: Mapped[str] = mapped_column(String(8), default="sq")
+    # Country whose host the citizen signed up on (D-034) — their cases and
+    # directory views stay within this country's lawyer pool
+    country: Mapped[str] = mapped_column(String(8), default="XK", server_default="XK", index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     # Privacy-policy acceptance at signup (Law 06/L-082, demonstrable consent)
@@ -169,6 +172,9 @@ class CaseRequest(Base, TimestampMixin):
     category: Mapped[str] = mapped_column(String(32), default="other")  # PRACTICE_AREAS
     description: Mapped[str] = mapped_column(Text)
     city: Mapped[str | None] = mapped_column(String(120))
+    # Country scope (D-034): copied from the citizen at posting time so only
+    # lawyers of the same country see/claim it
+    country: Mapped[str] = mapped_column(String(8), default="XK", server_default="XK", index=True)
     locale: Mapped[str] = mapped_column(String(8), default="sq")
     urgency: Mapped[str] = mapped_column(String(16), default="normal")
     status: Mapped[str] = mapped_column(String(16), default="open", index=True)

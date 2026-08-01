@@ -20,7 +20,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.matters import _next_reference
 from app.database import get_db
 from app.deps import get_current_user
-from app.models import Contact, Jurisdiction, Matter, User
+from app.jurisdictions import jurisdiction_row_for_tenant
+from app.models import Contact, Matter, User
 from app.models.matters import MATTER_STATUSES, PRACTICE_AREAS
 from app.services.audit import log_action
 
@@ -100,9 +101,7 @@ async def import_matters(
     db: AsyncSession = Depends(get_db),
 ):
     rows = _read_csv(await file.read())
-    jurisdiction = (
-        await db.execute(select(Jurisdiction).where(Jurisdiction.code == "XK"))
-    ).scalar_one()
+    jurisdiction = await jurisdiction_row_for_tenant(db, user.tenant_id)
 
     async def _find_or_create_contact(name: str) -> uuid.UUID:
         contact = (

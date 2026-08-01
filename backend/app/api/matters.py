@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
+from app.jurisdictions import jurisdiction_row_for_tenant
 from app.deps import get_current_user
 from app.models import (
     Contact,
@@ -126,11 +127,17 @@ async def create_matter(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    jurisdiction = (
-        await db.execute(select(Jurisdiction).where(Jurisdiction.code == body.jurisdiction_code))
-    ).scalar_one_or_none()
-    if jurisdiction is None:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown jurisdiction")
+    if body.jurisdiction_code:
+        jurisdiction = (
+            await db.execute(
+                select(Jurisdiction).where(Jurisdiction.code == body.jurisdiction_code)
+            )
+        ).scalar_one_or_none()
+        if jurisdiction is None:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown jurisdiction")
+    else:
+        # Default to the office's own jurisdiction (D-034)
+        jurisdiction = await jurisdiction_row_for_tenant(db, user.tenant_id)
 
     data = body.model_dump(exclude={"jurisdiction_code"})
     matter = Matter(

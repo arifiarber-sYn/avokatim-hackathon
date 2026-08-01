@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.marketplace import _ip, _rate_limit
 from app.config import PROJECT_DIR
 from app.database import get_db
+from app.jurisdictions import country_from_request
 from app.models import DeadlineRule, Jurisdiction
 from app.seeds.citizen_docs import CITIZEN_DOC_TEMPLATES
 from app.seeds.notary import (
@@ -30,12 +31,15 @@ router = APIRouter(prefix="/public/tools", tags=["public-tools"])
 
 
 @router.get("/deadline-rules")
-async def public_deadline_rules(db: AsyncSession = Depends(get_db)):
-    """Active-jurisdiction rules with localized names, for the public calculator."""
+async def public_deadline_rules(request: Request, db: AsyncSession = Depends(get_db)):
+    """Rules of the requesting host's country, for the public calculator."""
     stmt = (
         select(DeadlineRule, Jurisdiction.code)
         .join(Jurisdiction, Jurisdiction.id == DeadlineRule.jurisdiction_id)
-        .where(Jurisdiction.is_active.is_(True))
+        .where(
+            Jurisdiction.is_active.is_(True),
+            Jurisdiction.code == country_from_request(request),
+        )
         .order_by(DeadlineRule.practice_area, DeadlineRule.code)
     )
     rows = (await db.execute(stmt)).all()

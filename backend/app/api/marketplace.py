@@ -27,6 +27,7 @@ from app.config import settings
 from app.database import get_db
 from app.deps import get_current_user
 from app.i18n import pick_locale, tr
+from app.jurisdictions import country_from_request, profile_for
 from app.models import (
     CaseRequest,
     CaseRequestMessage,
@@ -169,6 +170,7 @@ async def citizen_signup(
         full_name=body.full_name,
         password_hash=hash_password(body.password),
         locale=pick_locale(body.locale),
+        country=country_from_request(request),
         privacy_accepted_at=datetime.now(UTC),
     )
     db.add(citizen)
@@ -422,6 +424,7 @@ async def _tenant_cases_completed(db: AsyncSession) -> dict[uuid.UUID, int]:
 
 @public_router.get("/lawyers")
 async def public_lawyers(
+    request: Request,
     area: str | None = None,
     city: str | None = None,
     language: str | None = None,
@@ -434,12 +437,14 @@ async def public_lawyers(
             .join(Tenant, Tenant.id == LawyerProfile.tenant_id)
             .where(
                 LawyerProfile.is_visible.is_(True),
-                # Trust gate: only OAK-verified lawyers appear publicly
+                # Trust gate: only chamber-verified lawyers appear publicly
                 LawyerProfile.verification_status == "verified",
                 User.is_active.is_(True),
                 Tenant.status == "active",
                 # Notary offices are listed in /noteret, never here
                 Tenant.profession == "lawyer",
+                # Each country host shows only its own lawyers (D-034)
+                Tenant.country == country_from_request(request),
             )
             # Highlighted directory placement is a paid-plan perk (lpPlanPaid)
             .order_by((Tenant.plan != "trial").desc(), LawyerProfile.created_at)
@@ -646,6 +651,7 @@ async def citizen_create_case(
         category=body.category,
         description=body.description,
         city=body.city,
+        country=citizen.country,
         locale=citizen.locale,
         urgency=body.urgency,
         directed_tenant_id=body.directed_tenant_id,
@@ -671,7 +677,9 @@ async def citizen_create_case(
         )
     if directed_tenant is None:
         # Demand->supply matching: alert lawyers whose profile fits the case
-        background.add_task(_notify_matching_lawyers, case.id, body.category, body.city)
+        background.add_task(
+            _notify_matching_lawyers, case.id, body.category, body.city, case.country
+        )
     if directed_tenant is not None:
         admins = (
             await db.execute(
@@ -838,7 +846,7 @@ async def citizen_get_review(
 
 
 async def _notify_matching_lawyers(
-    case_id: uuid.UUID, category: str, city: str | None
+    case_id: uuid.UUID, category: str, city: str | None, country: str = "XK"
 ) -> None:
     """Push + email to directory lawyers whose practice areas/cities match a
     freshly posted case — the supply side learns about demand instantly
@@ -858,6 +866,7 @@ async def _notify_matching_lawyers(
                     User.is_active.is_(True),
                     Tenant.status == "active",
                     Tenant.profession == "lawyer",
+                    Tenant.country == country,
                 )
             )
         ).all()
@@ -896,7 +905,9 @@ class SosIn(BaseModel):
     evidence_session_id: uuid.UUID | None = None
 
 
-async def _notify_on_duty_lawyers(case_id: uuid.UUID, city: str | None) -> None:
+async def _notify_on_duty_lawyers(
+    case_id: uuid.UUID, city: str | None, country: str = "XK"
+) -> None:
     """Instant push + email to every opted-in duty lawyer. Own session:
     runs as a background task after the request commits."""
     from app.database import SessionLocal
@@ -913,6 +924,7 @@ async def _notify_on_duty_lawyers(case_id: uuid.UUID, city: str | None) -> None:
                     LawyerProfile.verification_status == "verified",
                     User.is_active.is_(True),
                     Tenant.status == "active",
+                    Tenant.country == country,
                 )
             )
         ).all()
@@ -946,6 +958,7 @@ async def citizen_sos(
         category="other",
         description=body.description,
         city=body.city,
+        country=citizen.country,
         locale=citizen.locale,
         urgency="sos",
     )
@@ -967,7 +980,7 @@ async def citizen_sos(
         details={"city": body.city}, ip_address=_ip(request),
     )
     await db.commit()
-    background.add_task(_notify_on_duty_lawyers, case.id, body.city)
+    background.add_task(_notify_on_duty_lawyers, case.id, body.city, case.country)
     if not _is_test_recipient(citizen.email):
         background.add_task(
             notify_ops, "sos",
@@ -1061,12 +1074,15 @@ async def citizen_send_message(
 # ---------- public platform stats (Phase 4: "access to justice") ----------
 
 @public_router.get("/stats")
-async def public_stats(db: AsyncSession = Depends(get_db)):
+async def public_stats(request: Request, db: AsyncSession = Depends(get_db)):
     """Anonymous aggregate numbers for the landing page and the
-    government/OAK pitch. No personal data."""
+    government/OAK pitch. No personal data. Scoped to the country whose
+    host is asking (D-034)."""
     from sqlalchemy import func
 
-    from app.models import LegalCorpusChunk, LegalCorpusDoc
+    from app.models import Jurisdiction, LegalCorpusChunk, LegalCorpusDoc
+
+    country = country_from_request(request)
 
     # Must mirror the /lawyers directory filters exactly, otherwise the
     # landing-page count disagrees with what visitors actually see there.
@@ -1082,14 +1098,20 @@ async def public_stats(db: AsyncSession = Depends(get_db)):
                 User.is_active.is_(True),
                 Tenant.status == "active",
                 Tenant.profession == "lawyer",
+                Tenant.country == country,
             )
         )
     ).scalar_one()
-    cases_total = (await db.execute(select(func.count(CaseRequest.id)))).scalar_one()
+    cases_total = (
+        await db.execute(
+            select(func.count(CaseRequest.id)).where(CaseRequest.country == country)
+        )
+    ).scalar_one()
     cases_taken = (
         await db.execute(
             select(func.count(CaseRequest.id)).where(
-                CaseRequest.status.in_(["claimed", "converted"])
+                CaseRequest.status.in_(["claimed", "converted"]),
+                CaseRequest.country == country,
             )
         )
     ).scalar_one()
@@ -1100,7 +1122,9 @@ async def public_stats(db: AsyncSession = Depends(get_db)):
                 func.avg(
                     func.extract("epoch", CaseRequest.claimed_at - CaseRequest.created_at)
                 )
-            ).where(CaseRequest.claimed_at.isnot(None))
+            ).where(
+                CaseRequest.claimed_at.isnot(None), CaseRequest.country == country
+            )
         )
     ).scalar_one()
     # Unique acts, not documents: the same law exists in up to 5 official
@@ -1117,14 +1141,28 @@ async def public_stats(db: AsyncSession = Depends(get_db)):
                     )
                 )
             )
+            .select_from(LegalCorpusDoc)
+            .join(Jurisdiction, Jurisdiction.id == LegalCorpusDoc.jurisdiction_id)
+            .where(Jurisdiction.code == country)
         )
     ).scalar_one()
-    chunks = (await db.execute(select(func.count(LegalCorpusChunk.id)))).scalar_one()
+    chunks = (
+        await db.execute(
+            select(func.count(LegalCorpusChunk.id))
+            .select_from(LegalCorpusChunk)
+            .join(LegalCorpusDoc, LegalCorpusDoc.id == LegalCorpusChunk.doc_id)
+            .join(Jurisdiction, Jurisdiction.id == LegalCorpusDoc.jurisdiction_id)
+            .where(Jurisdiction.code == country)
+        )
+    ).scalar_one()
     # Licensed notaries from the official ONK registry snapshot — a strong
-    # trust number for the landing page while the platform directory grows
-    from app.api.public_tools import _load_notaries
+    # trust number for the landing page while the platform directory grows.
+    # Kosovo-only: the notary pillar is off for DE (see jurisdictions.py).
+    notaries_licensed = 0
+    if profile_for(country).notary_enabled:
+        from app.api.public_tools import _load_notaries
 
-    notaries_licensed = len(_load_notaries().get("notaries", []))
+        notaries_licensed = len(_load_notaries().get("notaries", []))
     return {
         "lawyers_in_directory": lawyers,
         "cases_posted": cases_total,
@@ -1160,6 +1198,37 @@ PUBLIC_AVA_SYSTEM_PROMPT = (
     "tarifën e përafërt. "
     "Mos kërko dhe mos ruaj të dhëna personale të panevojshme."
 )
+
+# Germany (D-034): German law draws a hard line between general legal
+# information (allowed) and individual-case legal services (§ 2 RDG, reserved
+# for lawyers), and the EU AI Act Art. 50 requires disclosing that the user
+# is talking to an AI. Operators are fully liable for chatbot output
+# (OLG Hamm, 12.05.2026 — 4 UKl 3/25), hence the stricter guardrails.
+PUBLIC_AVA_SYSTEM_PROMPT_DE = (
+    "Du bist Ava, die öffentliche Rechtsinformations-Assistentin der "
+    "Plattform AvokatIM für Deutschland. TRANSPARENZ (Art. 50 EU-KI-"
+    "Verordnung): du bist ein KI-System — das darf nie verschleiert werden. "
+    "Du gibst ausschließlich ALLGEMEINE RECHTSINFORMATION, niemals "
+    "Rechtsberatung im Einzelfall im Sinne von § 2 RDG: keine Bewertung "
+    "konkreter Erfolgsaussichten, keine individuellen Handlungsempfehlungen "
+    "für einen konkreten Fall, keine Vertretung. Antworte in der Sprache der "
+    "Frage (Deutsch, Englisch oder Türkisch). Stütze dich auf die "
+    "mitgelieferten Gesetzesauszüge und allgemeine Rechtsgrundsätze; nenne "
+    "beim Zitieren die Norm genau (z.B. '§ 573 BGB' oder 'Art. 13 GG'). Wenn "
+    "du dir nicht sicher bist, sage es offen — erfinde niemals Normen oder "
+    "Fristen. Erkläre einfach, ohne unnötigen Jargon. Sobald eine Frage eine "
+    "Einzelfallprüfung, laufende Fristen oder Vertretung berührt, empfiehl "
+    "der Person den Button 'Anwalt finden', um den Fall zugelassenen "
+    "Rechtsanwältinnen und Rechtsanwälten der Plattform vorzulegen. Frage "
+    "keine unnötigen personenbezogenen Daten ab und speichere keine."
+)
+
+# Country -> public Ava system prompt (jurisdiction guardrails are law-
+# specific, so these are per-country by design, not translations)
+PUBLIC_AVA_PROMPTS = {
+    "XK": PUBLIC_AVA_SYSTEM_PROMPT,
+    "DE": PUBLIC_AVA_SYSTEM_PROMPT_DE,
+}
 
 AVA_ANON_DAILY_LIMIT = 5
 AVA_CITIZEN_DAILY_LIMIT = 20
@@ -1248,14 +1317,15 @@ async def ava_quota(
 
 
 async def _ava_prepare(
-    db: AsyncSession, body: AvaAskIn
+    db: AsyncSession, body: AvaAskIn, country: str = "XK"
 ) -> tuple[list, list[dict]]:
-    """Build the grounded message list + citations for a public question."""
+    """Build the grounded message list + citations for a public question,
+    against the legal corpus of the country whose host was asked (D-034)."""
     from app.llm.base import ChatMessage
     from app.services import rag
 
     jurisdiction = (
-        await db.execute(select(Jurisdiction).where(Jurisdiction.code == "XK"))
+        await db.execute(select(Jurisdiction).where(Jurisdiction.code == country))
     ).scalar_one_or_none()
 
     context_blocks: list[str] = []
@@ -1278,7 +1348,12 @@ async def _ava_prepare(
             + f"\n\n=== PYETJA E QYTETARIT ===\n{body.question}"
         )
 
-    messages = [ChatMessage(role="system", content=PUBLIC_AVA_SYSTEM_PROMPT)]
+    messages = [
+        ChatMessage(
+            role="system",
+            content=PUBLIC_AVA_PROMPTS.get(country, PUBLIC_AVA_SYSTEM_PROMPT),
+        )
+    ]
     for m in body.history[-AVA_HISTORY_MAX:]:
         role, content = m.get("role"), str(m.get("content", ""))[:4000]
         if role in ("user", "assistant") and content:
@@ -1301,7 +1376,7 @@ async def ava_ask(
     key, limit = _ava_quota_key(citizen, _ip(request), body.session_id)
     remaining = await _ava_take_quota(key, limit)
 
-    messages, citations = await _ava_prepare(db, body)
+    messages, citations = await _ava_prepare(db, body, country_from_request(request))
     provider = get_provider(None)
     try:
         result = await provider.chat(messages)
@@ -1326,13 +1401,14 @@ async def ava_ask_stream(
 
     key, limit = _ava_quota_key(citizen, _ip(request), body.session_id)
     remaining = await _ava_take_quota(key, limit)
+    country = country_from_request(request)
 
     def sse(event: dict) -> str:
         return f"data: {jsonlib.dumps(event, ensure_ascii=False)}\n\n"
 
     async def event_stream():
         async with SessionLocal() as db:
-            messages, citations = await _ava_prepare(db, body)
+            messages, citations = await _ava_prepare(db, body, country)
         yield sse({"type": "meta", "citations": citations, "remaining": remaining})
         provider = get_provider(None)
         try:
@@ -1665,12 +1741,15 @@ async def lawyer_browse_cases(
     """Open cases: generic ones plus those directed to my tenant, ranked so
     the best demand/supply matches surface first: SOS, directed to me,
     my practice areas + cities, then recency."""
+    tenant = await db.get(Tenant, user.tenant_id)
     rows = (
         await db.execute(
             select(CaseRequest, CitizenUser)
             .join(CitizenUser, CitizenUser.id == CaseRequest.citizen_id)
             .where(
                 CaseRequest.status == "open",
+                # Lawyers only see demand from their own country (D-034)
+                CaseRequest.country == (tenant.country if tenant else "XK"),
                 (CaseRequest.directed_tenant_id.is_(None))
                 | (CaseRequest.directed_tenant_id == user.tenant_id),
             )
@@ -1831,6 +1910,10 @@ async def lawyer_claim_case(
     if case.status != "open":
         raise HTTPException(status.HTTP_409_CONFLICT, "Case already taken or closed")
     if case.directed_tenant_id is not None and case.directed_tenant_id != user.tenant_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Case not found")
+    # Lawyers may only take demand from their own country (D-034): a German
+    # Rechtsanwalt is not licensed for Kosovo procedure and vice versa
+    if case.country != tenant.country:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Case not found")
 
     citizen = await db.get(CitizenUser, case.citizen_id)

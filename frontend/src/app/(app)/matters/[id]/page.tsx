@@ -1068,8 +1068,9 @@ function Deadlines({ matterId, practiceArea }: { matterId: string; practiceArea:
 
   useEffect(() => {
     load();
-    apiGet<DeadlineRule[]>(`/jurisdictions/XK/deadline-rules`).then(setRules).catch(() => {});
-  }, [load]);
+    // rules of the matter's own jurisdiction (multi-country, D-034)
+    apiGet<DeadlineRule[]>(`/matters/${matterId}/deadline-rules`).then(setRules).catch(() => {});
+  }, [load, matterId]);
 
   async function add(e: React.FormEvent) {
     e.preventDefault();

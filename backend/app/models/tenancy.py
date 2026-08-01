@@ -35,6 +35,9 @@ class Tenant(Base, TimestampMixin):
     )  # lawyer | notary
     default_locale: Mapped[str] = mapped_column(String(8), default="sq")
     default_jurisdiction_code: Mapped[str] = mapped_column(String(8), default="XK")
+    # Country the office operates in (D-034): scopes the directory,
+    # marketplace and public stats; see app/jurisdictions.py for the profile
+    country: Mapped[str] = mapped_column(String(8), default="XK", server_default="XK", index=True)
     # Opaque token for the public intake form URL; null = form disabled
     intake_token: Mapped[str | None] = mapped_column(String(64), unique=True)
     # Office "memory" for Ava (Vincent-Skills-lite): free-text preferences the

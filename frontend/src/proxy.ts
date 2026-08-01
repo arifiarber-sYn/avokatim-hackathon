@@ -17,7 +17,14 @@ export function proxy(request: NextRequest) {
     const { pathname, search } = request.nextUrl;
     return NextResponse.redirect(`https://${host}${pathname}${search}`, 301);
   }
-  const response = NextResponse.next();
+  // Country scoping (D-034): de.avokatiim.ai serves Germany, everything else
+  // Kosovo. The header rides along on page renders (server components read
+  // it via headers()) and on the /api rewrite to the backend, which trusts
+  // it only for public endpoints.
+  const country = host.split(":")[0].toLowerCase() === "de.avokatiim.ai" ? "DE" : "XK";
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-avokatim-country", country);
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
   if (isPublicHost && proto === "https") {
     response.headers.set("Strict-Transport-Security", "max-age=31536000");
   }

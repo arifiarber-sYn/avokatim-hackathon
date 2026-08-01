@@ -11,6 +11,7 @@ from sqlalchemy.orm import selectinload
 
 from app.api.matters import get_owned_matter
 from app.database import get_db
+from app.jurisdictions import jurisdiction_row_for_tenant
 from app.deps import get_current_user
 from app.models import (
     Contact,
@@ -396,15 +397,18 @@ async def delete_trust_transaction(
 
 @router.get("/fee-tariff", response_model=list[FeeTariffItemOut])
 async def list_fee_tariff(
-    jurisdiction_code: str = "XK",
+    jurisdiction_code: str | None = None,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    jurisdiction = (
-        await db.execute(select(Jurisdiction).where(Jurisdiction.code == jurisdiction_code))
-    ).scalar_one_or_none()
-    if jurisdiction is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Jurisdiction not found")
+    if jurisdiction_code:
+        jurisdiction = (
+            await db.execute(select(Jurisdiction).where(Jurisdiction.code == jurisdiction_code))
+        ).scalar_one_or_none()
+        if jurisdiction is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Jurisdiction not found")
+    else:
+        jurisdiction = await jurisdiction_row_for_tenant(db, user.tenant_id)
     return (
         await db.execute(
             select(FeeTariffItem)

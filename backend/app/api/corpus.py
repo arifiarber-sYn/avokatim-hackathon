@@ -9,6 +9,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.jurisdictions import jurisdiction_row_for_tenant
 from app.deps import get_current_user, require_superadmin
 from app.models import Jurisdiction, LegalCorpusChunk, LegalCorpusDoc, User
 from app.services import rag
@@ -18,10 +19,12 @@ router = APIRouter(prefix="/corpus", tags=["corpus"])
 
 # Article headers in the five official gazette languages + Chinese:
 # sq "Neni 176", sr/bs "Član 5" (also "Clan" when diacritics are lost in
-# extraction), tr "Madde 5", en "Article 5", zh "第一条"
+# extraction), tr "Madde 5", en "Article 5", zh "第一条",
+# de "§ 573" / "Art 13" / "Artikel 79" (gesetze-im-internet enbez markers)
 _SECTION_RE = re.compile(
     r"^(Neni\s+\d+[a-z]?|[ČC]lan\s+\d+[a-z]?|Madde\s+\d+[a-z]?"
-    r"|Article\s+\d+[a-z]?|第[一二三四五六七八九十百千0-9]+条)",
+    r"|Article\s+\d+[a-z]?|第[一二三四五六七八九十百千0-9]+条"
+    r"|§\s*\d+[a-z]?\b|Art(?:ikel)?\.?\s+\d+[a-z]?\b)",
     re.IGNORECASE,
 )
 
@@ -73,15 +76,18 @@ def _split_by_articles(text: str) -> list[tuple[str | None, str]]:
 
 @router.get("", response_model=list[CorpusDocOut])
 async def list_corpus(
-    jurisdiction_code: str = "XK",
+    jurisdiction_code: str | None = None,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    jurisdiction = (
-        await db.execute(select(Jurisdiction).where(Jurisdiction.code == jurisdiction_code))
-    ).scalar_one_or_none()
-    if jurisdiction is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Jurisdiction not found")
+    if jurisdiction_code:
+        jurisdiction = (
+            await db.execute(select(Jurisdiction).where(Jurisdiction.code == jurisdiction_code))
+        ).scalar_one_or_none()
+        if jurisdiction is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Jurisdiction not found")
+    else:
+        jurisdiction = await jurisdiction_row_for_tenant(db, user.tenant_id)
     docs = (
         await db.execute(
             select(LegalCorpusDoc).where(LegalCorpusDoc.jurisdiction_id == jurisdiction.id)

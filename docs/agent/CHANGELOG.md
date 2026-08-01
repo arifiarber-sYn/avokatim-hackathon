@@ -3,6 +3,31 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Germany expansion (D-034), phase 0: country scoping
+
+- One codebase, two countries: new `app/jurisdictions.py` (declarative
+  per-country profiles XK/DE — currency, VAT, timezone, locales, registry,
+  feature switches, host mapping), `country` columns on tenants /
+  citizen_users / case_requests (Alembic bc70e34d10f2, default XK),
+  host→country resolution (`de.avokatiim.ai` → DE) in proxy.ts
+  (x-avokatim-country header) + `country_from_request` on all public
+  endpoints. Signup (lawyer + citizen + OAuth state) records the country;
+  directory, stats, case posting/browsing/claiming, match/SOS alerts and the
+  public deadline calculator are country-scoped. XK hardcodes removed:
+  intake/imports/matters use the tenant's jurisdiction, templates/fee-tariff/
+  corpus lists default to it, matter page fetches rules via new
+  `/matters/{id}/deadline-rules`. Public Ava picks the corpus + system prompt
+  per country (German prompt is RDG-§2-safe with AI-Act Art. 50 disclosure).
+  Corpus splitter now recognizes German `§`/`Artikel` markers. Tunnel +
+  Cloudflare DNS for de.avokatiim.ai are live.
+- Files: `backend/app/jurisdictions.py` (new), `backend/app/models/
+  {tenancy,marketplace}.py`, `backend/app/api/{auth,marketplace,
+  oauth_citizen,intake,imports,matters,deadlines,templates,billing,corpus,
+  public_tools}.py`, `backend/app/schemas/matters.py`, 1 Alembic revision,
+  `frontend/src/proxy.ts`, `frontend/src/lib/country.ts` (new),
+  `frontend/src/app/(app)/matters/[id]/page.tsx`, `~/.cloudflared/config.yml`.
+- Verified: pytest 128/128, imports OK, https://de.avokatiim.ai returns 200.
+
 ## 2026-08-01 — Housekeeping: LiveKit 7881 → localhost, visibility-nudge script
 
 - LiveKit's TCP-ICE fallback port 7881 now binds to 127.0.0.1 only (LAN media
