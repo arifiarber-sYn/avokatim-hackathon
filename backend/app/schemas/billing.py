@@ -123,6 +123,8 @@ class InvoiceOut(BaseModel):
     vat_rate: int = 0
     vat_amount: Decimal = Decimal("0")
     total_with_vat: Decimal = Decimal("0")
+    mahnung_level: int = 0
+    last_mahnung_at: datetime | None = None
     notes: str | None
     items: list[InvoiceItemOut]
     total: Decimal

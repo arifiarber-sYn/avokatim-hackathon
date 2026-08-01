@@ -348,6 +348,11 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   or direct date, audited) or dismisses. Banner in the matter Deadlines tab
   + dashboard card; `GET /deadline-suggestions`, `.../accept`, `.../dismiss`.
   Never auto-creates anything.
+- **Mahnwesen / dunning** (2026-08-01, D-043): overdue sent invoices carry
+  `mahnung_level` 0–3; the billing page offers a one-click draft (client's
+  locale, level-appropriate wording, +14-day deadline) that the lawyer edits
+  and explicitly sends with the invoice PDF attached
+  (`GET /invoices/{id}/mahnung/draft`, `POST .../mahnung/send`, audited).
 - **Calendar sync**: ICS feed (`/api/calendar/feed.ics?token=...`, signed token,
   URL in Settings) for Google Calendar/Outlook/phone subscriptions.
 - **Documents**: encrypted storage (Fernet), versioning, text extraction + OCR,

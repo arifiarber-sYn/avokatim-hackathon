@@ -201,6 +201,8 @@ export interface Invoice {
   vat_rate: number;
   vat_amount: string;
   total_with_vat: string;
+  mahnung_level?: number;
+  last_mahnung_at?: string | null;
   items: { id: string; description: string; quantity: string; unit_price: string; amount: string }[];
   total: string;
 }

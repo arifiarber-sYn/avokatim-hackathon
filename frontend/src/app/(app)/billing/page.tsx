@@ -13,7 +13,7 @@ import {
   TrustBalance,
   TrustTransaction,
 } from "@/lib/types";
-import { Badge, Button, Card, ErrorNote, Input, Label, Select, Spinner } from "@/components/ui";
+import { Badge, Button, Card, ErrorNote, Input, Label, Select, Spinner, Textarea } from "@/components/ui";
 
 const EXPENSE_CATEGORIES = [
   "court_fee", "bailiff", "expert", "travel", "notary", "translation", "other",
@@ -443,6 +443,14 @@ interface RvgLine {
   amount: string;
 }
 
+interface MahnungDraft {
+  level: number;
+  to: string;
+  subject: string;
+  body: string;
+  new_due: string;
+}
+
 function InvoicesTab({ matters }: { matters: Matter[] }) {
   const { t, locale } = useI18n();
   const [invoices, setInvoices] = useState<Invoice[] | null>(null);
@@ -577,6 +585,55 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
       setError(err instanceof Error ? err.message : t.error);
     } finally {
       setSendingId(null);
+    }
+  }
+
+  // Mahnwesen (dunning): draft is fetched from the API, editable, and only
+  // sent on an explicit click — never automatically.
+  const [mahnungId, setMahnungId] = useState<string | null>(null);
+  const [mahnungDraft, setMahnungDraft] = useState<MahnungDraft | null>(null);
+  const [mahnungBusy, setMahnungBusy] = useState(false);
+
+  const today = new Date().toISOString().slice(0, 10);
+  const isOverdue = (inv: Invoice) =>
+    inv.status === "sent" && !!inv.due_on && inv.due_on < today;
+  const overdueDays = (inv: Invoice) =>
+    Math.floor((Date.parse(today) - Date.parse(inv.due_on!)) / 86400000);
+  const mhnLevelName = (level: number) =>
+    [t.mhnLevel1, t.mhnLevel2, t.mhnLevel3][Math.min(level, 3) - 1] || "";
+
+  async function openMahnung(inv: Invoice) {
+    setError("");
+    setNotice("");
+    setMahnungBusy(true);
+    try {
+      const draft = await apiGet<MahnungDraft>(`/invoices/${inv.id}/mahnung/draft`);
+      setMahnungId(inv.id);
+      setMahnungDraft(draft);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setMahnungBusy(false);
+    }
+  }
+
+  async function sendMahnung() {
+    if (!mahnungId || !mahnungDraft) return;
+    setMahnungBusy(true);
+    setError("");
+    try {
+      await apiPost(`/invoices/${mahnungId}/mahnung/send`, {
+        subject: mahnungDraft.subject,
+        body: mahnungDraft.body,
+      });
+      setNotice(t.mhnSent);
+      setMahnungId(null);
+      setMahnungDraft(null);
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setMahnungBusy(false);
     }
   }
 
@@ -787,9 +844,22 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
             <Card key={inv.id} className="p-4">
               <div className="flex justify-between items-center flex-wrap gap-3">
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-mono font-semibold">{inv.number}</span>
                     <Badge status={inv.status} label={(t as Record<string, string>)[inv.status]} />
+                    {isOverdue(inv) && (
+                      <span className="text-xs font-medium text-red-600">
+                        {t.mhnOverdueDays.replace("{n}", String(overdueDays(inv)))}
+                      </span>
+                    )}
+                    {(inv.mahnung_level ?? 0) > 0 && inv.status !== "paid" && (
+                      <span
+                        className="text-xs rounded-full bg-amber-100 text-amber-800 px-2 py-0.5"
+                        title={mhnLevelName(inv.mahnung_level!)}
+                      >
+                        {t.mhnBadge.replace("{n}", String(inv.mahnung_level))}
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-slate-500 mt-1">
                     {inv.items.length} × | {t.total}: {inv.currency} {Number(inv.total).toFixed(2)}
@@ -862,11 +932,73 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
                   {inv.status === "draft" && (
                     <Button variant="secondary" onClick={() => setStatus(inv.id, "sent")}>{t.markSent}</Button>
                   )}
+                  {isOverdue(inv) && (inv.mahnung_level ?? 0) < 3 && mahnungId !== inv.id && (
+                    <Button
+                      variant="secondary"
+                      onClick={() => openMahnung(inv)}
+                      disabled={mahnungBusy}
+                    >
+                      {t.mhnBtn}
+                    </Button>
+                  )}
                   {inv.status === "sent" && payingId !== inv.id && (
                     <Button onClick={() => setPayingId(inv.id)}>{t.markPaid}</Button>
                   )}
                 </div>
               </div>
+              {mahnungId === inv.id && mahnungDraft && (
+                <form
+                  className="mt-3 pt-3 border-t border-slate-100 space-y-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    sendMahnung();
+                  }}
+                >
+                  <p className="text-sm font-medium text-slate-700">
+                    {t.mhnDraftTitle.replace("{level}", mhnLevelName(mahnungDraft.level))}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {t.mhnTo}: {mahnungDraft.to}
+                  </p>
+                  <div>
+                    <Label>{t.mhnSubject}</Label>
+                    <Input
+                      value={mahnungDraft.subject}
+                      onChange={(e) =>
+                        setMahnungDraft({ ...mahnungDraft, subject: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>{t.mhnBody}</Label>
+                    <Textarea
+                      rows={8}
+                      value={mahnungDraft.body}
+                      onChange={(e) =>
+                        setMahnungDraft({ ...mahnungDraft, body: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <p className="text-xs text-slate-400">{t.mhnHint}</p>
+                  <div className="flex gap-2">
+                    <Button type="submit" disabled={mahnungBusy}>
+                      {mahnungBusy ? t.loading : t.mhnSend}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => {
+                        setMahnungId(null);
+                        setMahnungDraft(null);
+                      }}
+                    >
+                      {t.cancel}
+                    </Button>
+                  </div>
+                </form>
+              )}
               {manualLinkId === inv.id && (
                 <form
                   className="mt-3 pt-3 border-t border-slate-100 space-y-2"

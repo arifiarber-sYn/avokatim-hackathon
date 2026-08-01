@@ -87,6 +87,27 @@ _SQ = {
     ),
     "email_invoice_due": ", me afat pagese deri më {due}",
     "email_invoice_paylink": "Mund të paguani online me kartelë: {link}",
+    # Dunning emails (Mahnwesen) — level 1 friendly, 2 firm, 3 final
+    "email_mahnung_subject_1": "Kujtesë pagese — Fatura {number}",
+    "email_mahnung_subject_2": "Vërejtje pagese — Fatura {number}",
+    "email_mahnung_subject_3": "Vërejtja e fundit e pagesës — Fatura {number}",
+    "email_mahnung_body_1": (
+        "Me sa duket ju ka shpëtuar — fatura {number} me vlerë {total} "
+        "{currency} (afati: {due}) ende nuk është paguar. Ju lutemi kryeni "
+        "pagesën deri më {new_due}. Nëse tashmë keni paguar, ju lutemi "
+        "shpërfilleni këtë kujtesë."
+    ),
+    "email_mahnung_body_2": (
+        "Pavarësisht kujtesës sonë, fatura {number} me vlerë {total} "
+        "{currency} (afati: {due}) ende nuk është paguar. Ju lutemi shlyeni "
+        "shumën deri më {new_due}."
+    ),
+    "email_mahnung_body_3": (
+        "Fatura {number} me vlerë {total} {currency} mbetet e papaguar "
+        "pavarësisht vërejtjeve tona. Ju kërkojmë për herë të fundit të "
+        "shlyeni shumën deri më {new_due}. Në të kundërt, rezervojmë të "
+        "drejtën të ndjekim rrugën ligjore për arkëtimin e kërkesës."
+    ),
     # Signature request email
     "email_signature_subject": "Dokument për nënshkrim elektronik",
     "email_signature_body": (
@@ -317,6 +338,25 @@ _SR = {
     ),
     "email_invoice_due": ", sa rokom plaćanja do {due}",
     "email_invoice_paylink": "Možete platiti onlajn karticom: {link}",
+    "email_mahnung_subject_1": "Podsetnik za plaćanje — Faktura {number}",
+    "email_mahnung_subject_2": "Opomena — Faktura {number}",
+    "email_mahnung_subject_3": "Poslednja opomena — Faktura {number}",
+    "email_mahnung_body_1": (
+        "Verovatno Vam je promaklo — faktura {number} u iznosu od {total} "
+        "{currency} (rok: {due}) još nije plaćena. Molimo Vas da izvršite "
+        "uplatu do {new_due}. Ako ste već platili, zanemarite ovaj podsetnik."
+    ),
+    "email_mahnung_body_2": (
+        "Uprkos našem podsetniku, faktura {number} u iznosu od {total} "
+        "{currency} (rok: {due}) i dalje nije plaćena. Molimo Vas da iznos "
+        "izmirite do {new_due}."
+    ),
+    "email_mahnung_body_3": (
+        "Faktura {number} u iznosu od {total} {currency} i dalje nije "
+        "plaćena uprkos našim opomenama. Poslednji put Vas pozivamo da iznos "
+        "izmirite do {new_due}. U suprotnom zadržavamo pravo da pokrenemo "
+        "pravne korake za naplatu potraživanja."
+    ),
     "email_signature_subject": "Dokument za elektronski potpis",
     "email_signature_body": (
         '{lawyer} vam je poslao/la dokument "{filename}" na elektronsko potpisivanje.'
@@ -539,6 +579,26 @@ _TR = {
     ),
     "email_invoice_due": ", son ödeme tarihi {due}",
     "email_invoice_paylink": "Kartla online ödeyebilirsiniz: {link}",
+    "email_mahnung_subject_1": "Ödeme hatırlatması — Fatura {number}",
+    "email_mahnung_subject_2": "Ödeme ihtarı — Fatura {number}",
+    "email_mahnung_subject_3": "Son ihtar — Fatura {number}",
+    "email_mahnung_body_1": (
+        "Muhtemelen gözünüzden kaçtı — {total} {currency} tutarındaki "
+        "{number} numaralı fatura (son ödeme: {due}) henüz ödenmedi. Lütfen "
+        "ödemeyi {new_due} tarihine kadar yapınız. Ödemeyi yaptıysanız bu "
+        "hatırlatmayı dikkate almayınız."
+    ),
+    "email_mahnung_body_2": (
+        "Hatırlatmamıza rağmen {total} {currency} tutarındaki {number} "
+        "numaralı fatura (son ödeme: {due}) hâlâ ödenmedi. Lütfen tutarı "
+        "{new_due} tarihine kadar ödeyiniz."
+    ),
+    "email_mahnung_body_3": (
+        "{total} {currency} tutarındaki {number} numaralı fatura, hatırlatma "
+        "ve ihtarlarımıza rağmen hâlâ ödenmedi. Tutarı {new_due} tarihine "
+        "kadar ödemenizi son kez talep ederiz. Aksi halde alacağın tahsili "
+        "için yasal yollara başvurma hakkımızı saklı tutarız."
+    ),
     "email_signature_subject": "Elektronik imza için belge",
     "email_signature_body": (
         '{lawyer} size "{filename}" belgesini elektronik imza için gönderdi.'
@@ -762,6 +822,25 @@ _BS = {
     ),
     "email_invoice_due": ", s rokom plaćanja do {due}",
     "email_invoice_paylink": "Možete platiti online karticom: {link}",
+    "email_mahnung_subject_1": "Podsjetnik za plaćanje — Faktura {number}",
+    "email_mahnung_subject_2": "Opomena — Faktura {number}",
+    "email_mahnung_subject_3": "Posljednja opomena — Faktura {number}",
+    "email_mahnung_body_1": (
+        "Vjerovatno Vam je promaklo — faktura {number} u iznosu od {total} "
+        "{currency} (rok: {due}) još nije plaćena. Molimo Vas da izvršite "
+        "uplatu do {new_due}. Ako ste već platili, zanemarite ovaj podsjetnik."
+    ),
+    "email_mahnung_body_2": (
+        "Uprkos našem podsjetniku, faktura {number} u iznosu od {total} "
+        "{currency} (rok: {due}) i dalje nije plaćena. Molimo Vas da iznos "
+        "izmirite do {new_due}."
+    ),
+    "email_mahnung_body_3": (
+        "Faktura {number} u iznosu od {total} {currency} i dalje nije "
+        "plaćena uprkos našim opomenama. Posljednji put Vas pozivamo da "
+        "iznos izmirite do {new_due}. U suprotnom zadržavamo pravo da "
+        "pokrenemo pravne korake za naplatu potraživanja."
+    ),
     "email_signature_subject": "Dokument za elektronski potpis",
     "email_signature_body": (
         '{lawyer} vam je poslao/la dokument "{filename}" na elektronsko potpisivanje.'
@@ -984,6 +1063,25 @@ _EN = {
     ),
     "email_invoice_due": ", due by {due}",
     "email_invoice_paylink": "You can pay online by card: {link}",
+    "email_mahnung_subject_1": "Payment reminder — Invoice {number}",
+    "email_mahnung_subject_2": "Overdue payment notice — Invoice {number}",
+    "email_mahnung_subject_3": "Final notice — Invoice {number}",
+    "email_mahnung_body_1": (
+        "It has probably slipped your attention — invoice {number} for "
+        "{total} {currency} (due {due}) is still outstanding. Please arrange "
+        "payment by {new_due}. If you have already paid, please disregard "
+        "this reminder."
+    ),
+    "email_mahnung_body_2": (
+        "Despite our reminder, invoice {number} for {total} {currency} "
+        "(due {due}) remains unpaid. Please settle the amount by {new_due}."
+    ),
+    "email_mahnung_body_3": (
+        "Invoice {number} for {total} {currency} remains unpaid despite our "
+        "reminders. We ask you one final time to settle the amount by "
+        "{new_due}. Otherwise we reserve the right to take legal steps to "
+        "recover the claim."
+    ),
     "email_signature_subject": "Document for electronic signature",
     "email_signature_body": (
         '{lawyer} sent you the document "{filename}" for electronic signature.'
@@ -1181,6 +1279,21 @@ _ZH = {
     "email_invoice_attached": "附件为发票 {number}，金额 {total} {currency}",
     "email_invoice_due": "，付款期限至 {due}",
     "email_invoice_paylink": "您可以在线刷卡支付：{link}",
+    "email_mahnung_subject_1": "付款提醒 — 发票 {number}",
+    "email_mahnung_subject_2": "催款通知 — 发票 {number}",
+    "email_mahnung_subject_3": "最后催款通知 — 发票 {number}",
+    "email_mahnung_body_1": (
+        "您可能疏忽了——发票 {number}（金额 {total} {currency}，付款期限 {due}）"
+        "尚未支付。请在 {new_due} 前完成付款。如您已付款，请忽略此提醒。"
+    ),
+    "email_mahnung_body_2": (
+        "尽管我们已提醒，发票 {number}（金额 {total} {currency}，付款期限 {due}）"
+        "仍未支付。请在 {new_due} 前结清款项。"
+    ),
+    "email_mahnung_body_3": (
+        "发票 {number}（金额 {total} {currency}）经多次催告仍未支付。"
+        "请务必在 {new_due} 前结清款项，否则我们保留采取法律途径追讨欠款的权利。"
+    ),
     "email_signature_subject": "待电子签署的文件",
     "email_signature_body": "{lawyer} 向您发送了文件“{filename}”以供电子签署。",
     "email_note": "备注：{note}",
@@ -1357,6 +1470,27 @@ _DE = {
     ),
     "email_invoice_due": ", fällig bis {due}",
     "email_invoice_paylink": "Sie können online per Karte zahlen: {link}",
+    "email_mahnung_subject_1": "Zahlungserinnerung — Rechnung {number}",
+    "email_mahnung_subject_2": "Mahnung — Rechnung {number}",
+    "email_mahnung_subject_3": "Letzte Mahnung — Rechnung {number}",
+    "email_mahnung_body_1": (
+        "vermutlich ist es Ihrer Aufmerksamkeit entgangen: Die Rechnung "
+        "{number} über {total} {currency} (fällig am {due}) ist noch offen. "
+        "Wir bitten um Ausgleich bis zum {new_due}. Sollte sich Ihre Zahlung "
+        "mit dieser Erinnerung überschnitten haben, betrachten Sie diese "
+        "bitte als gegenstandslos."
+    ),
+    "email_mahnung_body_2": (
+        "trotz unserer Zahlungserinnerung ist die Rechnung {number} über "
+        "{total} {currency} (fällig am {due}) weiterhin offen. Wir bitten "
+        "Sie, den Betrag bis zum {new_due} zu begleichen."
+    ),
+    "email_mahnung_body_3": (
+        "die Rechnung {number} über {total} {currency} ist trotz Erinnerung "
+        "und Mahnung weiterhin offen. Wir fordern Sie letztmalig auf, den "
+        "Betrag bis zum {new_due} zu begleichen. Andernfalls behalten wir "
+        "uns rechtliche Schritte zur Beitreibung der Forderung vor."
+    ),
     "email_signature_subject": "Dokument zur elektronischen Signatur",
     "email_signature_body": (
         '{lawyer} hat Ihnen das Dokument "{filename}" zur elektronischen Signatur gesendet.'

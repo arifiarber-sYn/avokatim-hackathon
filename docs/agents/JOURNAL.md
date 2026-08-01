@@ -10,6 +10,24 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01o — D-043 F4 (pjesa 2): Mahnwesen — draft vërejtjesh pagese me një klik (Cursor / Fable 5)
+
+- Done: `Invoice.mahnung_level` (0–3) + `last_mahnung_at` (migrimi
+  `c9054a36297b`). `GET /invoices/{id}/mahnung/draft` kthen email të gatshëm
+  për redaktim në gjuhën e klientit (niveli 1 kujtesë / 2 vërejtje / 3 e
+  fundit, afat i ri +14 ditë); `POST .../mahnung/send` e dërgon tekstin e
+  redaktuar me PDF-në e faturës bashkëngjitur (ZUGFeRD për DE), e ngre
+  nivelin dhe auditohet. Vetëm fatura të dërguara + të vonuara; dërgimi
+  gjithmonë me klik njeriu. 6 çelësa email në i18n backend (7 gjuhë,
+  gjermanishtja ndjek konventën Zahlungserinnerung → Mahnung → Letzte
+  Mahnung) + 13 çelësa `mhn*` në fjalorin frontend. UI te faturimi:
+  shënues "n ditë vonesë", badge "Mahnstufe n", buton që hap editor inline.
+- Verified: 173 teste (4 të reja në `test_mahnung.py`). E2E live me zyrë DE:
+  draft në faturë `draft` → 400; pas "sent" → letra e saktë gjermane e
+  nivelit 1 me TVSH 19% dhe afat +14 ditë; subjekt bosh → 422. Health +
+  frontend 200.
+- Left open: F4 pjesa 3 — klasifikimi i email-it pa token.
+
 ## 2026-08-01n — D-043 F4 (pjesa 1): Sugjerime afatesh nga skanimi i dokumenteve (Cursor / Fable 5)
 
 - Done: model i ri `DeadlineSuggestion` (migrimi `1dd3e30e543f`) + service

@@ -111,6 +111,11 @@ class Invoice(Base, TenantMixin, TimestampMixin):
     # Online card payment (Stripe Checkout). Empty when not requested/configured.
     payment_link: Mapped[str | None] = mapped_column(String(1000))
     stripe_session_id: Mapped[str | None] = mapped_column(String(255), index=True)
+    # Dunning (Mahnwesen, D-043): 0 = none, 1 = payment reminder
+    # (Zahlungserinnerung), 2 = Mahnung, 3 = final Mahnung. Every send is a
+    # human click; nothing is mailed automatically.
+    mahnung_level: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    last_mahnung_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     items: Mapped[list["InvoiceItem"]] = relationship(
         back_populates="invoice", cascade="all, delete-orphan"

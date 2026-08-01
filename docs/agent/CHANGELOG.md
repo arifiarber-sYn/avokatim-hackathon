@@ -3,6 +3,32 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Mahnwesen: one-click dunning drafts on overdue invoices (D-043 F4, part 2)
+
+- New: `Invoice.mahnung_level` (0–3) + `last_mahnung_at` (migration
+  `c9054a36297b`). Endpoints `GET /invoices/{id}/mahnung/draft` (returns a
+  ready-to-edit email in the client's locale: level 1 payment reminder /
+  2 Mahnung / 3 final Mahnung, new payment deadline +14 days) and
+  `POST .../mahnung/send` (sends the edited text with the invoice PDF —
+  ZUGFeRD for DE — attached, bumps the level, audited as
+  `invoice.mahnung`). Only sent+overdue invoices can be dunned; sending is
+  always a human click (D-043 suggest→accept contract).
+- i18n: 6 new backend email keys (`email_mahnung_subject/body_1..3`) in
+  all 7 locales; German follows the Zahlungserinnerung → Mahnung → Letzte
+  Mahnung convention with legal-steps wording only at level 3.
+- UI (billing → invoices): red "{n} days overdue" marker, amber
+  "Mahnstufe {n}" badge, dunning button on overdue invoices opening an
+  inline editor (recipient, subject, body) with explicit send. 13 new
+  `mhn*` dictionary keys in all 7 locales.
+- Tests: `tests/test_mahnung.py` (4) — 173 total green. Live E2E: DE
+  office → overdue invoice → draft rejected while `draft` status (400),
+  correct German level-1 letter once sent, empty subject 422.
+- Files: `backend/alembic/versions/20260801_c9054a36297b_*.py` (new),
+  `models/billing.py`, `schemas/billing.py`, `api/billing.py`,
+  `app/i18n.py`, `tests/test_mahnung.py` (new),
+  `frontend/src/lib/types.ts`, `lib/dictionaries.ts`,
+  `(app)/billing/page.tsx`.
+
 ## 2026-08-01 — AI deadline suggestions from document/email scans (D-043 F4, part 1)
 
 - New: `DeadlineSuggestion` model + migration `1dd3e30e543f` — every

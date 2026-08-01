@@ -1,5 +1,5 @@
 import uuid
-from datetime import date, datetime, time as dt_time, timezone
+from datetime import date, datetime, time as dt_time, timedelta, timezone
 from decimal import Decimal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
@@ -743,6 +743,108 @@ async def send_invoice(
     await log_action(
         db, tenant_id=user.tenant_id, user_id=user.id, action="invoice.send",
         entity_type="invoice", entity_id=str(invoice.id), details={"to": contact.email},
+    )
+    await db.commit()
+    return await _load_invoice(db, user, invoice_id)
+
+
+# ---------- Mahnwesen (dunning, D-043 F4) ----------
+# Levels: 1 = payment reminder, 2 = Mahnung, 3 = final Mahnung. The lawyer
+# always reviews and clicks send — nothing is mailed automatically.
+
+MAHNUNG_MAX_LEVEL = 3
+MAHNUNG_GRACE_DAYS = 14
+
+
+async def _mahnung_target(
+    db: AsyncSession, user: User, invoice_id: uuid.UUID
+) -> tuple[Invoice, Contact]:
+    invoice = await _load_invoice(db, user, invoice_id)
+    if invoice.status != "sent":
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "Only sent, unpaid invoices can be dunned"
+        )
+    if invoice.due_on is None or invoice.due_on >= date.today():
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invoice is not overdue")
+    if invoice.mahnung_level >= MAHNUNG_MAX_LEVEL:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "Final dunning level already reached"
+        )
+    contact = await db.get(Contact, invoice.contact_id) if invoice.contact_id else None
+    if contact is None or not contact.email:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Client has no email address")
+    return invoice, contact
+
+
+@router.get("/invoices/{invoice_id}/mahnung/draft")
+async def mahnung_draft(
+    invoice_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """A ready-to-edit dunning email for the next level — nothing is sent."""
+    invoice, contact = await _mahnung_target(db, user, invoice_id)
+    tenant = await db.get(Tenant, user.tenant_id)
+    loc = pick_locale(contact.locale, tenant.default_locale)
+    level = invoice.mahnung_level + 1
+    new_due = date.today() + timedelta(days=MAHNUNG_GRACE_DAYS)
+    args = {
+        "number": invoice.number,
+        "total": f"{invoice.total_with_vat:.2f}",
+        "currency": invoice.currency,
+        "due": f"{invoice.due_on:%d.%m.%Y}",
+        "new_due": f"{new_due:%d.%m.%Y}",
+    }
+    body = (
+        tr(loc, "email_greeting", name=contact.display_name)
+        + "\n\n"
+        + tr(loc, f"email_mahnung_body_{level}", **args)
+        + (
+            "\n\n" + tr(loc, "email_invoice_paylink", link=invoice.payment_link)
+            if invoice.payment_link
+            else ""
+        )
+        + f"\n\n{tr(loc, 'email_signoff')}\n{user.full_name}\n{tenant.name}\n"
+    )
+    return {
+        "level": level,
+        "to": contact.email,
+        "subject": tr(loc, f"email_mahnung_subject_{level}", **args),
+        "body": body,
+        "new_due": new_due.isoformat(),
+    }
+
+
+class MahnungSendIn(BaseModel):
+    subject: str = Field(min_length=1, max_length=255)
+    body: str = Field(min_length=1, max_length=20000)
+
+
+@router.post("/invoices/{invoice_id}/mahnung/send", response_model=InvoiceOut)
+async def mahnung_send(
+    invoice_id: uuid.UUID,
+    body: MahnungSendIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Email the (possibly edited) dunning letter with the invoice PDF and
+    advance the dunning level."""
+    invoice, contact = await _mahnung_target(db, user, invoice_id)
+    pdf = await _invoice_pdf_bytes(db, user, invoice)
+    sent = await send_email(
+        contact.email,
+        body.subject,
+        body.body,
+        attachments=[(f"fatura-{invoice.number}.pdf", pdf, "application/pdf")],
+    )
+    if not sent:
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Email could not be sent (SMTP)")
+    invoice.mahnung_level += 1
+    invoice.last_mahnung_at = datetime.now(timezone.utc)
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="invoice.mahnung",
+        entity_type="invoice", entity_id=str(invoice.id),
+        details={"level": invoice.mahnung_level, "to": contact.email},
     )
     await db.commit()
     return await _load_invoice(db, user, invoice_id)
