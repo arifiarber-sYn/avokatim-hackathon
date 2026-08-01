@@ -7,10 +7,18 @@
 ## Statusi aktual
 
 Platforma gjermane është funksionale në `de.avokatiim.ai`: juridiksioni DE,
-korpusi ligjor federal (gesetze-im-internet.de), Ava në gjermanisht me kufij
-RDG dhe deklarim AI Act, afatet ZPO/StPO/KSchG/VwGO/SGG, tarifa RVG, festat
-federale, template dokumentesh, AGB + Datenschutzerklärung draft, Impressum
-me placeholder.
+korpusi ligjor federal (gesetze-im-internet.de) + DSGVO + Landesrecht NRW/BY,
+Ava në gjermanisht me kufij RDG dhe deklarim AI Act, afatet ZPO/StPO/KSchG/
+VwGO/SGG me muaj ekzaktë dhe festa landesh, template dokumentesh, AGB +
+Datenschutzerklärung draft, Impressum me placeholder.
+
+**Pariteti me tregun (D-037, 2026-08-01):** motori i plotë RVG (§ 13 tabela
+KostBRÄG 2025 + kalkulatori publik /rvg), E-Rechnung ZUGFeRD/Factur-X
+(PDF/A-3b, validuar me Mustangproject), sigurimi juridik në rrjedhën e
+rastit + shablloni Deckungsanfrage, eksporti DATEV EXTF. Verifikuar E2E me
+`backend/scripts/de_simulation.py` (15 kontrolle). **LLM lokal aktiv**:
+`PROFILES["DE"].llm_provider="local"` → Ollama `gemma3:27b` në RTX 5090
+(17.5 GB VRAM, ~50 tok/s) — asnjë e dhënë qytetari gjerman s'del nga serveri.
 
 ## Kushtet e portës (para lansimit publik)
 
@@ -19,10 +27,11 @@ me placeholder.
    aktual në makinën e pronarit mjafton vetëm për beta të mbyllur.
 2. **Përfaqësues në BE sipas GDPR Art. 27** — i detyrueshëm për ofrues
    jashtë BE-së që përpunojnë të dhëna të banorëve të BE-së.
-3. **LLM provider në BE për kërkesat DE** — konfigurohu te
-   `JurisdictionProfile.llm_provider` në `backend/app/jurisdictions.py`
-   (rekomandim: Mistral). Deri atëherë DE Ava punon me providerin default
-   por me deklarim të plotë transparence.
+3. ~~**LLM provider në BE për kërkesat DE**~~ ✅ **E MBYLLUR (D-037)**:
+   `PROFILES["DE"].llm_provider = "local"` — Ava DE punon me `gemma3:27b`
+   në Ollama lokalisht (testuar kundër qwen3:14b për cilësi gjermanishteje;
+   gemma3 fitoi: pa "thinking", latencë e parashikueshme, citim korrekt i
+   normave me kontekst RAG). Asnjë kërkesë qytetari DE s'del nga makina.
 4. **Rishikim ligjor nga avokat gjerman** i AGB-ve, Datenschutzerklärung
    dhe Impressum (draftet janë në `frontend/src/lib/legal.ts` dhe
    `frontend/src/app/impressum/page.tsx`). Plotëso adresën fizike te

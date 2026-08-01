@@ -3,6 +3,26 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — DE launch gate: local LLM + full E2E test (D-037 phase 5)
+
+- `PROFILES["DE"].llm_provider = "local"` — Ava DE and all German LLM calls
+  now run on Ollama locally (`LOCAL_LLM_MODEL=gemma3:27b` in backend/.env),
+  so no German citizen data leaves the machine. Model chosen after a
+  RAG-grounded German-quality shootout vs qwen3:14b (qwen3 burned its token
+  budget on "thinking" and returned empty answers through the OpenAI-compat
+  endpoint; gemma3:27b fits the RTX 5090 at 17.5 GB VRAM, ~50 tok/s, cites
+  provided norms correctly). Verified live: § 573c BGB answer via
+  /public/ava/ask on the DE host, backend log shows 127.0.0.1:11434.
+- New `backend/scripts/de_simulation.py`: 15-check E2E of all D-037 features
+  on the DE host — office signup + fiscal config (IBAN, DATEV accounts), RVG
+  calc, ZUGFeRD hybrid PDF + XML download, invoice sent/paid, DATEV EXTF
+  export, Deckungsanfrage template, citizen case with Rechtsschutz, lawyer
+  sees the insurance badge. All pass.
+- Regression: full_simulation XK 187 PASS / 0 FAIL, pytest 150 green.
+- DE-LAUNCH-GATE.md updated: gate item 3 (EU LLM provider) closed; remaining
+  gate items are operational/owner-side (EU server, Art. 27 rep, German
+  lawyer review of legal texts, VAT before first real invoice).
+
 ## 2026-08-01 — DATEV EXTF export (D-037 phase 4)
 
 - New `services/datev.py`: EXTF Buchungsstapel CSV (header 700 / format v13,

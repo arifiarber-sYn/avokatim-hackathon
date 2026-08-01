@@ -92,7 +92,10 @@ PROFILES: dict[str, JurisdictionProfile] = {
         sos_enabled=False,
         notary_enabled=False,
         corpus_fallback_language="de",
-        llm_provider=None,  # set to an EU provider before public DE launch
+        # Local German-capable model via Ollama (D-037 phase 5): no citizen
+        # data leaves this machine. Model set by LOCAL_LLM_MODEL in .env
+        # (gemma3:27b chosen on the RTX 5090 — see DECISIONS D-037).
+        llm_provider="local",
         cities=(
             "Berlin", "Hamburg", "München", "Köln", "Frankfurt am Main",
             "Stuttgart", "Düsseldorf", "Leipzig", "Dortmund", "Essen",
