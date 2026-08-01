@@ -10,6 +10,21 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01j — Analizë strategjike: si ta avancojmë platformën për peshën e tregut DE (Cursor / Fable 5)
+
+- Done: hulumtim tregu (Wolters Kluwer Benchmark 2026, BRAK, Legal Tech
+  Verband, BMJV) + krahasim me gjendjen tonë → seksion i ri në ROADMAP
+  "DE advancement wave" me tri nivele prioriteti. Gjetja kryesore:
+  **zivilgerichtliches Online-Verfahren** nisi 15.4.2026 (padi deri €10k +
+  fluggastrechte, 18 gjykata, service.justiz.de, XJustiz në zhvillim) —
+  dritare e hapur ku askush s'ka avantazh ende. Të tjera: Prozesskosten-
+  rechner (RVG+GKG), retrieval hibrid + jurisprudencë BGH/BAG, agjentë
+  back-office (dhimbja: 49.5% e kohës jo e faturueshme), paketë
+  konformiteti me BRAK KI-Leitfaden (neutralizon bllokuesin #1 — DSGVO),
+  pozicionim "0% komision" kundër advocado (33.92% tarifë).
+- Verified: s'ka ndryshime kodi — vetëm ROADMAP + JOURNAL.
+- Left open: pronari zgjedh me cilin nivel A fillojmë.
+
 ## 2026-08-01i — Auditim mobil i plotë (DE i pari, pastaj XK) — D-039 SEO per-host (Cursor / Fable 5)
 
 - Done: auditim i webit në telefon me Chromium headless (iPhone 14 viewport,

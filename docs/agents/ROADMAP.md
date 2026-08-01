@@ -182,6 +182,58 @@ Growth operations (running):
       (e.g. DSGVO Art. 15) even though it's in the corpus.
 - [ ] DE case law (BGH/BAG/BVerfG via rechtsprechung-im-internet.de) — see
       proposal in JOURNAL 2026-08-01c.
+## DE advancement wave (2026-08-01 market analysis — owner request)
+
+> Grounding: Wolters Kluwer Benchmark 2026 (63% of German firms already use
+> AI; #1 blockers: DSGVO 38.9%, liability; 49.5% bill less than half their
+> time; 70% name client acquisition as top concern; only 22% use intake
+> tools, 20% automated time capture), BRAK (167,547 lawyers 1.1.2026, >75%
+> of practices are solo), BRAK KI-Leitfaden (Dec 2024), zivilgerichtliches
+> Online-Verfahren live since 15.4.2026 (18 Amtsgerichte, payment claims
+> ≤ €10k + air-passenger rights, service.justiz.de, filing via beA,
+> XJustiz planned), eAkte mandatory since 1.1.2026 (opt-outs to 2027),
+> advocado charges lawyers a 33.92% infrastructure fee (we charge 0%).
+
+Tier A — differentiators we can build now (no external dependency):
+- [ ] **Online-Verfahren assistant**: from a matter (or citizen case),
+      generate the Klageschrift for payment claims ≤ €10k / Fluggastrechte
+      in the format the pilot courts accept, prefill service.justiz.de
+      inputs, prepare for XJustiz structured filing when the lawyer input
+      system ships. Brand-new procedure (4/2026) — no incumbent owns it yet.
+- [ ] **Prozesskostenrechner** = RVG (done) + GKG court-fee table + cost
+      risk per instance (who pays what if you win/lose). Public page → SEO
+      magnet ("Was kostet ein Prozess?"); internal: quote per matter.
+- [ ] **Recherche depth**: hybrid BM25+vector retrieval, case-law corpus
+      (BGH/BAG/BVerfG via rechtsprechung-im-internet.de) with citation in
+      Ava answers. Research is the #1 AI use case in DE firms (90.9%).
+- [ ] **Back-office agents** (the 49.5% billable-time pain): email→Akte
+      routing with suggested filing, incoming Bescheid/Urteil scan →
+      deadline suggestion into the Fristen engine, invoice chasing
+      (Mahnung) drafts. Extends the existing activity→time-entry suggester.
+- [ ] **BRAK KI-Leitfaden compliance pack**: per-office AI-usage register,
+      human-review checkpoints on AI drafts, output logging, DSGVO
+      processing-record template. Sell compliance as a feature ("BRAK-
+      Leitfaden-konform"), it neutralizes the #1 adoption blocker.
+
+Tier B — growth channels:
+- [ ] Marketplace positioning vs advocado/anwalt.de: "0% commission, flat
+      subscription" front and center on /per-avokatet DE; Rechtstipps-style
+      content pages generated from our corpus (with lawyer review workflow)
+      to chase anwalt.de's SEO moat.
+- [ ] Rechtsschutzversicherung deepening: per-insurer Deckungsanfrage
+      submission formats (ARAG, Allianz, HUK…), coverage-status tracking on
+      the case, insurer as acquisition channel.
+- [ ] beA (waiting on BRAK KSW access — guide ready) + XJustiz export:
+      together they complete the e-filing story the Online-Verfahren opens.
+
+Tier C — strategic (6+ months):
+- [ ] "Legal Operating System" consolidation play: IMAP/e-mail ingest,
+      CalDAV calendar sync, Steuerberater handoff beyond DATEV EXTF.
+- [ ] German legal fine-tune / EU-hosted LLM + eval harness ("KI, die Ihre
+      Kanzlei nie verlässt") — builds on gemma3:27b local baseline.
+- [ ] EU hosting + GDPR Art. 27 representative (launch-gate items 1–2) —
+      precondition for any public marketing.
+
 - [ ] GB seeds (deadline rules, holidays, templates, corpus).
 - [ ] CN seeds; INTL (arbitration etc.).
 - [ ] Per-jurisdiction template/document language handling.
