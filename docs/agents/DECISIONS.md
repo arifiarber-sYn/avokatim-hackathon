@@ -798,3 +798,38 @@
 - Consequences: adding country #3 is now data + one profile entry; the de
   locale is the 7th UI/email language; German legal texts (AGB, Datenschutz,
   Impressum at /impressum) are drafts pending professional review.
+
+## D-035: Landesrecht as a `region` dimension, not new tables (2026-08-01)
+
+- Context: German court deadlines legally depend on the Bundesland's
+  holidays (§ 222 ZPO → §§ 187 ff. BGB), and the topics citizens ask most
+  (police, building, school, neighbours, Kita, shop hours, municipal, press)
+  are Landesrecht — absent from the federal corpus (D-034 limitation).
+- Decision: one nullable `region` column (Bundesland code NW/BY/…, ISO
+  3166-2 without prefix) on `Holiday`, `LegalCorpusDoc` and `Tenant`;
+  `region IS NULL` = nation-wide/federal, so the existing 79-act federal
+  corpus and federal holidays are untouched. The 16-Länder registry and a
+  city→Land prefill map are data in the DE `JurisdictionProfile`.
+  1. **Deadline engine**: `_holiday_set(…, region)` returns federal + that
+     Land's holidays; the office's Land comes from `tenant.region`
+     (settings picker, prefilled from the first profile city). No region →
+     federal only (previous behaviour, conservative). Only whole-Land
+     holidays are seeded — municipal/partial ones (Mariä Himmelfahrt in BY,
+     Augsburger Friedensfest) are excluded because a false holiday would
+     compute a LATER due date than the real one.
+  2. **Corpus**: `search_corpus(…, region)` = `region IS NULL OR region =
+     :r` — federal always, the asker's Land on top, other Länder never.
+     Lawyer assistant passes no region yet (federal-only, unchanged).
+  3. **Import per portal adapter** (`scripts/import_de_landesrecht.py`):
+     every Land publishes differently, so one small adapter per portal and
+     a curated ~10-act list per Land. Pilot: NRW (recht.nrw.de, server-
+     rendered Drupal) + Bayern (gesetze-bayern.de) = ~30M residents,
+     20 acts / ~2,900 chunks. Statutory texts are § 5 UrhG public domain.
+  4. **Remaining 14 Länder blocked on juris SPAs**: landesrecht-bw.de,
+     gesetze.berlin.de etc. are JavaScript apps over a token-authenticated
+     "mylex" API — scraping needs a headless browser or a data agreement;
+     deferred (LESSONS #1). Ava's DE prompt says openly which Länder are
+     covered and answers federal-only for the rest.
+- Consequences: deadline math is now Land-correct for offices that pick
+  their Bundesland; public Ava has a "Bundesland (optional)" selector
+  (localStorage); every future Land is data + one adapter, no schema work.

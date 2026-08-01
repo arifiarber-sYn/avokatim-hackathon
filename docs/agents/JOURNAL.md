@@ -10,6 +10,34 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01d — Landesrecht: dimensioni region + piloti NRW/Bayern (D-035) (Cursor / Fable 5)
+
+- Done: kolona `region` (kodi i landit NW/BY/…, NULL = federal) te
+  `Holiday` (unique `(jurisdiction_id, day, region)` NULLS NOT DISTINCT),
+  `LegalCorpusDoc`, `Tenant` (migrimi `cb917eb4a318`); regjistri i 16
+  landeve + harta qytet→land në profilin DE. Festat e landeve 2026–27 në
+  seeds (vetëm ato që vlejnë në tërë landin — konservative për afatet);
+  `compute_due_date` merr `region` nga `tenant.region` (picker i landit te
+  settings, i parambushur nga qyteti i profilit); kalkulatori publik pranon
+  `region` opsional.
+- Done: `scripts/import_de_landesrecht.py` me arkitekturë adapterësh —
+  NRW (recht.nrw.de, HTML i renderuar në server) + Bayern
+  (gesetze-bayern.de `/Content/Document/{slug}/true`): 20 akte të kuruara
+  (Polizei/Bau/Schule/Nachbarrecht/Kita/Ladenöffnung/Feiertage/Datenschutz/
+  Gemeindeordnung/Presse × 2), ~2,900 chunks me region. `search_corpus`
+  me filtër region (federal gjithmonë + landi i pyetësit); Ava publike merr
+  `region` nga dropdown-i "Bundesland (optional)" (localStorage); citimet
+  tregojnë landin; prompt-i DE i përditësuar (NRW+BY në burime, landet e
+  tjera deklarohen hapur si të pambuluara).
+- Verified: pytest 135/135 (7 teste të reja `test_regions.py`); afati live
+  NW shtyhet përtej Allerheiligen (2027-11-01→11-02), NI jo; Ava live:
+  pyetje gardhi me NW → citime NachbG NRW, me BY → AGBGB Bayern + BGB,
+  pa region → vetëm BGB; Ava XK e paprekur.
+- Left open / next: 14 landet e tjera janë juris-SPA me API me token
+  (headless browser ose marrëveshje të dhënash — LESSONS #1, ROADMAP);
+  asistenti i avokatëve ende federal-only (mund t'i jepet tenant.region);
+  jurisprudenca BGH/BAG mbetet propozim më vete.
+
 ## 2026-08-01c — Korpusi DE vala 2: +20 ligje + DSGVO (Cursor / Fable 5)
 
 - Done: second wave of German corpus for citizen-frequency topics — BEEG

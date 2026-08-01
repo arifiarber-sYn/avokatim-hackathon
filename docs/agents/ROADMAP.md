@@ -150,15 +150,25 @@ Growth operations (running):
       (BEEG, MuSchG, GewSchG, BerHG, GKG/FamGKG, UWG, SGB IV/VII/VIII/IX/X,
       WoGG, BAföG, PflVG, FeV, ZVG…) + DSGVO in German from EUR-Lex/CELLAR
       (`import_dsgvo.py`) → 79 acts / 16,435 chunks.
-- [ ] DE deepening: Bundesland holidays (needs `Holiday.region`), exact
-      calendar-month deadline arithmetic (§ 222 ZPO), BRAV scraper when the
-      portal stabilizes, German outreach campaign, SOS/notary legal review.
+- [x] Landesrecht pilot ✅ (2026-08-01, D-035): `region` dimension
+      (Holiday/LegalCorpusDoc/Tenant), Land holidays 2026–27 in the deadline
+      engine, NRW + Bayern corpus (20 acts / ~2,900 chunks) via
+      `import_de_landesrecht.py`, region-aware retrieval + Ava Bundesland
+      picker.
+- [ ] Landesrecht rollout: remaining 14 Länder. Blocker: their portals
+      (landesrecht-bw.de, gesetze.berlin.de, hessenrecht…) are juris SPAs
+      with token-authenticated internal APIs — needs a headless-browser
+      adapter or a juris data agreement (see LESSONS #1). Priority by
+      population: BW, NI, HE, RP, SN…
+- [ ] DE deepening: exact calendar-month deadline arithmetic (§ 222 ZPO),
+      BRAV scraper when the portal stabilizes, German outreach campaign,
+      SOS/notary legal review.
 - [ ] Retrieval quality: hybrid search (pgvector + Postgres full-text/BM25)
       or a stronger embedding model (e.g. multilingual-e5) with full
       re-embed — colloquial German questions sometimes miss the right §
       (e.g. DSGVO Art. 15) even though it's in the corpus.
-- [ ] DE Landesrecht (16 states) and case law (BGH/BAG/BVerfG via
-      rechtsprechung-im-internet.de) — see proposal in JOURNAL 2026-08-01c.
+- [ ] DE case law (BGH/BAG/BVerfG via rechtsprechung-im-internet.de) — see
+      proposal in JOURNAL 2026-08-01c.
 - [ ] GB seeds (deadline rules, holidays, templates, corpus).
 - [ ] CN seeds; INTL (arbitration etc.).
 - [ ] Per-jurisdiction template/document language handling.

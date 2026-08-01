@@ -26,11 +26,19 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   all citizen-relevant SGB books, BEEG, MuSchG, GewSchG, BerHG, GKG, UWG,
   WoGG, BAföG, RVG, BRAO…) + the GDPR in German via `import_dsgvo.py`
   (CELLAR/EUR-Lex, 99 articles) = **79 acts / 16,435 chunks**, § heading per
-  norm, resumable; RAG fallback language is per-jurisdiction. Known limit:
-  federal law + DSGVO only — no Landesrecht, no case law (DE Ava prompt
-  discloses this); embedding model is weak on colloquial German→legal
-  paraphrase (hybrid retrieval is a roadmap item). **DE seed data**
-  (`seeds/germany.py`): federal holidays (incl. Easter calc), 14 deadline
+  norm, resumable; RAG fallback language is per-jurisdiction.
+  **Landesrecht** (D-035): nullable `region` column (Bundesland code, NULL =
+  federal) on holidays/corpus docs/tenants; 16-Länder registry + city→Land
+  map in the DE profile; `import_de_landesrecht.py` (adapter per portal)
+  loaded **NRW + Bayern, 20 acts / ~2,900 chunks**; `search_corpus(region=…)`
+  = federal + that Land; public Ava has a Bundesland dropdown, citations
+  show the Land. Remaining 14 Länder blocked on juris SPAs (LESSONS #1).
+  Known limit: no case law (DE Ava prompt discloses this); embedding model
+  is weak on colloquial German→legal paraphrase (hybrid retrieval is a
+  roadmap item). **DE seed data**
+  (`seeds/germany.py`): federal holidays (incl. Easter calc) + per-Land
+  holidays 2026–27 (whole-Land only; deadline engine uses `tenant.region`
+  via the settings Bundesland picker), 14 deadline
   rules (ZPO/StPO/KSchG/VwGO/SGG/AO — month rules approximated 30 d with
   warning note), 8 RVG tariff anchors, 4 lawyer templates, 4 German citizen
   doc templates (country-picked in `public_tools.py`). **DE Ava**:
@@ -804,8 +812,8 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
 - **XK (Kosovo): active** — deadline rules, holidays, templates seeded.
 - **DE (Germany): active** (2026-08-01, D-034) — profile in
-  `app/jurisdictions.py`, seed data in `seeds/germany.py`, 79-act corpus
-  (78 federal laws + DSGVO),
+  `app/jurisdictions.py`, seed data in `seeds/germany.py`, 99-act corpus
+  (78 federal laws + DSGVO + 20 Landesrecht acts NW/BY, D-035),
   host `de.avokatiim.ai`. SOS + notary off; public launch gated by
   `docs/legal/DE-LAUNCH-GATE.md`.
 - GB, CN, INTL: schema-ready, no data yet.

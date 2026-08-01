@@ -3,6 +3,16 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Landesrecht (D-035) phase 5: tests + docs; remaining Länder blocked
+
+- 7 new tests in `tests/test_regions.py` (Länder registry, city prefill,
+  Land holiday rows, Buß- und Bettag math, AvaAskIn.region) — 135/135 pass.
+- BW/BE portals probed: juris SPAs with token-authenticated API → curl
+  adapters impossible; recorded as LESSONS #1 + ROADMAP rollout item
+  (headless browser or juris agreement). Pilot stays NRW+BY (~30M).
+- D-035 in DECISIONS; JOURNAL 2026-08-01d; STATE (corpus 99 acts, region
+  dimension); ROADMAP updated.
+
 ## 2026-08-01 — Landesrecht (D-035) phase 4: region-aware retrieval + Ava
 
 - `search_corpus` takes `region`: federal docs (region IS NULL) always,
