@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import type { Country } from "@/lib/country";
 import { COUNTRY_BASE_URL, serverCountry } from "@/lib/seo";
 import { RATGEBER_ARTICLES } from "@/lib/ratgeber";
+import { UDHEZUES_ARTICLES } from "@/lib/udhezues";
 
 // Public, indexable pages only (see robots.ts for what stays out). Served
 // per host (D-039): the DE sitemap must list German pages on the DE domain,
@@ -18,6 +19,7 @@ const ROUTES: { path: string; priority: number; only?: Country }[] = [
   { path: "/afatet", priority: 0.7 },
   { path: "/rvg", priority: 0.7, only: "DE" },
   { path: "/ratgeber", priority: 0.7, only: "DE" },
+  { path: "/udhezues", priority: 0.7, only: "XK" },
   { path: "/kostoja", priority: 0.7, only: "XK" },
   { path: "/dokumentet", priority: 0.7 },
   { path: "/regjistrohu", priority: 0.6 },
@@ -41,11 +43,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority,
   }));
 
-  // Ratgeber guides are German-market content — DE sitemap only (D-045)
+  // Guide articles are per-country content: German Ratgeber on the DE host
+  // (D-045), Albanian udhëzues on the XK host (D-048).
   if (country === "DE") {
     for (const a of RATGEBER_ARTICLES) {
       entries.push({
         url: `${base}/ratgeber/${a.slug}`,
+        lastModified: new Date(a.updated),
+        changeFrequency: "monthly",
+        priority: 0.6,
+      });
+    }
+  } else {
+    for (const a of UDHEZUES_ARTICLES) {
+      entries.push({
+        url: `${base}/udhezues/${a.slug}`,
         lastModified: new Date(a.updated),
         changeFrequency: "monthly",
         priority: 0.6,

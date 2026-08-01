@@ -381,6 +381,11 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   guides at `/ratgeber/[slug]` (static data in `frontend/src/lib/ratgeber.ts`,
   Article JSON-LD, per-host canonical, DE-only sitemap entries, RDG-safe
   disclaimer, CTA → Ava / posto-rastin).
+- **XK public legal guides** (2026-08-01, D-048): 10 curated Albanian
+  guides at `/udhezues/[slug]` (static data in `frontend/src/lib/udhezues.ts`,
+  same `RatgeberArticle` shape with a per-country field, JSON-LD
+  inLanguage "sq", XK-only sitemap entries, footer/tools links on the XK
+  host, disclaimer, CTA → Ava / posto-rastin).
 - **Token-less email classification** (2026-08-01, D-043): inbound mail
   without a matter alias whose sender matches a contact is parked as an
   `EmailSuggestion` (raw message encrypted on disk); dashboard card lets the

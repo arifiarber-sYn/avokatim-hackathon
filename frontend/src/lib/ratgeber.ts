@@ -1,11 +1,14 @@
-// Curated public "Ratgeber" articles for the German market (D-045): the ten
-// most-searched consumer law topics, written as general information (RDG-safe
-// — no individual legal advice), each with a CTA toward Ava / posto-rastin.
-// Static data, no CMS at this stage; content reviewed against the cited
-// statutes as of 2026-08. German only — the articles target de.avokatiim.ai.
+// Curated public guide articles, per country (D-045, D-048): the most-searched
+// consumer law topics, written as general information (RDG-safe — no individual
+// legal advice), each with a CTA toward Ava / posto-rastin. Static data, no CMS
+// at this stage; content reviewed against the cited statutes as of 2026-08.
+// German articles (country "DE") live here and target de.avokatiim.ai; the
+// Albanian ones (country "XK") live in udhezues.ts and target avokatiim.ai.
 
 export interface RatgeberArticle {
   slug: string;
+  /** "DE" (Ratgeber, German) or "XK" (udhëzues, Albanian). */
+  country: "DE" | "XK";
   /** Practice area chip shown on cards and the article header. */
   area: string;
   title: string;
@@ -17,7 +20,7 @@ export interface RatgeberArticle {
   sections: { h: string; p: string[] }[];
 }
 
-export const RATGEBER_ARTICLES: RatgeberArticle[] = [
+const DE_ARTICLES: Omit<RatgeberArticle, "country">[] = [
   {
     slug: "kuendigung-arbeitsvertrag",
     area: "Arbeitsrecht",
@@ -400,6 +403,11 @@ export const RATGEBER_ARTICLES: RatgeberArticle[] = [
     ],
   },
 ];
+
+export const RATGEBER_ARTICLES: RatgeberArticle[] = DE_ARTICLES.map((a) => ({
+  ...a,
+  country: "DE" as const,
+}));
 
 export function ratgeberBySlug(slug: string): RatgeberArticle | undefined {
   return RATGEBER_ARTICLES.find((a) => a.slug === slug);

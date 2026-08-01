@@ -237,6 +237,11 @@ export default function PublicShell({
                     </Link>
                   )}
                   {country === "XK" && (
+                    <Link href="/udhezues" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-700">
+                      {t.udhLink}
+                    </Link>
+                  )}
+                  {country === "XK" && (
                     <Link href="/kostoja" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-700">
                       {t.kstLink}
                     </Link>

@@ -1161,3 +1161,29 @@
   and adjust the seed.
 - Consequences: fee updates are seed edits, no code change; the DE
   calculator behavior is unchanged (regression-tested).
+
+## D-048: Per-country public guide articles — Albanian udhëzues (2026-08-01)
+
+- Context: the DE host has 10 curated Ratgeber guides (D-045) that pull
+  organic search traffic toward Ava/posto-rastin; the XK host had no
+  equivalent although the same questions dominate citizens' searches in
+  Kosovo (largimi nga puna, përmbarimi, qiraja, trashëgimia...).
+- Decision: guide content becomes per-country data on one shared shape.
+  `RatgeberArticle` gains a `country` field; German articles stay in
+  `frontend/src/lib/ratgeber.ts` (country "DE"), the 10 new Albanian
+  ones live in `frontend/src/lib/udhezues.ts` (country "XK") to keep
+  file sizes sane. Separate routes per market — `/ratgeber` (German UI)
+  and `/udhezues` (Albanian UI) — rather than one parametrized route:
+  the URLs are themselves SEO keywords on each host. Same Article
+  JSON-LD (inLanguage "sq"), per-host canonical, sitemap scoping
+  (`only: XK` + per-article entries on the XK sitemap only), footer +
+  tools-dropdown links per host, and the not-legal-advice disclaimer.
+- Content sourcing: written against the cited Kosovo statutes (Ligji i
+  Punës 03/L-212, LPP 04/L-139, LMD 04/L-077, Ligji për Trashëgiminë
+  2004/26, Ligji për Familjen 2004/32, Ligji 04/L-018, LPPA 05/L-031,
+  LKA 03/L-202); where an exact figure is not certain from the statute
+  text the article states the rule generally instead of inventing a
+  number. Still static data, no CMS — reviewed 2026-08.
+- Consequences: adding a guide = one array entry; a future third
+  jurisdiction adds its own data file and route pair without touching
+  the article components.

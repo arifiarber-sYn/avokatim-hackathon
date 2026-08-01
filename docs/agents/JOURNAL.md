@@ -10,6 +10,26 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01v — D-048 B2: Udhëzuesit publikë shqip /udhezues (Cursor / Fable 5)
+
+- Done: `RatgeberArticle` merr fushën `country` ("DE"|"XK"); artikujt
+  gjermanë mbeten te `ratgeber.ts`, 10 udhëzuesit e rinj shqip te
+  `frontend/src/lib/udhezues.ts` (largimi nga puna, urdhri përmbarimor,
+  kontesti i qirasë, kthimi i depozitës, trashëgimia, divorci dhe
+  alimentacioni, aksidenti i trafikut, ankesa administrative,
+  parashkrimi i borxheve, puna pa kontratë) — me bazat ligjore të
+  Kosovës dhe disclaimer.
+- Done: rrugë të reja `/udhezues` + `/udhezues/[slug]` (server
+  components, pasqyrë e /ratgeber në shqip, JSON-LD Article me
+  inLanguage "sq", canonical per-host, CTA → Ava / posto-rastin);
+  sitemap `only: XK` + hyrjet per-artikull vetëm në sitemap-in XK;
+  lidhje në footer + dropdown-in e veglave (host XK); çelësi `udhLink`
+  në 7 gjuhë.
+- Verified: build OK; live /udhezues dhe /udhezues/largimi-nga-puna 200
+  me JSON-LD; sitemap XK me 11 URL udhezues e 0 ratgeber, sitemap DE
+  (Host de.avokatiim.ai) me ratgeber e 0 udhezues.
+- Left open / next: B4 — pozicionimi 0% edhe për XK; pastaj B3 spike.
+
 ## 2026-08-01u — D-047 B1: Kalkulatori i kostos gjyqësore për Kosovën (Cursor / Fable 5)
 
 - Done: seed `XK_COURT_FEE_TABLE` (UA Nr. 03/2025 i KGJK-së, në fuqi nga

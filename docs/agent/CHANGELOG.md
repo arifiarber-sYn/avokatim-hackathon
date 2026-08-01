@@ -3,6 +3,27 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Albanian public legal guides /udhezues (D-048, B2)
+
+- Changed: `frontend/src/lib/ratgeber.ts` — `RatgeberArticle` gains a
+  `country` field ("DE"|"XK"); German articles unchanged, tagged "DE".
+- New: `frontend/src/lib/udhezues.ts` — 10 curated Albanian guides for
+  Kosovo (dismissal, enforcement order, rent disputes, deposit return,
+  inheritance, divorce/alimony, traffic accidents, administrative
+  appeals, statute of limitations, undeclared work) with cited Kosovo
+  statutes and a not-legal-advice disclaimer.
+- New: routes `/udhezues` + `/udhezues/[slug]` (Albanian mirror of
+  /ratgeber, Article JSON-LD inLanguage "sq", per-host canonical,
+  CTA → Ava / posto-rastin).
+- Changed: sitemap (`/udhezues` + per-article entries, XK host only),
+  public footer + tools dropdown (XK-only link, `udhLink` key ×7
+  locales).
+- Verified: build OK, pages 200 with JSON-LD, XK sitemap lists 11
+  udhezues URLs and no ratgeber, DE sitemap the inverse.
+- Files: `frontend/src/lib/{ratgeber,udhezues,dictionaries}.ts`,
+  `frontend/src/app/udhezues/**`, `frontend/src/app/sitemap.ts`,
+  `frontend/src/components/{public-footer,public-shell}.tsx`.
+
 ## 2026-08-01 — Kosovo litigation cost calculator (D-047, B1)
 
 - New: `XK_COURT_FEE_TABLE` + `XK_COST_RISK_INSTANCES` in

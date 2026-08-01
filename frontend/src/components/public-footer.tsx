@@ -47,6 +47,7 @@ export default function PublicFooter() {
           <Link href="/afatet" className={link}>{t.dcTitle}</Link>
           {isDE && <Link href="/rvg" className={link}>{t.rvgTitle}</Link>}
           {isDE && <Link href="/ratgeber" className={link}>Ratgeber</Link>}
+          {!isDE && <Link href="/udhezues" className={link}>{t.udhLink}</Link>}
           {!isDE && <Link href="/kostoja" className={link}>{t.kstLink}</Link>}
           <Link href="/dokumentet" className={link}>{t.cdTitle}</Link>
           {!isDE && <Link href="/noteret" className={link}>{t.pnNotaries}</Link>}
