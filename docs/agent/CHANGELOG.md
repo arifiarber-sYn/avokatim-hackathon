@@ -3,6 +3,30 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — BRAV auto-verification for German lawyers (D-046, phase A)
+
+- New: `backend/app/services/brav.py` — client for the official BRAV
+  search (bravsearch.bea-brak.de, JSF/PrimeFaces, no API): browser-UA
+  session + ViewState, partial-ajax POST, result-card/total parsing,
+  every network failure degrades to None. German name normalization
+  (umlauts, academic titles) + `de_names_match`.
+- Changed: `services/license_verify.py` — DE branch now queries BRAV live
+  and auto-approves ONLY a unique active Rechtsanwalt name match
+  (truncated result lists never auto-approve); namesakes land in the
+  operator queue with candidates in the note; portal down / no match
+  keeps the old manual-search-link behavior. Shared approval tail
+  extracted to `_approve_profile` (used by OAK/ONK email proof too).
+- Changed: `POST /platform/verifications/{id}/decide` no longer requires
+  `oak_license_no` when the jurisdiction registry is BRAV (it publishes
+  no license numbers); `GET /platform/verifications` returns `chamber`
+  (jurisdiction `bar_name`) and the /platform queue displays it instead
+  of hardcoded "OAK".
+- Tests: `tests/test_brav.py` (13, recorded fixtures in
+  `tests/fixtures/brav_*.xml`) + `tests/test_brav_autoverify.py` (7).
+- Files: `backend/app/services/{brav,license_verify}.py`,
+  `backend/app/api/platform.py`, `frontend/src/app/(app)/platform/page.tsx`,
+  `backend/tests/{test_brav,test_brav_autoverify}.py`, fixtures.
+
 ## 2026-08-01 — DE market pack: 0% positioning, RSV Deckung tracking, Ratgeber (D-045 F6)
 
 - New (positioning): DE-host-only sections on /per-avokatet — "Festes Abo.

@@ -182,6 +182,8 @@ async def list_verifications(
     if status_filter != "all":
         stmt = stmt.where(LawyerProfile.verification_status == status_filter)
     rows = (await db.execute(stmt)).all()
+    from app.jurisdictions import profile_for as jurisdiction_profile
+
     return [
         {
             "profile_id": str(profile.id),
@@ -189,6 +191,11 @@ async def list_verifications(
             "lawyer_email": user.email,
             "tenant_name": tenant.name,
             "profession": tenant.profession,
+            "chamber": (
+                "ONK"
+                if tenant.profession == "notary"
+                else jurisdiction_profile(tenant.country).bar_name
+            ),
             "oak_license_no": profile.oak_license_no,
             "verification_status": profile.verification_status,
             "verification_note": profile.verification_note,
@@ -218,12 +225,19 @@ async def decide_verification(
     profile = await db.get(LawyerProfile, profile_id)
     if profile is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Profile not found")
-    if not profile.oak_license_no:
+    tenant = await db.get(Tenant, profile.tenant_id)
+    from app.jurisdictions import profile_for as jurisdiction_profile
+
+    # OAK/ONK members type their license number at signup; BRAV (Germany)
+    # publishes no license numbers at all, so it cannot be a requirement.
+    if (
+        jurisdiction_profile(tenant.country).bar_registry != "brav"
+        and not profile.oak_license_no
+    ):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "No license number submitted")
     profile.verification_status = "verified" if body.approve else "rejected"
     profile.verified_at = datetime.now(UTC) if body.approve else None
     profile.verification_note = body.note
-    tenant = await db.get(Tenant, profile.tenant_id)
     # Founder badge: the first FOUNDER_LIMIT verified law offices keep it
     # forever (a marketplace perk — notary offices are outside the marketplace)
     if body.approve and not profile.is_founder and tenant.profession == "lawyer":

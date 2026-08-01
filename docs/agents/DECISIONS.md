@@ -1102,3 +1102,36 @@
   use (noted in seed); new guides are added by editing `ratgeber.ts`
   (reviewed content only); if the guide count grows past ~30, revisit the
   no-CMS decision.
+
+## D-046: BRAV auto-verification by unique name match (2026-08-01)
+
+- Context: Kosovo lawyers auto-verify via a confirmed email that matches
+  the OAK registry (strong proof — the chamber publishes member emails).
+  BRAV publishes NO emails, so German lawyers always landed in the manual
+  queue (D-034). The BRAV portal (bravsearch.bea-brak.de) has no API — it
+  is a JSF/PrimeFaces app — but it is searchable programmatically (GET
+  session + ViewState, partial-ajax POST of the search form; needs a
+  browser User-Agent, non-browser agents get 503).
+- Decision: auto-approve a German lawyer only when the confirmed-email
+  signup name has EXACTLY ONE active Rechtsanwalt match in the whole
+  register (`services/brav.py` client + `_try_auto_verify_brav`). This is
+  a weaker proof than the OAK email match (name ≠ mailbox ownership), so
+  the safeguards are: unique-match-only (a result list longer than one
+  page can never auto-approve — unseen namesakes), name normalization
+  (umlauts ü↔ue↔u, academic titles) before comparing, operators always
+  get an FYI (same as OAK), the action is audited
+  (`platform.verification_auto`, registry=BRAV) and revocable from
+  /platform. Namesakes → operator queue with candidates in the note;
+  portal down/no match → old behavior (manual one-click search link).
+- Also: `POST /platform/verifications/{id}/decide` no longer demands
+  `oak_license_no` for DE (BRAV publishes no license numbers); the queue
+  shows the jurisdiction's chamber label (`bar_name`) instead of a
+  hardcoded "OAK".
+- Alternatives rejected: scraping the whole BRAV register into a local
+  CSV like OAK (170k+ entries behind a stateful JSF UI, no stable bulk
+  access, legally murkier than single lookups); keeping DE fully manual
+  (does not scale and loses signups to friction).
+- Consequences: the portal is flaky (beA outages 503 everything) — the
+  client degrades to None and verification falls back to manual, never
+  blocking signup; if BRAV ever changes its JSF markup the fixtures in
+  `tests/fixtures/brav_*.xml` and `_CARD_RE` must be re-recorded.

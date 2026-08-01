@@ -10,6 +10,30 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01t — D-046 Faza A: Auto-verifikim BRAV për avokatët gjermanë (Cursor / Fable 5)
+
+- Done: klient i ri `app/services/brav.py` për portalin JSF bravsearch.bea-brak.de
+  (GET sesion+ViewState me User-Agent shfletuesi — pa të kthen 503 — pastaj
+  POST partial-ajax i formës; parsim i kartave të rezultatit dhe numrit total;
+  çdo dështim rrjeti → None, kurrë "s'u gjet"). Normalizim emrash gjermanë
+  (umlaute ü↔ue↔u, tituj Dr./Prof./LL.M.) + `de_names_match`.
+- Done: `try_auto_verify` dega DE (`_try_auto_verify_brav`): përputhje UNIKE
+  aktive e emrit → verified me notë "Auto-Verifikation: BRAV-Eintrag (…)",
+  audit `platform.verification_auto` (registry=BRAV), email falënderimi +
+  FYI ops (bishti i aprovimit u nda në `_approve_profile`, i përbashkët me
+  OAK/ONK). Shumë kandidatë → radha ops me kandidatët në notë; portal down /
+  asnjë përputhje → sjellja e vjetër (link kërkimi manual). Lista >1 faqe
+  (total > 6) s'aprovon kurrë automatikisht.
+- Done: `/platform/verifications/{id}/decide` s'kërkon më `oak_license_no`
+  për DE; radha kthen `chamber` (bar_name i juridiksionit) dhe UI e shfaq
+  në vend të "OAK" të ngulitur.
+- Verified: 13 teste parsimi/normalizimi me fixture reale të regjistruara
+  (`tests/fixtures/brav_*.xml`) + 7 teste të degëve të auto-verifikimit
+  (unik/homonime/faqe e cunguar/profesion tjetër/portal down/zero) — të
+  gjitha kalojnë; smoke live kundër portalit real (Müller/Katharina → 11
+  rezultate të parsuar saktë, Mustermann → 0).
+- Left open / next: Faza B1 — kalkulatori i kostos gjyqësore për XK.
+
 ## 2026-08-01s — D-045 F6: Pozicionimi DE + RSV Deckung + Ratgeber (Cursor / Fable 5)
 
 - Done (pozicionimi): seksion i ri te /per-avokatet vetëm në hostin DE —

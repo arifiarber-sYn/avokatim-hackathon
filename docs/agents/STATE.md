@@ -67,9 +67,15 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   local LLM (Ollama gemma3:27b on the RTX 5090) is installed and validated
   but DE runs **temporarily on DeepSeek** for the demo (see launch gate
   item 3 — must return to `llm_provider="local"` before public launch).
-  **DE lawyers**: BRAV has no emails →
-  never auto-verified; ops/Halim get a BRAV search link for one-click manual
-  approval; onboarding shows German cities/languages, VAT 19 default,
+  **DE lawyers** (D-046, 2026-08-01): BRAV has no emails, so the proof is
+  a live query of the bravsearch portal (`services/brav.py`, JSF
+  partial-ajax client, browser UA required) — auto-verified only on a
+  UNIQUE active name match (umlaut/title-normalized); namesakes → ops
+  queue with candidates, portal down/no match → ops get a BRAV search
+  link for one-click manual approval (old D-034 behavior); `/platform`
+  decide no longer requires a license number for DE and shows the
+  jurisdiction's chamber label; onboarding shows German cities/languages,
+  VAT 19 default,
   notary signup blocked (400) and SOS hidden/guarded (403) for DE.
   **Legal**: German AGB + Datenschutzerklärung drafts in `lib/legal.ts`,
   `/impressum` page (§ 5 DDG, address placeholder), launch gate =

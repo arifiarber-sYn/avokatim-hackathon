@@ -208,6 +208,7 @@ interface VerificationRow {
   lawyer_email: string;
   tenant_name: string;
   profession?: string;
+  chamber?: string;
   oak_license_no: string | null;
   verification_status: string;
   verification_note: string | null;
@@ -277,7 +278,8 @@ function VerificationsSection() {
                     : "bg-amber-100 text-amber-800"
                 }`}
               >
-                {row.profession === "notary" ? "ONK" : "OAK"} {row.oak_license_no}
+                {row.chamber ?? (row.profession === "notary" ? "ONK" : "OAK")}{" "}
+                {row.oak_license_no}
               </span>
               <span
                 className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
