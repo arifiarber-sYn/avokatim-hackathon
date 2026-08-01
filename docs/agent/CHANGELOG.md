@@ -3,6 +3,19 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — beA/KSW registration prepared (D-037 phase 6) + D-037 docs
+
+- New `docs/legal/BEA-KSW-REGISTRATION.md`: what the KSW-Schnittstelle is
+  (SOAP webservice + Java toolkit, access after "berechtigtes Interesse"
+  review + registration, SSL client auth with beA-Betrieb), contacts
+  (servicedesk@beasupport.de, portal.beasupport.de, BRAK Berlin), owner
+  steps, and a ready-to-send German registration email. Planned module
+  architecture: Java sidecar wrapping the official KSW-Toolkit + Python
+  `services/bea/` — development starts once BRAK grants test access.
+- D-037 recorded in DECISIONS (agents), JOURNAL entry 2026-08-01f, STATE
+  and ROADMAP updated (market-gap item closed, beA + GKG split out,
+  stale "no GPU/Ollama" watch item corrected).
+
 ## 2026-08-01 — DE launch gate: local LLM + full E2E test (D-037 phase 5)
 
 - `PROFILES["DE"].llm_provider = "local"` — Ava DE and all German LLM calls

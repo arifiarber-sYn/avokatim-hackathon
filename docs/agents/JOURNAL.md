@@ -10,6 +10,43 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01f — Pariteti me tregun gjerman, 6 faza (D-037) (Cursor / Fable 5)
+
+- Done — Faza 1 (RVG): tabela § 13 RVG (KostBRÄG 2025) + 5 VV-Positionen si
+  të dhëna në seeds; `services/rvg.py` (Anrechnung max 0.75, VV 7002,
+  minimumi § 13 Abs. 2, rrumbullakim kaufmännisch); API për avokatë +
+  publike; widget në billing që fut rreshta fature; faqja publike `/rvg`
+  ("Was kostet ein Anwalt?") me SEO. U korrigjuan 3 ankorimet e vjetra
+  5.000 € (354,50 € është 1.0 sipas tabelës 2025, jo 372 €).
+- Done — Faza 2 (E-Rechnung): çdo PDF fature e zyrës DE tani është hibrid
+  ZUGFeRD/Factur-X — WeasyPrint PDF/A-3b + XML CII (EN 16931) me drafthorse;
+  endpoint `/invoices/{id}/e-invoice.xml`; `Tenant.iban` (migrim) te
+  settings. Validuar me Mustangproject: valid.
+- Done — Faza 3 (Rechtsschutz): `has_legal_insurance`/`insurer_name` te
+  CaseRequest (migrim); pyetja në /posto-rastin (host DE), Ava e nxjerr nga
+  biseda te drafti i rastit; badge te karta e avokatit; shablloni i ri
+  Deckungsanfrage.
+- Done — Faza 4 (DATEV): `services/datev.py` — EXTF Buchungsstapel v13
+  (cp1252/CRLF/presje dhjetore, SKR03 8400/10000, konfigurim për zyrë);
+  `GET /api/export/datev` + karta në billing.
+- Done — Faza 5 (test + LLM lokal): `PROFILES["DE"].llm_provider="local"` →
+  Ollama gemma3:27b në RTX 5090 (~50 tok/s; qwen3:14b u rrëzua se "thinking"
+  ia hante buxhetin e tokenëve). Ava DE live citon § 573c BGB, kërkesa shkon
+  te 127.0.0.1:11434 — asnjë e dhënë s'del nga makina. Launch-gate pika 3 u
+  mbyll. Skripti i ri `scripts/de_simulation.py`: 15 kontrolle E2E të të 4
+  fazave në host-in DE.
+- Done — Faza 6 (beA, nisje): udhëzuesi i regjistrimit te BRAK si
+  KSW-Hersteller me draft-email gjermanisht gati për dërgim
+  (`docs/legal/BEA-KSW-REGISTRATION.md`); arkitektura e synuar: sidecar Java
+  rreth KSW-Toolkit + `services/bea/` në Python. Moduli nis pas qasjes.
+- Verified: pytest 150/150, full_simulation XK 187 PASS / 0 FAIL,
+  de_simulation 15/15, tsc + build pa gabime, health OK, prova live në UI
+  (RVG në billing, XML e faturës, badge Rechtsschutz, eksporti DATEV).
+- Left open / next: dërgimi i emailit BRAK (veprim i pronarit); moduli
+  `services/bea/` pas qasjes në testumgebung; GKG-Prozesskostenrechner
+  (opsional, faza 1); zërat operacionalë të launch gate (server EU,
+  Art. 27, rishikim avokati gjerman).
+
 ## 2026-08-01e — Afatet me muaj kalendarikë ekzaktë (D-036) (Cursor / Fable 5)
 
 - Done: krahasim me industrinë gjermane 2026 (kanavaca

@@ -859,3 +859,50 @@
   replaced with the § 188 explanation); the public calculator and matter
   deadline picker show "X Monate/muaj" (new dcMonths* keys in 7 locales);
   any future jurisdiction can use month periods as data.
+
+## D-037: German market parity in 6 phases; DE runs on a local LLM (2026-08-01)
+
+- Context: the 2026-08-01 industry comparison against RA-MICRO, AnNoText and
+  Actaport showed AvokatIM ahead on AI/marketplace/languages but behind on
+  five German market standards: full RVG fee math, E-Rechnung, legal-expense
+  insurance in the intake flow, DATEV export, and beA. Order chosen by the
+  owner: functional parity → test → German launch with a **local LLM**.
+- Decisions (one per phase):
+  1. **RVG as data, not code**: the § 13 RVG band table (KostBRÄG 2025) and
+     rate-based VV items live in `seeds/germany.py`; `services/rvg.py` only
+     implements the generic math (band walk, kaufmännisch rounding, § 13
+     Abs. 2 minimum, Anrechnung Vorbem. 3 Abs. 4 VV capped at 0.75, VV 7002
+     pauschale, VAT). Exposed to lawyers (`/api/fee-calc/rvg` + billing
+     widget that inserts invoice lines) and to the public as an SEO tool
+     (`/rvg` on the DE host, rate-limited).
+  2. **E-Rechnung via drafthorse, hybrid by default**: every DE-office
+     invoice PDF is a ZUGFeRD/Factur-X hybrid (WeasyPrint renders PDF/A-3b
+     via `pdf_variant`, drafthorse attaches EN 16931 CII XML); raw XML at
+     `GET /invoices/{id}/e-invoice.xml` for B2G. New `Tenant.iban`;
+     validated once with Mustangproject (valid EN 16931 + PDF/A-3b).
+  3. **Rechtsschutz as intake signal**: `CaseRequest.has_legal_insurance` +
+     `insurer_name`; asked on /posto-rastin (DE host), extracted by Ava's
+     structure-case step, shown as a badge to lawyers (Advocado-style
+     conversion signal); Deckungsanfrage lawyer template in DE_TEMPLATES.
+  4. **DATEV EXTF, no dependency**: `services/datev.py` writes the publicly
+     documented EXTF Buchungsstapel v13 CSV (cp1252, CRLF, decimal comma,
+     SKR03 defaults 8400/10000) from issued invoices + payments; per-office
+     account config on Tenant; `GET /api/export/datev` (DE only).
+  5. **Local LLM for DE**: `PROFILES["DE"].llm_provider = "local"` → Ollama
+     `gemma3:27b` (RTX 5090, 17.5 GB VRAM, ~50 tok/s). Chosen over qwen3:14b
+     after a RAG-grounded German shootout: qwen3 spent its token budget on
+     "thinking" and returned empty answers through the OpenAI-compat
+     endpoint; gemma3 is fluent, grounds on provided norms, no thinking
+     mode. No German citizen data leaves the machine — closes launch-gate
+     item 3.
+  6. **beA is an external-dependency project**: BRAK registration as a
+     Kanzleisoftware-Hersteller starts now (guide + ready-to-send German
+     email in `docs/legal/BEA-KSW-REGISTRATION.md`); the KSW client module
+     (`services/bea/`, planned as a Java sidecar wrapping the official
+     KSW-Toolkit since the crypto lives in that Java library) starts only
+     after BRAK grants test access.
+- Verified: `scripts/de_simulation.py` (15-check E2E on the DE host),
+  full_simulation XK 187 PASS, pytest 150 green.
+- Consequences: feature parity with the German incumbents except beA;
+  DE positioning until beA lands: "AI + marketplace layer over the
+  existing Kanzleisoftware".

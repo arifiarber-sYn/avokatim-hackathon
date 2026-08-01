@@ -164,11 +164,18 @@ Growth operations (running):
       `day_type="months"` in the engine, DE month rules converted (D-036).
 - [ ] DE deepening: BRAV scraper when the portal stabilizes, German outreach
       campaign, SOS/notary legal review.
-- [ ] DE market-standard gaps (industry comparison 2026-08-01): E-Rechnung
-      (XRechnung/ZUGFeRD, issuing mandatory 2027/28), full RVG fee tables
-      (§ 13 RVG + VV), Rechtsschutzversicherung field + Deckungsanfrage
-      template in the case flow, DATEV export, beA integration (BRAK
-      KSW-Schnittstelle — strategic project, registration required).
+- [x] DE market-standard gaps ✅ (2026-08-01, D-037): full RVG engine
+      (§ 13 table + VV as data, fee-calc APIs, /rvg public calculator),
+      E-Rechnung (ZUGFeRD/Factur-X hybrid PDF/A-3b for all DE invoices,
+      XML endpoint), Rechtsschutzversicherung in the case flow +
+      Deckungsanfrage template, DATEV EXTF export, **local LLM for DE**
+      (Ollama gemma3:27b, launch-gate item 3 closed).
+- [ ] beA integration (BRAK KSW-Schnittstelle) — registration guide +
+      draft email ready (`docs/legal/BEA-KSW-REGISTRATION.md`); owner sends
+      the BRAK email, module (`services/bea/`, Java sidecar around the
+      KSW-Toolkit) starts once test access is granted.
+- [ ] GKG court-fee table for a full Prozesskostenrechner (optional D-037
+      leftover; RA-MICRO standard).
 - [ ] Retrieval quality: hybrid search (pgvector + Postgres full-text/BM25)
       or a stronger embedding model (e.g. multilingual-e5) with full
       re-embed — colloquial German questions sometimes miss the right §

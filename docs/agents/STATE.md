@@ -40,11 +40,23 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   holidays 2026–27 (whole-Land only; deadline engine uses `tenant.region`
   via the settings Bundesland picker), 14 deadline
   rules (ZPO/StPO/KSchG/VwGO/SGG/AO — month rules use exact calendar-month
-  math, `day_type="months"` per §§ 187–188 BGB, D-036), 8 RVG tariff
-  anchors, 4 lawyer templates, 4 German citizen
-  doc templates (country-picked in `public_tools.py`). **DE Ava**:
+  math, `day_type="months"` per §§ 187–188 BGB, D-036), full RVG engine
+  (D-037: § 13 band table KostBRÄG 2025 + VV items in seeds,
+  `services/rvg.py`, lawyer + public fee-calc APIs, `/rvg` page, billing
+  widget), 5 lawyer templates (incl. Deckungsanfrage), 4 German citizen
+  doc templates (country-picked in `public_tools.py`).
+  **DE market parity (D-037)**: DE-office invoice PDFs are ZUGFeRD/Factur-X
+  hybrids (PDF/A-3b + EN 16931 CII XML via drafthorse, `Tenant.iban`;
+  raw XML endpoint for B2G); `CaseRequest.has_legal_insurance`/`insurer_name`
+  flow (form + Ava extraction + lawyer badge); DATEV EXTF export
+  (`services/datev.py`, `GET /api/export/datev`, per-office SKR03 config);
+  E2E check: `backend/scripts/de_simulation.py`. beA: BRAK registration
+  guide + draft email in `docs/legal/BEA-KSW-REGISTRATION.md` (module after
+  access). **DE Ava**:
   own prompt (RDG § 2 information-only + EU AI Act Art. 50 disclosure),
-  per-jurisdiction LLM provider hook. **DE lawyers**: BRAV has no emails →
+  **runs on the local LLM** (`PROFILES["DE"].llm_provider="local"` →
+  Ollama gemma3:27b, RTX 5090 — no German citizen data leaves the machine).
+  **DE lawyers**: BRAV has no emails →
   never auto-verified; ops/Halim get a BRAV search link for one-click manual
   approval; onboarding shows German cities/languages, VAT 19 default,
   notary signup blocked (400) and SOS hidden/guarded (403) for DE.
@@ -335,7 +347,9 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   administrative lawsuit, demand letter, NDA, service contract, employment
   contract, legal opinion, due-diligence checklist (all in `seeds/kosovo.py`).
 - **Assistant "Ava"**: RAG over legal corpus + matter documents, with citations.
-  Providers: DeepSeek (default) or local OpenAI-compatible (Ollama/vLLM), selectable per request.
+  Providers: DeepSeek (default) or local OpenAI-compatible (Ollama/vLLM),
+  selectable per request; the DE jurisdiction is pinned to the local
+  provider (Ollama gemma3:27b, D-037).
   **Answers stream (SSE)** via `/api/assistant/ask-stream` — the UI renders text
   progressively and no proxy/browser/Cloudflare idle timeout can drop long
   thinking-mode answers (see D-010). Non-streaming `/ask` kept for scripts.
@@ -799,10 +813,11 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - ~~SMTP not configured~~ done 2026-07-07: Gmail App Password in `backend/.env`
   (SMTP_* vars, smtp.gmail.com:587 STARTTLS, from arifi.arber@gmail.com).
   Test email sent and delivered — both reminder channels (email + push) active.
-- Host has no GPU tooling (`nvidia-smi` absent) and Ollama has no models/service —
-  local-LLM option stays unconfigured; DeepSeek remains the provider. To try
-  local: `ollama serve` + `ollama pull qwen3:8b` (CPU will be slow), then set
-  `LOCAL_LLM_MODEL=qwen3:8b` in `backend/.env`.
+- ~~Host has no GPU tooling / Ollama unconfigured~~ changed 2026-08-01
+  (D-037): the machine has an RTX 5090 (32 GB VRAM), Ollama serves
+  `gemma3:27b` (17.5 GB VRAM, ~50 tok/s); `LOCAL_LLM_MODEL=gemma3:27b` in
+  `backend/.env` and DE requests use it (`llm_provider="local"`).
+  XK still uses DeepSeek.
 - E-signature is the simple flow (typed name + SHA-256 + audit); qualified
   eIDAS/Kosovo e-signature law compliance is future work.
 - ~~PUBLIC_BASE_URL placeholder~~ set to https://avokatiim.ai (2026-07-10;
@@ -815,6 +830,8 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - **DE (Germany): active** (2026-08-01, D-034) — profile in
   `app/jurisdictions.py`, seed data in `seeds/germany.py`, 99-act corpus
   (78 federal laws + DSGVO + 20 Landesrecht acts NW/BY, D-035),
-  host `de.avokatiim.ai`. SOS + notary off; public launch gated by
+  host `de.avokatiim.ai`. Market parity D-037: RVG engine, ZUGFeRD
+  e-invoices, Rechtsschutz flow, DATEV export, local LLM (gemma3:27b);
+  beA pending BRAK registration. SOS + notary off; public launch gated by
   `docs/legal/DE-LAUNCH-GATE.md`.
 - GB, CN, INTL: schema-ready, no data yet.
