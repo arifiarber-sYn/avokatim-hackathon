@@ -146,9 +146,19 @@ Growth operations (running):
       BRAV-assisted manual verification. Public launch gated by
       `docs/legal/DE-LAUNCH-GATE.md` (EU server, GDPR Art. 27 rep, EU LLM,
       German-lawyer review of AGB/Datenschutz/Impressum).
+- [x] DE corpus wave 2 ✅ (2026-08-01): +20 citizen-frequency federal acts
+      (BEEG, MuSchG, GewSchG, BerHG, GKG/FamGKG, UWG, SGB IV/VII/VIII/IX/X,
+      WoGG, BAföG, PflVG, FeV, ZVG…) + DSGVO in German from EUR-Lex/CELLAR
+      (`import_dsgvo.py`) → 79 acts / 16,435 chunks.
 - [ ] DE deepening: Bundesland holidays (needs `Holiday.region`), exact
       calendar-month deadline arithmetic (§ 222 ZPO), BRAV scraper when the
       portal stabilizes, German outreach campaign, SOS/notary legal review.
+- [ ] Retrieval quality: hybrid search (pgvector + Postgres full-text/BM25)
+      or a stronger embedding model (e.g. multilingual-e5) with full
+      re-embed — colloquial German questions sometimes miss the right §
+      (e.g. DSGVO Art. 15) even though it's in the corpus.
+- [ ] DE Landesrecht (16 states) and case law (BGH/BAG/BVerfG via
+      rechtsprechung-im-internet.de) — see proposal in JOURNAL 2026-08-01c.
 - [ ] GB seeds (deadline rules, holidays, templates, corpus).
 - [ ] CN seeds; INTL (arbitration etc.).
 - [ ] Per-jurisdiction template/document language handling.

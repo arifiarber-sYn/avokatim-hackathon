@@ -63,6 +63,21 @@ CORE_SLUGS = [
     "stvg", "stvo_2013",
     # Digitales + Datenschutz
     "bdsg_2018", "ddg", "urhg", "markeng", "patg",
+    # --- Wave 2 (2026-08-01): high-frequency citizen topics ---
+    # Familie + Schutz
+    "beeg", "muschg_2018", "gewschg", "uhvorschg",
+    # Zugang zum Recht + Kosten
+    "berathig", "gkg_2004", "famgkg",
+    # Verbraucher
+    "uwg_2004",
+    # Soziales (restliche Bücher mit Bürgerrelevanz)
+    "sgb_4", "sgb_7", "sgb_8", "sgb_9_2018", "sgb_10",
+    # Wohnen + Ausbildung
+    "wogg", "baf_g", "bbig_2005", "nachwg",
+    # Verkehr (Unfälle, Führerschein)
+    "pflvg", "fev_2010",
+    # Zwangsvollstreckung Immobilien
+    "zvg",
 ]
 
 

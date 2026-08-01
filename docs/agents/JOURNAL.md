@@ -10,6 +10,28 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01c — Korpusi DE vala 2: +20 ligje + DSGVO (Cursor / Fable 5)
+
+- Done: second wave of German corpus for citizen-frequency topics — BEEG
+  (Elterngeld), MuSchG, GewSchG (domestic-violence protection), BerHG
+  (legal aid), GKG + FamGKG (court costs), UWG (Abmahnung), SGB IV/VII/
+  VIII/IX/X, WoGG, BAföG, PflVG + FeV (traffic), NachwG, BBiG, UhVorschG,
+  ZVG. Slug fixes: `berathig`, `baf_g`; SGB X uses the full `sgb_10` act
+  (the `_kap` slugs are stubs — imported one by mistake, deleted it).
+  Plus the **DSGVO in German** via new `scripts/import_dsgvo.py` (CELLAR
+  API — EUR-Lex portal answers bots with empty 202s), 99 articles parsed
+  from XHTML with a sanity gate. Corpus: 58 → **79 acts / 16,435 chunks**.
+- Done: DE Ava fixes — context framing was Albanian ("BAZA LIGJORE",
+  "[Nga ligji: …]") which pulled answers into Albanian on the DE host; now
+  German labels for DE. Prompt also now discloses the corpus boundary
+  (federal law + DSGVO only; Landesrecht and case law require a lawyer).
+- Verified: pytest 128/128 (one flaky TTS test passes in isolation), live
+  DE Ava answers in German with correct citations (Beratungshilfe → § 44
+  RVG). Known limit: colloquial German phrasing sometimes misses the right
+  § (embedding model) — hybrid retrieval added to ROADMAP.
+- Left open / next: Landesrecht + Rechtsprechung expansion (proposal given
+  to owner), retrieval quality item in ROADMAP.
+
 ## 2026-08-01b — Zgjerimi në Gjermani, fazat 1–4 (D-034) (Cursor / Fable 5)
 
 - Done: Germany is live on https://de.avokatiim.ai — same code, same DB,

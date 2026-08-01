@@ -21,10 +21,15 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   **German locale (de)** is the 7th full language: `dictionaries.ts` (1,130
   keys) + `app/i18n.py` (all email/SMS strings) + `supported_locales`;
   DE host defaults to de, its picker offers de/en/tr (`COUNTRY_LOCALES`).
-  **German corpus**: `scripts/import_de_laws.py` — 58 core federal acts from
+  **German corpus**: `scripts/import_de_laws.py` — 78 federal acts from
   gesetze-im-internet.de XML (GG, BGB, ZPO, StGB, StPO, HGB, KSchG, VwGO,
-  SGB, RVG, BRAO…; 14,443 chunks, § heading per norm, resumable); RAG
-  fallback language is per-jurisdiction. **DE seed data**
+  all citizen-relevant SGB books, BEEG, MuSchG, GewSchG, BerHG, GKG, UWG,
+  WoGG, BAföG, RVG, BRAO…) + the GDPR in German via `import_dsgvo.py`
+  (CELLAR/EUR-Lex, 99 articles) = **79 acts / 16,435 chunks**, § heading per
+  norm, resumable; RAG fallback language is per-jurisdiction. Known limit:
+  federal law + DSGVO only — no Landesrecht, no case law (DE Ava prompt
+  discloses this); embedding model is weak on colloquial German→legal
+  paraphrase (hybrid retrieval is a roadmap item). **DE seed data**
   (`seeds/germany.py`): federal holidays (incl. Easter calc), 14 deadline
   rules (ZPO/StPO/KSchG/VwGO/SGG/AO — month rules approximated 30 d with
   warning note), 8 RVG tariff anchors, 4 lawyer templates, 4 German citizen
@@ -799,7 +804,8 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
 - **XK (Kosovo): active** — deadline rules, holidays, templates seeded.
 - **DE (Germany): active** (2026-08-01, D-034) — profile in
-  `app/jurisdictions.py`, seed data in `seeds/germany.py`, 58-law corpus,
+  `app/jurisdictions.py`, seed data in `seeds/germany.py`, 79-act corpus
+  (78 federal laws + DSGVO),
   host `de.avokatiim.ai`. SOS + notary off; public launch gated by
   `docs/legal/DE-LAUNCH-GATE.md`.
 - GB, CN, INTL: schema-ready, no data yet.

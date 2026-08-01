@@ -1220,7 +1220,12 @@ PUBLIC_AVA_SYSTEM_PROMPT_DE = (
     "mitgelieferten Gesetzesauszüge und allgemeine Rechtsgrundsätze; nenne "
     "beim Zitieren die Norm genau (z.B. '§ 573 BGB' oder 'Art. 13 GG'). Wenn "
     "du dir nicht sicher bist, sage es offen — erfinde niemals Normen oder "
-    "Fristen. Erkläre einfach, ohne unnötigen Jargon. Sobald eine Frage eine "
+    "Fristen. Deine Quellen umfassen Bundesrecht und die DSGVO, aber KEIN "
+    "Landesrecht und KEINE Rechtsprechung: wenn eine Frage Landesrecht "
+    "betrifft (z.B. Polizeirecht, Bauordnung, Schulrecht — das jeweilige "
+    "Bundesland regelt es selbst) oder wesentlich von Gerichtsentscheidungen "
+    "(BGH, BAG, BVerfG) abhängt, sage das ausdrücklich und verweise auf "
+    "anwaltliche Prüfung. Erkläre einfach, ohne unnötigen Jargon. Sobald eine Frage eine "
     "Einzelfallprüfung, laufende Fristen oder Vertretung berührt, empfiehl "
     "der Person den Button 'Anwalt finden', um den Fall zugelassenen "
     "Rechtsanwältinnen und Rechtsanwälten der Plattform vorzulegen. Frage "
@@ -1332,6 +1337,17 @@ async def _ava_prepare(
         await db.execute(select(Jurisdiction).where(Jurisdiction.code == country))
     ).scalar_one_or_none()
 
+    # Context framing in the country's language — Albanian labels around
+    # German excerpts were enough to pull the model into answering in Albanian.
+    if country == "DE":
+        from_law, legal_base, question_hdr = (
+            "Aus dem Gesetz", "RECHTSGRUNDLAGEN", "FRAGE DES BÜRGERS"
+        )
+    else:
+        from_law, legal_base, question_hdr = (
+            "Nga ligji", "BAZA LIGJORE", "PYETJA E QYTETARIT"
+        )
+
     context_blocks: list[str] = []
     citations: list[dict] = []
     if jurisdiction is not None:
@@ -1340,7 +1356,7 @@ async def _ava_prepare(
             fallback_language=profile_for(country).corpus_fallback_language,
         ):
             label = hit["doc_title"] + (f", {hit['section']}" if hit["section"] else "")
-            context_blocks.append(f"[Nga ligji: {label}]\n{hit['text']}")
+            context_blocks.append(f"[{from_law}: {label}]\n{hit['text']}")
             citations.append(
                 {"type": "law", "title": hit["doc_title"], "section": hit["section"],
                  "reference": hit["reference"]}
@@ -1349,8 +1365,8 @@ async def _ava_prepare(
     user_content = body.question
     if context_blocks:
         user_content = (
-            "BAZA LIGJORE:\n\n" + "\n\n---\n\n".join(context_blocks)
-            + f"\n\n=== PYETJA E QYTETARIT ===\n{body.question}"
+            f"{legal_base}:\n\n" + "\n\n---\n\n".join(context_blocks)
+            + f"\n\n=== {question_hdr} ===\n{body.question}"
         )
 
     messages = [

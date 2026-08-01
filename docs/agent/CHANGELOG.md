@@ -3,6 +3,24 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — DE corpus wave 2: +20 citizen-topic acts + DSGVO, Ava language fix
+
+- `import_de_laws.py`: 20 new federal acts for high-frequency citizen topics
+  (BEEG, MuSchG, GewSchG, UhVorschG, BerHG, GKG, FamGKG, UWG, SGB IV/VII/
+  VIII/IX/X, WoGG, BAföG, BBiG, NachwG, PflVG, FeV, ZVG); corrected slugs
+  (`berathig`, `baf_g`, full `sgb_10` instead of chapter stubs).
+- New `scripts/import_dsgvo.py`: German GDPR from the EU Publications
+  Office CELLAR API (EUR-Lex portal blocks bots with empty 202), XHTML →
+  "Artikel N" blocks, 99 articles, sanity gate before posting.
+  DE corpus total: 79 acts / 16,435 chunks.
+- DE Ava: RAG context framing now German on the DE host (Albanian labels
+  were pulling whole answers into Albanian); prompt discloses the corpus
+  boundary — federal law + DSGVO, no Landesrecht/case law.
+- Files: `backend/scripts/import_de_laws.py`, `backend/scripts/
+  import_dsgvo.py` (new), `backend/app/api/marketplace.py`.
+- Verified: pytest 128/128; live DE Ava: Beratungshilfe question answered
+  in German citing § 44 RVG; stats endpoint shows 79 laws.
+
 ## 2026-08-01 — Germany expansion (D-034), phases 1–4: locale, data, Ava, legal
 
 - German locale end-to-end: `de` added to `Locale` + ~1,130 translated keys in
