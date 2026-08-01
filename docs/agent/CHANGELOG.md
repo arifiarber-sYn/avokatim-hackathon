@@ -3,6 +3,18 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Investor presentation for the German market (docs/pitch)
+
+- New `docs/pitch/prezantimi-investitori-gjermani.md`: full Albanian
+  investor letter for a lawyer-investor — market moment (E-Rechnung
+  2027/28, beA, AI wave), product overview, honest comparison table vs
+  RA-MICRO/AnNoText/Actaport (beA named as the one open gap), privacy &
+  compliance section with the local LLM framed as "in preparation"
+  (validated, activated before public launch), status, and a 4-point
+  partnership proposal (legal review, EU infra, beA process, pilot
+  offices). No prices anywhere, per owner instruction (also noted in the
+  self-notes section).
+
 ## 2026-08-01 — Multilingual voice (D-038): stock Whisper for non-sq STT, Piper voices in 6 languages
 
 - Measured German quality of the Albanian Whisper fine-tune with real
