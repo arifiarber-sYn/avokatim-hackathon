@@ -525,6 +525,7 @@ function FirmSection() {
     vat_number: "",
     address: "",
     bank_details: "",
+    iban: "",
     default_vat_rate: "18",
     region: "",
   });
@@ -542,6 +543,7 @@ function FirmSection() {
       vat_number: string | null;
       address: string | null;
       bank_details: string | null;
+      iban: string | null;
       default_vat_rate: number;
       region: string | null;
       logo: string | null;
@@ -554,6 +556,7 @@ function FirmSection() {
           vat_number: r.vat_number || "",
           address: r.address || "",
           bank_details: r.bank_details || "",
+          iban: r.iban || "",
           default_vat_rate: String(r.default_vat_rate ?? 18),
           region: r.region || "",
         });
@@ -574,6 +577,7 @@ function FirmSection() {
         vat_number: form.vat_number || null,
         address: form.address || null,
         bank_details: form.bank_details || null,
+        iban: form.iban || null,
         default_vat_rate: Number(form.default_vat_rate),
         region: form.region || null,
         logo,
@@ -637,6 +641,18 @@ function FirmSection() {
           />
           <p className="text-xs text-slate-400 mt-1">{t.bankDetailsHint}</p>
         </div>
+        {firmIsDE && (
+          <div className="sm:col-span-2">
+            <Label>{t.firmIban}</Label>
+            <Input
+              value={form.iban}
+              onChange={(e) => setForm({ ...form, iban: e.target.value })}
+              placeholder="DE89 3704 0044 0532 0130 00"
+              maxLength={34}
+            />
+            <p className="text-xs text-slate-400 mt-1">{t.firmIbanHint}</p>
+          </div>
+        )}
         <div>
           <Label>{t.defaultVatRate}</Label>
           <Input

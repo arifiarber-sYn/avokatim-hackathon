@@ -774,6 +774,19 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
                   >
                     {t.downloadPdf}
                   </Button>
+                  {rvgItems.length > 0 && (
+                    <Button
+                      variant="secondary"
+                      onClick={() =>
+                        apiDownload(
+                          `/invoices/${inv.id}/e-invoice.xml`,
+                          `${inv.number}-factur-x.xml`
+                        )
+                      }
+                    >
+                      {t.eInvoiceXml}
+                    </Button>
+                  )}
                   {inv.status !== "paid" && inv.status !== "void" && (
                     <Button
                       variant="secondary"

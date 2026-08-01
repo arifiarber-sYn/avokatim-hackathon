@@ -21,6 +21,8 @@ class FirmOut(BaseModel):
     vat_number: str | None
     address: str | None
     bank_details: str | None = None
+    # Structured IBAN for e-invoices (ZUGFeRD SEPA payment means, DE)
+    iban: str | None = None
     default_vat_rate: int
     # Sub-national unit (DE: Bundesland code) — regional holiday calendar
     region: str | None = None
@@ -42,6 +44,7 @@ class FirmUpdate(BaseModel):
     address: str | None = None
     # Bank name + IBAN printed in the payment instructions on invoices
     bank_details: str | None = Field(None, max_length=500)
+    iban: str | None = Field(None, max_length=34)
     default_vat_rate: int | None = Field(None, ge=0, le=30)
     region: str | None = Field(None, max_length=8)
     # Small logo as a data URL (~max 200 KB) shown on portal + public intake

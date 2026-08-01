@@ -218,4 +218,7 @@ def build_invoice_pdf(
         generated_on=date.today().strftime("%d.%m.%Y"),
         fiscal_foot=fiscal_foot,
     )
-    return HTML(string=page).write_pdf()
+    # German invoices become hybrid e-invoices (ZUGFeRD) downstream, which
+    # requires PDF/A-3; WeasyPrint emits the OutputIntent + file ID for us
+    variant = "pdf/a-3b" if tenant.country == "DE" else None
+    return HTML(string=page).write_pdf(pdf_variant=variant)

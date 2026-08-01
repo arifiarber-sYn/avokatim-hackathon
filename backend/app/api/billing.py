@@ -609,7 +609,43 @@ async def _invoice_pdf_bytes(db: AsyncSession, user: User, invoice: Invoice) -> 
     tenant = await db.get(Tenant, user.tenant_id)
     contact = await db.get(Contact, invoice.contact_id) if invoice.contact_id else None
     matter = await db.get(Matter, invoice.matter_id) if invoice.matter_id else None
-    return build_invoice_pdf(invoice=invoice, tenant=tenant, contact=contact, matter=matter)
+    pdf = build_invoice_pdf(invoice=invoice, tenant=tenant, contact=contact, matter=matter)
+    if tenant.country == "DE":
+        # German offices always get the hybrid e-invoice (ZUGFeRD/Factur-X):
+        # a normal PDF for humans with the EN 16931 CII XML embedded (D-037)
+        from app.services.einvoice import attach_to_pdf, build_zugferd_xml
+
+        pdf = attach_to_pdf(pdf, build_zugferd_xml(invoice, tenant, contact))
+    return pdf
+
+
+@router.get("/invoices/{invoice_id}/e-invoice.xml")
+async def invoice_einvoice_xml(
+    invoice_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """The raw EN 16931 CII XML (for B2G portals / XRechnung recipients)."""
+    tenant = await db.get(Tenant, user.tenant_id)
+    if tenant.country != "DE":
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "E-invoice XML is for German offices")
+    invoice = await _load_invoice(db, user, invoice_id)
+    contact = await db.get(Contact, invoice.contact_id) if invoice.contact_id else None
+    from app.services.einvoice import build_zugferd_xml
+
+    xml = build_zugferd_xml(invoice, tenant, contact)
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="invoice.einvoice_xml",
+        entity_type="invoice", entity_id=str(invoice.id),
+    )
+    await db.commit()
+    return Response(
+        content=xml,
+        media_type="application/xml",
+        headers={
+            "Content-Disposition": f'attachment; filename="{invoice.number}-factur-x.xml"'
+        },
+    )
 
 
 @router.get("/invoices/{invoice_id}/pdf")

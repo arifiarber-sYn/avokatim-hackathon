@@ -54,6 +54,9 @@ class Tenant(Base, TimestampMixin):
     address: Mapped[str | None] = mapped_column(String(500))
     # Bank account details (bank name + IBAN) printed on invoices
     bank_details: Mapped[str | None] = mapped_column(String(500))
+    # Structured IBAN for e-invoices (ZUGFeRD/XRechnung SEPA payment means);
+    # bank_details above stays the free-text line printed on the PDF
+    iban: Mapped[str | None] = mapped_column(String(34))
     # Default VAT percentage applied to new invoices (Kosovo standard: 18)
     default_vat_rate: Mapped[int] = mapped_column(Integer, default=18, server_default="18")
 

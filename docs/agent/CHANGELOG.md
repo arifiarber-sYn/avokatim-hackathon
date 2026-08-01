@@ -3,6 +3,22 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — E-Rechnung: ZUGFeRD/Factur-X hybrid invoices (D-037 phase 2)
+
+- New `services/einvoice.py` (drafthorse): EN 16931 CII XML from the invoice
+  (seller USt-IdNr/Steuernummer, SEPA IBAN payment means, per-line VAT,
+  German "Straße, PLZ Stadt" address splitting) + PDF embedding.
+- Every invoice PDF of a DE office is now a hybrid e-invoice: WeasyPrint
+  renders PDF/A-3b (`pdf_variant`) and the XML is attached (both the /pdf
+  endpoint and the send-to-client email). New `GET /invoices/{id}/e-invoice.xml`
+  returns the raw XML for B2G/XRechnung recipients.
+- `Tenant.iban` (new column + migration 73a50f24e105) editable in settings
+  (DE offices); `bank_details` stays the free-text print line. Frontend:
+  IBAN field + "E-Rechnung (XML)" download button; 3 new keys in 7 locales.
+- Validated one-off with Mustangproject CLI: XML = valid EN 16931, hybrid
+  PDF = PDF/A-3b compliant, overall "valid". 2 new tests (XML structure,
+  Factur-X embedding); suite 148 green.
+
 ## 2026-08-01 — Full RVG fee engine (D-037 phase 1)
 
 - § 13 Abs. 1 RVG table (KostBRÄG 2025) as band data + 5 rate-based VV items
