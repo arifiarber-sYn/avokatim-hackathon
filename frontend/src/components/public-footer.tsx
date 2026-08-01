@@ -44,6 +44,7 @@ export default function PublicFooter() {
           <Link href="/posto-rastin" className={link}>{t.pnPost}</Link>
           {!isDE && <Link href="/rasti-im?sos=1" className={link}>SOS</Link>}
           <Link href="/afatet" className={link}>{t.dcTitle}</Link>
+          {isDE && <Link href="/rvg" className={link}>{t.rvgTitle}</Link>}
           <Link href="/dokumentet" className={link}>{t.cdTitle}</Link>
           {!isDE && <Link href="/noteret" className={link}>{t.pnNotaries}</Link>}
           <Link href="/kycu" className={link}>{t.acctLoginT}</Link>

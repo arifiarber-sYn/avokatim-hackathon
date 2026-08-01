@@ -386,6 +386,22 @@ interface ManualItem {
   unit_price: string;
 }
 
+interface RvgVvItem {
+  code: string;
+  vv: string;
+  rate: string;
+  group: string;
+  name: Record<string, string>;
+}
+
+interface RvgLine {
+  code: string;
+  vv: string;
+  name: Record<string, string>;
+  rate: string | null;
+  amount: string;
+}
+
 function InvoicesTab({ matters }: { matters: Matter[] }) {
   const { t, locale } = useI18n();
   const [invoices, setInvoices] = useState<Invoice[] | null>(null);
@@ -404,13 +420,53 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
     apiGet<Invoice[]>("/invoices").then(setInvoices).catch(() => {});
   }, []);
 
+  // RVG calculator (only German offices — the catalogue endpoint 404s elsewhere)
+  const [rvgItems, setRvgItems] = useState<RvgVvItem[]>([]);
+  const [rvgOpen, setRvgOpen] = useState(false);
+  const [rvgValue, setRvgValue] = useState("");
+  const [rvgSelected, setRvgSelected] = useState<string[]>([
+    "verfahrensgebuehr", "termingebuehr",
+  ]);
+  const [rvgRate, setRvgRate] = useState("1.3");
+  const [rvgBusy, setRvgBusy] = useState(false);
+
   useEffect(() => {
     load();
     apiGet<FeeTariffItem[]>("/fee-tariff").then(setTariff).catch(() => {});
+    apiGet<{ items: RvgVvItem[] }>("/fee-calc/rvg")
+      .then((c) => setRvgItems(c.items))
+      .catch(() => {});
     apiGet<{ auto_provider: boolean }>("/payments-config")
       .then((c) => setAutoProvider(c.auto_provider))
       .catch(() => {});
   }, [load]);
+
+  async function addFromRvg() {
+    setRvgBusy(true);
+    setError("");
+    try {
+      const result = await apiPost<{ lines: RvgLine[] }>("/fee-calc/rvg", {
+        value_eur: Number(rvgValue),
+        items: rvgSelected,
+        geschaeftsgebuehr_rate: rvgSelected.includes("geschaeftsgebuehr")
+          ? Number(rvgRate)
+          : undefined,
+      });
+      setItems((prev) => [
+        ...prev,
+        ...result.lines.map((line) => ({
+          description: `${line.name[locale] || line.name.de} (${line.vv})`,
+          quantity: "1",
+          unit_price: line.amount,
+        })),
+      ]);
+      setRvgOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setRvgBusy(false);
+    }
+  }
 
   function addTariffItem(id: string) {
     const item = tariff.find((x) => x.id === id);
@@ -435,8 +491,9 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
         include_unbilled_time: !!matterId,
         include_unbilled_expenses: !!matterId,
         notes: notes || null,
+        // Negative amounts are legitimate (RVG Anrechnung credit lines)
         items: items
-          .filter((i) => i.description.trim() && Number(i.unit_price) > 0)
+          .filter((i) => i.description.trim() && Number(i.unit_price) !== 0)
           .map((i) => ({
             description: i.description,
             quantity: i.quantity || "1",
@@ -607,12 +664,73 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
                 ))}
               </select>
             )}
+            {rvgItems.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setRvgOpen((v) => !v)}
+                className="text-xs text-indigo-600 hover:underline"
+              >
+                {t.rvgTitle}
+              </button>
+            )}
             {matterId && (
               <p className="text-xs text-slate-500">
                 ✓ {t.includeUnbilled} · ✓ {t.includeExpenses}
               </p>
             )}
           </div>
+          {rvgOpen && (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-3">
+              <div className="flex gap-3 items-end flex-wrap">
+                <div className="w-40">
+                  <Label>{t.rvgValue}</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={rvgValue}
+                    onChange={(e) => setRvgValue(e.target.value)}
+                  />
+                </div>
+                {rvgSelected.includes("geschaeftsgebuehr") && (
+                  <div className="w-32">
+                    <Label>{t.rvgGgRate}</Label>
+                    <Select value={rvgRate} onChange={(e) => setRvgRate(e.target.value)}>
+                      {["0.5", "0.8", "1.0", "1.3", "1.5", "1.8", "2.0", "2.5"].map((r) => (
+                        <option key={r} value={r}>{r.replace(".", ",")}</option>
+                      ))}
+                    </Select>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+                {rvgItems.map((item) => (
+                  <label key={item.code} className="flex items-center gap-1.5 text-xs text-slate-600">
+                    <input
+                      type="checkbox"
+                      checked={rvgSelected.includes(item.code)}
+                      onChange={() =>
+                        setRvgSelected((prev) =>
+                          prev.includes(item.code)
+                            ? prev.filter((c) => c !== item.code)
+                            : [...prev, item.code]
+                        )
+                      }
+                      className="rounded border-slate-300"
+                    />
+                    {(item.name[locale] || item.name.de)} ({item.vv})
+                  </label>
+                ))}
+              </div>
+              <Button
+                type="button"
+                onClick={addFromRvg}
+                disabled={rvgBusy || !rvgValue || rvgSelected.length === 0}
+              >
+                {rvgBusy ? t.loading : t.rvgInsert}
+              </Button>
+            </div>
+          )}
         </form>
         <ErrorNote message={error} />
         {notice && <p className="text-sm text-emerald-700">✓ {notice}</p>}

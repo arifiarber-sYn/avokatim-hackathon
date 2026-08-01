@@ -146,7 +146,10 @@ export default function PublicShell({
   const { t } = useI18n();
   const pathname = usePathname();
   const dict = t as unknown as Record<string, string>;
-  const toolsActive = pathname.startsWith("/afatet") || pathname.startsWith("/dokumentet");
+  const toolsActive =
+    pathname.startsWith("/afatet") ||
+    pathname.startsWith("/dokumentet") ||
+    pathname.startsWith("/rvg");
 
   // SOS and the notary pillar are Kosovo-only in v1 (D-034); resolved after
   // mount so SSR markup stays identical for both hosts.
@@ -222,6 +225,11 @@ export default function PublicShell({
                   <Link href="/dokumentet" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-700">
                     {t.cdTitle}
                   </Link>
+                  {country === "DE" && (
+                    <Link href="/rvg" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-700">
+                      {t.rvgIntroT}
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

@@ -444,6 +444,56 @@ async def _load_invoice(db: AsyncSession, user: User, invoice_id: uuid.UUID) -> 
     return invoice
 
 
+# ---------- RVG calculator (DE offices, D-037) ----------
+
+
+class RvgCalcIn(BaseModel):
+    value_eur: Decimal = Field(gt=0, le=Decimal("100000000"))
+    items: list[str] = Field(min_length=1, max_length=8)
+    # VV 2300 is a Rahmengebühr (0.5-2.5); the default 1.3 can be overridden
+    geschaeftsgebuehr_rate: Decimal | None = Field(
+        default=None, ge=Decimal("0.5"), le=Decimal("2.5")
+    )
+    vat_rate: int = Field(default=19, ge=0, le=30)
+
+
+async def _require_de_tenant(db: AsyncSession, user: User) -> None:
+    tenant = await db.get(Tenant, user.tenant_id)
+    if tenant is None or tenant.country != "DE":
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, "RVG calculator is for German offices"
+        )
+
+
+@router.get("/fee-calc/rvg")
+async def rvg_catalogue(
+    user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
+    """The VV items the calculator offers (localized names, default rates)."""
+    await _require_de_tenant(db, user)
+    from app.seeds.germany import DE_RVG_TABLE, DE_RVG_VV_ITEMS
+
+    return {"items": DE_RVG_VV_ITEMS, "legal_basis": DE_RVG_TABLE["legal_basis"]}
+
+
+@router.post("/fee-calc/rvg")
+async def rvg_calc(
+    body: RvgCalcIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Statutory fee lines for a Gegenstandswert — ready to become invoice items."""
+    await _require_de_tenant(db, user)
+    from app.services import rvg
+
+    return rvg.compute(
+        body.value_eur,
+        body.items,
+        geschaeftsgebuehr_rate=body.geschaeftsgebuehr_rate,
+        vat_rate=body.vat_rate,
+    )
+
+
 @router.get("/invoices", response_model=list[InvoiceOut])
 async def list_invoices(
     user: User = Depends(get_current_user),

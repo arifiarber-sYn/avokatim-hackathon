@@ -88,6 +88,52 @@ async def public_deadline_calc(
     }
 
 
+# ---------- RVG fee calculator (DE host, D-037) ----------
+
+
+class FeeCalcIn(BaseModel):
+    value_eur: float = Field(gt=0, le=100_000_000)
+    items: list[str] = Field(min_length=1, max_length=8)
+    geschaeftsgebuehr_rate: float | None = Field(default=None, ge=0.5, le=2.5)
+
+
+def _require_de(request: Request) -> None:
+    if country_from_request(request) != "DE":
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Not available")
+
+
+@router.get("/fee-items")
+async def public_fee_items(request: Request):
+    """VV items + table meta for the public 'Was kostet ein Anwalt?' tool."""
+    _require_de(request)
+    from app.seeds.germany import DE_RVG_TABLE, DE_RVG_VV_ITEMS
+
+    return {"items": DE_RVG_VV_ITEMS, "legal_basis": DE_RVG_TABLE["legal_basis"]}
+
+
+@router.post("/fee-calc")
+async def public_fee_calc(body: FeeCalcIn, request: Request):
+    """Informative statutory-fee estimate (RVG). Not legal advice."""
+    _require_de(request)
+    await _rate_limit("public_fee_calc", _ip(request), limit=60, window_seconds=3600)
+    from decimal import Decimal
+
+    from app.services import rvg
+
+    result = rvg.compute(
+        Decimal(str(body.value_eur)),
+        body.items,
+        geschaeftsgebuehr_rate=(
+            Decimal(str(body.geschaeftsgebuehr_rate))
+            if body.geschaeftsgebuehr_rate
+            else None
+        ),
+        vat_rate=19,
+    )
+    result["estimate"] = True
+    return result
+
+
 # ---------- notary helper ----------
 
 NOTARIES_FILE = PROJECT_DIR / "data" / "notaries.json"

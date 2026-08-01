@@ -292,6 +292,91 @@ DE_DEADLINE_RULES = [
 ]
 
 # Initial RVG anchors (Anlage 1/2 RVG, Stand 2025 — KostBRÄG 2025 amounts).
+# § 13 Abs. 1 RVG fee table (Stand KostBRÄG 2025, in force 2025-06-01) as
+# band data: the 1.0 fee is 51.50 € up to 500 €, then grows by a fixed
+# increment per *started* step until the band ceiling. Verified against the
+# published tables: 2.000 € -> 176.00, 10.000 € -> 652.00, 25.000 € -> 927.00,
+# 50.000 € -> 1.357.00, 500.000 € -> 3.752.00, 1.000.000 € -> 5.502.00.
+DE_RVG_TABLE = {
+    "base_up_to": "500",
+    "base_fee": "51.50",
+    # (step, band ceiling — None = open-ended, increment per started step)
+    "bands": [
+        ("500", "2000", "41.50"),
+        ("1000", "10000", "59.50"),
+        ("3000", "25000", "55.00"),
+        ("5000", "50000", "86.00"),
+        ("15000", "200000", "99.50"),
+        ("30000", "500000", "140.00"),
+        ("50000", None, "175.00"),
+    ],
+    "minimum_fee": "15.00",  # § 13 Abs. 2 RVG
+    "legal_basis": "§ 13 RVG (KostBRÄG 2025)",
+}
+
+# Rate-based VV items the RVG calculator offers. `group` = the Angelegenheit
+# the item belongs to — the VV 7002 expense cap (20 %, max 20 €) applies per
+# Angelegenheit, so out-of-court and court work each get their own pauschale.
+DE_RVG_VV_ITEMS = [
+    {
+        "code": "geschaeftsgebuehr",
+        "vv": "VV 2300",
+        "rate": "1.3",
+        "rate_min": "0.5",
+        "rate_max": "2.5",
+        "group": "aussergerichtlich",
+        "name": {
+            "de": "Geschäftsgebühr (außergerichtlich)",
+            "en": "Business fee (out of court)",
+            "sq": "Tarifa e përfaqësimit jashtëgjyqësor",
+        },
+    },
+    {
+        "code": "verfahrensgebuehr",
+        "vv": "VV 3100",
+        "rate": "1.3",
+        "group": "gerichtlich",
+        "name": {
+            "de": "Verfahrensgebühr (1. Instanz)",
+            "en": "Procedure fee (first instance)",
+            "sq": "Tarifa procedurale (shkalla e parë)",
+        },
+    },
+    {
+        "code": "termingebuehr",
+        "vv": "VV 3104",
+        "rate": "1.2",
+        "group": "gerichtlich",
+        "name": {
+            "de": "Terminsgebühr",
+            "en": "Hearing fee",
+            "sq": "Tarifa e seancës",
+        },
+    },
+    {
+        "code": "einigungsgebuehr",
+        "vv": "VV 1000",
+        "rate": "1.5",
+        "group": "aussergerichtlich",
+        "name": {
+            "de": "Einigungsgebühr (nicht anhängig)",
+            "en": "Settlement fee (not pending in court)",
+            "sq": "Tarifa e marrëveshjes (jashtë procesit)",
+        },
+    },
+    {
+        "code": "einigungsgebuehr_anhaengig",
+        "vv": "VV 1003",
+        "rate": "1.0",
+        "group": "gerichtlich",
+        "name": {
+            "de": "Einigungsgebühr (anhängige Sache)",
+            "en": "Settlement fee (case pending)",
+            "sq": "Tarifa e marrëveshjes (çështje në gjykatë)",
+        },
+    },
+]
+
 # Value-fee items (Nr. 3100 etc.) depend on the Gegenstandswert; the amounts
 # here are the fixed statutory anchors a solo lawyer reaches for first.
 DE_FEE_TARIFF = [
@@ -360,10 +445,10 @@ DE_FEE_TARIFF = [
             "sq": "Tarifa e përfaqësimit jashtëgjyqësor 1,3 (vlera 5.000 €)",
         },
         "practice_area": "civil",
-        "amount": "483.60",
+        "amount": "460.85",
         "unit": "Angelegenheit",
         "legal_basis": "RVG VV Nr. 2300; § 13 RVG",
-        "notes": "1,3-Gebühr aus 5.000 € (372 € × 1,3, Stand 2025; zzgl. Auslagen und USt.).",
+        "notes": "1,3-Gebühr aus 5.000 € (354,50 € × 1,3, KostBRÄG 2025; zzgl. Auslagen und USt.).",
     },
     {
         "code": "civil.verfahrensgebuehr_5k",
@@ -374,7 +459,7 @@ DE_FEE_TARIFF = [
             "sq": "Tarifa procedurale 1,3 (vlera 5.000 €)",
         },
         "practice_area": "civil",
-        "amount": "483.60",
+        "amount": "460.85",
         "unit": "Rechtszug",
         "legal_basis": "RVG VV Nr. 3100; § 13 RVG",
         "notes": "Erste Instanz; zzgl. 1,2-Terminsgebühr VV 3104 (zzgl. USt.).",
@@ -388,10 +473,10 @@ DE_FEE_TARIFF = [
             "sq": "Tarifa e seancës 1,2 (vlera 5.000 €)",
         },
         "practice_area": "civil",
-        "amount": "446.40",
+        "amount": "425.40",
         "unit": "Rechtszug",
         "legal_basis": "RVG VV Nr. 3104; § 13 RVG",
-        "notes": "372 € × 1,2 (Stand 2025; zzgl. USt.).",
+        "notes": "354,50 € × 1,2 (KostBRÄG 2025; zzgl. USt.).",
     },
     {
         "code": "general.postpauschale",

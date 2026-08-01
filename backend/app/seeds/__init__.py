@@ -129,9 +129,15 @@ async def _seed_country(
         if item["code"] not in existing_tariff:
             db.add(FeeTariffItem(jurisdiction_id=jurisdiction.id, **item))
         else:
-            merged = _merge_name(existing_tariff[item["code"]].name, item["name"])
+            row = existing_tariff[item["code"]]
+            merged = _merge_name(row.name, item["name"])
             if merged:
-                existing_tariff[item["code"]].name = merged
+                row.name = merged
+            # Tariff anchors are platform data too — keep amounts/notes in
+            # sync with the seed (e.g. the D-037 RVG-table correction).
+            for field in ("tariff_no", "amount", "unit", "legal_basis", "notes"):
+                if field in item and str(getattr(row, field)) != str(item[field]):
+                    setattr(row, field, item[field])
 
 
 async def seed_jurisdictions(db: AsyncSession) -> None:

@@ -3,6 +3,25 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Full RVG fee engine (D-037 phase 1)
+
+- § 13 Abs. 1 RVG table (KostBRÄG 2025) as band data + 5 rate-based VV items
+  in `seeds/germany.py`; new `services/rvg.py` computes fee lines (kaufmännisch
+  rounding, § 13 Abs. 2 minimum, Anrechnung Vorbem. 3 Abs. 4 VV capped at
+  0.75, VV 7002 pauschale per Angelegenheit, VAT).
+- API: `GET/POST /api/fee-calc/rvg` (DE offices) + public
+  `GET /public/tools/fee-items`, `POST /public/tools/fee-calc` (DE host,
+  rate-limited). Corrected the three 5.000-€ tariff anchors (old values used
+  372 € as 1.0 fee; official 2025 table says 354,50 €) and taught the seeder
+  to sync tariff amounts/notes from seeds.
+- Frontend: RVG panel in billing (computes lines straight into invoice items;
+  invoice item filter now accepts negative Anrechnung lines) + public
+  `/rvg` page ("Was kostet ein Anwalt?") linked in tools nav/footer/sitemap
+  on the DE host; 15 new rvg* keys in 7 locales.
+- Verified: 7 new tests in `tests/test_rvg.py` against the published table
+  (146/146 total), tsc clean, live calc on de host returns 460,85/460,85/
+  425,40/-230,43 + 2x pauschale for 5.000 € — matches reference calculators.
+
 ## 2026-08-01 — Exact calendar-month deadline math (D-036)
 
 - Industry comparison vs the German market (RA-MICRO/Actaport, Advocado,

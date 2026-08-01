@@ -13,6 +13,7 @@ const ROUTES: { path: string; priority: number }[] = [
   { path: "/ava", priority: 0.9 },
   { path: "/posto-rastin", priority: 0.8 },
   { path: "/afatet", priority: 0.7 },
+  { path: "/rvg", priority: 0.7 },
   { path: "/dokumentet", priority: 0.7 },
   { path: "/apliko", priority: 0.6 },
   { path: "/regjistrohu", priority: 0.6 },
