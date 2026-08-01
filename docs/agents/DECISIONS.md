@@ -1006,3 +1006,28 @@
 - Consequences: when courts join/leave the pilot, we edit a seed list.
   The lawyer endpoints 404 for non-DE matters, and the app button hides
   itself by probing. Both OV endpoints write audit-log entries (rule §5.8).
+
+## D-042: Hybrid retrieval — RRF over 3 legs, rare-word FTS instead of plain BM25 (2026-08-01)
+
+- Context: legal research is the #1 AI use in German firms. Pure vector
+  search misses exact statutory terms ("§ 573c BGB": 1/6 hit rate on
+  citation-style queries) and the federal case-law corpus (16.8k decisions,
+  `rechtsprechung-im-internet.de`) floods any naive full-text ranking —
+  judgments repeat terms like "BGB" hundreds of times.
+- Decision: `search_corpus` fuses three rankings with standard RRF (k=60,
+  equal weights — weighted RRF was tested and rejected: with k=60 a
+  down-weighted leg can never surface anything into the top-6 on its own):
+  1) pgvector cosine, 2) `plainto_tsquery` AND (verbatim phrases),
+  3) a rare-word OR leg: up to 4 query words with chunk document frequency
+  ≤ 2% (one GIN-backed count per word), prefix-matched (`:*`) so "Berufung"
+  finds "Berufungsfrist". The df cap is the IDF substitute — Postgres FTS
+  has no BM25, and common words flood the ranking with judgment chunks.
+  Judgments are capped at `limit//3` of the final slots so statutes stay
+  the primary grounding; case law enriches, never displaces the law.
+- Measured (eval_de_recherche.py, same corpus state): natural-language
+  §-recall 9/14 = vector baseline; explicit §-citations 5/6 vs 1/6.
+  Known limit: German compounds (Kündigungsschutzklage ↛ KSchG § 4 text)
+  need better embeddings or compound splitting — future work.
+- tsv column is populated in Python on insert (corpus API) + backfilled by
+  migration; a generated column was rejected because the ts config depends
+  on the parent doc's language (cross-table).

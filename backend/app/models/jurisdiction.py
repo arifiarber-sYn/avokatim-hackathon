@@ -7,7 +7,7 @@ from decimal import Decimal
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.config import settings
@@ -156,5 +156,8 @@ class LegalCorpusChunk(Base):
     section: Mapped[str | None] = mapped_column(String(255))  # e.g. "Neni 176"
     text: Mapped[str] = mapped_column(Text)
     embedding: Mapped[list[float] | None] = mapped_column(Vector(settings.embedding_dim))
+    # Full-text vector for hybrid retrieval (D-042): 'german' config for de
+    # docs, 'simple' otherwise — set on insert, GIN-indexed.
+    tsv = mapped_column(TSVECTOR, nullable=True)
 
     doc: Mapped[LegalCorpusDoc] = relationship(back_populates="chunks")

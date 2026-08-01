@@ -3,6 +3,33 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-01 — Deep research: hybrid retrieval + federal case law with Aktenzeichen (D-042 F3)
+
+- New: hybrid corpus retrieval. Migration `d858e0f31af4` adds
+  `legal_corpus_chunks.tsv` (tsvector, `german` config for de / `simple`
+  otherwise, full backfill) + GIN index. `search_corpus` now fuses three
+  rankings with RRF (k=60): pgvector cosine, `plainto_tsquery` AND, and a
+  rare-word OR leg (up to 4 query words with document frequency ≤ 2%,
+  prefix-matched so "Berufung" finds "Berufungsfrist"); judgments capped
+  at limit//3 of the final slots. Corpus splitter also chunks judgments by
+  Leitsatz/Tenor/Gründe headings.
+- New: `scripts/import_de_rechtsprechung.py` — BGH/BAG/BVerfG decisions of
+  the last 5 years from rechtsprechung-im-internet.de (BMJV, § 5 UrhG),
+  `doc_type="judgment"`, reference = Aktenzeichen, resumable, retries
+  across backend restarts. Ava (lawyer + public) cites judgments with
+  court + Aktenzeichen; DE public prompt now covers case law.
+- Fix: lawyer-side assistant calls never passed `region`, so Landesrecht
+  was invisible in ask/deep-research/prepare/hearing-prep — added
+  `_office_region` and threaded the parameter through.
+- Eval: `scripts/eval_de_recherche.py` — natural-language §-recall 9/14
+  (= vector baseline), explicit §-citation queries 1/6 → 5/6.
+- Files: `backend/alembic/versions/20260801_d858e0f31af4_*.py` (new),
+  `models/jurisdiction.py`, `api/corpus.py`, `services/rag.py`,
+  `services/assistant.py`, `api/assistant.py`, `api/marketplace.py`,
+  `scripts/import_de_rechtsprechung.py` (new),
+  `scripts/eval_de_recherche.py` (new), `tests/test_rag_chunking.py`,
+  `frontend/src/app/ava/page.tsx`, `(app)/assistant/page.tsx`.
+
 ## 2026-08-01 — Online-Verfahren assistant: eligibility, Klageschrift, citizen pointer (D-041 F2)
 
 - New: support for Germany's civil online procedure (live 2026-04-15).

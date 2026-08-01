@@ -141,6 +141,26 @@ def _system_prompt(style: str | None) -> str:
     )
 
 
+def _source_label(hit: dict) -> str:
+    """Context-block header for a corpus hit. Judgments (D-042) are labeled
+    with court + Aktenzeichen so the model cites them properly."""
+    if hit.get("doc_type") == "judgment":
+        ref = hit.get("reference") or ""
+        suffix = f" — {ref}" if ref and ref not in hit["doc_title"] else ""
+        return f"Nga vendimi gjyqësor: {hit['doc_title']}{suffix}"
+    label = hit["doc_title"] + (f", {hit['section']}" if hit.get("section") else "")
+    return f"Nga ligji: {label}"
+
+
+def _citation(hit: dict) -> dict:
+    return {
+        "type": "judgment" if hit.get("doc_type") == "judgment" else "law",
+        "title": hit["doc_title"],
+        "section": hit.get("section"),
+        "reference": hit.get("reference"),
+    }
+
+
 async def _build_ask_messages(
     db: AsyncSession,
     *,
@@ -151,6 +171,7 @@ async def _build_ask_messages(
     retrieval_query: str | None = None,
     language: str | None = None,
     style: str | None = None,
+    region: str | None = None,
 ) -> tuple[list[ChatMessage], list[dict]]:
     """Shared RAG prompt assembly for ask_bora and ask_bora_stream."""
     context_blocks: list[str] = []
@@ -166,15 +187,11 @@ async def _build_ask_messages(
 
     if jurisdiction_id:
         law_hits = await rag.search_corpus(
-            db, jurisdiction_id, search_text, language=language
+            db, jurisdiction_id, search_text, language=language, region=region
         )
         for hit in law_hits:
-            label = f"{hit['doc_title']}" + (f", {hit['section']}" if hit["section"] else "")
-            context_blocks.append(f"[Nga ligji: {label}]\n{hit['text']}")
-            citations.append(
-                {"type": "law", "title": hit["doc_title"], "section": hit["section"],
-                 "reference": hit["reference"]}
-            )
+            context_blocks.append(f"[{_source_label(hit)}]\n{hit['text']}")
+            citations.append(_citation(hit))
 
     user_content = question
     if context_blocks:
@@ -202,6 +219,7 @@ async def ask_bora(
     retrieval_query: str | None = None,
     language: str | None = None,
     style: str | None = None,
+    region: str | None = None,
 ) -> tuple[str, list[dict]]:
     """RAG-grounded chat. Returns (answer, citations). retrieval_query lets
     callers search with case facts instead of a generic instruction prompt."""
@@ -211,6 +229,7 @@ async def ask_bora(
         matter_id=matter_id,
         jurisdiction_id=jurisdiction_id,
         history=history,
+        region=region,
         retrieval_query=retrieval_query,
         language=language,
         style=style,
@@ -230,6 +249,7 @@ async def ask_bora_stream(
     history: list[ChatMessage] | None = None,
     language: str | None = None,
     style: str | None = None,
+    region: str | None = None,
 ):
     """Streaming variant: returns (citations, chunk_iterator). Chunks are
     ("thinking"|"delta", text) — thinking tokens are shown live but not saved."""
@@ -241,6 +261,7 @@ async def ask_bora_stream(
         history=history,
         language=language,
         style=style,
+        region=region,
     )
     provider = get_provider(provider_name)
     return citations, provider.chat_stream(messages)
@@ -284,6 +305,7 @@ async def deep_research_stream(
     jurisdiction_id: uuid.UUID | None,
     provider_name: str | None = None,
     language: str | None = None,
+    region: str | None = None,
 ):
     """CoCounsel-style deep research: decompose the question into sub-questions,
     search the corpus for each one, then synthesize a cited answer.
@@ -330,18 +352,14 @@ async def deep_research_stream(
         if not jurisdiction_id:
             continue
         for hit in await rag.search_corpus(
-            db, jurisdiction_id, subq, limit=4, language=language
+            db, jurisdiction_id, subq, limit=4, language=language, region=region
         ):
             key = (hit["doc_title"], hit["section"])
             if key in seen:
                 continue
             seen.add(key)
-            label = hit["doc_title"] + (f", {hit['section']}" if hit["section"] else "")
-            context_blocks.append(f"[Nga ligji: {label}]\n{hit['text']}")
-            citations.append(
-                {"type": "law", "title": hit["doc_title"], "section": hit["section"],
-                 "reference": hit["reference"]}
-            )
+            context_blocks.append(f"[{_source_label(hit)}]\n{hit['text']}")
+            citations.append(_citation(hit))
 
     yield {"type": "step", "step": "synthesis", "status": "start"}
     user_content = question
@@ -396,6 +414,7 @@ async def prepare_matter_stream(
     provider_name: str | None = None,
     language: str | None = None,
     style: str | None = None,
+    region: str | None = None,
 ):
     """Agentic one-click matter preparation (the 2026 'agent' pattern —
     Harvey Agents / Clio Work): read the file, derive the legal questions,
@@ -450,18 +469,14 @@ async def prepare_matter_stream(
         if not jurisdiction_id:
             continue
         for hit in await rag.search_corpus(
-            db, jurisdiction_id, q, limit=4, language=language
+            db, jurisdiction_id, q, limit=4, language=language, region=region
         ):
             key = (hit["doc_title"], hit["section"])
             if key in seen:
                 continue
             seen.add(key)
-            label = hit["doc_title"] + (f", {hit['section']}" if hit["section"] else "")
-            law_blocks.append(f"[Nga ligji: {label}]\n{hit['text']}")
-            citations.append(
-                {"type": "law", "title": hit["doc_title"], "section": hit["section"],
-                 "reference": hit["reference"]}
-            )
+            law_blocks.append(f"[{_source_label(hit)}]\n{hit['text']}")
+            citations.append(_citation(hit))
 
     yield {"type": "step", "step": "synthesis", "status": "start"}
     user_content = (
@@ -652,6 +667,7 @@ async def hearing_prep(
     jurisdiction_id: uuid.UUID | None,
     extra_instructions: str | None = None,
     provider_name: str | None = None,
+    region: str | None = None,
 ) -> tuple[str, list[dict]]:
     question = HEARING_PREP_PROMPT
     if extra_instructions:
@@ -667,4 +683,5 @@ async def hearing_prep(
         jurisdiction_id=jurisdiction_id,
         provider_name=provider_name,
         retrieval_query=retrieval_query,
+        region=region,
     )

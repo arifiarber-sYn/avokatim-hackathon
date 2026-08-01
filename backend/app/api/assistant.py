@@ -57,6 +57,13 @@ async def _office_style(db: AsyncSession, user: User) -> str | None:
     return tenant.assistant_style if tenant else None
 
 
+async def _office_region(db: AsyncSession, user: User) -> str | None:
+    """The office's Bundesland (DE) — widens corpus search to its
+    Landesrecht (D-035); was missing on the lawyer paths until D-042."""
+    tenant = await db.get(Tenant, user.tenant_id)
+    return tenant.region if tenant else None
+
+
 @router.post("/export-docx")
 async def export_docx(
     body: dict,
@@ -283,6 +290,7 @@ async def ask(
             history=history,
             language=body.locale,
             style=await _office_style(db, user),
+            region=await _office_region(db, user),
         )
     except RuntimeError as exc:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc))
@@ -325,6 +333,7 @@ async def ask_stream(body: AskRequest, user: User = Depends(get_current_user)):
                     history=history,
                     language=body.locale,
                     style=await _office_style(db, user),
+                    region=await _office_region(db, user),
                 )
                 async for kind, text in chunks:
                     if kind == "thinking":
@@ -381,6 +390,7 @@ async def deep_research(body: AskRequest, user: User = Depends(get_current_user)
                     jurisdiction_id=jurisdiction_id,
                     provider_name=provider_name,
                     language=body.locale,
+                    region=await _office_region(db, user),
                 )
                 async for event in events:
                     if event["type"] == "citations":
@@ -440,6 +450,7 @@ async def prepare_matter(
                     provider_name=provider_name,
                     language=locale,
                     style=await _office_style(db, user),
+                    region=await _office_region(db, user),
                 )
                 async for event in events:
                     yield _sse(event)
@@ -482,6 +493,7 @@ async def summarize_matter(
             matter_id=matter_id,
             jurisdiction_id=matter.jurisdiction_id,
             provider_name=provider_name,
+            region=await _office_region(db, user),
         )
     except RuntimeError as exc:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc))
@@ -505,6 +517,7 @@ async def prep_for_hearing(
             jurisdiction_id=matter.jurisdiction_id,
             extra_instructions=body.extra_instructions,
             provider_name=provider_name,
+            region=await _office_region(db, user),
         )
     except RuntimeError as exc:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc))

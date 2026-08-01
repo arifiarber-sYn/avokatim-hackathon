@@ -1235,9 +1235,12 @@ PUBLIC_AVA_SYSTEM_PROMPT_DE = (
     "Frage Landesrecht eines anderen Bundeslandes (jedes Land regelt diese "
     "Bereiche selbst), sage ausdrücklich, dass dieses Land noch nicht in "
     "deinen Quellen ist, und beantworte nur, was bundesrechtlich gilt. "
-    "Rechtsprechung (BGH, BAG, BVerfG) hast du KEINE: hängt eine Frage "
-    "wesentlich von Gerichtsentscheidungen ab, sage das ausdrücklich und "
-    "verweise auf anwaltliche Prüfung. Erkläre einfach, ohne unnötigen Jargon. Sobald eine Frage eine "
+    "Zu deinen Quellen gehört auch Rechtsprechung der Bundesgerichte (BGH, "
+    "BAG, BVerfG, ab 2021); zitiere Entscheidungen mit Gericht und "
+    "Aktenzeichen (z.B. 'BGH, Urteil vom 01.07.2026 — VIII ZR 125/23') und "
+    "nur, wenn sie dir als Auszug vorliegen — erfinde niemals "
+    "Entscheidungen. Instanzrechtsprechung (LG/OLG) hast du nicht. "
+    "Erkläre einfach, ohne unnötigen Jargon. Sobald eine Frage eine "
     "Einzelfallprüfung, laufende Fristen oder Vertretung berührt, empfiehl "
     "der Person den Button 'Anwalt finden', um den Fall zugelassenen "
     "Rechtsanwältinnen und Rechtsanwälten der Plattform vorzulegen. Wenn "
@@ -1379,15 +1382,26 @@ async def _ava_prepare(
             fallback_language=profile.corpus_fallback_language,
             region=region,
         ):
-            label = hit["doc_title"] + (f", {hit['section']}" if hit["section"] else "")
+            is_judgment = hit.get("doc_type") == "judgment"
+            if is_judgment:
+                # Case law (D-042): cite with court + Aktenzeichen
+                ref = hit.get("reference") or ""
+                label = hit["doc_title"] + (
+                    f" — {ref}" if ref and ref not in hit["doc_title"] else ""
+                )
+                header = "Aus der Rechtsprechung" if country == "DE" else "Nga praktika gjyqësore"
+            else:
+                label = hit["doc_title"] + (f", {hit['section']}" if hit["section"] else "")
+                header = from_law
             # Landesrecht excerpts carry their Land so model and citizen see
             # the territorial scope (e.g. "BauO NRW § 61 [Nordrhein-Westfalen]")
             region_name = profile.regions.get(hit.get("region") or "")
             if region_name:
                 label = f"{label} [{region_name}]"
-            context_blocks.append(f"[{from_law}: {label}]\n{hit['text']}")
+            context_blocks.append(f"[{header}: {label}]\n{hit['text']}")
             citations.append(
-                {"type": "law", "title": hit["doc_title"], "section": hit["section"],
+                {"type": "judgment" if is_judgment else "law",
+                 "title": hit["doc_title"], "section": hit["section"],
                  "reference": hit["reference"], "region": hit.get("region")}
             )
 

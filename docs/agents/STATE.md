@@ -33,9 +33,19 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   loaded **NRW + Bayern, 20 acts / ~2,900 chunks**; `search_corpus(region=…)`
   = federal + that Land; public Ava has a Bundesland dropdown, citations
   show the Land. Remaining 14 Länder blocked on juris SPAs (LESSONS #1).
-  Known limit: no case law (DE Ava prompt discloses this); embedding model
-  is weak on colloquial German→legal paraphrase (hybrid retrieval is a
-  roadmap item). **DE seed data**
+  **Federal case law** (2026-08-01, D-042): `import_de_rechtsprechung.py`
+  (rii-toc.xml, BMJV portal) imports BGH/BAG/BVerfG decisions of the last
+  5 years as `doc_type="judgment"`, `reference`=Aktenzeichen, sections
+  Leitsatz/Tenor/Gründe; ~16.8k decisions matched, initial import running
+  in background (`data/import_rechtsprechung.log`, resumable — re-run the
+  script to continue/refresh). Ava cites judgments with court +
+  Aktenzeichen (lawyer + public, DE prompt updated).
+  **Hybrid retrieval** (D-042): `legal_corpus_chunks.tsv` (tsvector,
+  `german`/`simple` per language) + GIN; `search_corpus` = RRF over
+  3 legs (pgvector cosine, plainto AND, rare-word prefix OR with df ≤ 2%);
+  judgments capped at limit//3 slots. Eval `scripts/eval_de_recherche.py`:
+  §-citation queries 1/6 → 5/6; known limit: German compounds
+  (Kündigungsschutzklage) still need better embeddings. **DE seed data**
   (`seeds/germany.py`): federal holidays (incl. Easter calc) + per-Land
   holidays 2026–27 (whole-Land only; deadline engine uses `tenant.region`
   via the settings Bundesland picker), 14 deadline
@@ -848,9 +858,12 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - **XK (Kosovo): active** — deadline rules, holidays, templates seeded.
 - **DE (Germany): active** (2026-08-01, D-034) — profile in
   `app/jurisdictions.py`, seed data in `seeds/germany.py`, 99-act corpus
-  (78 federal laws + DSGVO + 20 Landesrecht acts NW/BY, D-035),
+  (78 federal laws + DSGVO + 20 Landesrecht acts NW/BY, D-035) + federal
+  case law BGH/BAG/BVerfG (D-042, importing), hybrid retrieval,
   host `de.avokatiim.ai`. Market parity D-037: RVG engine, ZUGFeRD
   e-invoices, Rechtsschutz flow, DATEV export, local LLM (gemma3:27b);
+  DE advancement wave (D-040+): Prozesskostenrechner (F1),
+  Online-Verfahren assistant (F2), deep research (F3);
   beA pending BRAK registration. SOS + notary off; public launch gated by
   `docs/legal/DE-LAUNCH-GATE.md`.
 - GB, CN, INTL: schema-ready, no data yet.

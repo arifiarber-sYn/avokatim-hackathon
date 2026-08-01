@@ -20,11 +20,15 @@ router = APIRouter(prefix="/corpus", tags=["corpus"])
 # Article headers in the five official gazette languages + Chinese:
 # sq "Neni 176", sr/bs "Član 5" (also "Clan" when diacritics are lost in
 # extraction), tr "Madde 5", en "Article 5", zh "第一条",
-# de "§ 573" / "Art 13" / "Artikel 79" (gesetze-im-internet enbez markers)
+# de "§ 573" / "Art 13" / "Artikel 79" (gesetze-im-internet enbez markers).
+# Judgment part headings (Leitsatz/Tenor/Gründe…) match only when the line is
+# exactly the heading, so ordinary law text never trips them.
 _SECTION_RE = re.compile(
     r"^(Neni\s+\d+[a-z]?|[ČC]lan\s+\d+[a-z]?|Madde\s+\d+[a-z]?"
     r"|Article\s+\d+[a-z]?|第[一二三四五六七八九十百千0-9]+条"
-    r"|§\s*\d+[a-z]?\b|Art(?:ikel)?\.?\s+\d+[a-z]?\b)",
+    r"|§\s*\d+[a-z]?\b|Art(?:ikel)?\.?\s+\d+[a-z]?\b"
+    r"|(?:Leitsatz|Orientierungssatz|Tenor|Tatbestand"
+    r"|Entscheidungsgründe|Gründe|Abweichende Meinung)(?=\s*$))",
     re.IGNORECASE,
 )
 
@@ -142,6 +146,7 @@ async def add_corpus_doc(
 
     pieces = _split_by_articles(body.text)
     vectors = rag.embed([p[1] for p in pieces])
+    ts_config = rag.ts_config_for(doc.language)
     for i, (section, text) in enumerate(pieces):
         db.add(
             LegalCorpusChunk(
@@ -150,6 +155,7 @@ async def add_corpus_doc(
                 section=section,
                 text=text,
                 embedding=vectors[i] if vectors else None,
+                tsv=func.to_tsvector(ts_config, text),
             )
         )
 

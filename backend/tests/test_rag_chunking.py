@@ -21,3 +21,22 @@ def test_split_by_articles_chinese():
     text = "第一条\n本法所称。\n\n第二条\n另一条款。"
     pieces = _split_by_articles(text)
     assert any(s and s.startswith("第一") for s, _ in pieces)
+
+
+def test_split_by_articles_german_judgment_sections():
+    text = (
+        "Normen: § 4 InsO\n\n"
+        "Tenor\nDer Antrag wird abgelehnt.\n\n"
+        "Gründe\nDie Rechtsbeschwerde ist unzulässig."
+    )
+    sections = [s for s, _ in _split_by_articles(text)]
+    assert "Tenor" in sections
+    assert "Gründe" in sections
+
+
+def test_judgment_headings_do_not_split_mid_sentence():
+    # "Gründe für …" inside a law text must NOT start a new section.
+    text = "§ 573\nGründe für ein berechtigtes Interesse des Vermieters."
+    pieces = _split_by_articles(text)
+    assert len(pieces) == 1
+    assert pieces[0][0].startswith("§ 573")

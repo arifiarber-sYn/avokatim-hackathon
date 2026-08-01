@@ -16,7 +16,7 @@ import { IconChat } from "@/components/icons";
 interface ChatMsg {
   role: "user" | "assistant";
   content: string;
-  citations?: { title: string; section: string | null }[];
+  citations?: { title: string; section: string | null; type?: string; reference?: string | null }[];
 }
 
 function sessionId(): string {
@@ -311,7 +311,14 @@ export default function PublicAvaPage() {
                   )}
                   {(m.citations || []).slice(0, 6).map((c, j) => (
                     <span key={j} className="text-[11px] bg-slate-100 text-slate-500 rounded-full px-2 py-0.5">
-                      {c.title}{c.section ? `, ${c.section}` : ""}
+                      {c.title}
+                      {c.type === "judgment"
+                        ? c.reference && !c.title.includes(c.reference)
+                          ? ` — ${c.reference}`
+                          : ""
+                        : c.section
+                          ? `, ${c.section}`
+                          : ""}
                     </span>
                   ))}
                 </div>

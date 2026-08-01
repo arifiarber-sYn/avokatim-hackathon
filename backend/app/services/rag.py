@@ -8,7 +8,7 @@ import logging
 import re
 import uuid
 
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -84,6 +84,12 @@ async def index_document_chunks(db: AsyncSession, document: Document) -> int:
     return len(chunks)
 
 
+def ts_config_for(language: str | None) -> str:
+    """Postgres text-search config per corpus language: German gets stemming;
+    Albanian & friends have no built-in config, so 'simple' (exact words)."""
+    return "german" if language == "de" else "simple"
+
+
 def _query_words(query: str) -> list[str]:
     return [w.lower() for w in re.split(r"\W+", query) if len(w) > 3][:10]
 
@@ -140,37 +146,62 @@ async def search_corpus(
         if region is None
         else or_(LegalCorpusDoc.region.is_(None), LegalCorpusDoc.region == region)
     )
+    scope = (
+        select(LegalCorpusChunk, LegalCorpusDoc)
+        .join(LegalCorpusDoc, LegalCorpusDoc.id == LegalCorpusChunk.doc_id)
+        .where(
+            LegalCorpusDoc.jurisdiction_id == jurisdiction_id,
+            lang_filter,
+            region_filter,
+        )
+    )
+    # Hybrid retrieval (D-042): dense cosine + two full-text legs, fused with
+    # Reciprocal Rank Fusion. Vector search finds paraphrases; the AND leg
+    # (plainto, all terms) nails full phrases when they occur verbatim; the
+    # rare-word OR leg keeps only distinctive terms (IDF-style: common words
+    # like "BGB"/"Anspruch" would flood the ranking with judgment chunks) and
+    # prefix-matches them so "Berufung" also finds "Berufungsfrist".
+    # Either leg alone still works if the others are empty.
+    fetch_n = max(limit * 4, 12)
+    ts_config = ts_config_for(fallback_language)
+    vec_rows: list = []
     vectors = embed([query])
     if vectors:
         stmt = (
-            select(LegalCorpusChunk, LegalCorpusDoc)
-            .join(LegalCorpusDoc, LegalCorpusDoc.id == LegalCorpusChunk.doc_id)
-            .where(
-                LegalCorpusDoc.jurisdiction_id == jurisdiction_id,
-                lang_filter,
-                region_filter,
-                LegalCorpusChunk.embedding.isnot(None),
-            )
+            scope.where(LegalCorpusChunk.embedding.isnot(None))
             .order_by(LegalCorpusChunk.embedding.cosine_distance(vectors[0]))
-            .limit(limit)
+            .limit(fetch_n)
         )
-        rows = (await db.execute(stmt)).all()
-    else:
-        rows = []
-    if not rows:
-        # No embeddings available (model missing, or chunks indexed before it
-        # was installed) — fall back to word-overlap scoring.
+        vec_rows = (await db.execute(stmt)).all()
+
+    async def _fts(ts_query) -> list:
         stmt = (
-            select(LegalCorpusChunk, LegalCorpusDoc)
-            .join(LegalCorpusDoc, LegalCorpusDoc.id == LegalCorpusChunk.doc_id)
-            .where(
-                LegalCorpusDoc.jurisdiction_id == jurisdiction_id,
-                lang_filter,
-                region_filter,
+            scope.where(
+                LegalCorpusChunk.tsv.isnot(None),
+                LegalCorpusChunk.tsv.op("@@")(ts_query),
             )
-            .limit(2000)
+            .order_by(func.ts_rank(LegalCorpusChunk.tsv, ts_query).desc())
+            .limit(fetch_n)
         )
-        rows = _score_rows((await db.execute(stmt)).all(), query, limit)
+        return (await db.execute(stmt)).all()
+
+    fts_rows = await _fts(func.plainto_tsquery(ts_config, query))
+    rare = await _rare_query_words(db, jurisdiction_id, query, ts_config)
+    rare_rows = (
+        await _fts(func.to_tsquery(ts_config, " | ".join(f"{w}:*" for w in rare)))
+        if rare
+        else []
+    )
+
+    if vec_rows or fts_rows or rare_rows:
+        rows = _rrf_fuse(
+            [vec_rows, fts_rows, rare_rows], limit,
+            max_judgments=max(1, limit // 3),
+        )
+    else:
+        # No embeddings and no FTS hits (model missing / exotic query) —
+        # fall back to word-overlap scoring.
+        rows = _score_rows((await db.execute(scope.limit(2000))).all(), query, limit)
 
     return [
         {
@@ -179,9 +210,73 @@ async def search_corpus(
             "doc_title": doc.title,
             "reference": doc.reference,
             "region": doc.region,
+            "doc_type": doc.doc_type,
         }
         for chunk, doc in rows
     ]
+
+
+# Words more frequent than this share of chunks carry no signal for the
+# rare-word leg (e.g. "BGB" appears in every second judgment chunk).
+_RARE_DF_CAP = 0.02
+_RARE_MAX_WORDS = 4
+
+
+async def _rare_query_words(
+    db: AsyncSession, jurisdiction_id: uuid.UUID, query: str, ts_config: str
+) -> list[str]:
+    """The up-to-4 rarest query words (by chunk document frequency) that are
+    distinctive enough to search on. Cheap: one GIN-backed count per word."""
+    words = [w for w in re.findall(r"[0-9A-Za-zÀ-ÿẞ]+", query) if len(w) > 2][:10]
+    if not words:
+        return []
+    base = select(func.count(LegalCorpusChunk.id)).join(
+        LegalCorpusDoc, LegalCorpusDoc.id == LegalCorpusChunk.doc_id
+    ).where(
+        LegalCorpusDoc.jurisdiction_id == jurisdiction_id,
+        LegalCorpusChunk.tsv.isnot(None),
+    )
+    total = (await db.execute(base)).scalar_one()
+    if not total:
+        return []
+    ranked: list[tuple[int, str]] = []
+    for word in words:
+        df = (
+            await db.execute(
+                base.where(
+                    LegalCorpusChunk.tsv.op("@@")(func.to_tsquery(ts_config, f"{word}:*"))
+                )
+            )
+        ).scalar_one()
+        if 0 < df <= total * _RARE_DF_CAP:
+            ranked.append((df, word))
+    ranked.sort()
+    return [w for _, w in ranked[:_RARE_MAX_WORDS]]
+
+
+def _rrf_fuse(rankings: list[list], limit: int, k: int = 60, max_judgments: int | None = None):
+    """Reciprocal Rank Fusion: score(chunk) = Σ 1/(k + rank_i) over the
+    rankings the chunk appears in (standard k=60). Judgments are capped at
+    `max_judgments` of the final slots so statutes stay the primary ground."""
+    scores: dict = {}
+    keep: dict = {}
+    for ranking in rankings:
+        for rank, (chunk, doc) in enumerate(ranking, start=1):
+            scores[chunk.id] = scores.get(chunk.id, 0.0) + 1.0 / (k + rank)
+            keep[chunk.id] = (chunk, doc)
+    ordered = sorted(scores, key=lambda cid: scores[cid], reverse=True)
+    out: list = []
+    judgments = 0
+    for cid in ordered:
+        chunk, doc = keep[cid]
+        if max_judgments is not None and doc.doc_type == "judgment":
+            if judgments >= max_judgments:
+                continue
+            judgments += 1
+        out.append((chunk, doc))
+        if len(out) >= limit:
+            break
+    return out
 
 
 async def search_matter_documents(

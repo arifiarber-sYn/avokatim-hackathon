@@ -10,6 +10,37 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-01m — D-042 F3: Recherche e thelluar — kërkim hibrid + jurisprudenca federale (Cursor / Fable 5)
+
+- Done: faza 3. **Kërkimi hibrid**: migrim Alembic `d858e0f31af4` — kolonë
+  `tsv` (tsvector, config `german` për de / `simple` për të tjerat, backfill
+  i plotë) + indeks GIN te `legal_corpus_chunks`; `search_corpus` tani me
+  3 këmbë të bashkuara me RRF (k=60, pesha të barabarta): cosine (pgvector) +
+  FTS plainto AND + FTS "fjalë të rralla" (IDF-lite: mbahen deri në 4 fjalët
+  me document-frequency ≤ 2% të chunks, me prefix `:*` që "Berufung" të gjejë
+  "Berufungsfrist"); vendimet gjyqësore kufizohen në `limit//3` vende që
+  ligjet të mbeten baza. **Rregullim**: `region` (Landesrecht) mungonte në
+  rrugën e avokatit — u shtua `_office_region` në api/assistant.py dhe
+  parametri `region` në ask/stream/deep-research/prepare/hearing-prep.
+  **Importuesi** `scripts/import_de_rechtsprechung.py` (rii-toc.xml + zip
+  XML, i rifillueshëm, retry në restart të backend-it): BGH/BAG/BVerfG
+  5 vitet e fundit → `doc_type="judgment"`, `reference`=Aktenzeichen,
+  seksione Leitsatz/Tenor/Gründe (splitter-i i korpusit i njeh si tituj).
+  **Citimet**: `_source_label`/`_citation` në assistant.py + marketplace.py
+  + chips në frontend shfaqin gjykatë + Aktenzeichen pa dyfishim.
+- Verified: 158 teste kalojnë (5 të reja për splitter-in). Eval
+  `scripts/eval_de_recherche.py` (para/pas në të njëjtin korpus):
+  14 pyetje natyrale — vector 9/14, hibrid 9/14 (fiton Notwehr, humb
+  Mietkaution — fjalori i § 551 s'e përmban fjalën); 6 pyetje me § eksplicit
+  — vector 1/6, **hibrid 5/6** (17%→83%, fitorja kryesore: citimet ekzakte).
+  Live: "Mieterhöhung Vergleichsmiete VIII ZR" kthen § 558/559 BGB +
+  3 vendime të freskëta BGH me Aktenzeichen.
+- Import në vazhdim: ~2.5k/16.8k vendime në kohën e commit-it
+  (`data/import_rechtsspreche…log`); i rifillueshëm me të njëjtin skript.
+- Left open: F4 (agjentët back-office) e tutje; kompozitat gjermane
+  (Kündigungsschutzklage → KSchG § 4) kërkojnë embeddings më të mira ose
+  zbërthim kompozitash — shënuar si përmirësim i ardhshëm.
+
 ## 2026-08-01l — D-041 F2: Asistenti i Online-Verfahren (procedura civile online) (Cursor / Fable 5)
 
 - Done: faza 2. Seed `DE_OV_COURTS` — 18 gjykatat pilote me datat e nisjes

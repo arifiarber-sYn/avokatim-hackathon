@@ -293,7 +293,9 @@ export default function AssistantPage() {
                         <p key={j}>
                           • {c.title}
                           {c.section ? `, ${c.section}` : ""}
-                          {c.reference ? ` (${c.reference})` : ""}
+                          {c.reference && !c.title.includes(c.reference)
+                            ? ` (${c.reference})`
+                            : ""}
                         </p>
                       ))}
                     </div>
