@@ -3,6 +3,14 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-02 — GlitchTip owner credentials + real SECRET_KEY (D-055 F2)
+
+- Set a proper `GLITCHTIP_SECRET_KEY` and a known password for
+  `owner@avokatiim.ai`; both noted in the compose `.env` (git-ignored,
+  same pattern as the Umami admin note). Containers recreated; error
+  pipeline re-verified end-to-end (event count grew).
+- Files: `docs/agents/STATE.md` (compose `.env` is untracked).
+
 ## 2026-08-02 — WhatsApp intake localized + country-scoped (D-055 F1)
 
 - New `country_for_phone()` in `jurisdictions.py`: sender's phone prefix

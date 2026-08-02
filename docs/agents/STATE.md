@@ -943,8 +943,8 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   127.0.0.1:8010, own `glitchtip` DB inside avokatim-db, Redis DB 2 as
   broker; backend reports via `SENTRY_DSN` in `backend/.env`, browser
   errors relayed via `POST /api/public/client-error`; registration
-  disabled — owner account `owner@avokatiim.ai`, reset the password with
-  `docker exec avokatim-glitchtip ./manage.py changepassword owner@avokatiim.ai`).
+  disabled — owner login `owner@avokatiim.ai`, password + SECRET_KEY
+  noted in the compose `.env`, same pattern as Umami).
 - Backend: uvicorn on 127.0.0.1:8000, venv at `backend/.venv`. Frontend: Next.js on :3000.
 - Secrets in `backend/.env` (git-ignored): DeepSeek key, doc encryption key, DB password.
 - **Optional integrations, off until configured in `backend/.env`** (all degrade
