@@ -92,7 +92,8 @@ function MiniBarChart({
  * otherwise stay buried (versioned key: reappears only when the list changes). */
 function WhatsNewCard() {
   const { t } = useI18n();
-  const storageKey = "avokatim:whatsnew:2026-07";
+  // Bumped for the D-054 wave — the card reappears once for everyone
+  const storageKey = "avokatim:whatsnew:2026-08";
   const [open, setOpen] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -131,16 +132,25 @@ function WhatsNewCard() {
       </div>
       <div className="grid sm:grid-cols-2 gap-4 mt-3">
         <div className="text-sm space-y-1.5">
-          <p className="text-slate-700">{t.wnPrepare}</p>
-          <Link href="/matters" className="inline-block py-1.5 font-semibold text-violet-700 hover:underline">
-            {t.wnPrepareCta} →
+          <p className="text-slate-700">{t.wnAgent}</p>
+          <Link href="/assistant" className="inline-block py-1.5 font-semibold text-violet-700 hover:underline">
+            {t.wnAgentCta} →
           </Link>
         </div>
         <div className="text-sm space-y-1.5">
-          <p className="text-slate-700">{t.wnStyle}</p>
-          <Link href="/settings#grp-ai" className="inline-block py-1.5 font-semibold text-violet-700 hover:underline">
-            {t.wnStyleCta} →
+          <p className="text-slate-700">{t.wnBriefing}</p>
+          <Link href="/settings#grp-njoftimet" className="inline-block py-1.5 font-semibold text-violet-700 hover:underline">
+            {t.wnBriefingCta} →
           </Link>
+        </div>
+        <div className="text-sm space-y-1.5">
+          <p className="text-slate-700">{t.wnPasskey}</p>
+          <Link href="/settings#grp-siguria" className="inline-block py-1.5 font-semibold text-violet-700 hover:underline">
+            {t.wnPasskeyCta} →
+          </Link>
+        </div>
+        <div className="text-sm space-y-1.5">
+          <p className="text-slate-700">{t.wnUx}</p>
         </div>
       </div>
     </Card>

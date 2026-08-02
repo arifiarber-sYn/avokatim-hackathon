@@ -3,6 +3,19 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-02 — What's-new card refreshed for the D-054 wave (D-055 F4)
+
+- Dashboard `WhatsNewCard` bumped to `avokatim:whatsnew:2026-08` — it
+  reappears once for every lawyer with four items: Ava Agent (link to
+  /assistant), morning briefing + notification center (link to
+  Settings → notifications), passkeys (link to Settings → security),
+  and dark mode/Cmd+K. Old `wnPrepare/wnStyle` keys replaced by
+  `wnAgent/wnBriefing/wnPasskey/wnUx` (+CTAs) ×7 locales.
+- Verified: pytest 245 PASS, frontend build OK, restart + health OK,
+  both hosts (sq/de) serve the new marketing copy.
+- Files: `frontend/src/app/(app)/dashboard/page.tsx`,
+  `frontend/src/lib/dictionaries.ts`, docs.
+
 ## 2026-08-02 — D-054 features surfaced in public marketing (D-055 F3)
 
 - The public pages caught up with the product (audit showed none of the

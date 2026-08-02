@@ -421,9 +421,13 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   open matters via local embeddings), deadline audit. (4) 24/7
   receptionist: voice conversation mode in the public Ava chat (local
   STT→TTS loop, keys vcMode/vcOn) and WhatsApp full intake
-  (`services/wa_intake.py`: "RAST"/"FALL"/"CASE" → Redis state machine →
-  structured marketplace case + lawyer alerts + free consultation slots
-  in-chat; AI declared, RDG/BRAO-safe). (5) UX wave: passkeys, dark
+  (`services/wa_intake.py`: "RAST"/"FALL"/"CASE"/"SLUCAJ"/"DAVA" → Redis
+  state machine → structured marketplace case + lawyer alerts + free
+  consultation slots in-chat; AI declared, RDG/BRAO-safe). Localized in
+  D-055: phone prefix → country/locale (`country_for_phone`), all
+  messages via `wa_*` i18n keys ×7, cases carry the sender's country so
+  DE lawyers see them, links use the country host. (5) UX wave:
+  passkeys, dark
   mode, command palette, fuzzy search, skeletons, PWA install banner,
   haptics. (6) Observability: GlitchTip at 127.0.0.1:8010 (see
   containers below), backend sentry-sdk via `SENTRY_DSN`, browser errors

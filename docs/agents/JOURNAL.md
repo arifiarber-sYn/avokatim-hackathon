@@ -10,6 +10,33 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-02 — D-055: Lokalizimi i WhatsApp intake + pariteti i marketingut (Cursor / Fable 5)
+
+- Done (F1): WhatsApp intake i lokalizuar — `country_for_phone()` (49 → DE/de,
+  383 → XK/sq), të gjitha mesazhet si çelësa `wa_*` ×7 në `i18n.py`, fjalë
+  fillimi edhe SLUCAJ/DAVA, anulim edhe OTKAZI/IPTAL. Country-scoping i
+  saktë: rastet nga WhatsApp marrin country/locale të dërguesit (më parë
+  ngulitur XK/sq — rastet gjermane s'u shfaqeshin kurrë avokatëve DE),
+  terminet dhe njoftimet filtrohen sipas vendit, linket përdorin hostin e
+  vendit; Q&A e Avës merr korpusin dhe gjuhën e vendit. Teste të reja
+  (dërgues 49… → rrjedhë gjermanisht, state me country DE).
+- Done (F2): GlitchTip — `GLITCHTIP_SECRET_KEY` real dhe fjalëkalim i njohur
+  për `owner@avokatiim.ai`, të dyja të shënuara në `.env` të compose-it
+  (git-ignored, si kredencialet e Umami-t); pipeline riverifikuar.
+- Done (F3): marketingu i risive D-054 ×7 gjuhë — /per-avokatet me 6 karta
+  AI (të reja: Ava Agjente `lpAi5*`, AI proaktive `lpAi6*`), `lpFeat9` →
+  qendra e njoftimeve me kontroll ndërprerjesh, `lpFeat10` i ri (passkeys/
+  dark mode/Cmd+K), umbrella `umbFnL10` + `umbFnC1` me bisedën me zë,
+  `landAvaB` me modalitetin hands-free, SEO i /per-avokatet (sq+de) me
+  AI agjentike/proaktive. WhatsApp mbetet i pa-reklamuar (vendim ekzistues).
+- Done (F4): WhatsNewCard bump në `2026-08` — 4 pika: Ava Agjente,
+  briefingu+njoftimet, passkeys, dark mode/Cmd+K (çelësa `wn*` të rinj ×7,
+  të vjetrit hiqen).
+- Verified: pytest 245 PASS (test_voice flake një herë, kalon në rirun),
+  `npm run build` OK, restart + health OK, të dy host-et 200 me tekstet e
+  reja (sq + de).
+- Left open: asgjë nga D-055.
+
 ## 2026-08-02 — D-054: Vala e lidershipit teknologjik në 6 faza (Cursor / Fable 5)
 
 - Done (F1): qendra e njoftimeve — model `Notification`, API + stream SSE,
