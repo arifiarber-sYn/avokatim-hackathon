@@ -13,6 +13,7 @@ import { useI18n } from "@/lib/i18n";
 import { clientCountry, type Country } from "@/lib/country";
 import { LocaleSwitcher } from "@/components/ui";
 import PublicFooter from "@/components/public-footer";
+import AvaLauncher from "@/components/ava-launcher";
 import {
   CitizenInfo,
   citizenGet,
@@ -319,6 +320,9 @@ export default function PublicShell({
           ))}
         </div>
       </nav>
+
+      {/* Ava everywhere (D-052): floating AI launcher, hidden on /ava itself */}
+      <AvaLauncher />
     </div>
   );
 }

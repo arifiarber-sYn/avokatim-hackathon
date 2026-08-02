@@ -1263,3 +1263,41 @@
   `frontend/src/app/per-qytetaret/page.tsx`,
   `frontend/src/components/public-shell.tsx`,
   `frontend/src/lib/dictionaries.ts`.
+
+## D-052: Ava everywhere — floating public launcher + contextual lawyer panel; AI named in all core claims (2026-08-02)
+
+- Context: the AI is the product's main differentiator but (a) core
+  marketing claims (umbWhy1De, lpSubtitle, umbCitizenB, Ava titles)
+  did not name it, and (b) the assistant was only reachable as a
+  destination page — on mobile that means losing your place. Industry
+  research (Aug 2026): consumer products use a bottom-right floating
+  launcher (~90% of chat widgets); lawyer-facing suites (Clio Manage AI,
+  Smokeball Archie, AnNoText Expert AI) never use a bubble — they use a
+  persistent nav entry + a matter-context side panel. Table stakes:
+  the assistant knows which matter you are viewing.
+- Decision (public): extract the Ava chat core out of /ava into
+  `components/ava-chat.tsx` (session, quota, SSE stream, voice,
+  examples, structure-case, DE Bundesland, OV pointer) and add
+  `components/ava-launcher.tsx` — a labeled FAB (bottom-right,
+  bottom-20 on mobile to clear the z-40 bottom nav + center SOS,
+  safe-area insets) opening a full-screen sheet on mobile / 420px
+  bottom-right panel on desktop. Mounted in PublicShell (~20 pages)
+  and directly on /per-avokatet + /per-noteret (no shell). Hidden on
+  /ava. Session/quota shared with the page via localStorage.
+- Decision (lawyer app): `components/assistant-panel.tsx` mounted in
+  (app)/layout — persistent labeled launcher + right slide-over with
+  the legal streaming chat (ask-stream/deep-research, voice, citations,
+  Law 06/L-082 transparency line). Context awareness: on /matters/[id]
+  the panel auto-scopes to that matter and shows a removable chip.
+  Panel stays mounted (hidden, not unmounted) so the conversation
+  survives navigation. Conversation list + office mode stay on
+  /assistant ("open full assistant" link). Hidden on /assistant.
+- Copy: AI added to umbWhy1De, lpSubtitle, umbCitizenB, mkAvaTitle,
+  landAvaT in all 7 locales; new keys avaFabLabel, apOpenFull,
+  apMatterCtx. Root SEO already named KI/AI (D-039) — unchanged.
+- Deferred (backlog): action execution with approval from the panel,
+  "ask Ava" row in global search (Cmd+K), embedded Ava in /rasti-im.
+- Files: `frontend/src/components/{ava-chat,ava-launcher,assistant-panel}.tsx`,
+  `frontend/src/app/ava/page.tsx`, `frontend/src/components/public-shell.tsx`,
+  `frontend/src/app/(app)/layout.tsx`, `frontend/src/app/per-avokatet/page.tsx`,
+  `frontend/src/app/per-noteret/page.tsx`, `frontend/src/lib/dictionaries.ts`.

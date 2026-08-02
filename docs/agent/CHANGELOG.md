@@ -3,6 +3,25 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-02 — Ava everywhere: public launcher + contextual lawyer panel (D-052)
+
+- New: `frontend/src/components/ava-chat.tsx` — public Ava chat core
+  extracted from /ava (SSE streaming, quota, voice, structure-case,
+  DE Bundesland, OV pointer); /ava is now chrome around it.
+- New: `frontend/src/components/ava-launcher.tsx` — bottom-right FAB on
+  every public page (PublicShell + /per-avokatet + /per-noteret),
+  full-screen sheet on mobile (safe-area), 420px panel on desktop.
+- New: `frontend/src/components/assistant-panel.tsx` — lawyer-app
+  slide-over (Clio/Archie pattern): streaming legal chat, deep research,
+  voice, citations; auto-scopes to the matter on /matters/[id] with a
+  removable chip; conversation survives navigation.
+- Changed: AI named in core marketing claims ×7 locales (umbWhy1De,
+  lpSubtitle, umbCitizenB, mkAvaTitle, landAvaT); new keys avaFabLabel,
+  apOpenFull, apMatterCtx.
+- Files: components above, `app/ava/page.tsx`, `components/public-shell.tsx`,
+  `app/(app)/layout.tsx`, `app/per-avokatet/page.tsx`,
+  `app/per-noteret/page.tsx`, `lib/dictionaries.ts`, docs.
+
 ## 2026-08-02 — Honest public stats + UI copy for case law and new tools (D-051)
 
 - Changed: `/api/public/stats` — `laws_in_corpus` now excludes

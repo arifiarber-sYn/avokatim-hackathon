@@ -10,6 +10,30 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-02 — D-052: Ava kudo (launcher publik + panel kontekstual) + AI në çdo mesazh (Cursor / Fable 5)
+
+- Done: hulumtim industrie (Harvey/Legora/Clio/Smokeball/AnNoText +
+  launcher-ët konsumatorë) → modeli: flluskë poshtë-djathtas për faqet
+  publike, panel anësor kontekstual (jo flluskë) për aplikacionin e
+  avokatit. Bërthama e chat-it të Avës u ekstraktua në `ava-chat.tsx`
+  (streaming, kuota, zëri, structure-case, Bundesland, OV) — /ava
+  tani është vetëm kornizë rreth saj.
+- Done: `ava-launcher.tsx` (FAB me etiketë "Pyete Avën · AI", sheet
+  ekran i plotë në mobile me safe-area, panel 420px në desktop, Escape
+  e mbyll, fshihet te /ava) i montuar në PublicShell + /per-avokatet +
+  /per-noteret. `assistant-panel.tsx` në (app)/layout: chat legal me
+  streaming + hulumtim i thelluar + zë + citime; te /matters/[id]
+  vetë-fokusohet te lënda (chip i heqshëm) — standardi Clio/Archie;
+  biseda mbijeton mbylljen e panelit (i fshehur, jo i çmontuar).
+- Done: AI e emërtuar në pretendimet kryesore në 7 gjuhë (umbWhy1De
+  "me AI / mit KI", lpSubtitle "+hulumtimi me AI", umbCitizenB,
+  mkAvaTitle/landAvaT "asistentja ligjore me AI"); çelësa të rinj
+  avaFabLabel, apOpenFull, apMatterCtx.
+- Verified: build OK; pytest 219/219; 6 faqe publike + /dashboard 200
+  në XK e DE host; chunks përmbajnë UI-në e re; kuota e Avës OK.
+- Left open: backlog D-052 — ekzekutim veprimesh me aprovim nga paneli,
+  "Pyete Avën" te Cmd+K, Ava e integruar në /rasti-im.
+
 ## 2026-08-02 — D-051: statistika të ndershme + teksti i UI-së kap praktikën gjyqësore (Cursor / Fable 5)
 
 - Done: backfill-i i plotë i Supremes përfundoi natën (ok=2,371 të reja,

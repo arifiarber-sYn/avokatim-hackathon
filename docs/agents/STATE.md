@@ -409,6 +409,15 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   listings include the cost calculator + guides (faqA1, landToolsB, new
   umbFnC9; /per-qytetaret tools card links /kostoja+/udhezues on XK,
   /rvg+/ratgeber on DE; toolsActive covers /udhezues and /ratgeber).
+- **Ava everywhere** (2026-08-02, D-052): Ava chat core extracted to
+  `components/ava-chat.tsx`; floating launcher `ava-launcher.tsx` on all
+  public pages (PublicShell + /per-avokatet + /per-noteret, hidden on
+  /ava; full-screen sheet mobile / 420px panel desktop); contextual
+  `assistant-panel.tsx` in the lawyer app ((app)/layout, hidden on
+  /assistant) — auto-scopes to the matter on /matters/[id], keeps the
+  conversation across navigation. AI named in core claims in 7 locales
+  (umbWhy1De, lpSubtitle, umbCitizenB, mkAvaTitle/landAvaT); keys
+  avaFabLabel, apOpenFull, apMatterCtx.
 - **Token-less email classification** (2026-08-01, D-043): inbound mail
   without a matter alias whose sender matches a contact is parked as an
   `EmailSuggestion` (raw message encrypted on disk); dashboard card lets the

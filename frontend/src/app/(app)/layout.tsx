@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { LocaleSwitcher } from "@/components/ui";
 import { QuickTimer } from "@/components/quick-timer";
 import { GlobalSearch } from "@/components/global-search";
+import AssistantPanel from "@/components/assistant-panel";
 
 interface Me {
   full_name: string;
@@ -223,6 +224,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         )}
         {children}
       </main>
+
+      {/* Ava everywhere (D-052): contextual assistant panel, hidden on /assistant */}
+      <AssistantPanel />
     </div>
   );
 }

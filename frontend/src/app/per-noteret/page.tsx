@@ -7,6 +7,7 @@
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 import { LocaleSwitcher } from "@/components/ui";
+import AvaLauncher from "@/components/ava-launcher";
 
 export default function ForNotariesPage() {
   const { t } = useI18n();
@@ -139,6 +140,8 @@ export default function ForNotariesPage() {
           <Link href="/kontakti" className="hover:underline">{t.ctTitle}</Link>
         </footer>
       </main>
+      {/* Ava everywhere (D-052): this page skips PublicShell, mount directly */}
+      <AvaLauncher />
     </div>
   );
 }

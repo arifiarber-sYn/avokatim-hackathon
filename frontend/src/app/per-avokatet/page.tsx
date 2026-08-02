@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { LocaleSwitcher } from "@/components/ui";
 import { clientCountry } from "@/lib/country";
+import AvaLauncher from "@/components/ava-launcher";
 
 interface PublicStats {
   cases_posted: number;
@@ -228,6 +229,8 @@ export default function ForLawyersPage() {
           <Link href="/kontakti" className="hover:underline">{t.ctTitle}</Link>
         </footer>
       </main>
+      {/* Ava everywhere (D-052): this page skips PublicShell, mount directly */}
+      <AvaLauncher />
     </div>
   );
 }
