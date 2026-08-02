@@ -6,6 +6,7 @@ import { apiGet, apiPatch, apiPost } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
 import BookingsPanel from "@/components/bookings-panel";
+import { BriefingCard } from "@/components/briefing-card";
 import { Task } from "@/lib/types";
 import { Badge, Card, SkeletonCards } from "@/components/ui";
 
@@ -268,6 +269,7 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-bold">{t.dashboard}</h1>
 
       <PageIntro k="dashboard" title={t.dashIntroT} body={t.dashIntro} />
+      <BriefingCard />
 
       <WhatsNewCard />
 

@@ -41,21 +41,19 @@ class NotificationOut(BaseModel):
 @router.get("", response_model=list[NotificationOut])
 async def list_notifications(
     limit: int = 30,
+    kind: str | None = None,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    rows = (
-        (
-            await db.execute(
-                select(Notification)
-                .where(*_visible(user))
-                .order_by(Notification.created_at.desc())
-                .limit(min(limit, 100))
-            )
-        )
-        .scalars()
-        .all()
+    stmt = (
+        select(Notification)
+        .where(*_visible(user))
+        .order_by(Notification.created_at.desc())
+        .limit(min(limit, 100))
     )
+    if kind:
+        stmt = stmt.where(Notification.kind == kind)
+    rows = (await db.execute(stmt)).scalars().all()
     return rows
 
 

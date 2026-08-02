@@ -68,6 +68,9 @@ class Settings(BaseSettings):
     webauthn_rp_id: str = ""
     webauthn_extra_origins: str = "http://127.0.0.1:3000,http://localhost:3000"
 
+    # Morning briefing (D-054 F3): generated after this local hour
+    briefing_hour: int = 7
+
     # Social login for citizen accounts (Google / Apple / Meta). A provider's
     # button appears only when its credentials are set. Redirect URIs to
     # register with each provider:

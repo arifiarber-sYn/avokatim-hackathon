@@ -352,13 +352,15 @@ async def _generate_time_suggestions_nightly() -> None:
 
 
 async def reminder_loop() -> None:
-    """Background task started from the app lifespan."""
+    """Background task started from the app lifespan. Runs even without
+    SMTP/push/SMS since D-054: the in-app notification center is always a
+    delivery channel."""
     if not smtp_enabled() and not push_enabled() and not sms_enabled():
-        logger.info("Neither SMTP, Web Push nor SMS configured — deadline reminders disabled")
-        return
+        logger.info("No SMTP/Web Push/SMS — reminders go to the in-app center only")
     redis = aioredis.from_url(settings.redis_url)
     logger.info("Deadline reminder loop started (every %s min)", settings.reminder_check_minutes)
     last_time_capture_day: str | None = None
+    last_proactive_day: str | None = None
     while True:
         try:
             await _check_deadline_reminders(redis)
@@ -380,4 +382,20 @@ async def reminder_loop() -> None:
                 last_time_capture_day = today
             except Exception as exc:
                 logger.warning("Time-capture generation failed: %s", exc)
+
+        # Proactive AI (D-054 F3). Briefings check every iteration (they are
+        # hour-gated + redis-deduped); the heavier monitors once per day.
+        from app.services import proactive
+
+        try:
+            await proactive.run_morning_briefings(redis)
+        except Exception as exc:
+            logger.warning("Morning briefing run failed: %s", exc)
+        if today != last_proactive_day:
+            try:
+                await proactive.run_caselaw_monitor(redis)
+                await proactive.run_deadline_audit(redis)
+                last_proactive_day = today
+            except Exception as exc:
+                logger.warning("Proactive monitors failed: %s", exc)
         await asyncio.sleep(settings.reminder_check_minutes * 60)

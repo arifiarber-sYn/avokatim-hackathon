@@ -3,6 +3,27 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-02 — Proactive AI: briefing, case-law monitor, deadline audit (D-054 F3)
+
+- New: `services/proactive.py` — three background agents wired into
+  `reminder_loop` (which now runs even without SMTP/push/SMS since the
+  in-app center is always a channel):
+  1. Morning briefing: per-tenant LLM day summary (deadlines ≤3d, pending
+     suggestions/emails, overdue invoices, due tasks) after
+     `briefing_hour` (default 7), redis-deduped; plain-text fallback when
+     no LLM. Notification kind `briefing` + dashboard `BriefingCard` with
+     local TTS ("listen to your day").
+  2. Case-law monitor: judgments added to the corpus in the last 7 days
+     matched against open matters via local embeddings (cosine ≤ 0.45) —
+     "new Supreme Court decision touches matter X" with citation, 90-day
+     dedup per matter+doc.
+  3. Deadline audit: open matters with no upcoming deadline → one quiet
+     (bell-only) notification per tenant per day.
+- `/api/notifications` gained a `kind` filter for the briefing card.
+- Files: `backend/app/services/{proactive,notifications}.py`,
+  `backend/app/{config.py,api/notifications.py}`, `backend/tests/test_proactive.py`,
+  `frontend/src/components/briefing-card.tsx`, dashboard page.
+
 ## 2026-08-02 — UX wave: passkeys, dark mode, palette, skeletons, PWA (D-054 F5)
 
 - Passkeys/WebAuthn: `PasskeyCredential` model + migration, `/api/auth/passkeys/*`
