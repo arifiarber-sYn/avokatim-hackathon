@@ -3,6 +3,13 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-02 — UX-wave bullet on the homepage (D-055 follow-up)
+
+- Owner asked for the UX details on the front page too: new lawyer
+  bullet `umbFnL11` ×7 (passkeys, dark mode, Cmd+K palette) on `/`,
+  placed before the SOS bullet. Verified on the running site.
+- Files: `frontend/src/lib/dictionaries.ts`, `frontend/src/app/page.tsx`.
+
 ## 2026-08-02 — What's-new card refreshed for the D-054 wave (D-055 F4)
 
 - Dashboard `WhatsNewCard` bumped to `avokatim:whatsnew:2026-08` — it

@@ -202,7 +202,7 @@ export default function Home() {
                 <h3 className="text-lg font-bold text-white">{t.umbFnLawT}</h3>
               </div>
               <ul className="space-y-2.5 text-sm text-slate-300">
-                {[t.umbFnL1, t.umbFnL2, t.umbFnL10, t.umbFnL7, t.umbFnL3, t.umbFnL4, t.umbFnL5, t.umbFnL8, t.umbFnL6].map((f) => (
+                {[t.umbFnL1, t.umbFnL2, t.umbFnL10, t.umbFnL7, t.umbFnL3, t.umbFnL4, t.umbFnL5, t.umbFnL8, t.umbFnL11, t.umbFnL6].map((f) => (
                   <li key={f} className="flex items-start gap-2.5">
                     <IconCheck className="h-4 w-4 text-indigo-400 mt-0.5 shrink-0" />
                     <span>{f}</span>
