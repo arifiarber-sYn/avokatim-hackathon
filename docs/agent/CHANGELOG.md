@@ -3,6 +3,24 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-02 — Accountant CSV export (DE→XK parity)
+
+- DE→XK parity audit found two candidate gaps; one was already closed
+  (the OAK fee-tariff picker in the invoice form inserts Tarifa e OAK
+  items as invoice lines — the RVG-calculator analog). The real gap:
+  Kosovo offices had no accounting export (DE has DATEV EXTF).
+- New `GET /export/accounting?date_from&date_to`: semicolon CSV with
+  UTF-8 BOM, one row per sent/paid invoice issued or paid in the
+  period (number, dates, client, net/VAT/gross, status, payment
+  reference); audit-logged. Available to every office regardless of
+  country — DE offices whose accountant doesn't use DATEV benefit too.
+- Billing UI: `AccountingExportCard` (same period picker as DATEV)
+  shown when the office is not German; new keys `accTitle`/`accExport`
+  ×7 locales.
+- Files: `backend/app/api/exports.py`,
+  `frontend/src/app/(app)/billing/page.tsx`,
+  `frontend/src/lib/dictionaries.ts`.
+
 ## 2026-08-02 — UX-wave bullet on the homepage (D-055 follow-up)
 
 - Owner asked for the UX details on the front page too: new lawyer

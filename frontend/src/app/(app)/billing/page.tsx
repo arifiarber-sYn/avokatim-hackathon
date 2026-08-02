@@ -428,6 +428,48 @@ function DatevExportCard() {
   );
 }
 
+// Generic accountant export (DE→XK parity): same period picker as DATEV,
+// but a plain semicolon CSV of the period's invoices — for offices whose
+// accountant doesn't use DATEV (all of Kosovo).
+function AccountingExportCard() {
+  const { t } = useI18n();
+  const today = new Date();
+  const first = new Date(today.getFullYear(), today.getMonth(), 1);
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const [from, setFrom] = useState(iso(first));
+  const [to, setTo] = useState(iso(today));
+
+  return (
+    <Card className="p-4">
+      <div className="flex gap-3 items-end flex-wrap">
+        <p className="text-sm font-medium text-slate-700 w-full sm:w-auto sm:flex-1">
+          {t.accTitle}
+        </p>
+        <div>
+          <Label>{t.datevFrom}</Label>
+          <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+        </div>
+        <div>
+          <Label>{t.datevTo}</Label>
+          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+        </div>
+        <Button
+          variant="secondary"
+          onClick={() =>
+            apiDownload(
+              `/export/accounting?date_from=${from}&date_to=${to}`,
+              `fatura_${from}_${to}.csv`
+            )
+          }
+          disabled={!from || !to}
+        >
+          {t.accExport}
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
 interface RvgVvItem {
   code: string;
   vv: string;
@@ -945,7 +987,7 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
         {notice && <p className="text-sm text-emerald-700">✓ {notice}</p>}
       </Card>
 
-      {rvgItems.length > 0 && <DatevExportCard />}
+      {rvgItems.length > 0 ? <DatevExportCard /> : <AccountingExportCard />}
 
       {isXK && <CostRiskCard />}
 
