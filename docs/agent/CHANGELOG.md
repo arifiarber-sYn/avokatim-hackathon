@@ -3,6 +3,29 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-02 — WhatsApp intake localized + country-scoped (D-055 F1)
+
+- New `country_for_phone()` in `jurisdictions.py`: sender's phone prefix
+  → country (49 → DE, 383 → XK, unknown → XK); longest-prefix match over
+  the jurisdiction profiles.
+- All WhatsApp-facing strings moved to the backend i18n catalog as
+  `wa_*` keys ×7 locales (intake steps, done/slots/error, daily quota,
+  Ava-unavailable, once-a-day hint). Start words now also SLUCAJ/DAVA,
+  cancel words also OTKAZI/IPTAL; each locale's hint names its own
+  keyword (RAST/FALL/CASE/SLUCAJ/DAVA).
+- Country scoping fixed: `CitizenUser`/`CaseRequest` from WhatsApp get
+  the detected country+locale (was hardcoded XK/sq — German senders'
+  cases were invisible to DE lawyers per the D-034 filter); slot offers
+  and `_notify_matching_lawyers` filter by that country; links use
+  `public_base_url_for(country)` (de.avokatiim.ai for +49).
+- WhatsApp Ava Q&A now passes country+locale to `_ava_prepare` — German
+  senders get the DE corpus and German framing.
+- Classifier prompt switched to English (descriptions arrive in any
+  language).
+- Files: `backend/app/{jurisdictions,i18n}.py`,
+  `backend/app/services/wa_intake.py`, `backend/app/api/whatsapp.py`,
+  `backend/tests/test_wa_intake.py`.
+
 ## 2026-08-02 — Observability: local GlitchTip + product events (D-054 F6)
 
 - GlitchTip v5.1 self-hosted in docker-compose (web 127.0.0.1:8010 +

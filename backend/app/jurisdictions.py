@@ -156,6 +156,19 @@ def country_for_host(host: str | None) -> str:
     return HOST_COUNTRY.get((host or "").split(":")[0].lower(), DEFAULT_COUNTRY)
 
 
+def country_for_phone(phone: str | None) -> str:
+    """Country inferred from an international phone number (WhatsApp sender:
+    digits only, no '+'). Longest matching profile prefix wins; anything
+    unknown falls back to the default country."""
+    digits = "".join(ch for ch in (phone or "") if ch.isdigit())
+    best, best_len = DEFAULT_COUNTRY, 0
+    for code, profile in PROFILES.items():
+        prefix = profile.phone_prefix.lstrip("+")
+        if digits.startswith(prefix) and len(prefix) > best_len:
+            best, best_len = code, len(prefix)
+    return best
+
+
 def is_valid_country(country: str | None) -> bool:
     return (country or "").upper() in PROFILES
 

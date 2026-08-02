@@ -1,10 +1,13 @@
-"""WhatsApp 24/7 receptionist (D-054 F4): intake state machine.
+"""WhatsApp 24/7 receptionist (D-054 F4 / D-055): intake state machine,
+phone-prefix localization and country scoping.
 
 Uses an in-memory Redis stand-in and stubs the LLM classifier and the
 DB-writing finish step — the tests cover the conversational flow itself.
 """
 import pytest
 
+from app.i18n import tr
+from app.jurisdictions import country_for_phone
 from app.services import wa_intake
 
 
@@ -51,6 +54,14 @@ def stub_llm_and_finish(monkeypatch):
     return finished
 
 
+def test_country_for_phone_prefixes():
+    assert country_for_phone("38344123456") == "XK"
+    assert country_for_phone("4915112345678") == "DE"
+    assert country_for_phone("+49 151 1234") == "DE"
+    assert country_for_phone("13475551234") == "XK"  # unknown → default
+    assert country_for_phone(None) == "XK"
+
+
 @pytest.mark.anyio
 async def test_non_intake_message_returns_none(fake_redis):
     assert await wa_intake.handle_intake_message("383441", "Sa është afati i ankesës?") is None
@@ -59,17 +70,17 @@ async def test_non_intake_message_returns_none(fake_redis):
 @pytest.mark.anyio
 async def test_full_flow_posts_case(fake_redis, stub_llm_and_finish):
     phone = "38344123"
-    assert await wa_intake.handle_intake_message(phone, "RAST") == wa_intake.MSG["start"]
+    assert await wa_intake.handle_intake_message(phone, "RAST") == tr("sq", "wa_start")
     # too-short description is rejected, state stays on describe
-    assert await wa_intake.handle_intake_message(phone, "u rrëzova") == wa_intake.MSG["too_short"]
+    assert await wa_intake.handle_intake_message(phone, "u rrëzova") == tr("sq", "wa_too_short")
     reply = await wa_intake.handle_intake_message(
         phone, "Punëdhënësi nuk më ka paguar tri paga të fundit dhe më largoi nga puna pa vendim."
     )
-    assert reply == wa_intake.MSG["ask_city"]  # classifier found no city
-    assert await wa_intake.handle_intake_message(phone, "Prishtinë") == wa_intake.MSG["ask_name"]
-    assert await wa_intake.handle_intake_message(phone, "Filan Fisteku") == wa_intake.MSG["ask_email"]
+    assert reply == tr("sq", "wa_ask_city")  # classifier found no city
+    assert await wa_intake.handle_intake_message(phone, "Prishtinë") == tr("sq", "wa_ask_name")
+    assert await wa_intake.handle_intake_message(phone, "Filan Fisteku") == tr("sq", "wa_ask_email")
     # invalid email re-asks
-    assert await wa_intake.handle_intake_message(phone, "jo-email") == wa_intake.MSG["bad_email"]
+    assert await wa_intake.handle_intake_message(phone, "jo-email") == tr("sq", "wa_bad_email")
     assert await wa_intake.handle_intake_message(phone, "filan@example.com") == "OK-POSTED"
 
     state = stub_llm_and_finish[0]
@@ -77,8 +88,27 @@ async def test_full_flow_posts_case(fake_redis, stub_llm_and_finish):
     assert state["city"] == "Prishtinë"
     assert state["name"] == "Filan Fisteku"
     assert state["email"] == "filan@example.com"
+    assert state["country"] == "XK" and state["locale"] == "sq"
     # state cleared — next message is normal Q&A again
     assert await wa_intake.handle_intake_message(phone, "faleminderit") is None
+
+
+@pytest.mark.anyio
+async def test_german_sender_gets_german_flow(fake_redis, stub_llm_and_finish):
+    phone = "4915112345678"
+    start = await wa_intake.handle_intake_message(phone, "FALL")
+    assert start == tr("de", "wa_start")
+    assert "KI-Assistentin" in start
+    reply = await wa_intake.handle_intake_message(
+        phone, "Mein Arbeitgeber hat mir fristlos gekündigt, ohne Abmahnung, letzte Woche in Berlin."
+    )
+    assert reply == tr("de", "wa_ask_city")
+    await wa_intake.handle_intake_message(phone, "Berlin")
+    await wa_intake.handle_intake_message(phone, "Max Mustermann")
+    assert await wa_intake.handle_intake_message(phone, "max@example.de") == "OK-POSTED"
+
+    state = stub_llm_and_finish[0]
+    assert state["country"] == "DE" and state["locale"] == "de"
 
 
 @pytest.mark.anyio
@@ -92,14 +122,14 @@ async def test_classifier_city_skips_city_question(fake_redis, monkeypatch, stub
     reply = await wa_intake.handle_intake_message(
         phone, "Bashkëshorti nuk e respekton vendimin e gjykatës për kontaktin me fëmijët tanë."
     )
-    assert reply == wa_intake.MSG["ask_name"]
+    assert reply == tr("sq", "wa_ask_name")
 
 
 @pytest.mark.anyio
 async def test_cancel_aborts_flow(fake_redis):
     phone = "38346111"
     await wa_intake.handle_intake_message(phone, "RAST")
-    assert await wa_intake.handle_intake_message(phone, "ANULO") == wa_intake.MSG["cancelled"]
+    assert await wa_intake.handle_intake_message(phone, "ANULO") == tr("sq", "wa_cancelled")
     assert await wa_intake.handle_intake_message(phone, "përshëndetje") is None
 
 
@@ -109,8 +139,10 @@ async def test_cancel_without_flow_is_normal_message(fake_redis):
 
 
 @pytest.mark.anyio
-async def test_daily_hint_once_per_day(fake_redis):
-    first = await wa_intake.daily_hint("redis://x", "38348")
-    second = await wa_intake.daily_hint("redis://x", "38348")
-    assert first == wa_intake.MSG["hint"]
+async def test_daily_hint_once_per_day_and_localized(fake_redis):
+    first = await wa_intake.daily_hint("redis://x", "38348", "sq")
+    second = await wa_intake.daily_hint("redis://x", "38348", "sq")
+    assert first == tr("sq", "wa_hint") and "RAST" in first
     assert second == ""
+    de = await wa_intake.daily_hint("redis://x", "4915199", "de")
+    assert de == tr("de", "wa_hint") and "FALL" in de

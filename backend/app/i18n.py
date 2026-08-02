@@ -263,6 +263,30 @@ _SQ = {
         "me pagesë ({price} €/përdorues/muaj — gjithçka brenda + raste pa "
         "kufi nga Tregu) te Cilësimet → Abonimi:\n{url}"
     ),
+    # WhatsApp 24/7 receptionist (D-054 F4 / D-055 localization)
+    "wa_start": (
+        "Në rregull! Do të t'i bëj disa pyetje të shkurtra dhe rasti yt "
+        "shkon te avokatët e verifikuar — falas dhe pa detyrime.\n\n"
+        "ℹ Unë jam asistente AI, jo avokate; rastin do ta trajtojë "
+        "gjithmonë një avokat i licencuar.\n\n"
+        "1/4 — Përshkruaje çfarë ka ndodhur: kur, ku, dhe çfarë kërkon."
+    ),
+    "wa_too_short": "Më duhen pak më shumë detaje që avokati ta kuptojë rastin. Shkruaj çfarë ndodhi, kur dhe ku.",
+    "wa_ask_city": "2/4 — Në cilin qytet ka ndodhur / ku jeton?",
+    "wa_ask_name": "3/4 — Emri dhe mbiemri yt?",
+    "wa_ask_email": "4/4 — Email-i yt? (aty ndjek rastin dhe përgjigjet e avokatëve)",
+    "wa_bad_email": "Ky email s'duket i saktë — provo përsëri (p.sh. emri@gmail.com).",
+    "wa_cancelled": "Në rregull, e anulova. Mund të më pyesësh çfarëdo për ligjet, ose shkruaj RAST kur të duash.",
+    "wa_hint": "\n\n💡 Shkruaj RAST për ta dërguar rastin tënd te avokatët e verifikuar — falas.",
+    "wa_done": (
+        "✅ Rasti u dërgua te avokatët e verifikuar!\n\n"
+        "Ndiqe dhe lexo përgjigjet te: {url}/rasti-im\n"
+        "(hyr me email-in {email} — përdor 'Harrova fjalëkalimin' herën e parë)"
+    ),
+    "wa_slots": "\n\n📅 Termine të lira për konsultë:\n{slots}\nRezervo te: {url}/avokatet",
+    "wa_error": "Diçka shkoi keq gjatë postimit — provo përsëri më vonë ose posto direkt te {url}/posto-rastin",
+    "wa_quota": "Ke arritur kufirin ditor të pyetjeve falas. Provo nesër, ose vazhdo në {url}/ava",
+    "wa_unavailable": "Ava nuk është e disponueshme për momentin. Provo përsëri më vonë ose shkruaj në {url}/ava",
 }
 
 _SR = {
@@ -505,6 +529,29 @@ _SR = {
         "plaćeni plan ({price} €/korisnik/mesečno — sve uključeno + neograničeni "
         "slučajevi sa Tržišta) u Podešavanja → Pretplata:\n{url}"
     ),
+    "wa_start": (
+        "U redu! Postaviću ti nekoliko kratkih pitanja i tvoj slučaj ide "
+        "verifikovanim advokatima — besplatno i bez obaveza.\n\n"
+        "ℹ Ja sam AI asistentkinja, ne advokat; tvoj slučaj uvek obrađuje "
+        "licencirani advokat.\n\n"
+        "1/4 — Opiši šta se dogodilo: kada, gde i šta tražiš."
+    ),
+    "wa_too_short": "Treba mi malo više detalja da advokat razume slučaj. Napiši šta se dogodilo, kada i gde.",
+    "wa_ask_city": "2/4 — U kom gradu se dogodilo / gde živiš?",
+    "wa_ask_name": "3/4 — Tvoje ime i prezime?",
+    "wa_ask_email": "4/4 — Tvoj email? (tamo pratiš slučaj i odgovore advokata)",
+    "wa_bad_email": "Ovaj email ne izgleda ispravno — pokušaj ponovo (npr. ime@gmail.com).",
+    "wa_cancelled": "U redu, otkazano. Pitaj me bilo šta o zakonima, ili napiši SLUCAJ kad god želiš.",
+    "wa_hint": "\n\n💡 Napiši SLUCAJ da pošalješ svoj slučaj verifikovanim advokatima — besplatno.",
+    "wa_done": (
+        "✅ Slučaj je poslat verifikovanim advokatima!\n\n"
+        "Prati ga i čitaj odgovore na: {url}/rasti-im\n"
+        "(prijavi se sa email-om {email} — prvi put koristi 'Zaboravljena lozinka')"
+    ),
+    "wa_slots": "\n\n📅 Slobodni termini za konsultacije:\n{slots}\nRezerviši na: {url}/avokatet",
+    "wa_error": "Nešto je pošlo naopako pri objavljivanju — pokušaj kasnije ili objavi direktno na {url}/posto-rastin",
+    "wa_quota": "Dostigao si dnevni limit besplatnih pitanja. Pokušaj sutra ili nastavi na {url}/ava",
+    "wa_unavailable": "Ava trenutno nije dostupna. Pokušaj kasnije ili piši na {url}/ava",
 }
 
 _TR = {
@@ -749,6 +796,29 @@ _TR = {
         "geçin ({price} €/kullanıcı/ay — her şey dahil + Pazar'dan sınırsız "
         "dava) Ayarlar → Abonelik:\n{url}"
     ),
+    "wa_start": (
+        "Tamam! Sana birkaç kısa soru soracağım ve davan doğrulanmış "
+        "avukatlara gidecek — ücretsiz ve yükümlülük olmadan.\n\n"
+        "ℹ Ben bir yapay zekâ asistanıyım, avukat değilim; davanla her "
+        "zaman lisanslı bir avukat ilgilenir.\n\n"
+        "1/4 — Ne olduğunu anlat: ne zaman, nerede ve ne talep ediyorsun."
+    ),
+    "wa_too_short": "Avukatın davayı anlaması için biraz daha ayrıntıya ihtiyacım var. Ne olduğunu, ne zaman ve nerede olduğunu yaz.",
+    "wa_ask_city": "2/4 — Hangi şehirde oldu / nerede yaşıyorsun?",
+    "wa_ask_name": "3/4 — Adın ve soyadın?",
+    "wa_ask_email": "4/4 — E-postan? (davayı ve avukatların yanıtlarını oradan takip edersin)",
+    "wa_bad_email": "Bu e-posta doğru görünmüyor — tekrar dene (örn. isim@gmail.com).",
+    "wa_cancelled": "Tamam, iptal ettim. Yasalar hakkında bana her şeyi sorabilirsin veya istediğin zaman DAVA yaz.",
+    "wa_hint": "\n\n💡 Davanı doğrulanmış avukatlara göndermek için DAVA yaz — ücretsiz.",
+    "wa_done": (
+        "✅ Davan doğrulanmış avukatlara gönderildi!\n\n"
+        "Takip et ve yanıtları oku: {url}/rasti-im\n"
+        "({email} e-postasıyla giriş yap — ilk seferde 'Şifremi unuttum'u kullan)"
+    ),
+    "wa_slots": "\n\n📅 Danışma için boş randevular:\n{slots}\nRezervasyon: {url}/avokatet",
+    "wa_error": "Gönderim sırasında bir şeyler ters gitti — daha sonra tekrar dene veya doğrudan şuradan gönder: {url}/posto-rastin",
+    "wa_quota": "Günlük ücretsiz soru sınırına ulaştın. Yarın dene veya {url}/ava adresinden devam et",
+    "wa_unavailable": "Ava şu anda kullanılamıyor. Daha sonra tekrar dene veya {url}/ava adresine yaz",
 }
 
 _BS = {
@@ -991,6 +1061,29 @@ _BS = {
         "plaćeni plan ({price} €/korisnik/mjesečno — sve uključeno + neograničeni "
         "slučajevi s Tržišta) u Postavke → Pretplata:\n{url}"
     ),
+    "wa_start": (
+        "U redu! Postavit ću ti nekoliko kratkih pitanja i tvoj slučaj ide "
+        "verificiranim advokatima — besplatno i bez obaveza.\n\n"
+        "ℹ Ja sam AI asistentica, ne advokat; tvoj slučaj uvijek obrađuje "
+        "licencirani advokat.\n\n"
+        "1/4 — Opiši šta se dogodilo: kada, gdje i šta tražiš."
+    ),
+    "wa_too_short": "Treba mi malo više detalja da advokat razumije slučaj. Napiši šta se dogodilo, kada i gdje.",
+    "wa_ask_city": "2/4 — U kojem gradu se dogodilo / gdje živiš?",
+    "wa_ask_name": "3/4 — Tvoje ime i prezime?",
+    "wa_ask_email": "4/4 — Tvoj email? (tamo pratiš slučaj i odgovore advokata)",
+    "wa_bad_email": "Ovaj email ne izgleda ispravno — pokušaj ponovo (npr. ime@gmail.com).",
+    "wa_cancelled": "U redu, otkazano. Pitaj me bilo šta o zakonima, ili napiši SLUCAJ kad god želiš.",
+    "wa_hint": "\n\n💡 Napiši SLUCAJ da pošalješ svoj slučaj verificiranim advokatima — besplatno.",
+    "wa_done": (
+        "✅ Slučaj je poslat verificiranim advokatima!\n\n"
+        "Prati ga i čitaj odgovore na: {url}/rasti-im\n"
+        "(prijavi se s email-om {email} — prvi put koristi 'Zaboravljena lozinka')"
+    ),
+    "wa_slots": "\n\n📅 Slobodni termini za konsultacije:\n{slots}\nRezerviši na: {url}/avokatet",
+    "wa_error": "Nešto je pošlo naopako pri objavljivanju — pokušaj kasnije ili objavi direktno na {url}/posto-rastin",
+    "wa_quota": "Dostigao si dnevni limit besplatnih pitanja. Pokušaj sutra ili nastavi na {url}/ava",
+    "wa_unavailable": "Ava trenutno nije dostupna. Pokušaj kasnije ili piši na {url}/ava",
 }
 
 _EN = {
@@ -1234,6 +1327,29 @@ _EN = {
         "({price} €/user/month — everything included + unlimited Marketplace "
         "cases) under Settings → Subscription:\n{url}"
     ),
+    "wa_start": (
+        "Alright! I'll ask a few short questions and your case goes to "
+        "verified lawyers — free and with no obligation.\n\n"
+        "ℹ I'm an AI assistant, not a lawyer; your case will always be "
+        "handled by a licensed lawyer.\n\n"
+        "1/4 — Describe what happened: when, where, and what you're seeking."
+    ),
+    "wa_too_short": "I need a bit more detail so a lawyer can understand the case. Write what happened, when and where.",
+    "wa_ask_city": "2/4 — In which city did it happen / where do you live?",
+    "wa_ask_name": "3/4 — Your full name?",
+    "wa_ask_email": "4/4 — Your email? (that's where you follow the case and lawyers' replies)",
+    "wa_bad_email": "That email doesn't look right — try again (e.g. name@gmail.com).",
+    "wa_cancelled": "Okay, cancelled. Ask me anything about the law, or write CASE whenever you like.",
+    "wa_hint": "\n\n💡 Write CASE to send your case to verified lawyers — free.",
+    "wa_done": (
+        "✅ Your case was sent to verified lawyers!\n\n"
+        "Follow it and read replies at: {url}/rasti-im\n"
+        "(sign in with {email} — use 'Forgot password' the first time)"
+    ),
+    "wa_slots": "\n\n📅 Free consultation slots:\n{slots}\nBook at: {url}/avokatet",
+    "wa_error": "Something went wrong while posting — try again later or post directly at {url}/posto-rastin",
+    "wa_quota": "You've reached the daily limit of free questions. Try tomorrow, or continue at {url}/ava",
+    "wa_unavailable": "Ava is unavailable right now. Try again later or write at {url}/ava",
 }
 
 _ZH = {
@@ -1400,6 +1516,19 @@ _ZH = {
     "platform_overdue_body": "订阅发票 {number}（{amount} €）已逾期 {days} 天。逾期超过 {grace} 天后，将暂停接收市场新案件——您的数据始终可以访问。请在 设置 → 订阅 中付款：\n{url}",
     "trial_ending_subject": "AvokatIM — 免费试用将在 {days} 天后结束",
     "trial_ending_body": "您的 1 年免费试用将在 {days} 天后结束。请切换到付费方案（{price} €/用户/月——全部功能 + 市场案件不限量），路径：设置 → 订阅：\n{url}",
+    "wa_start": "好的！我会问你几个简短的问题，你的案件将发送给经过认证的律师——免费且无义务。\n\nℹ 我是AI助手，不是律师；你的案件始终由持牌律师处理。\n\n1/4 — 描述发生了什么：何时、何地、你的诉求是什么。",
+    "wa_too_short": "我需要更多细节，律师才能理解案件。请写明发生了什么、何时、何地。",
+    "wa_ask_city": "2/4 — 发生在哪个城市／你住在哪里？",
+    "wa_ask_name": "3/4 — 你的姓名？",
+    "wa_ask_email": "4/4 — 你的电子邮箱？（你将在那里跟进案件和律师的回复）",
+    "wa_bad_email": "这个邮箱看起来不正确——请重试（例如 name@gmail.com）。",
+    "wa_cancelled": "好的，已取消。你可以问我任何法律问题，或随时输入 CASE。",
+    "wa_hint": "\n\n💡 输入 CASE 将你的案件发送给认证律师——免费。",
+    "wa_done": "✅ 案件已发送给认证律师！\n\n在这里跟进并阅读回复：{url}/rasti-im\n（用邮箱 {email} 登录——首次请使用「忘记密码」）",
+    "wa_slots": "\n\n📅 可预约的咨询时间：\n{slots}\n预约：{url}/avokatet",
+    "wa_error": "发布时出了点问题——请稍后重试，或直接在 {url}/posto-rastin 发布",
+    "wa_quota": "你已达到今日免费提问上限。明天再试，或前往 {url}/ava 继续",
+    "wa_unavailable": "Ava 暂时不可用。请稍后重试，或在 {url}/ava 提问",
 }
 
 _DE = {
@@ -1644,6 +1773,29 @@ _DE = {
         "zum bezahlten Plan ({price} €/Nutzer/Monat — alles inklusive + unbegrenzte "
         "Marktplatz-Fälle) unter Einstellungen → Abonnement:\n{url}"
     ),
+    "wa_start": (
+        "Alles klar! Ich stelle dir ein paar kurze Fragen, und dein Fall geht "
+        "an geprüfte Anwälte — kostenlos und unverbindlich.\n\n"
+        "ℹ Ich bin eine KI-Assistentin, keine Anwältin; deinen Fall bearbeitet "
+        "immer ein zugelassener Anwalt.\n\n"
+        "1/4 — Beschreibe, was passiert ist: wann, wo, und was du erreichen willst."
+    ),
+    "wa_too_short": "Ich brauche etwas mehr Details, damit der Anwalt den Fall versteht. Schreibe, was passiert ist, wann und wo.",
+    "wa_ask_city": "2/4 — In welcher Stadt ist es passiert / wo wohnst du?",
+    "wa_ask_name": "3/4 — Dein Vor- und Nachname?",
+    "wa_ask_email": "4/4 — Deine E-Mail? (dort verfolgst du den Fall und die Antworten der Anwälte)",
+    "wa_bad_email": "Diese E-Mail sieht nicht korrekt aus — versuch es noch einmal (z. B. name@gmail.com).",
+    "wa_cancelled": "In Ordnung, abgebrochen. Du kannst mich alles zu den Gesetzen fragen, oder schreibe FALL, wann immer du willst.",
+    "wa_hint": "\n\n💡 Schreibe FALL, um deinen Fall an geprüfte Anwälte zu senden — kostenlos.",
+    "wa_done": (
+        "✅ Dein Fall wurde an geprüfte Anwälte gesendet!\n\n"
+        "Verfolge ihn und lies die Antworten unter: {url}/rasti-im\n"
+        "(melde dich mit der E-Mail {email} an — nutze beim ersten Mal 'Passwort vergessen')"
+    ),
+    "wa_slots": "\n\n📅 Freie Termine für eine Beratung:\n{slots}\nBuchen unter: {url}/avokatet",
+    "wa_error": "Etwas ist beim Einstellen schiefgelaufen — versuch es später erneut oder stelle den Fall direkt ein: {url}/posto-rastin",
+    "wa_quota": "Du hast das tägliche Limit kostenloser Fragen erreicht. Versuch es morgen, oder mach weiter auf {url}/ava",
+    "wa_unavailable": "Ava ist im Moment nicht verfügbar. Versuch es später erneut oder schreibe auf {url}/ava",
 }
 
 CATALOG: dict[str, dict[str, str]] = {

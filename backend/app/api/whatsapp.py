@@ -101,8 +101,19 @@ async def _answer_message(sender: str, text: str) -> None:
     Runs in background — Meta requires the webhook to return 200 quickly."""
     from app.api.marketplace import AvaAskIn, _ava_prepare
     from app.database import SessionLocal
+    from app.i18n import tr
+    from app.jurisdictions import public_base_url_for
     from app.llm import get_provider
-    from app.services.wa_intake import daily_hint, handle_intake_message
+    from app.services.wa_intake import (
+        daily_hint,
+        handle_intake_message,
+        sender_country_locale,
+    )
+
+    # Country/language follow the sender's phone prefix (D-055): a +49
+    # number gets German replies, the DE corpus and de.avokatiim.ai links.
+    country, locale = sender_country_locale(sender)
+    base_url = public_base_url_for(country)
 
     try:
         intake_reply = await handle_intake_message(sender, text)
@@ -114,27 +125,22 @@ async def _answer_message(sender: str, text: str) -> None:
         return
 
     if not await _daily_quota_ok(sender):
-        await send_whatsapp_text(
-            sender,
-            "Ke arritur kufirin ditor të pyetjeve falas. Provo nesër, ose "
-            f"vazhdo në {settings.public_base_url}/ava",
-        )
+        await send_whatsapp_text(sender, tr(locale, "wa_quota", url=base_url))
         return
     try:
         async with SessionLocal() as db:
             messages, _citations = await _ava_prepare(
-                db, AvaAskIn(question=text, history=[], session_id=None)
+                db,
+                AvaAskIn(question=text, history=[], session_id=None, locale=locale),
+                country=country,
             )
         provider = get_provider(None)
         result = await provider.chat(messages)
         answer = result.content.strip()
     except Exception as exc:
         logger.warning("WhatsApp Ava answer failed: %s", exc)
-        answer = (
-            "Ava nuk është e disponueshme për momentin. Provo përsëri më vonë "
-            f"ose shkruaj në {settings.public_base_url}/ava"
-        )
-    answer += await daily_hint(settings.redis_url, sender)
+        answer = tr(locale, "wa_unavailable", url=base_url)
+    answer += await daily_hint(settings.redis_url, sender, locale)
     await send_whatsapp_text(sender, answer)
 
 
