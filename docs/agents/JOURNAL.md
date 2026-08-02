@@ -10,6 +10,25 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-02 — Çmimet për-vend: DE 39 €/muaj + 3 muaj falas (D-057) (Cursor / Fable 5)
+
+- Done: analiza e tregut gjerman (RA-MICRO 54–64 €, DATEV ~57 €, Advolux
+  ~58–61 €, Kleos 69–89 €, Actaport 79–109 €, Advoware Cloud 99–169 €; të
+  gjithë me kontrata 12–36 muaj) → pronari zgjodhi **39 €/përdorues/muaj,
+  3 muaj falas, pa kontratë minimale**; Kosova e paprekur (24 €, 1 vit).
+  `JurisdictionProfile` mori `trial_days` + `plan_price_eur`; signup-i i
+  lexon nga profili; email-et trial_ending u bënë neutrale ndaj kohëzgjatjes
+  (×7). Frontend: `COUNTRY_PRICING` + `fmtPricing()` te `lib/country.ts`;
+  çelësat startTrial/trialTerms/lpPlanTrial/lpPlanPaid/landLawB/
+  subUpgradeHint me placeholder-ë {price}/{months} ×7 gjuhë; çelës i ri
+  `lpPlanNoTerm` ("pa kontratë minimale") te seksioni i çmimeve; SEO DE
+  përmend "3 Monate kostenlos, dann 39 €". 7 tenant-ët DE në provë u
+  përditësuan në 39 €.
+- Verified: pytest 245 PASS, build OK, restart + health OK; meta DE tregon
+  39 €/3 muaj, meta XK ende "Viti i parë falas"; profilet XK 365/24,
+  DE 90/39; DB-ja e konfirmuar.
+- Left open: `npSubtitle` mban "viti i parë falas" (faqe vetëm-XK, e saktë).
+
 ## 2026-08-02 — Ribrendimi DE: "Ava Legal" si e dhënë vendi (D-056) (Cursor / Fable 5)
 
 - Done: host-i gjerman tregton si **Ava Legal** (emri u zgjodh nga pronari

@@ -1420,3 +1420,21 @@
   AvokatIM for DE accounts (catalogs are per-locale, not per-country);
   TOTP issuer and the API title stay AvokatIM (stable identifiers).
   Before buying/announcing the name: DPMA/EUIPO trademark search.
+
+## D-057: Per-country subscription terms — DE 39 €/user + 3-month trial
+
+- Context: DE go-to-market pricing. German Kanzleisoftware costs 50–109 €
+  net/user/month (RA-MICRO 54–64, DATEV ~57, Advolux ~58–61, Kleos 69–89,
+  Actaport 79–109, Advoware Cloud 99–169), almost all with 12–36 month
+  minimum terms. Owner wants to undercut the market; XK keeps its founding
+  offer untouched.
+- Decision: subscription terms are market data in `JurisdictionProfile`:
+  `trial_days` (XK 365, DE 90) and `plan_price_eur` (XK 24, DE 39) — set on
+  the tenant at signup. DE positioning: ~25% below the cheapest full
+  competitor, no minimum term, never a fee percentage. Frontend shows
+  prices via `COUNTRY_PRICING` + `{price}`/`{months}` placeholders in the
+  dictionary keys (one string per locale serves both markets); trial
+  emails are duration-neutral (the number always comes from data).
+- Consequences: a third market = two profile fields + one frontend map.
+  Existing pre-launch DE trial tenants were updated to 39 €. The trial
+  gate/billing logic is unchanged — only the values are per-country.

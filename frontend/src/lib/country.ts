@@ -36,6 +36,23 @@ export const DE_REGIONS: { code: string; name: string }[] = [
   { code: "TH", name: "Thüringen" },
 ];
 
+/** Subscription terms per market (D-057) — mirrors trial_days /
+    plan_price_eur in backend/app/jurisdictions.py. DE undercuts the
+    50–99 € Kanzleisoftware market with 39 € and a 3-month trial; XK
+    keeps the founding offer (1 year free, 24 €). */
+export const COUNTRY_PRICING: Record<Country, { price: number; trialMonths: number }> = {
+  XK: { price: 24, trialMonths: 12 },
+  DE: { price: 39, trialMonths: 3 },
+};
+
+/** Fill {price}/{months} placeholders in a pricing dictionary string. */
+export function fmtPricing(text: string, country: Country): string {
+  const p = COUNTRY_PRICING[country];
+  return text
+    .split("{price}").join(String(p.price))
+    .split("{months}").join(String(p.trialMonths));
+}
+
 /** Per-country UX hints for forms (phone prefix, city suggestions). */
 export const COUNTRY_UX: Record<Country, { phonePrefix: string; cities: string[] }> = {
   XK: {

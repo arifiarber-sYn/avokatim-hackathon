@@ -6,6 +6,7 @@
  * the notary pillar used across the public pages. */
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
+import { fmtPricing } from "@/lib/country";
 import { LocaleSwitcher } from "@/components/ui";
 import AvaLauncher from "@/components/ava-launcher";
 
@@ -114,7 +115,8 @@ export default function ForNotariesPage() {
           <h2 className="text-xl font-bold text-white text-center">{t.lpPlansTitle}</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="bg-slate-800/60 rounded-xl border border-slate-700/60 p-5">
-              <p className="text-sm text-slate-300">{t.lpPlanTrial}</p>
+              {/* Notary pillar is XK-only (D-034) — XK pricing is correct here */}
+              <p className="text-sm text-slate-300">{fmtPricing(t.lpPlanTrial, "XK")}</p>
             </div>
             <div className="bg-violet-600/10 rounded-xl border border-violet-500/40 p-5">
               <p className="text-sm text-slate-200">{t.npPlanNote}</p>

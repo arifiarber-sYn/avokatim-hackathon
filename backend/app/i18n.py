@@ -259,7 +259,7 @@ _SQ = {
     ),
     "trial_ending_subject": "AvokatIM — Prova falas përfundon për {days} ditë",
     "trial_ending_body": (
-        "Prova juaj 1-vjeçare falas përfundon për {days} ditë. Kalo në planin "
+        "Prova juaj falas përfundon për {days} ditë. Kalo në planin "
         "me pagesë ({price} €/përdorues/muaj — gjithçka brenda + raste pa "
         "kufi nga Tregu) te Cilësimet → Abonimi:\n{url}"
     ),
@@ -525,7 +525,7 @@ _SR = {
     ),
     "trial_ending_subject": "AvokatIM — Besplatna proba ističe za {days} dana",
     "trial_ending_body": (
-        "Vaša besplatna proba od godinu dana ističe za {days} dana. Pređite na "
+        "Vaša besplatna proba ističe za {days} dana. Pređite na "
         "plaćeni plan ({price} €/korisnik/mesečno — sve uključeno + neograničeni "
         "slučajevi sa Tržišta) u Podešavanja → Pretplata:\n{url}"
     ),
@@ -792,7 +792,7 @@ _TR = {
     ),
     "trial_ending_subject": "AvokatIM — Ücretsiz deneme {days} gün içinde bitiyor",
     "trial_ending_body": (
-        "1 yıllık ücretsiz denemeniz {days} gün içinde bitiyor. Ücretli plana "
+        "Ücretsiz denemeniz {days} gün içinde bitiyor. Ücretli plana "
         "geçin ({price} €/kullanıcı/ay — her şey dahil + Pazar'dan sınırsız "
         "dava) Ayarlar → Abonelik:\n{url}"
     ),
@@ -1057,7 +1057,7 @@ _BS = {
     ),
     "trial_ending_subject": "AvokatIM — Besplatna proba ističe za {days} dana",
     "trial_ending_body": (
-        "Vaša besplatna proba od godinu dana ističe za {days} dana. Pređite na "
+        "Vaša besplatna proba ističe za {days} dana. Pređite na "
         "plaćeni plan ({price} €/korisnik/mjesečno — sve uključeno + neograničeni "
         "slučajevi s Tržišta) u Postavke → Pretplata:\n{url}"
     ),
@@ -1323,7 +1323,7 @@ _EN = {
     ),
     "trial_ending_subject": "AvokatIM — Your free trial ends in {days} days",
     "trial_ending_body": (
-        "Your one-year free trial ends in {days} days. Switch to the paid plan "
+        "Your free trial ends in {days} days. Switch to the paid plan "
         "({price} €/user/month — everything included + unlimited Marketplace "
         "cases) under Settings → Subscription:\n{url}"
     ),
@@ -1515,7 +1515,7 @@ _ZH = {
     "platform_overdue_subject": "AvokatIM — 发票 {number} 已逾期",
     "platform_overdue_body": "订阅发票 {number}（{amount} €）已逾期 {days} 天。逾期超过 {grace} 天后，将暂停接收市场新案件——您的数据始终可以访问。请在 设置 → 订阅 中付款：\n{url}",
     "trial_ending_subject": "AvokatIM — 免费试用将在 {days} 天后结束",
-    "trial_ending_body": "您的 1 年免费试用将在 {days} 天后结束。请切换到付费方案（{price} €/用户/月——全部功能 + 市场案件不限量），路径：设置 → 订阅：\n{url}",
+    "trial_ending_body": "您的免费试用将在 {days} 天后结束。请切换到付费方案（{price} €/用户/月——全部功能 + 市场案件不限量），路径：设置 → 订阅：\n{url}",
     "wa_start": "好的！我会问你几个简短的问题，你的案件将发送给经过认证的律师——免费且无义务。\n\nℹ 我是AI助手，不是律师；你的案件始终由持牌律师处理。\n\n1/4 — 描述发生了什么：何时、何地、你的诉求是什么。",
     "wa_too_short": "我需要更多细节，律师才能理解案件。请写明发生了什么、何时、何地。",
     "wa_ask_city": "2/4 — 发生在哪个城市／你住在哪里？",
@@ -1769,7 +1769,7 @@ _DE = {
     ),
     "trial_ending_subject": "Ava Legal — Ihre kostenlose Testphase endet in {days} Tagen",
     "trial_ending_body": (
-        "Ihre einjährige kostenlose Testphase endet in {days} Tagen. Wechseln Sie "
+        "Ihre kostenlose Testphase endet in {days} Tagen. Wechseln Sie "
         "zum bezahlten Plan ({price} €/Nutzer/Monat — alles inklusive + unbegrenzte "
         "Marktplatz-Fälle) unter Einstellungen → Abonnement:\n{url}"
     ),

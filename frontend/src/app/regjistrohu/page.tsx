@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiPost, setToken } from "@/lib/api";
-import { clientCountry } from "@/lib/country";
+import { clientCountry, fmtPricing } from "@/lib/country";
 import { useI18n } from "@/lib/i18n";
 import { Button, Card, ErrorNote, Input, Label, LocaleSwitcher } from "@/components/ui";
 
@@ -160,9 +160,11 @@ function SignupInner() {
           </label>
           <ErrorNote message={error} />
           <Button type="submit" disabled={busy || !acceptTos} className="w-full">
-            {t.startTrial}
+            {fmtPricing(t.startTrial, isDE ? "DE" : "XK")}
           </Button>
-          <p className="text-xs text-slate-500 text-center">{t.trialTerms}</p>
+          <p className="text-xs text-slate-500 text-center">
+            {fmtPricing(t.trialTerms, isDE ? "DE" : "XK")}
+          </p>
         </form>
         <p className="text-sm text-slate-500 mt-6 text-center">
           {t.alreadyHaveAccount}{" "}

@@ -34,9 +34,10 @@ from app.services.notifications import send_email
 
 logger = logging.getLogger(__name__)
 
-# Days a new tenant runs free before needing a paid plan ("viti i parë
-# falas" — extended from 90 on 2026-07-28 so early offices fully adopt the
-# system before ever seeing an invoice)
+# Fallback trial length. Since D-057 signup reads the per-country value
+# from JurisdictionProfile.trial_days (XK 365 — "viti i parë falas",
+# DE 90 — "3 Monate kostenlos"); this constant only backs code paths with
+# no country context.
 TRIAL_DAYS = 365
 # Days between issuing an invoice and its due date
 INVOICE_DUE_DAYS = 14

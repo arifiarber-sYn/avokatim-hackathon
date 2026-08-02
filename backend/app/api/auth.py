@@ -115,7 +115,8 @@ async def _send_verification_email(user_id: uuid.UUID, email: str, locale: str) 
 
 
 async def _send_welcome_email(
-    email: str, name: str, locale: str, profession: str = "lawyer"
+    email: str, name: str, locale: str, profession: str = "lawyer",
+    trial_days: int = TRIAL_DAYS,
 ) -> None:
     """Welcome email with the concrete next steps (activate public profile,
     add the license) — the onboarding gap seen with the first real signups.
@@ -131,7 +132,7 @@ async def _send_welcome_email(
             loc,
             f"{key}_body",
             onboarding_url=f"{settings.public_base_url}/onboarding",
-            trial_days=TRIAL_DAYS,
+            trial_days=trial_days,
             contact_url=f"{settings.public_base_url}/kontakti",
         ),
     )
@@ -212,6 +213,9 @@ async def signup(
             referred_by = referrer.referral_code
 
     country = country_from_request(request)
+    # Trial length and monthly price are market data (D-057): XK 365d/24 €,
+    # DE 90d/39 € — both live in the jurisdiction profile.
+    profile = profile_for(country)
     tenant = Tenant(
         name=body.practice_name,
         kind="solo",
@@ -219,11 +223,12 @@ async def signup(
         default_locale=body.locale,
         country=country,
         default_jurisdiction_code=country,
-        default_vat_rate=profile_for(country).vat_rate,
+        default_vat_rate=profile.vat_rate,
         plan="trial",
         status="active",
         seats_limit=3,
-        trial_ends_at=datetime.now(UTC) + timedelta(days=TRIAL_DAYS),
+        trial_ends_at=datetime.now(UTC) + timedelta(days=profile.trial_days),
+        plan_price_eur=profile.plan_price_eur,
         tos_accepted_at=datetime.now(UTC),
         referred_by_code=referred_by,
     )
@@ -250,14 +255,17 @@ async def signup(
     await db.commit()
     background.add_task(_send_verification_email, user.id, user.email, body.locale)
     background.add_task(
-        _send_welcome_email, user.email, user.full_name, body.locale, body.profession
+        _send_welcome_email, user.email, user.full_name, body.locale,
+        body.profession, profile.trial_days,
     )
     if not _is_test_recipient(user.email):
         profession_sq = "noteri" if body.profession == "notary" else "avokati"
         background.add_task(
             notify_ops, "regjistrim",
             f"Zyrë e re u regjistrua: {user.full_name} ({user.email}), "
-            f"{profession_sq}, zyra '{tenant.name}'. Prova 1-vjeçare falas ka nisur.",
+            f"{profession_sq}, zyra '{tenant.name}' ({country}). "
+            f"Prova falas {profile.trial_days}-ditore ka nisur "
+            f"({profile.plan_price_eur} €/përdorues pas provës).",
         )
     return TokenResponse(
         access_token=create_access_token(user.id, tenant.id, token_version=user.token_version)

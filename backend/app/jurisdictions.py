@@ -23,6 +23,12 @@ class JurisdictionProfile:
     # host is rebranded "Ava Legal"; Kosovo keeps "AvokatIM"). Used in
     # emails, SMS and PDFs whenever the recipient's country is known.
     brand_name: str
+    # Subscription terms per market (D-057): free-trial length at signup and
+    # the monthly per-user price (EUR, net) set on the new tenant. XK keeps
+    # the founding offer (1 year free, 24 €); DE undercuts a 50–99 € market
+    # with 39 € and a 3-month trial.
+    trial_days: int
+    plan_price_eur: int
     currency: str  # ISO 4217
     vat_rate: int  # standard VAT %, default for new tenant invoices
     timezone: str  # IANA name, used for booking slots / deadline "today"
@@ -68,6 +74,8 @@ PROFILES: dict[str, JurisdictionProfile] = {
     "XK": JurisdictionProfile(
         code="XK",
         brand_name="AvokatIM",
+        trial_days=365,
+        plan_price_eur=24,
         currency="EUR",
         vat_rate=18,
         timezone="Europe/Belgrade",
@@ -87,6 +95,8 @@ PROFILES: dict[str, JurisdictionProfile] = {
     "DE": JurisdictionProfile(
         code="DE",
         brand_name="Ava Legal",
+        trial_days=90,
+        plan_price_eur=39,
         currency="EUR",
         vat_rate=19,
         timezone="Europe/Berlin",

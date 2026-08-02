@@ -3,6 +3,24 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-02 — Per-country pricing: DE 39 €/user + 3-month trial (D-057)
+
+- German market analysis (competitors 50–109 €/user/month net, 12–36
+  month minimum terms) → DE terms: 39 €/user/month, 90-day free trial,
+  no minimum term. XK untouched (24 €, 365-day trial).
+- `JurisdictionProfile.trial_days` + `.plan_price_eur`; signup sets both
+  on the tenant; trial-ending emails made duration-neutral (×7 locales);
+  7 pre-launch DE trial tenants updated to 39 €.
+- Frontend: `COUNTRY_PRICING` + `fmtPricing()` in `lib/country.ts`;
+  pricing keys now carry `{price}`/`{months}` placeholders (startTrial,
+  trialTerms, lpPlanTrial, lpPlanPaid, landLawB, subUpgradeHint ×7);
+  new `lpPlanNoTerm` bullet; DE SEO description states the offer.
+- Files: `backend/app/jurisdictions.py`, `backend/app/api/auth.py`,
+  `backend/app/i18n.py`, `backend/app/services/platform_billing.py`,
+  `frontend/src/lib/{country.ts,dictionaries.ts}`,
+  `frontend/src/app/{per-avokatet,per-noteret,regjistrohu,login}/page.tsx`,
+  `frontend/src/app/per-avokatet/layout.tsx`.
+
 ## 2026-08-02 — DE rebrand: "Ava Legal" as country data (D-056)
 
 - The German host now trades as **Ava Legal** (owner's pick); Kosovo keeps

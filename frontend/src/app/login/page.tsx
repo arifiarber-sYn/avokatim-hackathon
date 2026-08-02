@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { startAuthentication } from "@simplewebauthn/browser";
 import { apiGet, apiPost, setToken } from "@/lib/api";
+import { clientCountry, fmtPricing } from "@/lib/country";
 import { useI18n } from "@/lib/i18n";
 import { Button, Card, ErrorNote, Input, Label, LocaleSwitcher } from "@/components/ui";
 
@@ -27,6 +28,12 @@ export default function LoginPage() {
   const [preToken, setPreToken] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  // Trial length in the signup link follows the host's country (D-057)
+  const [isDE, setIsDE] = useState(false);
+
+  useEffect(() => {
+    setIsDE(clientCountry() === "DE");
+  }, []);
 
   useEffect(() => {
     apiGet<{ setup_needed: boolean }>("/auth/setup-needed")
@@ -208,7 +215,7 @@ export default function LoginPage() {
             <p className="text-slate-500">
               {t.noAccountYet}{" "}
               <Link href="/regjistrohu" className="text-indigo-600 hover:underline">
-                {t.startTrial}
+                {fmtPricing(t.startTrial, isDE ? "DE" : "XK")}
               </Link>
             </p>
           </div>

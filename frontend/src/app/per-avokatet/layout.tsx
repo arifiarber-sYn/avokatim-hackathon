@@ -11,7 +11,8 @@ export async function generateMetadata(): Promise<Metadata> {
       ? "Akten mit automatischen Fristen, RVG-Abrechnung mit E-Rechnung und " +
         "DATEV-Export, der Ava Agent, der Ziele in genehmigte Schritte umsetzt, " +
         "proaktive KI mit Morgen-Briefing und Rechtsprechungs-Monitor, und neue " +
-        "Mandate aus dem öffentlichen Marktplatz."
+        "Mandate aus dem öffentlichen Marktplatz. 3 Monate kostenlos, dann " +
+        "39 €/Nutzer/Monat — keine Mindestlaufzeit, nie eine Provision."
       : "Lëndët me afate automatike sipas LPK/LPP/LPA, Ava Agjente që kthen " +
         "qëllimet në hapa me aprovim, AI proaktive me briefing mëngjesi dhe " +
         "monitorim të praktikës gjyqësore, dhe raste të reja nga tregu publik. " +

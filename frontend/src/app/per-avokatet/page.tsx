@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { LocaleSwitcher } from "@/components/ui";
-import { clientCountry } from "@/lib/country";
+import { clientCountry, fmtPricing } from "@/lib/country";
 import AvaLauncher from "@/components/ava-launcher";
 import Brand from "@/components/brand";
 
@@ -207,12 +207,15 @@ export default function ForLawyersPage() {
           <h2 className="text-xl font-bold text-white text-center">{t.lpPlansTitle}</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="bg-slate-800/60 rounded-xl border border-slate-700/60 p-5">
-              <p className="text-sm text-slate-300">{t.lpPlanTrial}</p>
+              <p className="text-sm text-slate-300">{fmtPricing(t.lpPlanTrial, isDE ? "DE" : "XK")}</p>
             </div>
             <div className="bg-indigo-600/10 rounded-xl border border-indigo-500/40 p-5">
-              <p className="text-sm text-slate-200">{t.lpPlanPaid}</p>
+              <p className="text-sm text-slate-200">{fmtPricing(t.lpPlanPaid, isDE ? "DE" : "XK")}</p>
             </div>
           </div>
+          {/* No minimum term — the German market's 12-36 month Mindestlaufzeit
+              contracts make this a real differentiator (true in XK too) */}
+          <p className="text-xs text-slate-400 text-center">{t.lpPlanNoTerm}</p>
           <div className="text-center pt-2">
             <Link
               href="/regjistrohu"
