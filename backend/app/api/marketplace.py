@@ -898,7 +898,14 @@ async def _notify_matching_lawyers(
                     profile.phone,
                     tr(loc, "sms_case_match", category=category, city=city or "-"),
                 )
+            from app.services.notification_center import notify as notify_center
+
+            await notify_center(
+                db, tenant_id=lawyer.tenant_id, kind="intake", title=subject,
+                body=body, url="/marketplace", user_id=lawyer.id, push=False,
+            )
             notified += 1
+        await db.commit()
         logger.info("Case %s: alerted %d matching lawyers", case_id, notified)
 
 
@@ -946,6 +953,13 @@ async def _notify_on_duty_lawyers(
             await send_email(lawyer.email, subject, body)
             if sms_enabled() and profile.sms_case_alerts and profile.phone:
                 await send_sms(profile.phone, tr(loc, "sms_sos_alert", city=city or "-"))
+            from app.services.notification_center import notify as notify_center
+
+            await notify_center(
+                db, tenant_id=lawyer.tenant_id, kind="intake", title=subject,
+                body=body, url="/marketplace", user_id=lawyer.id, push=False,
+            )
+        await db.commit()
         logger.info("SOS %s: alerted %d on-duty lawyers", case_id, len(rows))
 
 
@@ -1079,6 +1093,15 @@ async def citizen_send_message(
                 tr(loc, "case_message_body",
                    url=f"{settings.public_base_url}/marketplace"),
             )
+        from app.services.notification_center import notify as notify_center
+
+        loc0 = pick_locale(admins[0].locale) if admins else "sq"
+        await notify_center(
+            db, tenant_id=case.claimed_by_tenant_id, kind="message",
+            title=tr(loc0, "case_message_subject"),
+            body=body.body.strip()[:200], url="/marketplace",
+        )
+        await db.commit()
     return _message_out(message)
 
 

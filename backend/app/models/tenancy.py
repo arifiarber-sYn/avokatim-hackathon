@@ -12,7 +12,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, uuid_pk
@@ -153,5 +153,12 @@ class User(Base, TimestampMixin):
     # One-shot onboarding nudge: set when the "activate your public profile"
     # reminder email has been sent (48h after signup, only if still inactive)
     profile_nudge_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    # Interrupt budget (D-054): per-kind delivery mode for notifications,
+    # e.g. {"invoice": "center"} — "push" (default) also sends Web Push,
+    # "center" only lands in the in-app bell.
+    notification_prefs: Mapped[dict] = mapped_column(
+        JSONB, default=dict, server_default="{}"
+    )
 
     tenant: Mapped[Tenant] = relationship(back_populates="users", foreign_keys=[tenant_id])

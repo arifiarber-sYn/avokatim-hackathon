@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { LocaleSwitcher } from "@/components/ui";
 import { QuickTimer } from "@/components/quick-timer";
 import { GlobalSearch } from "@/components/global-search";
+import { NotificationBell } from "@/components/notification-bell";
 import AssistantPanel from "@/components/assistant-panel";
 
 interface Me {
@@ -146,13 +147,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <h1 className="text-lg font-bold">
           Avokat<span className="text-indigo-400">IM</span>
         </h1>
-        <button
-          onClick={() => setDrawerOpen(true)}
-          aria-label={t.menu}
-          className="p-2 -mr-2 text-2xl leading-none"
-        >
-          ☰
-        </button>
+        <div className="flex items-center gap-1">
+          <NotificationBell dark />
+          <button
+            onClick={() => setDrawerOpen(true)}
+            aria-label={t.menu}
+            className="p-2 -mr-2 text-2xl leading-none"
+          >
+            ☰
+          </button>
+        </div>
       </header>
 
       {/* Mobile drawer */}
@@ -201,8 +205,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </nav>
 
       <main className="flex-1 min-w-0 p-4 pt-18 pb-20 md:p-6 md:pt-6 md:pb-6 lg:p-8 overflow-auto">
-        <div className="mb-4">
+        <div className="mb-4 flex items-center gap-2">
           <GlobalSearch />
+          <div className="hidden md:block">
+            <NotificationBell />
+          </div>
         </div>
         {trialDaysLeft !== null && (
           <div className="mb-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm px-4 py-2">

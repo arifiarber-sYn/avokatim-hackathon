@@ -67,6 +67,7 @@ _SQ = {
     ),
     # Deadline reminder (lawyer)
     "reminder_subject": "[AvokatIM] Afat pas {days} ditësh: {title}",
+    "ntf_suggestions_title": "{n} afate të propozuara — {ref}",
     "reminder_matter": "Lënda",
     "reminder_deadline": "Afati",
     "reminder_expires": "Skadon",
@@ -321,6 +322,7 @@ _SR = {
         "Ovo je jedini ovakav email za ovaj predmet.\n\n— AvokatIM"
     ),
     "reminder_subject": "[AvokatIM] Rok za {days} dana: {title}",
+    "ntf_suggestions_title": "{n} predložena roka — {ref}",
     "reminder_matter": "Predmet",
     "reminder_deadline": "Rok",
     "reminder_expires": "Ističe",
@@ -562,6 +564,7 @@ _TR = {
         "Bu dosya için bu türden tek e-postadır.\n\n— AvokatIM"
     ),
     "reminder_subject": "[AvokatIM] {days} gün sonra süre: {title}",
+    "ntf_suggestions_title": "{n} önerilen süre — {ref}",
     "reminder_matter": "Dosya",
     "reminder_deadline": "Süre",
     "reminder_expires": "Son tarih",
@@ -805,6 +808,7 @@ _BS = {
         "Ovo je jedini ovakav email za ovaj predmet.\n\n— AvokatIM"
     ),
     "reminder_subject": "[AvokatIM] Rok za {days} dana: {title}",
+    "ntf_suggestions_title": "{n} predložena roka — {ref}",
     "reminder_matter": "Predmet",
     "reminder_deadline": "Rok",
     "reminder_expires": "Ističe",
@@ -1046,6 +1050,7 @@ _EN = {
         "This is the only email of its kind for this case.\n\n— AvokatIM"
     ),
     "reminder_subject": "[AvokatIM] Deadline in {days} days: {title}",
+    "ntf_suggestions_title": "{n} proposed deadlines — {ref}",
     "reminder_matter": "Matter",
     "reminder_deadline": "Deadline",
     "reminder_expires": "Due",
@@ -1265,6 +1270,7 @@ _ZH = {
     "case_review_request_subject": "AvokatIM — 与律师合作得如何？您的评价能帮助他人",
     "case_review_request_body": "您在 AvokatIM 上的案件已结束。\n\n您的评价（沟通、速度、清晰度）能帮助其他公民选择合适的律师，也能让优秀的律师被更多人看到。只需30秒：\n{url}\n\n针对此案件，这是唯一一封此类邮件。\n\n— AvokatIM",
     "reminder_subject": "[AvokatIM] {days} 天后到期：{title}",
+    "ntf_suggestions_title": "{n} 个建议期限 — {ref}",
     "reminder_matter": "案件",
     "reminder_deadline": "期限",
     "reminder_expires": "到期",
@@ -1453,6 +1459,7 @@ _DE = {
         "Dies ist die einzige E-Mail dieser Art zu diesem Fall.\n\n— AvokatIM"
     ),
     "reminder_subject": "[AvokatIM] Frist in {days} Tagen: {title}",
+    "ntf_suggestions_title": "{n} vorgeschlagene Fristen — {ref}",
     "reminder_matter": "Akte",
     "reminder_deadline": "Frist",
     "reminder_expires": "Fällig",

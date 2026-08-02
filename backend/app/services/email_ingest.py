@@ -201,6 +201,13 @@ async def _suggest_from_sender(
                 raw_encrypted=encrypted,
             )
         )
+        from app.services.notification_center import notify as notify_center
+
+        await notify_center(
+            db, tenant_id=contact.tenant_id, kind="email",
+            title=f"✉ {contact.display_name}: {(msg.get('subject') or '')[:120]}",
+            body=_body_text(msg)[:200], url="/dashboard",
+        )
         await db.commit()
         logger.info(
             "Inbound email from %s parked as suggestion for matter %s",

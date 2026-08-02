@@ -27,6 +27,7 @@ from app.api import (
     intake,
     marketplace,
     matters,
+    notifications as notifications_api,
     oauth_citizen,
     platform,
     portal,
@@ -118,6 +119,7 @@ app.include_router(evidence.router, prefix=api_prefix)
 app.include_router(evidence.lawyer_router, prefix=api_prefix)
 app.include_router(feedback.public_router, prefix=api_prefix)
 app.include_router(feedback.admin_router, prefix=api_prefix)
+app.include_router(notifications_api.router, prefix=api_prefix)
 
 
 @app.get("/api/health")

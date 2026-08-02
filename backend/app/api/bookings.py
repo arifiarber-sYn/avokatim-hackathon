@@ -320,6 +320,13 @@ async def _notify_lawyer_new_booking(booking_id: uuid.UUID) -> None:
                   url=f"{settings.public_base_url}/marketplace")
         await send_push_to_user(db, lawyer.id, title=subject, body=body, url="/marketplace")
         await send_email(lawyer.email, subject, body)
+        from app.services.notification_center import notify as notify_center
+
+        await notify_center(
+            db, tenant_id=booking.tenant_id, kind="booking", title=subject,
+            body=body, url="/marketplace", user_id=lawyer.id, push=False,
+        )
+        await db.commit()
 
 
 @public_router.post("/citizen/bookings", status_code=201)

@@ -143,6 +143,14 @@ async def _check_deadline_reminders(redis: aioredis.Redis) -> None:
                 body=f"{ref} — {deadline.title} · {deadline.due_at:%d.%m.%Y}",
                 url=f"/matters/{deadline.matter_id}",
             )
+            from app.services.notification_center import notify as notify_center
+
+            await notify_center(
+                db, tenant_id=deadline.tenant_id, kind="deadline", title=subject,
+                body=f"{ref} — {deadline.title} · {deadline.due_at:%d.%m.%Y}",
+                url=f"/matters/{deadline.matter_id}", user_id=user.id, push=False,
+            )
+            await db.commit()
             # Hearings: also SMS the client, so they show up in court
             if deadline.kind == "hearing" and sms_enabled() and client_id is not None:
                 sms_key = f"reminder-sms:{deadline.id}:{days_left}"

@@ -3,6 +3,27 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-02 — Notification center + interrupt budget (D-054 F1)
+
+- New: `Notification` model + migration; `services/notification_center.py`
+  (`notify()` writes the bell row and fans out Web Push honoring the
+  per-user interrupt budget in `User.notification_prefs`).
+- New: `/api/notifications` (list, unread-count, read, read-all, SSE
+  `stream`, prefs GET/PUT). Wired sources: deadline reminders, deadline
+  suggestions, inbound email suggestions, new bookings, marketplace case
+  matches + SOS, citizen case messages.
+- New: `components/notification-bell.tsx` — bell with live unread badge
+  (SSE + focus fallback), desktop dropdown / mobile bottom sheet; mounted
+  in the app header (mobile) and next to global search (desktop).
+  Settings gets `NotificationPrefsSection` (push vs bell-only per kind).
+- i18n: 17 frontend keys ×7 locales; backend `ntf_suggestions_title` ×7.
+- Files: `backend/app/models/notifications.py`, `backend/app/api/notifications.py`,
+  `backend/app/services/{notification_center,notifications,email_ingest,deadline_suggest}.py`,
+  `backend/app/api/{marketplace,bookings,main}.py`, migration `ac56305907ab`,
+  `backend/tests/test_notification_center.py`,
+  `frontend/src/components/notification-bell.tsx`,
+  `frontend/src/app/(app)/{layout,settings/page}.tsx`, `lib/dictionaries.ts`.
+
 ## 2026-08-02 — Assistant actions with approval + Ask-Ava in Cmd+K + Ava in the citizen portal (D-053)
 
 - New: `POST /api/assistant/actions/extract-deadlines` — Ava re-reads an

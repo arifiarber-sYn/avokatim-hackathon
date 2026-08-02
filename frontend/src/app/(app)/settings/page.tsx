@@ -103,6 +103,7 @@ export default function SettingsPage() {
 
           <SettingsGroup id="njoftimet" title={groupLabels.njoftimet}>
             <PushSection />
+            <NotificationPrefsSection />
             <CalendarFeedSection />
           </SettingsGroup>
 
@@ -1076,6 +1077,77 @@ function PushSection() {
         </Button>
       )}
       <ErrorNote message={error} />
+    </Card>
+  );
+}
+
+/** Interrupt budget (D-054): which notification kinds also push to the
+ * phone and which only land in the in-app bell. */
+function NotificationPrefsSection() {
+  const { t } = useI18n();
+  const [kinds, setKinds] = useState<string[]>([]);
+  const [prefs, setPrefs] = useState<Record<string, string>>({});
+  const [loaded, setLoaded] = useState(false);
+
+  const labels: Record<string, string> = {
+    deadline: t.ntfKindDeadline,
+    suggestion: t.ntfKindSuggestion,
+    email: t.ntfKindEmail,
+    invoice: t.ntfKindInvoice,
+    booking: t.ntfKindBooking,
+    message: t.ntfKindMessage,
+    intake: t.ntfKindIntake,
+    briefing: t.ntfKindBriefing,
+    caselaw: t.ntfKindCaselaw,
+    agent: t.ntfKindAgent,
+  };
+
+  useEffect(() => {
+    apiGet<{ kinds: string[]; prefs: Record<string, string> }>("/notifications/prefs")
+      .then((r) => {
+        setKinds(r.kinds);
+        setPrefs(r.prefs);
+        setLoaded(true);
+      })
+      .catch(() => {});
+  }, []);
+
+  function setMode(kind: string, mode: string) {
+    const next = { ...prefs, [kind]: mode };
+    setPrefs(next); // optimistic
+    apiPut("/notifications/prefs", { prefs: next }).catch(() => {});
+  }
+
+  if (!loaded) return null;
+  return (
+    <Card className="p-5 space-y-3">
+      <h2 className="font-semibold">{t.ntfPrefsT}</h2>
+      <p className="text-sm text-slate-500">{t.ntfPrefsB}</p>
+      <div className="space-y-2">
+        {kinds.map((kind) => {
+          const mode = prefs[kind] || "push";
+          return (
+            <div key={kind} className="flex items-center justify-between gap-3 flex-wrap">
+              <span className="text-sm text-slate-700">{labels[kind] || kind}</span>
+              <div className="flex rounded-lg border border-slate-200 overflow-hidden text-xs">
+                {["push", "center"].map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setMode(kind, m)}
+                    className={`px-3 py-1.5 transition ${
+                      mode === m
+                        ? "bg-indigo-600 text-white"
+                        : "bg-white text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    {m === "push" ? t.ntfModePush : t.ntfModeCenter}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </Card>
   );
 }

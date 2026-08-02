@@ -46,6 +46,7 @@ from app.models.marketplace import (
 from app.models.platform_billing import PlatformInvoice
 from app.models.feedback import PlatformFeedback
 from app.models.evidence import EvidenceChunk, EvidenceSession
+from app.models.notifications import Notification
 
 __all__ = [
     "Base",
@@ -94,4 +95,5 @@ __all__ = [
     "EvidenceSession",
     "PlatformInvoice",
     "PlatformFeedback",
+    "Notification",
 ]

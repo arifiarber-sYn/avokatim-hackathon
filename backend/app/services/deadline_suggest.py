@@ -23,6 +23,7 @@ from app.models import (
     Document,
     Matter,
     Tenant,
+    User,
 )
 from app.services.audit import log_action
 
@@ -165,6 +166,20 @@ async def scan_document(document_id: uuid.UUID, source: str = "document") -> int
                 action="ai.deadline_suggest", entity_type="document",
                 entity_id=str(doc.id),
                 details={"suggestions": created, "source": source},
+            )
+            from app.i18n import pick_locale, tr
+            from app.services.notification_center import notify as notify_center
+
+            responsible = (
+                await db.get(User, matter.responsible_user_id)
+                if matter.responsible_user_id
+                else None
+            )
+            loc = pick_locale(responsible.locale if responsible else None)
+            await notify_center(
+                db, tenant_id=doc.tenant_id, kind="suggestion",
+                title=tr(loc, "ntf_suggestions_title", n=created, ref=matter.reference),
+                body=doc.filename, url=f"/matters/{matter.id}",
             )
         await db.commit()
         logger.info(
