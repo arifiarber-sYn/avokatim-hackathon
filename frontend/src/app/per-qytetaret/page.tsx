@@ -147,9 +147,20 @@ export default function ForCitizensPage() {
               title: t.landToolsT,
               body: t.landToolsB,
               cta: undefined,
+              // Per-host tools: XK adds the litigation cost calculator and the
+              // Albanian guides (D-047/D-048), DE the RVG calculator + Ratgeber.
               links: [
                 { href: "/afatet", label: t.landToolsDeadlines, Icon: IconCalendar },
                 { href: "/dokumentet", label: t.landToolsDocs, Icon: IconDoc },
+                ...(isDE
+                  ? [
+                      { href: "/rvg", label: t.rvgIntroT, Icon: IconScale },
+                      { href: "/ratgeber", label: "Ratgeber", Icon: IconDoc },
+                    ]
+                  : [
+                      { href: "/kostoja", label: t.kstLink, Icon: IconScale },
+                      { href: "/udhezues", label: t.udhLink, Icon: IconDoc },
+                    ]),
               ],
             },
             ...(isDE

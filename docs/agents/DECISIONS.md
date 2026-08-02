@@ -1236,3 +1236,30 @@
   both directions: 12 statute questions must not regress (max_judgments
   cap in _rrf_fuse) and case-law questions should start retrieving
   judgments.
+
+## D-051: Public stats split laws vs judgments; UI copy catches up with case law + new tools (2026-08-02)
+
+- Context: after D-042 (DE, ~15.4k federal decisions) and D-050 (XK,
+  ~2.5k Supreme decisions after the full backfill), the public
+  `laws_in_corpus` counter silently mixed judgments into a number
+  labelled "laws and acts" — inflated and dishonest (XK would have
+  shown ~3.1k "laws"). Marketing/Ava copy also still described a
+  statutes-only corpus, and the free-tools listings predated
+  /kostoja, /udhezues, /rvg cost tab and /ratgeber.
+- Decision: `/api/public/stats` excludes `doc_type="judgment"` from
+  `laws_in_corpus` and returns a separate `judgments_in_corpus`;
+  the landing page and /per-avokatet render it as its own counter
+  (hidden while 0, so a fresh jurisdiction shows no empty stat).
+  Copy in all 7 locales now says "laws AND published case law" in the
+  Ava/marketing/assistant strings, and the tools listings (FAQ,
+  citizen page, landing feature list) include the litigation cost
+  calculator and the public guides, host-aware (XK: /kostoja +
+  /udhezues; DE: /rvg + /ratgeber).
+- Kept: `mkAvaDisclaimer` unchanged (legal-information disclaimer does
+  not need a source inventory); `umbFnC1` unchanged (languages/voice
+  bullet, case law covered by umbWhy2/umbFnL7).
+- Files: `backend/app/api/marketplace.py`, `frontend/src/app/page.tsx`,
+  `frontend/src/app/per-avokatet/page.tsx`,
+  `frontend/src/app/per-qytetaret/page.tsx`,
+  `frontend/src/components/public-shell.tsx`,
+  `frontend/src/lib/dictionaries.ts`.

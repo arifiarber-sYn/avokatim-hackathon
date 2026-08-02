@@ -150,7 +150,9 @@ export default function PublicShell({
     pathname.startsWith("/afatet") ||
     pathname.startsWith("/dokumentet") ||
     pathname.startsWith("/rvg") ||
-    pathname.startsWith("/kostoja");
+    pathname.startsWith("/kostoja") ||
+    pathname.startsWith("/udhezues") ||
+    pathname.startsWith("/ratgeber");
 
   // SOS and the notary pillar are Kosovo-only in v1 (D-034); resolved after
   // mount so SSR markup stays identical for both hosts.

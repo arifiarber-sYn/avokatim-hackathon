@@ -11,6 +11,7 @@ import { clientCountry } from "@/lib/country";
 interface PublicStats {
   cases_posted: number;
   laws_in_corpus: number;
+  judgments_in_corpus: number;
 }
 
 export default function ForLawyersPage() {
@@ -166,7 +167,7 @@ export default function ForLawyersPage() {
         </div>
 
         {stats && (
-          <div className="grid grid-cols-2 gap-4 max-w-xl mx-auto text-center">
+          <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto text-center">
             <div className="bg-slate-800/60 rounded-xl border border-slate-700/60 p-4">
               <p className="text-2xl font-bold text-indigo-400">{stats.cases_posted}</p>
               <p className="text-xs text-slate-400 mt-1">{t.mkStatsCases}</p>
@@ -174,6 +175,10 @@ export default function ForLawyersPage() {
             <div className="bg-slate-800/60 rounded-xl border border-slate-700/60 p-4">
               <p className="text-2xl font-bold text-indigo-400">{stats.laws_in_corpus}</p>
               <p className="text-xs text-slate-400 mt-1">{t.mkStatsLaws}</p>
+            </div>
+            <div className="bg-slate-800/60 rounded-xl border border-slate-700/60 p-4">
+              <p className="text-2xl font-bold text-indigo-400">{stats.judgments_in_corpus}</p>
+              <p className="text-xs text-slate-400 mt-1">{t.mkStatsJudgments}</p>
             </div>
           </div>
         )}

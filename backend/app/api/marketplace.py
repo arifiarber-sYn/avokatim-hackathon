@@ -1139,7 +1139,8 @@ async def public_stats(request: Request, db: AsyncSession = Depends(get_db)):
         )
     ).scalar_one()
     # Unique acts, not documents: the same law exists in up to 5 official
-    # language versions, which used to inflate this public number.
+    # language versions, which used to inflate this public number. Judgments
+    # (D-042/D-050) are counted separately so the "laws" number stays honest.
     laws = (
         await db.execute(
             select(
@@ -1154,7 +1155,21 @@ async def public_stats(request: Request, db: AsyncSession = Depends(get_db)):
             )
             .select_from(LegalCorpusDoc)
             .join(Jurisdiction, Jurisdiction.id == LegalCorpusDoc.jurisdiction_id)
-            .where(Jurisdiction.code == country)
+            .where(
+                Jurisdiction.code == country,
+                LegalCorpusDoc.doc_type != "judgment",
+            )
+        )
+    ).scalar_one()
+    judgments = (
+        await db.execute(
+            select(func.count(LegalCorpusDoc.id))
+            .select_from(LegalCorpusDoc)
+            .join(Jurisdiction, Jurisdiction.id == LegalCorpusDoc.jurisdiction_id)
+            .where(
+                Jurisdiction.code == country,
+                LegalCorpusDoc.doc_type == "judgment",
+            )
         )
     ).scalar_one()
     chunks = (
@@ -1180,6 +1195,7 @@ async def public_stats(request: Request, db: AsyncSession = Depends(get_db)):
         "cases_taken": cases_taken,
         "avg_claim_hours": round(avg_seconds / 3600, 1) if avg_seconds else None,
         "laws_in_corpus": laws,
+        "judgments_in_corpus": judgments,
         "corpus_chunks": chunks,
         "notaries_licensed": notaries_licensed,
     }

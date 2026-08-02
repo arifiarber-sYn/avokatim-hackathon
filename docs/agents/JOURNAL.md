@@ -10,6 +10,25 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-02 — D-051: statistika të ndershme + teksti i UI-së kap praktikën gjyqësore (Cursor / Fable 5)
+
+- Done: backfill-i i plotë i Supremes përfundoi natën (ok=2,371 të reja,
+  fail=0 → ~2,5k aktgjykime XK gjithsej; portali kishte publikuar vetëm
+  ~2,6k vendime të Supremes brenda 5 viteve, jo 21k). Auditim i plotë i
+  ndërfaqes në të dy hostet: `laws_in_corpus` numëronte edhe aktgjykimet
+  (XK do të tregonte ~3,1k "ligje"), teksti fliste vetëm për ligje dhe
+  veglat e reja mungonin në faqet e marketingut.
+- Done: `/api/public/stats` ndan `judgments_in_corpus` më vete; landing
+  + /per-avokatet marrin numëratorin e ri (`mkStatsJudgments`). 13 çelësa
+  × 7 gjuhë të përditësuar (praktika gjyqësore krahas ligjeve te Ava,
+  FAQ, landing, lp*, assistantIntro, deepResearchHint) + çelësi i ri
+  `umbFnC9`; /per-qytetaret lidh /kostoja+/udhezues (XK) dhe
+  /rvg+/ratgeber (DE); toolsActive mbulon /udhezues e /ratgeber.
+- Verified: stats XK = 554 ligje + 2 532 vendime, DE = 99 + 15 424;
+  pytest 218/219 (test_voice flaky, kalon i izoluar); build + restart;
+  6 faqet publike 200 në të dy hostet.
+- Left open: asgjë bllokuese.
+
 ## 2026-08-01x — D-050 B3: Jurisprudenca e Kosovës në korpus (Cursor / Fable 5)
 
 - Done: spike feasibiliteti mbi gjyqesori-rks.org/aktgjykimet/ → GO

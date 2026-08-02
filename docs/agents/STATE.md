@@ -51,8 +51,9 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   filters, 290k+ decisions, Supreme 21k) — Albanian PDFs → pypdf →
   `doc_type="judgment"`, reference = official designation (Rev.nr./Pml.nr.…);
   paced 2.5s/doc with 429/503 backoff, resumable via
-  `data/xk_judgments_state.txt` + reference dedup; first batch of 150
-  Supreme decisions imported. Eval `scripts/eval_xk_recherche.py`:
+  `data/xk_judgments_state.txt` + reference dedup; full Supreme backfill
+  done 2026-08-02 (ok=2,521 fail=0 — everything the portal published in
+  the last 5 years), ~2.5k XK judgments live. Eval `scripts/eval_xk_recherche.py`:
   statute questions 7/9 + 2/3 unchanged before/after, case-law questions
   0/4 → 4/4 with ≥1 judgment in top-6. Public XK Ava prompt cites
   court + case number only from provided excerpts. **DE seed data**
@@ -398,6 +399,16 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   same `RatgeberArticle` shape with a per-country field, JSON-LD
   inLanguage "sq", XK-only sitemap entries, footer/tools links on the XK
   host, disclaimer, CTA → Ava / posto-rastin).
+- **UI copy refresh for case law + new tools** (2026-08-02, D-051):
+  `/api/public/stats` splits `laws_in_corpus` (doc_type != judgment) from
+  the new `judgments_in_corpus`; landing + /per-avokatet show a separate
+  judgments counter (`mkStatsJudgments`). Marketing/Ava/assistant copy in
+  all 7 locales now mentions published case law next to statutes
+  (mkAvaIntro, avaIntro, faqA2, umbWhy2, umbFnL7, landAvaB, lpFeat2,
+  lpAiSub, lpAi1B, assistantIntro, deepResearchHint) and the free-tools
+  listings include the cost calculator + guides (faqA1, landToolsB, new
+  umbFnC9; /per-qytetaret tools card links /kostoja+/udhezues on XK,
+  /rvg+/ratgeber on DE; toolsActive covers /udhezues and /ratgeber).
 - **Token-less email classification** (2026-08-01, D-043): inbound mail
   without a matter alias whose sender matches a contact is parked as an
   `EmailSuggestion` (raw message encrypted on disk); dashboard card lets the

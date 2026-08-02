@@ -27,6 +27,7 @@ interface PublicStats {
   cases_posted: number;
   cases_taken: number;
   laws_in_corpus: number;
+  judgments_in_corpus: number;
   notaries_licensed: number;
 }
 
@@ -174,8 +175,8 @@ export default function Home() {
               </div>
               <ul className="space-y-2.5 text-sm text-slate-600">
                 {(isDE
-                  ? [t.umbFnC1.replace("6", "3"), t.umbFnC2, t.umbFnC4, t.umbFnC5, t.umbFnC6, t.umbFnC7]
-                  : [t.umbFnC1, t.umbFnC2, t.umbFnC3, t.umbFnC4, t.umbFnC8, t.umbFnC5, t.umbFnC6, t.umbFnC7]
+                  ? [t.umbFnC1.replace("6", "3"), t.umbFnC2, t.umbFnC4, t.umbFnC5, t.umbFnC6, t.umbFnC7, t.umbFnC9]
+                  : [t.umbFnC1, t.umbFnC2, t.umbFnC3, t.umbFnC4, t.umbFnC8, t.umbFnC5, t.umbFnC6, t.umbFnC7, t.umbFnC9]
                 ).map(
                   (f) => (
                     <li key={f} className="flex items-start gap-2.5">
@@ -257,9 +258,13 @@ export default function Home() {
         {/* Public stats — lawyers and notaries side by side (owner's call:
             show the real directory count even while it is small) */}
         {stats && (
-          <div className={`grid grid-cols-2 ${isDE ? "md:grid-cols-3" : "md:grid-cols-4"} gap-4 text-center max-w-3xl mx-auto`}>
+          <div className={`grid grid-cols-2 ${isDE ? "md:grid-cols-4" : "md:grid-cols-5"} gap-4 text-center max-w-4xl mx-auto`}>
             {[
               { value: stats.laws_in_corpus, label: t.mkStatsLaws },
+              // Published case law joined the corpus with D-042 (DE) / D-050 (XK)
+              ...(stats.judgments_in_corpus
+                ? [{ value: stats.judgments_in_corpus, label: t.mkStatsJudgments }]
+                : []),
               { value: stats.lawyers_in_directory, label: t.mkStatsLawyers },
               ...(isDE ? [] : [{ value: stats.notaries_licensed, label: t.mkStatsNotaries }]),
               { value: isDE ? 3 : 6, label: t.mkStatsLangs },

@@ -3,6 +3,26 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-02 — Honest public stats + UI copy for case law and new tools (D-051)
+
+- Changed: `/api/public/stats` — `laws_in_corpus` now excludes
+  judgments; new `judgments_in_corpus` field. Landing and /per-avokatet
+  show a separate court-decisions counter (`mkStatsJudgments`).
+- Changed: 13 dictionary keys × 7 locales mention published case law
+  next to statutes (mkAvaIntro, avaIntro, faqA1/2, umbWhy2, umbFnL7,
+  landAvaB, landToolsB, lpFeat2, lpAiSub, lpAi1B, assistantIntro,
+  deepResearchHint); new `umbFnC9` free-tools bullet.
+- Changed: /per-qytetaret tools card links /kostoja + /udhezues (XK) and
+  /rvg + /ratgeber (DE); nav `toolsActive` covers /udhezues + /ratgeber.
+- Note: overnight Supreme Court backfill finished (2,371 new, 0 failed;
+  ~2.5k XK judgments total — the portal only has ~2.6k Supreme decisions
+  published in the last 5 years).
+- Files: `backend/app/api/marketplace.py`, `frontend/src/app/page.tsx`,
+  `frontend/src/app/per-avokatet/page.tsx`,
+  `frontend/src/app/per-qytetaret/page.tsx`,
+  `frontend/src/components/public-shell.tsx`,
+  `frontend/src/lib/dictionaries.ts`, docs.
+
 ## 2026-08-01 — Kosovo case law import + Albanian retrieval eval (D-050, B3)
 
 - New: `backend/scripts/import_xk_judgments.py` — imports published
