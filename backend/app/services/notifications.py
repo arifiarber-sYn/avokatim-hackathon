@@ -341,7 +341,7 @@ async def _generate_time_suggestions_nightly() -> None:
 
     async with SessionLocal() as db:
         tenant_ids = (
-            (await db.execute(select(Tenant.id).where(Tenant.is_active.is_(True))))
+            (await db.execute(select(Tenant.id).where(Tenant.status == "active")))
             .scalars()
             .all()
         )

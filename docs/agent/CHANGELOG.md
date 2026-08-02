@@ -3,6 +3,36 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-02 — Citizen sign-in audit: photo, "Continue as X", country callbacks (D-058)
+
+- Audit after the owner hit friction with Google sign-in on the DE host.
+- OAuth: `_redirect_uri` is country-aware behind `OAUTH_COUNTRY_CALLBACKS`
+  (default off — enable only after registering the DE callback in the
+  provider consoles); `/start` accepts `login_hint` (skips Google's account
+  chooser); citizen welcome email links point at the citizen's country host.
+- Profile photo: Google `picture` fetched server-side (≤300 KB) and stored
+  as a data URL in new `citizen_users.photo` (migration `b701cbe9cae5`);
+  exposed via `/citizen/me` (`photo`, `provider`); shown in the header chip
+  and /llogaria (new `CitizenAvatar` component).
+- "Continue as X": `avokatim_last_account` in localStorage (name/email/
+  photo/provider, never a token) → one-tap re-login card on the auth forms;
+  new keys authContinueAs/authUseOther/authSignedOut/authSigningIn ×7.
+- Fixes: logout now clears the chip's React state (user no longer looks
+  signed in after logout); "Signing you in…" spinner while the OAuth
+  return token is exchanged; failed `/citizen/me` after OAuth shows a
+  localized error; Google listed first among providers; "Deutsch" added to
+  the /llogaria language picker; `Tenant.is_active` → `Tenant.status ==
+  "active"` in notifications.py + proactive.py (morning briefing, proactive
+  monitors and time capture were silently failing).
+- Files: `backend/app/api/{oauth_citizen,marketplace}.py`,
+  `backend/app/{config.py,models/marketplace.py}`,
+  `backend/app/services/{notifications,proactive}.py`,
+  `backend/alembic/versions/20260802_b701cbe9cae5_*.py`,
+  `backend/tests/test_oauth_citizen.py`,
+  `frontend/src/lib/{citizen.ts,dictionaries.ts}`,
+  `frontend/src/components/{citizen-auth,citizen-avatar,public-shell}.tsx`,
+  `frontend/src/app/llogaria/page.tsx`.
+
 ## 2026-08-02 — Per-country pricing: DE 39 €/user + 3-month trial (D-057)
 
 - German market analysis (competitors 50–109 €/user/month net, 12–36

@@ -55,6 +55,10 @@ class CitizenUser(Base, TimestampMixin):
     # directory views stay within this country's lawyer pool
     country: Mapped[str] = mapped_column(String(8), default="XK", server_default="XK", index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    # Profile photo as a data URL (D-058). Fetched server-side from the OAuth
+    # provider (Google `picture`) so the browser never loads third-party
+    # images — CSP stays at img-src 'self' data:.
+    photo: Mapped[str | None] = mapped_column(Text)
     email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     # Privacy-policy acceptance at signup (Law 06/L-082, demonstrable consent)
     privacy_accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

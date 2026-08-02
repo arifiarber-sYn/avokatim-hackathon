@@ -328,6 +328,15 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   /kycu). Caveat: only app admins/testers can use the Facebook button until
   Meta **Business verification + Publish** are completed by the owner
   (developers.facebook.com → AvokatIM → Publish → Start Verification).
+  **D-058 (2026-08-02)**: sign-in at industry standard — Google avatar
+  stored server-side as data URL (`citizen_users.photo`, shown in the header
+  chip + /llogaria), "Continue as X" one-tap re-login after logout
+  (`avokatim_last_account`, `login_hint` skips the account chooser), logout
+  clears the React state properly, "Signing you in…" spinner on OAuth
+  return. Per-country callbacks exist behind `OAUTH_COUNTRY_CALLBACKS`
+  (default off) — **owner action**: register
+  `https://de.avokatiim.ai/api/public/oauth/google/callback` in the Google
+  console, then enable the flag so DE flows stay on the DE host.
 - **Marketplace case quality gate** (2026-07-13):
   `services/case_quality.py` — heuristics (repetition, gibberish, too short)
   + one fast LLM JSON classification (fail-open → `quality_flag="heuristic"`);

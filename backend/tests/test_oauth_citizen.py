@@ -88,6 +88,63 @@ def test_redirect_uri_matches_documented_pattern():
     )
 
 
+def test_redirect_uri_stays_on_main_host_until_flag_is_on(monkeypatch):
+    """D-058: without oauth_country_callbacks even DE flows must use the
+    single registered callback — flipping hosts before the console has the
+    DE URI would break login with redirect_uri_mismatch."""
+    monkeypatch.setattr(settings, "oauth_country_callbacks", False)
+    monkeypatch.setattr(settings, "public_base_url", "https://avokatiim.ai")
+    assert (
+        _redirect_uri("google", "DE")
+        == "https://avokatiim.ai/api/public/oauth/google/callback"
+    )
+
+
+def test_redirect_uri_follows_country_host_with_flag_on(monkeypatch):
+    monkeypatch.setattr(settings, "oauth_country_callbacks", True)
+    monkeypatch.setattr(settings, "public_base_url", "https://avokatiim.ai")
+    assert (
+        _redirect_uri("google", "DE")
+        == "https://de.avokatiim.ai/api/public/oauth/google/callback"
+    )
+    # XK has no separate public_host — main host as before
+    assert (
+        _redirect_uri("google", "XK")
+        == "https://avokatiim.ai/api/public/oauth/google/callback"
+    )
+
+
+def _fake_request(headers: dict[str, str] | None = None):
+    from starlette.requests import Request
+
+    raw = [(k.lower().encode(), v.encode()) for k, v in (headers or {}).items()]
+    return Request({"type": "http", "headers": raw, "method": "GET", "path": "/"})
+
+
+@pytest.mark.anyio
+async def test_login_hint_preselects_account_and_drops_chooser(
+    no_oauth, monkeypatch
+):
+    """'Vazhdo si X' (D-058): the remembered email rides as login_hint so
+    Google skips the account chooser instead of prompting select_account."""
+    from urllib.parse import parse_qs, urlparse
+
+    from app.api.oauth_citizen import oauth_start
+
+    monkeypatch.setattr(settings, "oauth_google_client_id", "cid")
+    monkeypatch.setattr(settings, "oauth_google_client_secret", "sec")
+
+    resp = await oauth_start("google", _fake_request(), login_hint="b@x.de")
+    qs = parse_qs(urlparse(resp.headers["location"]).query)
+    assert qs["login_hint"] == ["b@x.de"]
+    assert "prompt" not in qs
+
+    resp = await oauth_start("google", _fake_request())
+    qs = parse_qs(urlparse(resp.headers["location"]).query)
+    assert qs["prompt"] == ["select_account"]
+    assert "login_hint" not in qs
+
+
 def test_finish_puts_token_in_fragment_not_query():
     """Fragments never reach server logs — the token must live there."""
     resp = _finish("/kycu", "citizen_token=abc")

@@ -8,8 +8,18 @@
  */
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
-import { CitizenInfo, citizenGet, citizenPost, setCitizenToken } from "@/lib/citizen";
-import { Button, ErrorNote, Input, Label } from "@/components/ui";
+import {
+  CitizenInfo,
+  LastAccount,
+  citizenGet,
+  citizenPost,
+  clearLastAccount,
+  getLastAccount,
+  rememberCitizen,
+  setCitizenToken,
+} from "@/lib/citizen";
+import { Button, ErrorNote, Input, Label, Spinner } from "@/components/ui";
+import CitizenAvatar from "@/components/citizen-avatar";
 
 type Mode = "signup" | "login" | "forgot";
 
@@ -57,13 +67,25 @@ export default function CitizenAuthForm({
   const [error, setError] = useState("");
   const [resetSent, setResetSent] = useState(false);
   const [providers, setProviders] = useState<string[]>([]);
+  // "Vazhdo si X" (D-058): the account remembered from the last session
+  const [lastAccount, setLastAccount] = useState<LastAccount | null>(null);
+  // True while the token from the OAuth callback is being turned into a
+  // session — the form must not flash underneath a successful login
+  const [signingIn, setSigningIn] = useState(false);
 
   // Social login: which buttons to show + catch the token/error the backend
   // put in the URL fragment after the OAuth callback
   useEffect(() => {
     citizenGet<{ providers: string[] }>("/oauth/providers")
-      .then((d) => setProviders(d.providers))
+      // Stable, recognition-first order: Google (most common) before the rest
+      .then((d) =>
+        setProviders([...d.providers].sort((a, b) => (a === "google" ? -1 : b === "google" ? 1 : 0)))
+      )
       .catch(() => {});
+    const last = getLastAccount();
+    setLastAccount(last);
+    // A returning person is here to sign back in, not to sign up
+    if (last) setMode("login");
     const hash = new URLSearchParams(window.location.hash.slice(1));
     const token = hash.get("citizen_token");
     const oauthError = hash.get("oauth_error");
@@ -72,18 +94,33 @@ export default function CitizenAuthForm({
     }
     if (token) {
       setCitizenToken(token);
+      setSigningIn(true);
       citizenGet<CitizenInfo>("/citizen/me")
-        .then((citizen) => onAuthed(citizen, false))
-        .catch(() => setCitizenToken(null));
+        .then((citizen) => {
+          rememberCitizen(citizen);
+          onAuthed(citizen, false);
+        })
+        .catch(() => {
+          // A dead token must fail loudly, not leave a silent login form
+          setCitizenToken(null);
+          setSigningIn(false);
+          setError(t.authOauthError);
+        });
     } else if (oauthError) {
       setError(oauthError === "no_email" ? t.authOauthNoEmail : t.authOauthError);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function startOauth(provider: string) {
+  function startOauth(provider: string, loginHint?: string) {
     const next = encodeURIComponent(window.location.pathname);
-    window.location.href = `/api/public/oauth/${provider}/start?locale=${locale}&next=${next}`;
+    const hint = loginHint ? `&login_hint=${encodeURIComponent(loginHint)}` : "";
+    window.location.href = `/api/public/oauth/${provider}/start?locale=${locale}&next=${next}${hint}`;
+  }
+
+  function useOtherAccount() {
+    clearLastAccount();
+    setLastAccount(null);
   }
 
   async function submit(e: React.FormEvent) {
@@ -103,12 +140,22 @@ export default function CitizenAuthForm({
           : { email: auth.email, password: auth.password };
       const data = await citizenPost<{ access_token: string; citizen: CitizenInfo }>(path, body);
       setCitizenToken(data.access_token);
+      rememberCitizen(data.citizen);
       onAuthed(data.citizen, mode === "signup");
     } catch (err) {
       setError(err instanceof Error ? err.message : t.error);
     } finally {
       setBusy(false);
     }
+  }
+
+  if (signingIn) {
+    return (
+      <div className="py-8 flex flex-col items-center gap-3">
+        <Spinner />
+        <p className="text-sm text-slate-500">{t.authSigningIn}</p>
+      </div>
+    );
   }
 
   if (mode === "forgot" && resetSent) {
@@ -149,6 +196,51 @@ export default function CitizenAuthForm({
         </div>
       )}
       {mode === "forgot" && <h2 className="font-semibold">{t.acctForgot}</h2>}
+
+      {/* One-tap re-login for the remembered account (D-058) — the Google/
+          Clio pattern: photo + name, continue with a single click */}
+      {mode !== "forgot" && lastAccount && (
+        <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-4 space-y-3">
+          <p className="text-xs text-slate-500">{t.authSignedOut}</p>
+          <button
+            type="button"
+            onClick={() => {
+              if (lastAccount.provider) {
+                startOauth(lastAccount.provider, lastAccount.email);
+              } else {
+                setMode("login");
+                setAuth((a) => ({ ...a, email: lastAccount.email }));
+                setLastAccount(null);
+              }
+            }}
+            className="w-full flex items-center gap-3 rounded-lg bg-white border border-slate-200 hover:border-indigo-400 hover:shadow-sm p-3 text-left transition"
+          >
+            <CitizenAvatar
+              name={lastAccount.name}
+              photo={lastAccount.photo}
+              className="h-10 w-10 text-sm"
+            />
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-slate-800 truncate">
+                {t.authContinueAs.replace("{name}", lastAccount.name.split(/\s+/)[0])}
+              </span>
+              <span className="block text-xs text-slate-500 truncate">{lastAccount.email}</span>
+            </span>
+            {lastAccount.provider && (
+              <span className="ml-auto shrink-0">
+                <ProviderIcon provider={lastAccount.provider} />
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={useOtherAccount}
+            className="text-xs text-slate-500 hover:text-indigo-600 hover:underline"
+          >
+            {t.authUseOther}
+          </button>
+        </div>
+      )}
 
       {mode !== "forgot" && providers.length > 0 && (
         <div className="space-y-2">

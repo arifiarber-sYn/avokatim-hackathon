@@ -159,7 +159,7 @@ async def run_morning_briefings(redis: aioredis.Redis) -> None:
     today = date.today().isoformat()
     async with SessionLocal() as db:
         tenants = (
-            await db.execute(select(Tenant).where(Tenant.is_active.is_(True)))
+            await db.execute(select(Tenant).where(Tenant.status == "active"))
         ).scalars().all()
         for tenant in tenants:
             key = f"briefing:{tenant.id}:{today}"
@@ -202,7 +202,7 @@ async def run_caselaw_monitor(redis: aioredis.Redis) -> None:
             await db.execute(
                 select(Matter, Tenant)
                 .join(Tenant, Tenant.id == Matter.tenant_id)
-                .where(Matter.status == "open", Tenant.is_active.is_(True))
+                .where(Matter.status == "open", Tenant.status == "active")
                 .order_by(Matter.updated_at.desc())
                 .limit(_MATTERS_PER_TENANT * 5)
             )

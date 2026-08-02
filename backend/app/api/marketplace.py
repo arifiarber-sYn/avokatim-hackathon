@@ -27,7 +27,7 @@ from app.config import settings
 from app.database import get_db
 from app.deps import get_current_user
 from app.i18n import pick_locale, tr
-from app.jurisdictions import country_from_request, profile_for
+from app.jurisdictions import country_from_request, profile_for, public_base_url_for
 from app.models import (
     CaseRequest,
     CaseRequestMessage,
@@ -146,6 +146,10 @@ def _citizen_out(citizen: CitizenUser) -> dict:
         "phone": citizen.phone,
         "locale": citizen.locale,
         "email_verified": citizen.email_verified_at is not None,
+        # Social login extras (D-058): data-URL avatar + which provider the
+        # account uses, so the login screen can offer "Continue as X"
+        "photo": citizen.photo,
+        "provider": citizen.oauth_provider,
     }
 
 
@@ -207,11 +211,15 @@ async def citizen_login(
     return {"access_token": _citizen_token(citizen.id), "citizen": _citizen_out(citizen)}
 
 
-async def _send_citizen_welcome(email: str, name: str, locale: str) -> None:
+async def _send_citizen_welcome(
+    email: str, name: str, locale: str, country: str = "XK"
+) -> None:
     """Thank-you letter after the account is confirmed — the citizen's
-    "successful registration" moment (mirrors the lawyers' verified letter)."""
+    "successful registration" moment (mirrors the lawyers' verified letter).
+    Links point at the citizen's own country host (D-058) — a German citizen
+    must land on de.avokatiim.ai, not the Kosovo site."""
     loc = pick_locale(locale)
-    base = settings.public_base_url
+    base = public_base_url_for(country)
     await send_email(
         email,
         tr(loc, "citizen_welcome_subject", name=name),
@@ -242,7 +250,8 @@ async def citizen_verify_email(
         # assistant (test/simulation accounts stay silent)
         if not _is_test_recipient(citizen.email):
             background.add_task(
-                _send_citizen_welcome, citizen.email, citizen.full_name, citizen.locale
+                _send_citizen_welcome,
+                citizen.email, citizen.full_name, citizen.locale, citizen.country,
             )
             background.add_task(
                 notify_ops, "regjistrim-qytetar",

@@ -86,6 +86,61 @@ export interface CitizenInfo {
   phone: string | null;
   locale: string;
   email_verified: boolean;
+  /** Data-URL avatar from social login (D-058); null for email accounts. */
+  photo: string | null;
+  /** Social-login provider (google/apple/meta) or null for email accounts. */
+  provider: string | null;
+}
+
+/** Remembered account for one-tap re-login after logout (D-058) — the
+    Google/Clio "Continue as X" pattern. Never contains a token, only what
+    the login screen shows: name, email, photo and which provider to hint. */
+export interface LastAccount {
+  name: string;
+  email: string;
+  photo: string | null;
+  provider: string | null;
+}
+
+const LAST_ACCOUNT_KEY = "avokatim_last_account";
+
+export function getLastAccount(): LastAccount | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(LAST_ACCOUNT_KEY);
+    if (!raw) return null;
+    const a = JSON.parse(raw) as LastAccount;
+    return a && a.email ? a : null;
+  } catch {
+    return null;
+  }
+}
+
+export function rememberCitizen(c: CitizenInfo) {
+  try {
+    localStorage.setItem(
+      LAST_ACCOUNT_KEY,
+      JSON.stringify({
+        name: c.full_name,
+        email: c.email,
+        photo: c.photo,
+        provider: c.provider,
+      } satisfies LastAccount),
+    );
+  } catch {
+    // A photo data-URL can overflow the localStorage quota — remember the
+    // account without it rather than not at all
+    try {
+      localStorage.setItem(
+        LAST_ACCOUNT_KEY,
+        JSON.stringify({ name: c.full_name, email: c.email, photo: null, provider: c.provider }),
+      );
+    } catch {}
+  }
+}
+
+export function clearLastAccount() {
+  localStorage.removeItem(LAST_ACCOUNT_KEY);
 }
 
 export interface CitizenCase {

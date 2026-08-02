@@ -10,6 +10,36 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-02 — Auditimi i Google login + niveli standard (D-058) (Cursor / Fable 5)
+
+- Done: auditim i plotë i OAuth-it të qytetarëve pas raportimit të pronarit
+  ("probleme me Google në DE"). Gjetjet → rregullimet: (1) callback-u i
+  fiksuar në host-in XK — tani `_redirect_uri` bëhet për-vend pas flag-ut
+  `OAUTH_COUNTRY_CALLBACKS` (default off; kërkohet regjistrimi i
+  `https://de.avokatiim.ai/api/public/oauth/google/callback` në Google
+  Console para ndezjes); (2) `login_hint` te `/start` për rikyçje pa
+  zgjedhësin e llogarive; (3) fotoja e Google ruhet si data-URL në kolonën
+  e re `citizen_users.photo` (shkarkim server-side ≤300 KB, CSP i paprekur)
+  dhe del te çipi + /llogaria; (4) "Vazhdo si X" pas daljes —
+  `avokatim_last_account` (emër/email/foto/provider, kurrë token) me kartë
+  një-klikimëshe te format e login-it, çelësat authContinueAs/authUseOther/
+  authSignedOut/authSigningIn ×7; (5) bug-u i logout-it: state-i React i
+  çipit tani pastrohet (më parë useri dukej i kyçur pas daljes); (6) spinner
+  "Duke ju kyçur…" gjatë kthimit nga OAuth + gabim i lokalizuar kur
+  /citizen/me dështon; (7) email-i i mirëseardhjes së qytetarit me linke
+  të host-it të vendit; (8) bug anësor: `Tenant.is_active` (s'ekziston) →
+  `Tenant.status == "active"` në notifications.py + proactive.py — briefingu
+  i mëngjesit, monitorët dhe time-capture rifunksionojnë; (9) "Deutsch" iu
+  shtua zgjedhjes së gjuhës në /llogaria.
+- Verified: pytest 248 PASS (3 teste të reja OAuth), build OK, restart +
+  health OK; /start në XK → state XK, në DE → state DE + login_hint; kolona
+  photo në DB; /citizen/me kthen photo+provider; /kycu 200 në të dy host-et;
+  query e tenant-ëve aktivë funksionon (24 tenantë).
+- Left open: hapi manual i pronarit — regjistro callback-un DE në Google
+  Console (dhe Apple/Meta po deshi paritet të plotë), pastaj
+  `OAUTH_COUNTRY_CALLBACKS=true` në backend/.env. Fotoja ekziston vetëm për
+  llogari sociale; qytetarët me email s'kanë ngarkim fotoje (me vetëdije).
+
 ## 2026-08-02 — Çmimet për-vend: DE 39 €/muaj + 3 muaj falas (D-057) (Cursor / Fable 5)
 
 - Done: analiza e tregut gjerman (RA-MICRO 54–64 €, DATEV ~57 €, Advolux

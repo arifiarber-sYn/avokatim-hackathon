@@ -20,8 +20,10 @@ import {
   CitizenInfo,
   citizenGet,
   getCitizenToken,
+  rememberCitizen,
   setCitizenToken,
 } from "@/lib/citizen";
+import CitizenAvatar from "@/components/citizen-avatar";
 
 function AvaIcon({ className }: { className?: string }) {
   return (
@@ -61,8 +63,8 @@ function CaseIcon({ className }: { className?: string }) {
   );
 }
 
-/** Header chip for a signed-in citizen: initials -> menu (my case, account, sign out). */
-function CitizenChip({ citizen }: { citizen: CitizenInfo }) {
+/** Header chip for a signed-in citizen: photo/initials -> menu (my case, account, sign out). */
+function CitizenChip({ citizen, onLogout }: { citizen: CitizenInfo; onLogout: () => void }) {
   const { t } = useI18n();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -76,13 +78,6 @@ function CitizenChip({ citizen }: { citizen: CitizenInfo }) {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  const initials = citizen.full_name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0].toUpperCase())
-    .join("");
-
   return (
     <div className="relative" ref={ref}>
       <button
@@ -90,9 +85,7 @@ function CitizenChip({ citizen }: { citizen: CitizenInfo }) {
         className="flex items-center gap-2 rounded-full bg-indigo-50 hover:bg-indigo-100 pl-1 pr-3 py-1 transition"
         aria-label={t.acctTitle}
       >
-        <span className="h-7 w-7 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center">
-          {initials || "?"}
-        </span>
+        <CitizenAvatar name={citizen.full_name} photo={citizen.photo} />
         <span className="hidden sm:block text-sm font-medium text-indigo-900 max-w-[10rem] truncate">
           {citizen.full_name.split(/\s+/)[0]}
         </span>
@@ -116,7 +109,11 @@ function CitizenChip({ citizen }: { citizen: CitizenInfo }) {
           <button
             className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
             onClick={() => {
+              // The remembered account (name/photo, no token) survives the
+              // logout so /kycu can offer "Vazhdo si X" (D-058)
+              rememberCitizen(citizen);
               setCitizenToken(null);
+              onLogout();
               setOpen(false);
               router.push("/");
               router.refresh();
@@ -175,11 +172,22 @@ export default function PublicShell({
   // the lawyer login: valid token -> chip menu, stale token -> cleared.
   const [citizen, setCitizen] = useState<CitizenInfo | null>(null);
   useEffect(() => {
-    if (!getCitizenToken()) return;
+    if (!getCitizenToken()) {
+      // Token gone (logout in another tab / component) — the chip must not
+      // keep showing a signed-in user (D-058 bug fix)
+      setCitizen(null);
+      return;
+    }
     citizenGet<CitizenInfo>("/citizen/me")
-      .then(setCitizen)
+      .then((c) => {
+        setCitizen(c);
+        rememberCitizen(c); // keeps name/photo fresh for "Vazhdo si X"
+      })
       .catch((err) => {
-        if ((err as { status?: number }).status === 401) setCitizenToken(null);
+        if ((err as { status?: number }).status === 401) {
+          setCitizenToken(null);
+          setCitizen(null);
+        }
       });
   }, [pathname]);
 
@@ -287,7 +295,7 @@ export default function PublicShell({
             )}
             <LocaleSwitcher iconOnly />
             {citizen ? (
-              <CitizenChip citizen={citizen} />
+              <CitizenChip citizen={citizen} onLogout={() => setCitizen(null)} />
             ) : (
               <Link
                 href="/kycu"

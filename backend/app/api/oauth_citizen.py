@@ -23,6 +23,7 @@ Identity rules:
 A provider's button appears only when its credentials are configured in
 backend/.env; nothing here assumes all three exist.
 """
+import base64
 import logging
 import time
 import uuid
@@ -77,8 +78,17 @@ def enabled_providers() -> list[str]:
     return out
 
 
-def _redirect_uri(provider: str) -> str:
-    return f"{settings.public_base_url}/api/public/oauth/{provider}/callback"
+def _redirect_uri(provider: str, country: str = "XK") -> str:
+    """Callback URL the provider returns to. By default the single URI
+    registered on the main host; with oauth_country_callbacks=true (D-058)
+    each country host keeps the whole flow on its own origin — no visible
+    cross-host hop at the last step of the provider's procedure."""
+    base = (
+        public_base_url_for(country)
+        if settings.oauth_country_callbacks
+        else settings.public_base_url
+    )
+    return f"{base}/api/public/oauth/{provider}/callback"
 
 
 def _safe_next(path: str | None) -> str:
@@ -132,14 +142,20 @@ async def list_providers():
 
 @router.get("/{provider}/start")
 async def oauth_start(
-    provider: str, request: Request, locale: str = "sq", next: str = "/kycu"
+    provider: str,
+    request: Request,
+    locale: str = "sq",
+    next: str = "/kycu",
+    login_hint: str = "",
 ):
     if provider not in enabled_providers():
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Provider not configured")
-    # Provider callbacks always land on the main registered redirect URI, so
-    # the originating country rides inside the signed state token.
-    state = _make_state(locale, next, country_from_request(request))
-    redirect_uri = _redirect_uri(provider)
+    # The originating country rides inside the signed state token; the
+    # callback host follows _redirect_uri (main host, or the country host
+    # once oauth_country_callbacks is on — D-058).
+    country = country_from_request(request)
+    state = _make_state(locale, next, country)
+    redirect_uri = _redirect_uri(provider, country)
     if provider == "google":
         params = {
             "client_id": settings.oauth_google_client_id,
@@ -150,6 +166,11 @@ async def oauth_start(
             # Verified-email accounts only; no offline access needed
             "prompt": "select_account",
         }
+        if login_hint:
+            # "Vazhdo si X" (D-058): preselect the remembered account so the
+            # user skips the account chooser entirely
+            params["login_hint"] = login_hint[:254]
+            del params["prompt"]
         return RedirectResponse(f"{GOOGLE_AUTH_URL}?{urlencode(params)}")
     if provider == "apple":
         params = {
@@ -171,10 +192,14 @@ async def oauth_start(
     return RedirectResponse(f"{META_AUTH_URL}?{urlencode(params)}")
 
 
-async def _fetch_identity(provider: str, code: str, user_json: str | None) -> dict:
+async def _fetch_identity(
+    provider: str, code: str, user_json: str | None, country: str = "XK"
+) -> dict:
     """Exchange the authorization code and return
-    {sub, email, name, email_verified}. Raises HTTPException on failure."""
-    redirect_uri = _redirect_uri(provider)
+    {sub, email, name, email_verified, picture}. Raises HTTPException on
+    failure. The token exchange must present the exact redirect_uri used at
+    /start, so the country from the state token is passed through."""
+    redirect_uri = _redirect_uri(provider, country)
     async with httpx.AsyncClient(timeout=20) as web:
         if provider == "google":
             r = await web.post(GOOGLE_TOKEN_URL, data={
@@ -197,6 +222,7 @@ async def _fetch_identity(provider: str, code: str, user_json: str | None) -> di
                 "email": (info.get("email") or "").lower(),
                 "name": info.get("name") or "",
                 "email_verified": bool(info.get("email_verified")),
+                "picture": info.get("picture") or "",
             }
         if provider == "apple":
             r = await web.post(APPLE_TOKEN_URL, data={
@@ -231,6 +257,7 @@ async def _fetch_identity(provider: str, code: str, user_json: str | None) -> di
                 "name": name,
                 # Apple emails (incl. private relay) are always deliverable
                 "email_verified": True,
+                "picture": "",  # Apple exposes no avatar
             }
         # meta
         r = await web.get(META_TOKEN_URL, params={
@@ -251,7 +278,29 @@ async def _fetch_identity(provider: str, code: str, user_json: str | None) -> di
             "email": (info.get("email") or "").lower(),
             "name": info.get("name") or "",
             "email_verified": bool(info.get("email")),
+            "picture": "",
         }
+
+
+MAX_PHOTO_BYTES = 300_000
+
+
+async def _fetch_photo(url: str) -> str | None:
+    """Download the provider's avatar server-side and inline it as a data
+    URL (D-058). The browser never talks to a third-party image host, so the
+    CSP stays at img-src 'self' data: — same approach as lawyer photos."""
+    if not url.startswith("https://"):
+        return None
+    try:
+        async with httpx.AsyncClient(timeout=5, follow_redirects=True) as web:
+            r = await web.get(url)
+            r.raise_for_status()
+            ctype = (r.headers.get("content-type") or "").split(";")[0].strip()
+            if not ctype.startswith("image/") or len(r.content) > MAX_PHOTO_BYTES:
+                return None
+            return f"data:{ctype};base64,{base64.b64encode(r.content).decode()}"
+    except httpx.HTTPError:
+        return None
 
 
 async def _find_or_create_citizen(
@@ -310,7 +359,8 @@ async def _find_or_create_citizen(
         from app.api.marketplace import _send_citizen_welcome
 
         background.add_task(
-            _send_citizen_welcome, citizen.email, citizen.full_name, citizen.locale
+            _send_citizen_welcome,
+            citizen.email, citizen.full_name, citizen.locale, citizen.country,
         )
         background.add_task(
             notify_ops, "regjistrim-qytetar",
@@ -347,7 +397,7 @@ async def _handle_callback(
     if error or not code:  # user cancelled at the provider
         return _finish(next_path, "oauth_error=cancelled", country)
     try:
-        ident = await _fetch_identity(provider, code, user_json)
+        ident = await _fetch_identity(provider, code, user_json, country)
     except (httpx.HTTPError, KeyError) as exc:
         logger.warning("OAuth %s exchange failed: %s", provider, exc)
         return _finish(next_path, "oauth_error=exchange", country)
@@ -360,6 +410,14 @@ async def _handle_callback(
     )
     if not citizen.is_active:
         return _finish(next_path, "oauth_error=disabled", country)
+
+    # Keep the profile photo fresh on every login (people change avatars);
+    # a failed download never blocks the login itself.
+    if ident.get("picture"):
+        photo = await _fetch_photo(ident["picture"])
+        if photo and photo != citizen.photo:
+            citizen.photo = photo
+            await db.commit()
 
     from app.api.marketplace import _citizen_token
 

@@ -80,6 +80,12 @@ class Settings(BaseSettings):
     # button appears only when its credentials are set. Redirect URIs to
     # register with each provider:
     #   {public_base_url}/api/public/oauth/{google|apple|meta}/callback
+    # D-058: with oauth_country_callbacks=true the callback lands on the
+    # country host the flow started from (e.g. de.avokatiim.ai) instead of
+    # bouncing through the main host. Turn it on ONLY after every country
+    # host's callback URL is registered with each provider's console, e.g.
+    #   https://de.avokatiim.ai/api/public/oauth/google/callback
+    oauth_country_callbacks: bool = False
     oauth_google_client_id: str = ""
     oauth_google_client_secret: str = ""
     # Apple "Sign in with Apple": Services ID (client id), Team ID, Key ID and

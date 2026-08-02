@@ -1438,3 +1438,27 @@
 - Consequences: a third market = two profile fields + one frontend map.
   Existing pre-launch DE trial tenants were updated to 39 €. The trial
   gate/billing logic is unchanged — only the values are per-country.
+
+## D-058: Citizen sign-in at industry standard — country callbacks, photo, "Continue as X"
+
+- Context: the owner hit friction with Google sign-in on the DE host. Audit
+  findings: the OAuth callback is pinned to the main host (avokatiim.ai)
+  with the country riding in the signed state — functional but a visible
+  cross-host hop at the last step; the Google profile photo was discarded;
+  after logout the header chip kept showing the user (React state never
+  cleared); and there was no remembered-account re-login.
+- Decision: (1) `_redirect_uri` becomes country-aware behind
+  `OAUTH_COUNTRY_CALLBACKS` (default off) so flows stay on the origin host
+  once each country callback is registered in the provider consoles —
+  flipping the flag before that would break login with
+  redirect_uri_mismatch. (2) The provider avatar is fetched server-side
+  (≤300 KB, image/* only) and stored as a data URL in `citizen_users.photo`
+  — the browser never contacts third-party image hosts, CSP stays
+  `img-src 'self' data:`. (3) The login screens remember the last account
+  (`avokatim_last_account` in localStorage: name/email/photo/provider —
+  never a token) and offer one-tap "Continue as X"; for OAuth accounts the
+  email rides as `login_hint` so Google skips the account chooser.
+- Consequences: logout everywhere must clear both the token and the React
+  state and save the last account. `/citizen/me` now exposes `photo` and
+  `provider`. Owner action before enabling country callbacks: add the DE
+  callback URL to the Google (and Apple/Meta, if desired) console.

@@ -16,10 +16,12 @@ import {
   citizenGet,
   citizenPost,
   getCitizenToken,
+  rememberCitizen,
   setCitizenToken,
 } from "@/lib/citizen";
 import { Button, Card, ErrorNote, Input, Label, Select, Spinner } from "@/components/ui";
 import PublicShell from "@/components/public-shell";
+import CitizenAvatar from "@/components/citizen-avatar";
 import { IconArrowRight, IconCalendar, IconCheck, IconDoc, IconShield } from "@/components/icons";
 
 const LOCALE_NAMES: Record<string, string> = {
@@ -29,6 +31,7 @@ const LOCALE_NAMES: Record<string, string> = {
   sr: "Srpski",
   tr: "Türkçe",
   bs: "Bosanski",
+  de: "Deutsch",
 };
 
 export default function CitizenAccountPage() {
@@ -108,6 +111,9 @@ export default function CitizenAccountPage() {
   }
 
   function logout() {
+    // Keep the account (name/photo, never a token) so /kycu can offer a
+    // one-tap "Vazhdo si X" re-login (D-058)
+    if (citizen) rememberCitizen(citizen);
     setCitizenToken(null);
     router.push("/");
   }
@@ -150,7 +156,12 @@ export default function CitizenAccountPage() {
             {/* Profile */}
             <Card className="p-6 space-y-4">
               <h2 className="font-semibold">{t.acctProfileT}</h2>
-              <div className="text-sm text-slate-600 flex items-center gap-2 flex-wrap">
+              <div className="text-sm text-slate-600 flex items-center gap-3 flex-wrap">
+                <CitizenAvatar
+                  name={citizen.full_name}
+                  photo={citizen.photo}
+                  className="h-12 w-12 text-base"
+                />
                 <span>{citizen.email}</span>
                 {citizen.email_verified ? (
                   <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 rounded-full px-2 py-0.5">
