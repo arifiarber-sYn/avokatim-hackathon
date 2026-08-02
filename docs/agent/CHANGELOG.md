@@ -3,6 +3,30 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-02 — UX wave: passkeys, dark mode, palette, skeletons, PWA (D-054 F5)
+
+- Passkeys/WebAuthn: `PasskeyCredential` model + migration, `/api/auth/passkeys/*`
+  (register/list/delete + passwordless login that skips TOTP — a passkey is
+  already MFA); Settings section + "Sign in with passkey" on /login
+  (@simplewebauthn/browser, py_webauthn). `/auth/refresh` gives sliding
+  sessions (called on app load).
+- Dark mode: opt-in `.theme-dark` utility remap in globals.css (pre-paint
+  script, no flash), 3-state toggle (light/dark/system) in the sidebar;
+  `prefers-reduced-motion` honored globally.
+- Command palette: Cmd+K now shows fuzzy-matched actions (new matter/
+  deadline/invoice/contact + navigation); `/matters?new=1` deep link.
+  Backend search is typo-tolerant (pg_trgm word_similarity + GIN trigram
+  indexes, migration b1c2d3e4f5a6) and returns deadlines + tasks.
+- Perceived performance: `Skeleton`/`SkeletonCards` on dashboard, matters,
+  calendar, citizen portal; optimistic deadline mark-done; button
+  micro-interaction (active scale); `haptic()` on FABs and approvals.
+- PWA: install banner after 2nd visit (30-day snooze), SW registered on
+  public pages too.
+- Files: `backend/app/{models/passkeys.py,api/{passkeys,search,auth}.py,config.py}`,
+  migrations `722e96516f77` + `b1c2d3e4f5a6`, `backend/tests/test_passkeys.py`,
+  `frontend/src/components/{theme-toggle,install-banner,notification-bell,global-search,ui,assistant-panel,ava-launcher,public-shell}.tsx`,
+  `frontend/src/lib/haptics.ts`, `frontend/src/app/{layout,globals.css,login,(app)/*}`.
+
 ## 2026-08-02 — Ava Agent: goal-based multi-step runs with approval (D-054 F2)
 
 - New: `services/agent_run.py` — Ava plans steps from a goal (tool catalog:

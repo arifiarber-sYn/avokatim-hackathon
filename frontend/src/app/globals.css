@@ -14,15 +14,81 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* The UI is designed light-only: every surface (cards, headers, footers) is
-   a hardcoded light Tailwind class. The starter's prefers-color-scheme dark
-   override used to flip the base text to #ededed on those white surfaces,
-   making unstyled headings/names unreadable on devices in dark mode. */
+/* The UI is designed light-first with hardcoded light Tailwind classes.
+   Dark mode (D-054 F5) is an explicit opt-in via the .theme-dark class on
+   <html> (never via prefers-color-scheme alone — see the flash bug note
+   below): a curated remap of the utility classes actually used across the
+   app onto a dark palette. */
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Accessibility: honor reduced-motion everywhere (D-054 F5). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Dark theme (opt-in, .theme-dark on <html>) ---------- */
+.theme-dark {
+  --background: #0b1120;
+  --foreground: #e2e8f0;
+  color-scheme: dark;
+}
+/* Surfaces */
+.theme-dark .bg-white { background-color: #101a2e; }
+.theme-dark .bg-slate-50 { background-color: #0d1626; }
+.theme-dark .bg-slate-100 { background-color: #182642; }
+.theme-dark .bg-slate-200 { background-color: #1f2f4d; }
+.theme-dark .hover\:bg-slate-50:hover { background-color: #16233c; }
+.theme-dark .hover\:bg-slate-100:hover { background-color: #1d2c49; }
+.theme-dark .bg-indigo-50, .theme-dark .bg-indigo-50\/60 { background-color: rgb(99 102 241 / 0.14); }
+.theme-dark .bg-violet-50, .theme-dark .bg-violet-50\/70 { background-color: rgb(139 92 246 / 0.14); }
+.theme-dark .bg-emerald-50 { background-color: rgb(16 185 129 / 0.12); }
+.theme-dark .bg-amber-50 { background-color: rgb(245 158 11 / 0.12); }
+.theme-dark .bg-rose-50 { background-color: rgb(244 63 94 / 0.12); }
+.theme-dark .bg-sky-50 { background-color: rgb(14 165 233 / 0.12); }
+/* Text */
+.theme-dark .text-slate-900, .theme-dark .text-slate-800 { color: #e2e8f0; }
+.theme-dark .text-slate-700 { color: #cbd5e1; }
+.theme-dark .text-slate-600 { color: #a5b4cb; }
+.theme-dark .text-slate-500 { color: #8b9bb4; }
+.theme-dark .text-indigo-700, .theme-dark .text-indigo-800 { color: #a5b4fc; }
+.theme-dark .text-indigo-600 { color: #93a5fd; }
+.theme-dark .text-violet-700, .theme-dark .text-violet-800 { color: #c4b5fd; }
+.theme-dark .text-emerald-700, .theme-dark .text-emerald-800 { color: #6ee7b7; }
+.theme-dark .text-amber-600, .theme-dark .text-amber-700, .theme-dark .text-amber-800 { color: #fcd34d; }
+.theme-dark .text-rose-600, .theme-dark .text-rose-700 { color: #fda4af; }
+.theme-dark .text-sky-700, .theme-dark .text-sky-800 { color: #7dd3fc; }
+/* Borders & rings */
+.theme-dark .border-slate-100, .theme-dark .border-slate-200, .theme-dark .border-slate-300 { border-color: #243349; }
+.theme-dark .border-indigo-100, .theme-dark .border-indigo-200, .theme-dark .border-indigo-300 { border-color: rgb(99 102 241 / 0.4); }
+.theme-dark .border-violet-100, .theme-dark .border-violet-300 { border-color: rgb(139 92 246 / 0.4); }
+.theme-dark .border-emerald-200 { border-color: rgb(16 185 129 / 0.35); }
+.theme-dark .border-amber-200 { border-color: rgb(245 158 11 / 0.35); }
+.theme-dark .border-rose-200 { border-color: rgb(244 63 94 / 0.35); }
+.theme-dark .border-sky-200 { border-color: rgb(14 165 233 / 0.35); }
+.theme-dark .ring-slate-200, .theme-dark .md\:ring-slate-200 { --tw-ring-color: #243349; }
+.theme-dark .divide-slate-50 > * + *, .theme-dark .divide-slate-100 > * + * { border-color: #1c2a44; }
+/* Form controls */
+.theme-dark input, .theme-dark textarea, .theme-dark select {
+  background-color: #0d1626;
+  color: #e2e8f0;
+  border-color: #243349;
+}
+.theme-dark input::placeholder, .theme-dark textarea::placeholder { color: #64748b; }
+/* Shadows read differently on dark — soften them */
+.theme-dark .shadow, .theme-dark .shadow-sm, .theme-dark .shadow-lg, .theme-dark .shadow-xl, .theme-dark .shadow-2xl {
+  --tw-shadow-color: rgb(0 0 0 / 0.55);
 }
 
 /* Lightweight entrance animation for landing sections (CSS only). */

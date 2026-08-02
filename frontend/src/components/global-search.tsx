@@ -1,15 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { apiGet } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
+
+/** Forgiving subsequence match ("nlnd" finds "Lëndë e re") for the
+ * command-palette actions (D-054 F5). */
+function fuzzy(needle: string, haystack: string): boolean {
+  const n = needle.toLowerCase();
+  const h = haystack.toLowerCase();
+  let i = 0;
+  for (const ch of h) {
+    if (ch === n[i]) i++;
+    if (i === n.length) return true;
+  }
+  return i === n.length;
+}
 
 interface SearchResults {
   matters: { id: string; reference: string; title: string; status: string }[];
   contacts: { id: string; display_name: string; email: string | null; kind: string }[];
   documents: { id: string; matter_id: string | null; filename: string; snippet: string | null }[];
   invoices: { id: string; number: string; status: string; matter_id: string | null }[];
+  deadlines: { id: string; matter_id: string; matter_reference: string; title: string; due_at: string | null; status: string }[];
+  tasks: { id: string; matter_id: string | null; title: string; status: string }[];
 }
 
 export function GlobalSearch({ onNavigate }: { onNavigate?: () => void }) {
@@ -70,12 +85,34 @@ export function GlobalSearch({ onNavigate }: { onNavigate?: () => void }) {
     );
   }
 
+  // Command palette (D-054 F5): quick actions and destinations, fuzzy-matched
+  const actions = useMemo(
+    () => [
+      { label: t.newMatter, href: "/matters?new=1", icon: "＋" },
+      { label: t.addDeadline, href: "/calendar", icon: "＋" },
+      { label: t.newInvoice, href: "/billing", icon: "＋" },
+      { label: t.newContact, href: "/contacts", icon: "＋" },
+      { label: t.dashboard, href: "/dashboard", icon: "▦" },
+      { label: t.matters, href: "/matters", icon: "▤" },
+      { label: t.calendar, href: "/calendar", icon: "▧" },
+      { label: t.assistant, href: "/assistant", icon: "✦" },
+      { label: t.analytics, href: "/reports", icon: "◫" },
+      { label: t.settings, href: "/settings", icon: "⚙" },
+    ],
+    [t]
+  );
+  const matchedActions = q.trim()
+    ? actions.filter((a) => fuzzy(q.trim(), a.label)).slice(0, 5)
+    : actions.slice(0, 6);
+
   const empty =
     results &&
     results.matters.length === 0 &&
     results.contacts.length === 0 &&
     results.documents.length === 0 &&
-    results.invoices.length === 0;
+    results.invoices.length === 0 &&
+    (results.deadlines?.length ?? 0) === 0 &&
+    (results.tasks?.length ?? 0) === 0;
 
   function close() {
     setOpen(false);
@@ -100,11 +137,11 @@ export function GlobalSearch({ onNavigate }: { onNavigate?: () => void }) {
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        onFocus={() => results && setOpen(true)}
+        onFocus={() => setOpen(true)}
         placeholder={`⌕ ${t.searchEverything}`}
         className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
-      {open && (results || busy) && (
+      {open && (results || busy || matchedActions.length > 0) && (
         <div className="absolute z-50 mt-1 w-full max-h-[28rem] overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-xl divide-y divide-slate-100 pb-1">
           {q.trim().length >= 2 && (
             <button
@@ -114,6 +151,20 @@ export function GlobalSearch({ onNavigate }: { onNavigate?: () => void }) {
               <span className="h-6 w-6 rounded-full bg-indigo-100 flex items-center justify-center text-xs shrink-0">✦</span>
               <span className="truncate">{t.gsAskAva.replace("{q}", q.trim())}</span>
             </button>
+          )}
+          {group(
+            t.gsActions,
+            matchedActions.map((a) => (
+              <Link
+                key={a.href + a.label}
+                href={a.href}
+                onClick={close}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-slate-50"
+              >
+                <span className="w-4 text-center text-slate-400">{a.icon}</span>
+                {a.label}
+              </Link>
+            ))
           )}
           {busy && !results && (
             <p className="px-3 py-3 text-sm text-slate-400">{t.loading}</p>
@@ -163,6 +214,38 @@ export function GlobalSearch({ onNavigate }: { onNavigate?: () => void }) {
                   {d.snippet && (
                     <span className="text-xs text-slate-400 truncate block">{d.snippet}</span>
                   )}
+                </Link>
+              ))
+            )}
+          {results &&
+            group(
+              t.deadlines,
+              (results.deadlines || []).map((d) => (
+                <Link
+                  key={d.id}
+                  href={`/matters/${d.matter_id}`}
+                  onClick={close}
+                  className="block px-3 py-1.5 text-sm hover:bg-slate-50"
+                >
+                  <span className={d.status === "done" ? "line-through text-slate-400" : ""}>{d.title}</span>
+                  <span className="text-xs text-slate-400 ml-2">
+                    {d.matter_reference}
+                    {d.due_at ? ` · ${new Date(d.due_at).toLocaleDateString()}` : ""}
+                  </span>
+                </Link>
+              ))
+            )}
+          {results &&
+            group(
+              t.myTasks,
+              (results.tasks || []).map((tk) => (
+                <Link
+                  key={tk.id}
+                  href={tk.matter_id ? `/matters/${tk.matter_id}` : "/dashboard"}
+                  onClick={close}
+                  className="block px-3 py-1.5 text-sm hover:bg-slate-50"
+                >
+                  <span className={tk.status === "done" ? "line-through text-slate-400" : ""}>{tk.title}</span>
                 </Link>
               ))
             )}

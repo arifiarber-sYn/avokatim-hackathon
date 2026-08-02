@@ -38,11 +38,35 @@ export function Button({
   };
   return (
     <button
-      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${styles[variant]} ${className}`}
+      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all active:scale-[.97] ${styles[variant]} ${className}`}
       {...props}
     >
       {children}
     </button>
+  );
+}
+
+/** Skeleton loader (D-054 F5): perceived-performance placeholder shown
+ * while data loads — content appears in place instead of a spinner jump. */
+export function Skeleton({ className = "" }: { className?: string }) {
+  return (
+    <div aria-hidden className={`animate-pulse rounded-lg bg-slate-200/70 ${className}`} />
+  );
+}
+
+/** Card-shaped skeleton group for list/dashboard pages. */
+export function SkeletonCards({ count = 3, lines = 3 }: { count?: number; lines?: number }) {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="bg-white rounded-xl shadow-sm p-5 space-y-3">
+          <Skeleton className="h-4 w-1/3" />
+          {Array.from({ length: lines }).map((_, j) => (
+            <Skeleton key={j} className={`h-3 ${j % 2 ? "w-2/3" : "w-full"}`} />
+          ))}
+        </div>
+      ))}
+    </div>
   );
 }
 

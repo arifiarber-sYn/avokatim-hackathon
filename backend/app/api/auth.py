@@ -493,6 +493,16 @@ async def enable_2fa(
     return {"enabled": True}
 
 
+@router.post("/refresh", response_model=TokenResponse)
+async def refresh_token(user: User = Depends(get_current_user)):
+    """Sliding session (D-054 F5): a valid token can be exchanged for a fresh
+    one, so active users are never logged out mid-work. Revocation still
+    works instantly via token_version."""
+    return TokenResponse(
+        access_token=create_access_token(user.id, user.tenant_id, token_version=user.token_version)
+    )
+
+
 @router.get("/me", response_model=UserOut)
 async def me(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     tenant = await db.get(Tenant, user.tenant_id)

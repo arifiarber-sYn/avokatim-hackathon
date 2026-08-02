@@ -106,6 +106,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={country === "DE" ? "de" : "sq"} className={inter.variable}>
       <body className="antialiased bg-slate-50 text-slate-900">
+        {/* Apply the saved theme before paint — no light flash (D-054 F5) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var p=localStorage.getItem('avokatim-theme');var d=p==='dark'||(p==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('theme-dark')}catch(e){}",
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd(country)) }}

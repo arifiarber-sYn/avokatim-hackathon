@@ -9,6 +9,8 @@ import { LocaleSwitcher } from "@/components/ui";
 import { QuickTimer } from "@/components/quick-timer";
 import { GlobalSearch } from "@/components/global-search";
 import { NotificationBell } from "@/components/notification-bell";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { InstallBanner } from "@/components/install-banner";
 import AssistantPanel from "@/components/assistant-panel";
 
 interface Me {
@@ -37,6 +39,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       return;
     }
     apiGet<Me>("/auth/me").then(setMe).catch(() => {});
+    // Sliding session (D-054 F5): exchange the token for a fresh one so an
+    // active lawyer is never logged out mid-work
+    apiPost<{ access_token: string }>("/auth/refresh")
+      .then((r) => setToken(r.access_token))
+      .catch(() => {});
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
@@ -120,6 +127,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </nav>
       <div className="p-4 border-t border-slate-800 space-y-3">
         <QuickTimer />
+        <ThemeToggle />
         <LocaleSwitcher up />
         {me && <p className="text-xs text-slate-400 truncate">{me.full_name}</p>}
         <button
@@ -234,6 +242,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Ava everywhere (D-052): contextual assistant panel, hidden on /assistant */}
       <AssistantPanel />
+      <InstallBanner />
     </div>
   );
 }

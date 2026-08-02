@@ -63,6 +63,11 @@ class Settings(BaseSettings):
     # Public base URL used in links (calendar feed, public intake form)
     public_base_url: str = "http://127.0.0.1:3000"
 
+    # WebAuthn passkeys (D-054). rp_id defaults to the hostname of
+    # public_base_url; extra origins (comma-separated) for LAN/dev access.
+    webauthn_rp_id: str = ""
+    webauthn_extra_origins: str = "http://127.0.0.1:3000,http://localhost:3000"
+
     # Social login for citizen accounts (Google / Apple / Meta). A provider's
     # button appears only when its credentials are set. Redirect URIs to
     # register with each provider:

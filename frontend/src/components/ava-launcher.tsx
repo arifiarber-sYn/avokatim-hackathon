@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
 import AvaChat from "@/components/ava-chat";
+import { haptic } from "@/lib/haptics";
 import { IconChat } from "@/components/icons";
 
 export default function AvaLauncher() {
@@ -43,7 +44,10 @@ export default function AvaLauncher() {
     <>
       {!open && (
         <button
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            haptic();
+            setOpen(true);
+          }}
           aria-label={t.avaFabLabel}
           className="fixed z-40 right-4 bottom-20 md:bottom-6 inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-white pl-3.5 pr-4 py-3 shadow-lg shadow-indigo-300/50 hover:shadow-xl hover:-translate-y-0.5 transition-all"
           style={{ marginBottom: "env(safe-area-inset-bottom)" }}

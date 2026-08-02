@@ -1,4 +1,5 @@
-"""Global search: one query across matters, contacts, documents and invoices.
+"""Global search: one query across matters, contacts, documents, invoices,
+deadlines and tasks. Typo-tolerant via pg_trgm similarity (D-054 F5).
 Respects restricted-matter visibility for the current user."""
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, or_, select
@@ -7,11 +8,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.matters import restricted_visibility_filter
 from app.database import get_db
 from app.deps import get_current_user
-from app.models import Contact, Document, Invoice, Matter, User
+from app.models import Contact, Deadline, Document, Invoice, Matter, Task, User
 
 router = APIRouter(prefix="/search", tags=["search"])
 
 _LIMIT = 8
+# pg_trgm word_similarity threshold: forgiving enough for one or two typos
+# in a word, strict enough to avoid noise
+_FUZZY = 0.35
+
+
+def _fuzzy(column, q: str):
+    return func.word_similarity(q.lower(), func.lower(column)) > _FUZZY
 
 
 @router.get("")
@@ -33,6 +41,7 @@ async def global_search(
                     func.lower(Matter.reference).like(needle),
                     func.lower(func.coalesce(Matter.description, "")).like(needle),
                     func.lower(func.coalesce(Matter.court_case_number, "")).like(needle),
+                    _fuzzy(Matter.title, q),
                 ),
             )
             .order_by(Matter.created_at.desc())
@@ -49,6 +58,7 @@ async def global_search(
                     func.lower(Contact.display_name).like(needle),
                     func.lower(func.coalesce(Contact.email, "")).like(needle),
                     func.coalesce(Contact.phone, "").like(f"%{q}%"),
+                    _fuzzy(Contact.display_name, q),
                 ),
             )
             .order_by(Contact.display_name)
@@ -85,6 +95,33 @@ async def global_search(
                 func.lower(Invoice.number).like(needle),
             )
             .order_by(Invoice.created_at.desc())
+            .limit(_LIMIT)
+        )
+    ).scalars().all()
+
+    # Deadlines and tasks (D-054 F5): the palette should find "seanca..."
+    deadlines = (
+        await db.execute(
+            select(Deadline, Matter.reference)
+            .join(Matter, Matter.id == Deadline.matter_id)
+            .where(
+                Deadline.tenant_id == user.tenant_id,
+                Matter.id.in_(visible_matters),
+                or_(func.lower(Deadline.title).like(needle), _fuzzy(Deadline.title, q)),
+            )
+            .order_by(Deadline.status.desc(), Deadline.due_at)
+            .limit(_LIMIT)
+        )
+    ).all()
+
+    tasks = (
+        await db.execute(
+            select(Task)
+            .where(
+                Task.tenant_id == user.tenant_id,
+                or_(func.lower(Task.title).like(needle), _fuzzy(Task.title, q)),
+            )
+            .order_by(Task.created_at.desc())
             .limit(_LIMIT)
         )
     ).scalars().all()
@@ -134,5 +171,25 @@ async def global_search(
                 "matter_id": str(i.matter_id) if i.matter_id else None,
             }
             for i in invoices
+        ],
+        "deadlines": [
+            {
+                "id": str(d.id),
+                "matter_id": str(d.matter_id),
+                "matter_reference": ref,
+                "title": d.title,
+                "due_at": d.due_at.isoformat() if d.due_at else None,
+                "status": d.status,
+            }
+            for d, ref in deadlines
+        ],
+        "tasks": [
+            {
+                "id": str(tk.id),
+                "matter_id": str(tk.matter_id) if tk.matter_id else None,
+                "title": tk.title,
+                "status": tk.status,
+            }
+            for tk in tasks
         ],
     }

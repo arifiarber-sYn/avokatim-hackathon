@@ -14,6 +14,7 @@ import { clientCountry, type Country } from "@/lib/country";
 import { LocaleSwitcher } from "@/components/ui";
 import PublicFooter from "@/components/public-footer";
 import AvaLauncher from "@/components/ava-launcher";
+import { InstallBanner } from "@/components/install-banner";
 import {
   CitizenInfo,
   citizenGet,
@@ -159,6 +160,13 @@ export default function PublicShell({
   // mount so SSR markup stays identical for both hosts.
   const [country, setCountry] = useState<Country>("XK");
   useEffect(() => setCountry(clientCountry()), []);
+
+  // PWA (D-054 F5): offline shell + push also work from the public pages
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+  }, []);
   const sosEnabled = country !== "DE";
   const notaryEnabled = country !== "DE";
 
@@ -323,6 +331,7 @@ export default function PublicShell({
 
       {/* Ava everywhere (D-052): floating AI launcher, hidden on /ava itself */}
       <AvaLauncher />
+      <InstallBanner />
     </div>
   );
 }

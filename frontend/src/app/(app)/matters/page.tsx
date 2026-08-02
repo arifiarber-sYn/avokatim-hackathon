@@ -7,7 +7,7 @@ import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
 import { Contact, Matter, PRACTICE_AREAS } from "@/lib/types";
 import {
-  Badge, Button, Card, ErrorNote, Input, Label, Select, Spinner, Textarea,
+  Badge, Button, Card, ErrorNote, Input, Label, Select, SkeletonCards, Textarea,
 } from "@/components/ui";
 
 export default function MattersPage() {
@@ -15,6 +15,11 @@ export default function MattersPage() {
   const [matters, setMatters] = useState<Matter[] | null>(null);
   const [q, setQ] = useState("");
   const [showNew, setShowNew] = useState(false);
+
+  // Command palette deep link: /matters?new=1 opens the create form (D-054)
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("new")) setShowNew(true);
+  }, []);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
@@ -117,7 +122,7 @@ export default function MattersPage() {
       <Input placeholder={t.search} value={q} onChange={(e) => setQ(e.target.value)} className="max-w-sm" />
 
       {matters === null ? (
-        <Spinner />
+        <SkeletonCards count={4} lines={2} />
       ) : (
         <>
           {/* Mobile: card list */}

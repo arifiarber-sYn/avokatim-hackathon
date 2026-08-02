@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { apiDownload, apiGet, apiPatch, apiPost, apiPut, apiUpload, setToken } from "@/lib/api";
+import { apiDelete, apiDownload, apiGet, apiPatch, apiPost, apiPut, apiUpload, setToken } from "@/lib/api";
 import { clientCountry, DE_REGIONS } from "@/lib/country";
 import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
@@ -109,6 +109,7 @@ export default function SettingsPage() {
 
           <SettingsGroup id="siguria" title={groupLabels.siguria}>
             <TwoFASection />
+            <PasskeySection />
             <PortalSection />
             {isAdmin && <SubscriptionSection />}
             {isAdmin && <ComplianceSection />}
@@ -1076,6 +1077,71 @@ function PushSection() {
           {busy ? t.loading : t.enablePushDevice}
         </Button>
       )}
+      <ErrorNote message={error} />
+    </Card>
+  );
+}
+
+/** Passkeys (D-054 F5): passwordless, phishing-resistant login devices. */
+function PasskeySection() {
+  const { t } = useI18n();
+  const [keys, setKeys] = useState<
+    { id: string; name: string | null; created_at: string; last_used_at: string | null }[]
+  >([]);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const supported =
+    typeof window !== "undefined" && typeof window.PublicKeyCredential !== "undefined";
+
+  const load = () => {
+    apiGet<typeof keys>("/auth/passkeys").then(setKeys).catch(() => {});
+  };
+  useEffect(load, []);
+
+  async function add() {
+    setBusy(true);
+    setError("");
+    try {
+      const { startRegistration } = await import("@simplewebauthn/browser");
+      const optionsJSON = await apiPost<never>("/auth/passkeys/register-options");
+      const credential = await startRegistration({ optionsJSON });
+      await apiPost("/auth/passkeys/register", { credential });
+      load();
+    } catch (err) {
+      const aborted = err instanceof Error && err.name === "NotAllowedError";
+      if (!aborted) setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function remove(id: string) {
+    await apiDelete(`/auth/passkeys/${id}`).catch(() => {});
+    load();
+  }
+
+  if (!supported) return null;
+  return (
+    <Card className="p-5 space-y-3">
+      <h2 className="font-semibold">🔑 {t.pkTitle}</h2>
+      <p className="text-sm text-slate-500">{t.pkHint}</p>
+      {keys.length === 0 && <p className="text-sm text-slate-400">{t.pkNone}</p>}
+      {keys.map((k) => (
+        <div key={k.id} className="flex items-center justify-between gap-3 text-sm">
+          <span className="text-slate-700 truncate">
+            {k.name || "Passkey"}
+            <span className="text-xs text-slate-400 ml-2">
+              {new Date(k.created_at).toLocaleDateString()}
+            </span>
+          </span>
+          <button onClick={() => remove(k.id)} className="text-xs text-rose-600 hover:underline py-1">
+            {t.remove}
+          </button>
+        </div>
+      ))}
+      <Button onClick={add} disabled={busy} variant="secondary">
+        {busy ? t.loading : t.pkAdd}
+      </Button>
       <ErrorNote message={error} />
     </Card>
   );

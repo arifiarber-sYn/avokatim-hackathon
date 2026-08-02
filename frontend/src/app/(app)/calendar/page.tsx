@@ -6,7 +6,8 @@ import { apiGet, getToken } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
 import { Deadline } from "@/lib/types";
-import { Badge, Card, Spinner } from "@/components/ui";
+import { Badge, Card, SkeletonCards } from "@/components/ui";
+import { haptic } from "@/lib/haptics";
 
 export default function CalendarPage() {
   const { t } = useI18n();
@@ -20,14 +21,19 @@ export default function CalendarPage() {
   }, []);
 
   async function markDone(id: string) {
+    // Optimistic (D-054 F5): flip locally first, reconcile after the API call
+    setDeadlines((prev) =>
+      prev ? prev.map((d) => (d.id === id ? { ...d, status: "done" } : d)) : prev
+    );
+    haptic();
     await fetch(`/api/deadlines/${id}/status?new_status=done`, {
       method: "PATCH",
       headers: { Authorization: `Bearer ${getToken()}` },
-    });
+    }).catch(() => {});
     load();
   }
 
-  if (deadlines === null) return <Spinner />;
+  if (deadlines === null) return <SkeletonCards count={3} lines={2} />;
 
   const groups = new Map<string, Deadline[]>();
   for (const d of deadlines) {

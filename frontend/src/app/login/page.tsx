@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { startAuthentication } from "@simplewebauthn/browser";
 import { apiGet, apiPost, setToken } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { Button, Card, ErrorNote, Input, Label, LocaleSwitcher } from "@/components/ui";
@@ -41,6 +42,27 @@ export default function LoginPage() {
       router.push(me.is_superadmin ? "/platform" : "/dashboard");
     } catch {
       router.push("/dashboard");
+    }
+  }
+
+  // Passkey login (D-054 F5): possession + biometric, skips the TOTP step
+  async function loginWithPasskey() {
+    if (!email.trim()) {
+      setError(t.pkNeedEmail);
+      return;
+    }
+    setError("");
+    setBusy(true);
+    try {
+      const optionsJSON = await apiPost<never>("/auth/passkeys/login-options", { email });
+      const credential = await startAuthentication({ optionsJSON });
+      const r = await apiPost<TokenResponse>("/auth/passkeys/login", { email, credential });
+      await enter(r.access_token);
+    } catch (err) {
+      const aborted = err instanceof Error && err.name === "NotAllowedError";
+      if (!aborted) setError(err instanceof Error ? err.message : t.invalidCredentials);
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -164,6 +186,17 @@ export default function LoginPage() {
             {mode === "setup" ? t.createAccount : mode === "2fa" ? t.verify : t.login}
           </Button>
         </form>
+
+        {mode === "login" && (
+          <button
+            type="button"
+            onClick={loginWithPasskey}
+            disabled={busy}
+            className="mt-3 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition flex items-center justify-center gap-2"
+          >
+            <span aria-hidden>🔑</span> {t.pkLogin}
+          </button>
+        )}
 
         {mode === "login" && (
           <div className="mt-6 space-y-2 text-center text-sm">

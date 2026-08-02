@@ -12,7 +12,7 @@ import {
   getCitizenToken,
   setCitizenToken,
 } from "@/lib/citizen";
-import { Button, Card, ErrorNote, Spinner, Textarea } from "@/components/ui";
+import { Button, Card, ErrorNote, SkeletonCards, Spinner, Textarea } from "@/components/ui";
 import VideoCall, { CallGrant } from "@/components/video-call";
 import PublicShell from "@/components/public-shell";
 import CitizenAuthForm from "@/components/citizen-auth";
@@ -214,7 +214,7 @@ function MyCaseInner() {
             />
           </Card>
         ) : cases === null ? (
-          <Spinner />
+          <SkeletonCards count={2} lines={3} />
         ) : cases.length === 0 ? (
           <Card className="p-8 text-center space-y-3">
             <p className="text-sm text-slate-500">{t.mkNoCases}</p>

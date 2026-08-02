@@ -47,6 +47,7 @@ from app.models.platform_billing import PlatformInvoice
 from app.models.feedback import PlatformFeedback
 from app.models.evidence import EvidenceChunk, EvidenceSession
 from app.models.notifications import Notification
+from app.models.passkeys import PasskeyCredential
 
 __all__ = [
     "Base",
@@ -96,4 +97,5 @@ __all__ = [
     "PlatformInvoice",
     "PlatformFeedback",
     "Notification",
+    "PasskeyCredential",
 ]

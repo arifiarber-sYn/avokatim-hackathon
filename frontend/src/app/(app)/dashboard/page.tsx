@@ -7,7 +7,7 @@ import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
 import BookingsPanel from "@/components/bookings-panel";
 import { Task } from "@/lib/types";
-import { Badge, Card, Spinner } from "@/components/ui";
+import { Badge, Card, SkeletonCards } from "@/components/ui";
 
 interface AgendaItem {
   id: string;
@@ -223,7 +223,7 @@ export default function DashboardPage() {
     loadTasks();
   }
 
-  if (!data) return <Spinner />;
+  if (!data) return <SkeletonCards count={4} lines={3} />;
 
   const stats = [
     { label: t.openMatters, value: data.matters_by_status.open || 0, href: "/matters" },
