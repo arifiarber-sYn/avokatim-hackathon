@@ -39,6 +39,12 @@ type ActionState =
   | { type: "deadlines"; msgIdx: number; busy: boolean; proposals: DeadlineProposal[] | null; selected: boolean[] }
   | { type: "draft"; msgIdx: number; busy: boolean; title: string };
 
+/** Ava Agent (D-054): visible work plan streamed from /assistant/agent-run. */
+interface AgentStep {
+  label: string;
+  status: "pending" | "running" | "done" | "failed";
+}
+
 export default function AssistantPanel() {
   const { t, locale } = useI18n();
   const voice = useVoiceAvailable();
@@ -60,6 +66,9 @@ export default function AssistantPanel() {
   // Action execution with approval (D-053): Ava proposes, the lawyer confirms
   const [action, setAction] = useState<ActionState | null>(null);
   const [notice, setNotice] = useState("");
+  // Ava Agent mode (D-054): goal → visible plan → step-by-step execution
+  const [agentMode, setAgentMode] = useState(false);
+  const [agentSteps, setAgentSteps] = useState<AgentStep[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const providersLoaded = useRef(false);
 
@@ -113,11 +122,99 @@ export default function AssistantPanel() {
 
   const matterId = scopeOn && ctxMatter ? ctxMatter.id : null;
 
+  async function runAgent(goal: string) {
+    if (!matterId) return;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    setAgentSteps([]);
+    setMessages((prev) => [
+      ...prev,
+      { id: "user-" + Date.now(), role: "user", content: goal, citations: [], created_at: new Date().toISOString() },
+    ]);
+    try {
+      let errorDetail: string | null = null;
+      await apiStream(
+        "/assistant/agent-run",
+        { matter_id: matterId, goal, provider, locale },
+        (ev) => {
+          if (ev.type === "plan") {
+            const steps = ev.steps as { label: string }[];
+            setAgentSteps(steps.map((s) => ({ label: s.label, status: "pending" })));
+          } else if (ev.type === "step") {
+            const idx = ev.index as number;
+            const status = ev.status as AgentStep["status"];
+            setAgentSteps((prev) => prev.map((s, i) => (i === idx ? { ...s, status } : s)));
+          } else if (ev.type === "result") {
+            const msg: Message = {
+              id: "agent-" + Date.now() + Math.random(),
+              role: "assistant",
+              content: ev.content as string,
+              citations: (ev.citations as Message["citations"]) || [],
+              created_at: new Date().toISOString(),
+            };
+            setMessages((prev) => [...prev, msg]);
+          } else if (ev.type === "approval") {
+            if (ev.kind === "deadlines") {
+              const proposals = (ev.proposals as DeadlineProposal[]) || [];
+              setMessages((prev) => {
+                const msg: Message = {
+                  id: "agent-" + Date.now() + Math.random(),
+                  role: "assistant",
+                  content: t.apActExtract,
+                  citations: [],
+                  created_at: new Date().toISOString(),
+                };
+                const next = [...prev, msg];
+                setAction({
+                  type: "deadlines", msgIdx: next.length - 1, busy: false,
+                  proposals, selected: proposals.map((p) => Boolean(p.due_date)),
+                });
+                return next;
+              });
+            } else if (ev.kind === "draft") {
+              const content = ev.content as string;
+              setMessages((prev) => {
+                const msg: Message = {
+                  id: "agent-" + Date.now() + Math.random(),
+                  role: "assistant",
+                  content,
+                  citations: [],
+                  created_at: new Date().toISOString(),
+                };
+                const next = [...prev, msg];
+                setAction({
+                  type: "draft", msgIdx: next.length - 1, busy: false,
+                  title: ((ev.title as string) || t.apActDraft).slice(0, 120),
+                });
+                return next;
+              });
+            }
+          } else if (ev.type === "error") {
+            errorDetail = (ev.detail as string) || null;
+          }
+        }
+      );
+      if (errorDetail) throw new Error(errorDetail);
+      setAgentSteps((prev) =>
+        prev.map((s) => (s.status === "running" || s.status === "pending" ? { ...s, status: "done" } : s))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function send(e: React.FormEvent) {
     e.preventDefault();
     if (!question.trim() || busy) return;
     const q = question;
     setQuestion("");
+    if (agentMode && matterId) {
+      await runAgent(q);
+      return;
+    }
     setBusy(true);
     setError("");
     setMessages((prev) => [
@@ -326,6 +423,25 @@ export default function AssistantPanel() {
             />
             🔎 {t.deepResearch}
           </label>
+          {/* Ava Agent (D-054): only with a matter in scope */}
+          {matterId && (
+            <label
+              className={`inline-flex items-center gap-1.5 text-[11px] rounded-full border px-2.5 py-0.5 cursor-pointer select-none ${
+                agentMode
+                  ? "bg-violet-50 border-violet-300 text-violet-800"
+                  : "border-slate-200 text-slate-500 hover:bg-slate-50"
+              }`}
+              title={t.agModeHint}
+            >
+              <input
+                type="checkbox"
+                checked={agentMode}
+                onChange={(e) => setAgentMode(e.target.checked)}
+                className="accent-violet-600 h-3 w-3"
+              />
+              🤖 {t.agMode}
+            </label>
+          )}
           {/* International-transfer transparency (Law 06/L-082 art. 49) */}
           {!externalAllowed ? (
             <span className="text-[11px] text-slate-400">🔒 {t.providerLocal}</span>
@@ -512,7 +628,35 @@ export default function AssistantPanel() {
               ))}
             </div>
           )}
-          {busy && steps.length === 0 && !messages.some((m) => m.id === "streaming") && (
+          {/* Ava Agent work plan (D-054): live step checklist */}
+          {agentSteps.length > 0 && (
+            <div className="text-xs bg-violet-50/70 border border-violet-100 rounded-xl px-3.5 py-2.5 space-y-1.5">
+              <p className="font-semibold text-violet-700">🤖 {t.agPlanT}</p>
+              {agentSteps.map((s, i) => (
+                <p
+                  key={i}
+                  className={`flex items-start gap-1.5 ${
+                    s.status === "running"
+                      ? "text-violet-800 animate-pulse"
+                      : s.status === "failed"
+                        ? "text-rose-600"
+                        : s.status === "done"
+                          ? "text-slate-600"
+                          : "text-slate-400"
+                  }`}
+                >
+                  <span className="shrink-0">
+                    {s.status === "done" ? "✓" : s.status === "running" ? "→" : s.status === "failed" ? "✕" : "○"}
+                  </span>
+                  <span>{s.label}</span>
+                </p>
+              ))}
+            </div>
+          )}
+          {busy && agentMode && agentSteps.length === 0 && (
+            <p className="text-sm text-slate-400 animate-pulse">{t.agPlanning}</p>
+          )}
+          {busy && !agentMode && steps.length === 0 && !messages.some((m) => m.id === "streaming") && (
             <p className="text-sm text-slate-400 animate-pulse">{t.thinking}</p>
           )}
           <div ref={bottomRef} />

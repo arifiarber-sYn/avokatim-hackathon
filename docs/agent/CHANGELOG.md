@@ -3,6 +3,22 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-02 — Ava Agent: goal-based multi-step runs with approval (D-054 F2)
+
+- New: `services/agent_run.py` — Ava plans steps from a goal (tool catalog:
+  summarize_matter, research, extract_deadlines, draft_document,
+  conflict_check, hearing_prep) and executes them sequentially. No writes:
+  deadline/draft steps emit approval events consumed by the D-053 approval
+  UI and endpoints. `POST /assistant/agent-run` (SSE) with plan/step/result/
+  approval events; every run audit-logged (KI-Register).
+- New: panel UI — "Ava Agjente" chip (matter scope only), live work-plan
+  checklist (pending/running/done/failed), results land as normal messages
+  so voice + action chips keep working.
+- i18n: agMode, agModeHint, agPlanT, agPlanning ×7 locales.
+- Files: `backend/app/services/agent_run.py`, `backend/app/api/assistant.py`,
+  `backend/tests/test_agent_run.py`,
+  `frontend/src/components/assistant-panel.tsx`, `lib/dictionaries.ts`.
+
 ## 2026-08-02 — Notification center + interrupt budget (D-054 F1)
 
 - New: `Notification` model + migration; `services/notification_center.py`

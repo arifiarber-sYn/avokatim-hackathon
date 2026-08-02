@@ -529,6 +529,67 @@ async def prep_for_hearing(
     return SummarizeResponse(summary=answer, citations=citations)
 
 
+# ---------- Ava Agent: goal-based multi-step run (D-054 F2) ----------
+
+
+class AgentRunIn(BaseModel):
+    matter_id: uuid.UUID
+    goal: str = Field(min_length=3, max_length=2000)
+    provider: str | None = None
+    locale: str | None = None
+
+
+@router.post("/agent-run")
+async def agent_run(body: AgentRunIn, user: User = Depends(get_current_user)):
+    """SSE: Ava plans the steps for a goal and executes them with live
+    progress. Read-only tools stream results; write intents (deadlines,
+    drafts) surface as approval events the lawyer confirms in the panel."""
+    from app.services.agent_run import agent_run_stream
+
+    async def event_stream():
+        async with SessionLocal() as db:
+            try:
+                matter = await get_owned_matter(db, user, body.matter_id)
+            except HTTPException as exc:
+                yield _sse({"type": "error", "detail": exc.detail})
+                return
+            provider_name = await _effective_provider(db, user, body.provider)
+            steps_seen = 0
+            try:
+                async for event in agent_run_stream(
+                    db,
+                    matter=matter,
+                    goal=body.goal,
+                    provider_name=provider_name,
+                    language=body.locale,
+                    region=await _office_region(db, user),
+                    style=await _office_style(db, user),
+                ):
+                    if event.get("type") == "plan":
+                        steps_seen = len(event.get("steps", []))
+                    yield _sse(event)
+            except Exception as exc:
+                logger.exception("agent-run failed")
+                await db.rollback()
+                yield _sse({"type": "error", "detail": str(exc)})
+                return
+            # KI-Register (D-044): every agent run is auditable
+            await log_action(
+                db, tenant_id=user.tenant_id, user_id=user.id,
+                action="assistant.agent_run",
+                entity_type="matter", entity_id=str(body.matter_id),
+                details={"goal": body.goal[:300], "steps": steps_seen,
+                         "provider": provider_name or "deepseek"},
+            )
+            await db.commit()
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
 # ---------- action execution with approval (D-053) ----------
 # The Clio/AnNoText pattern: the assistant proposes, the lawyer approves.
 # Extraction returns proposals only (no side effects); deadline creation
