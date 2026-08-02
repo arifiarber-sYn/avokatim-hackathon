@@ -27,6 +27,13 @@
 - Verified: stats XK = 554 ligje + 2 532 vendime, DE = 99 + 15 424;
   pytest 218/219 (test_voice flaky, kalon i izoluar); build + restart;
   6 faqet publike 200 në të dy hostet.
+- Done (vazhdim, kërkesë e pronarit): pretendimi "Die erste ihrer Art —
+  die einzige digitale Brücke" hiqet nga hosti gjerman (i pavërtetë atje,
+  rrezik UWG; en/tr madje thoshin "first in Kosovo"). Çelës i ri
+  `umbWhy1De` në 7 gjuhë ("Bürgerportal und komplette Kanzleisoftware in
+  einem — eine digitale Brücke…"); landing zgjedh `isDE ? umbWhy1De :
+  umbWhy1`; de-ja e `umbWhy1` tani thotë "im Kosovo" (e saktë në hostin
+  XK). Pretendimet e tjera "i pari/e para" u skanuan — të gjitha faktike.
 - Left open: asgjë bllokuese.
 
 ## 2026-08-01x — D-050 B3: Jurisprudenca e Kosovës në korpus (Cursor / Fable 5)

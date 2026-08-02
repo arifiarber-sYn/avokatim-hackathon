@@ -17,6 +17,11 @@
 - Note: overnight Supreme Court backfill finished (2,371 new, 0 failed;
   ~2.5k XK judgments total — the portal only has ~2.6k Supreme decisions
   published in the last 5 years).
+- Changed (follow-up): landing "why" claim is host-aware — new
+  `umbWhy1De` (7 locales, "citizen portal + complete law-office software
+  in one") replaces the false "first of its kind / only digital bridge"
+  claim on the DE host (UWG risk; en/tr even said "first in Kosovo");
+  de-locale `umbWhy1` now says "im Kosovo" for the XK host.
 - Files: `backend/app/api/marketplace.py`, `frontend/src/app/page.tsx`,
   `frontend/src/app/per-avokatet/page.tsx`,
   `frontend/src/app/per-qytetaret/page.tsx`,

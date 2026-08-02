@@ -236,7 +236,9 @@ export default function Home() {
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              { Icon: IconGlobe, text: t.umbWhy1 },
+              // "First in Kosovo / only bridge" is factual for XK but not for
+              // Germany (anwalt.de etc. exist) — DE gets the all-in-one claim.
+              { Icon: IconGlobe, text: isDE ? t.umbWhy1De : t.umbWhy1 },
               { Icon: IconChat, text: t.umbWhy2 },
               { Icon: IconLock, text: t.umbWhy3 },
               { Icon: IconCheck, text: t.umbWhy4 },
