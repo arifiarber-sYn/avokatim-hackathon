@@ -30,10 +30,12 @@ export default function ForLawyersPage() {
 
   const features = [
     t.lpFeat1, t.lpFeat2, t.lpFeat3, t.lpFeat4,
-    t.lpFeat5, t.lpFeat6, t.lpFeat7, t.lpFeat8, t.lpFeat9,
+    t.lpFeat5, t.lpFeat6, t.lpFeat7, t.lpFeat8, t.lpFeat9, t.lpFeat10,
   ];
 
   const aiCards = [
+    { icon: "🤖", title: t.lpAi5T, body: t.lpAi5B },
+    { icon: "🌅", title: t.lpAi6T, body: t.lpAi6B },
     { icon: "🔎", title: t.lpAi1T, body: t.lpAi1B },
     { icon: "✍️", title: t.lpAi2T, body: t.lpAi2B },
     { icon: "📄", title: t.lpAi3T, body: t.lpAi3B },

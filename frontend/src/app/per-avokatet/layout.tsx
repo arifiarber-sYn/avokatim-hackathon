@@ -9,11 +9,13 @@ export async function generateMetadata(): Promise<Metadata> {
       : "Për avokatët — zyra digjitale me AI dhe klientë të rinj",
     description: de
       ? "Akten mit automatischen Fristen, RVG-Abrechnung mit E-Rechnung und " +
-        "DATEV-Export, Dokumente mit KI, die Assistentin Ava mit deutschen " +
-        "Gesetzen und neue Mandate aus dem öffentlichen Marktplatz."
-      : "Lëndët me afate automatike sipas LPK/LPP/LPA, dokumente me AI, faturim, " +
-        "asistentja Ava me ligjet e plota të Kosovës dhe raste të reja nga tregu " +
-        "publik. Viti i parë falas, pastaj çmim fiks — kurrë përqindje.",
+        "DATEV-Export, der Ava Agent, der Ziele in genehmigte Schritte umsetzt, " +
+        "proaktive KI mit Morgen-Briefing und Rechtsprechungs-Monitor, und neue " +
+        "Mandate aus dem öffentlichen Marktplatz."
+      : "Lëndët me afate automatike sipas LPK/LPP/LPA, Ava Agjente që kthen " +
+        "qëllimet në hapa me aprovim, AI proaktive me briefing mëngjesi dhe " +
+        "monitorim të praktikës gjyqësore, dhe raste të reja nga tregu publik. " +
+        "Viti i parë falas, pastaj çmim fiks — kurrë përqindje.",
     alternates: { canonical: "/per-avokatet" },
   };
 }

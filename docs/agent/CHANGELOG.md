@@ -3,6 +3,28 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-02 — D-054 features surfaced in public marketing (D-055 F3)
+
+- The public pages caught up with the product (audit showed none of the
+  D-054 wave was marketed). New/updated keys ×7 locales:
+  - `/per-avokatet`: AI section now six cards — new `lpAi5T/B` (Ava
+    Agent: give the goal, visible steps, every write approved) and
+    `lpAi6T/B` (proactive AI: spoken morning briefing, case-law monitor
+    on active matters, deadline audit) lead the grid; `lpAiSub` says
+    six. `lpFeat9` now sells the real-time notification center with
+    interrupt control; new `lpFeat10` (passkeys, dark mode, Cmd+K
+    palette, typo-tolerant search).
+  - `/` umbrella: new lawyer bullet `umbFnL10` (agent + proactive AI);
+    `umbFnC1` mentions hands-free voice conversation.
+  - `/per-qytetaret`: `landAvaB` describes the voice conversation
+    (you talk, she listens and answers out loud).
+  - SEO: `/per-avokatet` meta description (sq + de) leads with the
+    agent and proactive AI.
+- WhatsApp/RAST stays unadvertised (existing decision until the channel
+  has production credentials).
+- Files: `frontend/src/lib/dictionaries.ts`, `frontend/src/app/page.tsx`,
+  `frontend/src/app/per-avokatet/{page,layout}.tsx`.
+
 ## 2026-08-02 — GlitchTip owner credentials + real SECRET_KEY (D-055 F2)
 
 - Set a proper `GLITCHTIP_SECRET_KEY` and a known password for
