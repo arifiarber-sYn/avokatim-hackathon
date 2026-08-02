@@ -10,6 +10,21 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-02 — Pariteti DE→XK: eksporti për kontabilistin (Cursor / Fable 5)
+
+- Done: auditimi DE→XK gjeti vetëm një gap real — zyrat XK s'kishin eksport
+  kontabiliteti (DE ka DATEV). U shtua `GET /export/accounting` (CSV me
+  pikëpresje + BOM UTF-8, një rresht për faturë sent/paid të periudhës,
+  audit-logged, pa gate vendi) dhe `AccountingExportCard` te faturimi
+  (shfaqet kur zyra s'është gjermane), çelësat `accTitle`/`accExport` ×7.
+- Note: kalkulatori i Tarifës së OAK ekzistonte tashmë (picker-i
+  `/fee-tariff` fut zërat si rreshta fature + cost-risk me track);
+  auditimi i mëparshëm e kishte nënvlerësuar.
+- Verified: pytest 245 PASS, build OK, restart + health OK, endpoint-i 401
+  pa token (i montuar, i mbrojtur).
+- Left open: vendimi për SOS/noterinë në DE mbetet siç është (D-034 #5,
+  OFF deri në shqyrtim ligjor) — arsyetimi iu shpjegua pronarit.
+
 ## 2026-08-02 — D-055: Lokalizimi i WhatsApp intake + pariteti i marketingut (Cursor / Fable 5)
 
 - Done (F1): WhatsApp intake i lokalizuar — `country_for_phone()` (49 → DE/de,
