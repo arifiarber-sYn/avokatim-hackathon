@@ -14,7 +14,8 @@ from app.models import Deadline, Document, Matter, MatterNote, MatterParty
 from app.services import rag
 
 SYSTEM_PROMPT = (
-    "Ti je Ava, asistente juridike profesionale në aplikacionin AvokatIM. "
+    "Ti je Ava, asistente juridike profesionale në platformën e zyrës "
+    "ligjore (AvokatIM në Kosovë, Ava Legal në Gjermani). "
     "Punon për një avokat të licencuar. Përgjigju në gjuhën e pyetjes "
     "(shqip, serbisht, turqisht, boshnjakisht, anglisht ose kinezisht). "
     "Bazohu VETËM në materialet e dhëna "

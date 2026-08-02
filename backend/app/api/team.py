@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.deps import get_current_user
+from app.jurisdictions import profile_for
 from app.models import Tenant, User
 from app.schemas.auth import UserOut
 from app.security import create_purpose_token, hash_password, password_fingerprint
@@ -67,14 +68,14 @@ async def list_team(
 
 
 async def _send_invite_email(
-    email: str, invited_by: str, firm: str, token: str
+    email: str, invited_by: str, firm: str, token: str, brand: str = "AvokatIM"
 ) -> None:
     url = f"{settings.public_base_url}/ftesa?token={token}"
     await send_email(
         email,
-        f"AvokatIM — Ftesë nga {firm}",
+        f"{brand} — Ftesë nga {firm}",
         f"Përshëndetje,\n\n{invited_by} të fton të bashkohesh me zyrën \"{firm}\" "
-        f"në AvokatIM.\n\nVendos fjalëkalimin tënd këtu (linku vlen 7 ditë):\n{url}\n\n— AvokatIM",
+        f"në {brand}.\n\nVendos fjalëkalimin tënd këtu (linku vlen 7 ditë):\n{url}\n\n— {brand}",
     )
 
 
@@ -134,9 +135,10 @@ async def invite_member(
     )
     await db.commit()
     await db.refresh(member)
+    brand = profile_for(tenant.country if tenant else None).brand_name
     background.add_task(
         _send_invite_email, member.email, user.full_name,
-        tenant.name if tenant else "AvokatIM", token,
+        tenant.name if tenant else brand, token, brand,
     )
     return _member_out(member)
 
@@ -159,9 +161,10 @@ async def resend_invite(
         "invite", member.id, minutes=INVITE_VALID_MINUTES,
         fingerprint=password_fingerprint(member.password_hash),
     )
+    brand = profile_for(tenant.country if tenant else None).brand_name
     background.add_task(
         _send_invite_email, member.email, user.full_name,
-        tenant.name if tenant else "AvokatIM", token,
+        tenant.name if tenant else brand, token, brand,
     )
     return {"sent": True}
 

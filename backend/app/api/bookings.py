@@ -21,6 +21,7 @@ from app.config import settings
 from app.database import get_db
 from app.deps import get_current_user
 from app.i18n import pick_locale, tr
+from app.jurisdictions import profile_for
 from app.models import CitizenUser, ConsultBooking, LawyerProfile, Tenant, User
 from app.services.audit import log_action
 from app.services.notifications import _is_test_recipient, send_email
@@ -216,7 +217,7 @@ async def _notify_citizen_decision(booking_id: uuid.UUID, confirmed: bool) -> No
         loc = pick_locale(citizen.locale)
         when = booking.starts_at.astimezone().strftime("%d.%m.%Y %H:%M")
         lawyer_name = (lawyer.full_name if lawyer else None) or (
-            tenant.name if tenant else "AvokatIM"
+            tenant.name if tenant else profile_for(citizen.country).brand_name
         )
         key = "booking_confirmed" if confirmed else "booking_declined"
         await send_email(

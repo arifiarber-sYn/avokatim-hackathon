@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { LocaleSwitcher } from "@/components/ui";
 import { clientCountry } from "@/lib/country";
 import AvaLauncher from "@/components/ava-launcher";
+import Brand from "@/components/brand";
 
 interface PublicStats {
   cases_posted: number;
@@ -47,7 +48,7 @@ export default function ForLawyersPage() {
       <header className="border-b border-slate-800">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="text-lg font-bold text-indigo-400">
-            Avokat<span className="text-white">IM</span>
+            <Brand accentClass="text-white" />
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/login" className="text-sm text-slate-300 hover:text-white">
@@ -223,7 +224,7 @@ export default function ForLawyersPage() {
         </div>
 
         <footer className="text-center text-xs text-slate-500 space-x-4 border-t border-slate-800 pt-6">
-          <Link href="/" className="hover:underline">AvokatIM</Link>
+          <Link href="/" className="hover:underline"><Brand /></Link>
           <Link href="/portal" className="hover:underline">{t.portalTitle}</Link>
           <Link href="/kushtet" className="hover:underline">{t.termsOfService}</Link>
           <Link href="/privatesia" className="hover:underline">{t.privacyPolicy}</Link>

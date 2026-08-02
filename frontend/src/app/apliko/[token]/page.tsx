@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { Button, Card, ErrorNote, Input, Label, LocaleSwitcher, Spinner, Textarea } from "@/components/ui";
+import Brand from "@/components/brand";
 
 export default function PublicIntakePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = use(params);
@@ -63,7 +64,7 @@ export default function PublicIntakePage({ params }: { params: Promise<{ token: 
               /* eslint-disable-next-line @next/next/no-img-element */
               <img src={logo} alt="" className="h-8 w-8 rounded object-contain" />
             )}
-            <h1 className="text-lg font-bold text-indigo-700 truncate">{practiceName || "AvokatIM"}</h1>
+            <h1 className="text-lg font-bold text-indigo-700 truncate">{practiceName || <Brand />}</h1>
           </div>
           <LocaleSwitcher />
         </div>

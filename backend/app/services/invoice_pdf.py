@@ -87,7 +87,7 @@ _PAGE = """<!DOCTYPE html>
   {notes_html}
 
   <div class="foot">
-    Gjeneruar nga AvokatIM · {generated_on}{fiscal_foot}
+    {generated_by} · {generated_on}{fiscal_foot}
   </div>
 </body>
 </html>"""
@@ -182,6 +182,16 @@ def build_invoice_pdf(
     if tenant.fiscal_number:
         fiscal_foot = f" · {esc(tenant.name)} · NUI {esc(tenant.fiscal_number)}"
 
+    # Footer brand follows the office's country (D-056: DE = Ava Legal)
+    from app.jurisdictions import profile_for
+
+    brand = profile_for(tenant.country).brand_name
+    generated_by = (
+        f"Erstellt mit {brand}"
+        if (tenant.country or "").upper() == "DE"
+        else f"Gjeneruar nga {brand}"
+    )
+
     page = _PAGE.format(
         logo_html=logo_html,
         firm_name=esc(tenant.name),
@@ -207,6 +217,7 @@ def build_invoice_pdf(
         issued_on=invoice.issued_on.strftime("%d.%m.%Y") if invoice.issued_on else "—",
         due_on=invoice.due_on.strftime("%d.%m.%Y") if invoice.due_on else "—",
         matter_line=matter_line,
+        generated_by=generated_by,
         item_rows=item_rows,
         subtotal=money(invoice.total),
         vat_rate=invoice.vat_rate or 0,

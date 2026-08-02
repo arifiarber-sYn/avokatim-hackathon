@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.deps import get_current_user
+from app.jurisdictions import profile_for
 from app.models import PlatformInvoice, Tenant, User
 from app.services.audit import log_action
 from app.services.payments import create_payment_link, payments_enabled
@@ -113,13 +114,15 @@ async def subscription_payment_link(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Invoice not found")
     if invoice.status != "open":
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invoice is already settled")
+    tenant = await db.get(Tenant, user.tenant_id)
+    brand = profile_for(tenant.country if tenant else None).brand_name
     try:
         url, session_id = await create_payment_link(
             invoice_id=str(invoice.id),
             invoice_number=invoice.number,
             amount_cents=int(invoice.amount_eur * 100),
             currency="EUR",
-            description=f"AvokatIM {invoice.number} — {invoice.period_start:%m/%Y}",
+            description=f"{brand} {invoice.number} — {invoice.period_start:%m/%Y}",
             customer_email=user.email,
             metadata_key="platform_invoice_id",
             return_path="/settings",

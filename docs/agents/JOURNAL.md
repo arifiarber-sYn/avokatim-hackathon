@@ -10,6 +10,26 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-02 — Ribrendimi DE: "Ava Legal" si e dhënë vendi (D-056) (Cursor / Fable 5)
+
+- Done: host-i gjerman tregton si **Ava Legal** (emri u zgjodh nga pronari
+  mes 3 opsioneve; Advo-* u shmangën se hapësira DE është e mbipopulluar).
+  Backend: `JurisdictionProfile.brand_name` + katalogu `_DE` i i18n-së
+  (41 zëvendësime) + brendi sipas vendit të tenant-it në: reset-email
+  (me tekst gjermanisht për DE), ftesat e ekipit, passkey rp_name,
+  X-WR-CALNAME, përshkrimi i pagesës së abonimit, footer-i i faturës PDF
+  (Erstellt mit / Gjeneruar nga), DATEV header, prompt-et publike të Avës.
+  Frontend: interceptor në `I18nProvider` (çdo string i fjalorit
+  AvokatIM→Ava Legal kur host-i është DE), komponenti `<Brand/>` për
+  wordmark-et, `COUNTRY_BRAND` për SEO/JSON-LD/manifest, impressum,
+  AGB/Datenschutz DE, ratgeber author.
+- Verified: pytest 244 PASS (test_tts_roundtrip_albanian flaky — kalon i
+  izoluar), build OK, restart OK; curl: XK titull "AvokatIM — …",
+  DE titull/JSON-LD/manifest "Ava Legal". Kosova e paprekur.
+- Left open: emailet en/tr të backend-it për llogari DE mbeten "AvokatIM"
+  (katalogët janë për-gjuhë, jo për-vend); kontrolli DPMA/EUIPO i markës
+  dhe blerja e ava-legal.de janë hapa të pronarit para shpalljes publike.
+
 ## 2026-08-02 — Pariteti DE→XK: eksporti për kontabilistin (Cursor / Fable 5)
 
 - Done: auditimi DE→XK gjeti vetëm një gap real — zyrat XK s'kishin eksport

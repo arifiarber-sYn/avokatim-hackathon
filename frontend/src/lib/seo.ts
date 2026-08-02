@@ -14,3 +14,10 @@ export const COUNTRY_BASE_URL: Record<Country, string> = {
   XK: "https://avokatiim.ai",
   DE: "https://de.avokatiim.ai",
 };
+
+// DE rebrand (D-056): the German host trades under "Ava Legal"; Kosovo
+// keeps "AvokatIM". Client components get the same via lib/i18n's rebrand.
+export const COUNTRY_BRAND: Record<Country, string> = {
+  XK: "AvokatIM",
+  DE: "Ava Legal",
+};

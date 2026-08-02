@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import type { Country } from "@/lib/country";
 import { I18nProvider } from "@/lib/i18n";
-import { COUNTRY_BASE_URL, serverCountry } from "@/lib/seo";
+import { COUNTRY_BASE_URL, COUNTRY_BRAND, serverCountry } from "@/lib/seo";
 import ErrorReporter from "@/components/error-reporter";
 
 // Self-hosted at build time by next/font — no runtime requests to Google.
@@ -22,10 +22,11 @@ const inter = Inter({
 export async function generateMetadata(): Promise<Metadata> {
   const country = await serverCountry();
   const base = COUNTRY_BASE_URL[country];
+  const brand = COUNTRY_BRAND[country];
   const de = country === "DE";
   const title = de
-    ? "AvokatIM — Kostenlose Rechtshilfe mit KI und geprüften Anwälten in Deutschland"
-    : "AvokatIM — Ndihmë ligjore falas me AI dhe avokatë të verifikuar në Kosovë";
+    ? `${brand} — Kostenlose Rechtshilfe mit KI und geprüften Anwälten in Deutschland`
+    : `${brand} — Ndihmë ligjore falas me AI dhe avokatë të verifikuar në Kosovë`;
   const description = de
     ? "Die Rechtsplattform: KI-Assistentin Ava beantwortet Rechtsfragen kostenlos " +
       "auf Basis deutscher Gesetze, geprüfte Anwälte im Verzeichnis, und die " +
@@ -35,13 +36,13 @@ export async function generateMetadata(): Promise<Metadata> {
       "digjitale me AI për profesionistët.";
   return {
     metadataBase: new URL(base),
-    title: { default: title, template: "%s · AvokatIM" },
+    title: { default: title, template: `%s · ${brand}` },
     description,
-    appleWebApp: { capable: true, title: "AvokatIM", statusBarStyle: "default" },
+    appleWebApp: { capable: true, title: brand, statusBarStyle: "default" },
     icons: { apple: "/icons/apple-touch-icon.png" },
     openGraph: {
       type: "website",
-      siteName: "AvokatIM",
+      siteName: brand,
       locale: de ? "de_DE" : "sq_AL",
       url: base,
       title,
@@ -65,7 +66,7 @@ function orgJsonLd(country: Country) {
       {
         "@type": "Organization",
         "@id": `${base}/#org`,
-        name: "AvokatIM",
+        name: COUNTRY_BRAND[country],
         url: base,
         logo: `${base}/icons/apple-touch-icon.png`,
         description: de
@@ -82,7 +83,7 @@ function orgJsonLd(country: Country) {
         "@type": "WebSite",
         "@id": `${base}/#website`,
         url: base,
-        name: "AvokatIM",
+        name: COUNTRY_BRAND[country],
         publisher: { "@id": `${base}/#org` },
         inLanguage: de ? "de" : "sq",
       },

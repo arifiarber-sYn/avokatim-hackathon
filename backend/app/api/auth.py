@@ -317,13 +317,25 @@ async def forgot_password(
             fingerprint=password_fingerprint(user.password_hash),
         )
         url = f"{settings.public_base_url}/rivendos?token={token}"
+        tenant = await db.get(Tenant, user.tenant_id)
+        country = (tenant.country if tenant else None) or "XK"
+        brand = profile_for(country).brand_name
 
         async def _send() -> None:
+            if country == "DE":
+                await send_email(
+                    user.email,
+                    f"{brand} — Passwort zurücksetzen / Reset your password",
+                    "Guten Tag,\n\nüber diesen Link können Sie Ihr Passwort "
+                    f"zurücksetzen (1 Stunde gültig):\n{url}\n\nWenn Sie das nicht "
+                    f"angefordert haben, ignorieren Sie diese E-Mail.\n\n— {brand}",
+                )
+                return
             await send_email(
                 user.email,
-                "AvokatIM — Rivendos fjalëkalimin / Reset your password",
+                f"{brand} — Rivendos fjalëkalimin / Reset your password",
                 "Përshëndetje,\n\nPër të rivendosur fjalëkalimin hape këtë link "
-                f"(vlen 1 orë):\n{url}\n\nNëse nuk e kërkove ti, injoroje këtë email.\n\n— AvokatIM",
+                f"(vlen 1 orë):\n{url}\n\nNëse nuk e kërkove ti, injoroje këtë email.\n\n— {brand}",
             )
 
         background.add_task(_send)

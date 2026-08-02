@@ -11,6 +11,7 @@ import { getToken, setToken } from "@/lib/api";
 import { clientCountry, type Country } from "@/lib/country";
 import { useI18n } from "@/lib/i18n";
 import PublicShell from "@/components/public-shell";
+import Brand from "@/components/brand";
 import {
   IconArrowRight,
   IconCheck,
@@ -95,7 +96,7 @@ export default function Home() {
             <div className="fade-in-up inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-white/80 backdrop-blur px-4 py-1.5 shadow-sm">
               <IconScale className="h-4 w-4 text-indigo-600" />
               <span className="text-xs font-semibold tracking-wide text-indigo-700">
-                Avokat<span className="text-slate-900">IM</span> · {isDE ? "Deutschland" : "Kosovë"}
+                <Brand accentClass="text-slate-900" /> · {isDE ? "Deutschland" : "Kosovë"}
               </span>
             </div>
             <h1 className="fade-in-up text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.08] text-hero-gradient bg-clip-text text-transparent pb-1">

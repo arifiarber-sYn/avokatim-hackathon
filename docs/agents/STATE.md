@@ -12,7 +12,8 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 ## What exists and works
 
 - **Germany expansion** (2026-08-01, D-034): one codebase, two countries.
-  `app/jurisdictions.py` = declarative per-country profiles (XK/DE: currency,
+  `app/jurisdictions.py` = declarative per-country profiles (XK/DE: **brand_name
+  — the DE host trades as "Ava Legal" (D-056), XK stays "AvokatIM"**, currency,
   VAT 18/19, timezone, locales, chamber registry OAK/BRAV, SOS+notary feature
   switches, corpus fallback language, cities, public host). Host → country:
   `de.avokatiim.ai` → DE (proxy.ts header `x-avokatim-country` +

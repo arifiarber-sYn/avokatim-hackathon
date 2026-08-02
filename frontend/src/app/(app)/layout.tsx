@@ -10,6 +10,7 @@ import { QuickTimer } from "@/components/quick-timer";
 import { GlobalSearch } from "@/components/global-search";
 import { NotificationBell } from "@/components/notification-bell";
 import { ThemeToggle } from "@/components/theme-toggle";
+import Brand from "@/components/brand";
 import { InstallBanner } from "@/components/install-banner";
 import AssistantPanel from "@/components/assistant-panel";
 
@@ -100,7 +101,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <>
       <div className="p-5 border-b border-slate-800">
         <h1 className="text-xl font-bold text-white">
-          Avokat<span className="text-indigo-400">IM</span>
+          <Brand accentClass="text-indigo-400" />
         </h1>
         <p className="text-xs text-slate-400 mt-0.5">{isNotary ? t.taglineNotary : t.tagline}</p>
       </div>
@@ -153,7 +154,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile top bar */}
       <header className="md:hidden fixed top-0 inset-x-0 z-40 h-14 bg-slate-900 text-white flex items-center justify-between px-4 shadow">
         <h1 className="text-lg font-bold">
-          Avokat<span className="text-indigo-400">IM</span>
+          <Brand accentClass="text-indigo-400" />
         </h1>
         <div className="flex items-center gap-1">
           <NotificationBell dark />

@@ -31,7 +31,7 @@ export default function ImpressumPage() {
           </div>
           <section className="space-y-1 text-sm text-slate-600">
             <h2 className="font-semibold text-sm text-slate-800">Diensteanbieter</h2>
-            <p>AvokatIM — Arbër Arifi</p>
+            <p>Ava Legal — Arbër Arifi</p>
             <p className="text-slate-400 italic">
               [Anschrift wird vor dem öffentlichen Start in Deutschland ergänzt]
             </p>
@@ -60,9 +60,9 @@ export default function ImpressumPage() {
           <section className="space-y-1 text-sm text-slate-600">
             <h2 className="font-semibold text-sm text-slate-800">Hinweis zum Dienst</h2>
             <p>
-              AvokatIM ist eine Software-Plattform für Kanzleiverwaltung und die
+              Ava Legal ist eine Software-Plattform für Kanzleiverwaltung und die
               Vermittlung des Kontakts zwischen Bürgerinnen/Bürgern und zugelassenen
-              Rechtsanwältinnen/Rechtsanwälten. AvokatIM erbringt selbst keine
+              Rechtsanwältinnen/Rechtsanwälten. Ava Legal erbringt selbst keine
               Rechtsdienstleistungen im Sinne des RDG. Die KI-Assistentin Ava liefert
               ausschließlich allgemeine Rechtsinformationen (Art. 50 EU-KI-Verordnung:
               Sie interagieren mit einem KI-System).

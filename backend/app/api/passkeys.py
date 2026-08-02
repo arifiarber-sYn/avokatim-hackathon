@@ -30,6 +30,7 @@ from webauthn.helpers.structs import (
 from app.config import settings
 from app.database import get_db
 from app.deps import get_current_user
+from app.jurisdictions import profile_for
 from app.models import PasskeyCredential, Tenant, User
 from app.schemas.auth import TokenResponse
 from app.security import create_access_token
@@ -81,9 +82,10 @@ async def register_options(
     db: AsyncSession = Depends(get_db),
 ):
     existing = await _user_credentials(db, user.id)
+    tenant = await db.get(Tenant, user.tenant_id)
     options = generate_registration_options(
         rp_id=_rp_id(),
-        rp_name="AvokatIM",
+        rp_name=profile_for(tenant.country if tenant else None).brand_name,
         user_id=user.id.bytes,
         user_name=user.email,
         user_display_name=user.full_name,

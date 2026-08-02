@@ -40,7 +40,7 @@ export default async function RatgeberArticlePage({ params }: Props) {
     dateModified: article.updated,
     inLanguage: "de",
     mainEntityOfPage: `${base}/ratgeber/${article.slug}`,
-    author: { "@type": "Organization", name: "AvokatIM" },
+    author: { "@type": "Organization", name: "Ava Legal" },
   };
 
   return (

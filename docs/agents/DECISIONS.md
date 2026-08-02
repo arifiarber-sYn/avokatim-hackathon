@@ -1385,3 +1385,38 @@
   counts only.
 - Files: see the six F1–F6 entries in `docs/agent/CHANGELOG.md`
   (2026-08-02); commits a63111a, 0bfcd39, d503020, ea338ac, 600a3be + F6.
+
+## D-055: WhatsApp intake localized by phone prefix; country follows the sender
+
+- Context: the 24/7 WhatsApp receptionist (D-054 F4) shipped Albanian-only and
+  hardcoded XK; German senders got Albanian replies and the XK corpus.
+- Decision: the sender's international prefix is the country/locale signal
+  (`country_for_phone`: +383 → XK/sq, +49 → DE/de, longest prefix wins,
+  unknown → default). All intake replies moved to the backend i18n catalog
+  (`wa_*` keys ×7), the created citizen/case carries the detected country,
+  and Q&A answers use that country's corpus and host links.
+- Consequences: one WhatsApp number serves both markets correctly; adding a
+  country = profile + `wa_*` keys, no code. Roaming users with foreign SIMs
+  get their SIM country — acceptable edge case.
+
+## D-056: Brand as data — the German host is rebranded "Ava Legal"
+
+- Context: owner wants to rebrand the German market presence. "AvokatIM" is
+  Albanian ("my lawyer") and means nothing to Germans; the German software
+  namespace is crowded with Advo-* names (Advoware, Advolux, Advosoft). The
+  AI assistant Ava is our most recognizable asset and the name works in
+  every platform language. Infrastructure stays as is (self-hosted,
+  de.avokatiim.ai continues; a future ava-legal.de would be a host alias).
+- Decision: brand is country data, not a fork. Backend:
+  `JurisdictionProfile.brand_name` ("AvokatIM" / "Ava Legal") used wherever
+  the recipient's country is known (emails, SMS, payment descriptions,
+  passkey rp_name, calendar name, invoice/DATEV footers); the `_DE` i18n
+  catalog says Ava Legal throughout. Frontend: one interceptor in
+  `I18nProvider` rewrites "AvokatIM" → "Ava Legal" in every dictionary
+  string on the DE host, plus a `<Brand/>` wordmark component and
+  `COUNTRY_BRAND` for server-side SEO/manifest/JSON-LD.
+- Consequences: Kosovo is untouched; a third country's brand is one profile
+  field. Known limits: shared en/tr backend email strings still say
+  AvokatIM for DE accounts (catalogs are per-locale, not per-country);
+  TOTP issuer and the API title stay AvokatIM (stable identifiers).
+  Before buying/announcing the name: DPMA/EUIPO trademark search.

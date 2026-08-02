@@ -64,7 +64,7 @@ def build_extf(
             config.consultant_no or "0", config.client_no or "0",
             fy_start.strftime("%Y%m%d"), "4",
             date_from.strftime("%Y%m%d"), date_to.strftime("%Y%m%d"),
-            '"AvokatIM Export"', '""', "1", "0", "0", '"EUR"',
+            '"Ava Legal Export"', '""', "1", "0", "0", '"EUR"',
         ]
     )
     columns = ";".join(

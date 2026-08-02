@@ -385,7 +385,7 @@ async def citizen_generate_document(
     from weasyprint import HTML
 
     footer = (
-        "Erstellt mit AvokatIM ({ts}) — informatives Dokument, vor dem "
+        "Erstellt mit Ava Legal ({ts}) — informatives Dokument, vor dem "
         "Einreichen prüfen."
         if tpl.get("body")  # German-bodied template
         else "Gjeneruar me AvokatIM ({ts}) — dokument informues, rishikoje para dorëzimit."

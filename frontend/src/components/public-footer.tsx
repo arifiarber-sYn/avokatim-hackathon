@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { clientCountry, type Country } from "@/lib/country";
 import { useI18n } from "@/lib/i18n";
 import { IconScale } from "@/components/icons";
+import Brand from "@/components/brand";
 
 export default function PublicFooter() {
   const { t } = useI18n();
@@ -29,7 +30,7 @@ export default function PublicFooter() {
           <div className="flex items-center gap-2">
             <IconScale className="h-6 w-6 text-indigo-400" />
             <span className="text-lg font-bold text-white">
-              Avokat<span className="text-indigo-400">IM</span>
+              <Brand accentClass="text-indigo-400" />
             </span>
           </div>
           <p className="text-sm text-slate-400 leading-relaxed">{t.ftTagline}</p>
@@ -77,7 +78,7 @@ export default function PublicFooter() {
       </div>
       <div className="border-t border-slate-800">
         <div className="max-w-5xl mx-auto px-4 py-4 text-xs text-slate-500 flex flex-wrap items-center justify-between gap-2">
-          <span>© {new Date().getFullYear()} AvokatIM</span>
+          <span>© {new Date().getFullYear()} {isDE ? "Ava Legal" : "AvokatIM"}</span>
           <span className="text-slate-400">
             Krijuar nga <span className="font-semibold text-slate-300">Arbër Arifi</span>
             {" & "}

@@ -47,7 +47,7 @@ async function directoryJsonLd(country: Country): Promise<string | null> {
       "@type": "ItemList",
       name:
         country === "DE"
-          ? "Geprüfte Anwälte bei AvokatIM"
+          ? "Geprüfte Anwälte bei Ava Legal"
           : "Avokatët e verifikuar në AvokatIM",
       numberOfItems: lawyers.length,
       itemListElement: lawyers.map((l, i) => ({

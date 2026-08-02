@@ -19,6 +19,10 @@ DEFAULT_COUNTRY = "XK"
 @dataclass(frozen=True)
 class JurisdictionProfile:
     code: str  # == Jurisdiction.code in the DB
+    # Trading name of the platform on this country's host (D-056: the DE
+    # host is rebranded "Ava Legal"; Kosovo keeps "AvokatIM"). Used in
+    # emails, SMS and PDFs whenever the recipient's country is known.
+    brand_name: str
     currency: str  # ISO 4217
     vat_rate: int  # standard VAT %, default for new tenant invoices
     timezone: str  # IANA name, used for booking slots / deadline "today"
@@ -63,6 +67,7 @@ class JurisdictionProfile:
 PROFILES: dict[str, JurisdictionProfile] = {
     "XK": JurisdictionProfile(
         code="XK",
+        brand_name="AvokatIM",
         currency="EUR",
         vat_rate=18,
         timezone="Europe/Belgrade",
@@ -81,6 +86,7 @@ PROFILES: dict[str, JurisdictionProfile] = {
     ),
     "DE": JurisdictionProfile(
         code="DE",
+        brand_name="Ava Legal",
         currency="EUR",
         vat_rate=19,
         timezone="Europe/Berlin",

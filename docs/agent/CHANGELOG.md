@@ -3,6 +3,25 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-02 — DE rebrand: "Ava Legal" as country data (D-056)
+
+- The German host now trades as **Ava Legal** (owner's pick); Kosovo keeps
+  AvokatIM. Brand is data, not a fork: `JurisdictionProfile.brand_name`
+  backend-side, a single `rebrand()` interceptor in `I18nProvider` (all
+  dictionary strings) + `<Brand/>` wordmark + `COUNTRY_BRAND` (SEO,
+  JSON-LD, manifest) frontend-side.
+- Country-aware brand applied to: `_DE` i18n catalog (41 strings), reset
+  email (German body for DE tenants), team invites, passkey rp_name,
+  ICS calendar name, subscription payment description, invoice PDF
+  footer, DATEV export header, public Ava DE prompt, public-tools PDF
+  footer, impressum, AGB/Datenschutz, ratgeber JSON-LD.
+- Files: `backend/app/jurisdictions.py`, `backend/app/i18n.py`,
+  `backend/app/api/{auth,team,passkeys,calendar_feed,subscription,bookings,marketplace,public_tools}.py`,
+  `backend/app/services/{invoice_pdf,datev,assistant}.py`,
+  `frontend/src/lib/{i18n.tsx,seo.ts,legal.ts}`,
+  `frontend/src/components/{brand,public-shell,public-footer}.tsx`,
+  `frontend/src/app/{layout,manifest,page,...}`.
+
 ## 2026-08-02 — Accountant CSV export (DE→XK parity)
 
 - DE→XK parity audit found two candidate gaps; one was already closed

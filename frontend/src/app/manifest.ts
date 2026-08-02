@@ -1,10 +1,16 @@
 import type { MetadataRoute } from "next";
+import { COUNTRY_BRAND, serverCountry } from "@/lib/seo";
 
-export default function manifest(): MetadataRoute.Manifest {
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  const country = await serverCountry();
+  const brand = COUNTRY_BRAND[country];
   return {
-    name: "AvokatIM",
-    short_name: "AvokatIM",
-    description: "Ndihmë ligjore për qytetarët dhe platforma e zyrës ligjore",
+    name: brand,
+    short_name: brand,
+    description:
+      country === "DE"
+        ? "Rechtshilfe für Bürger und die digitale Kanzlei-Plattform"
+        : "Ndihmë ligjore për qytetarët dhe platforma e zyrës ligjore",
     // "/" routes by role: logged-in lawyers → /dashboard, everyone else →
     // the citizen home. One PWA serves both audiences.
     start_url: "/",

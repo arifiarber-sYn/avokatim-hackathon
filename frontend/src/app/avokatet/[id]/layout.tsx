@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { COUNTRY_BRAND, serverCountry } from "@/lib/seo";
 
 interface ProfileData {
   id: string;
@@ -33,15 +34,22 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const p = await fetchProfile(id);
-  if (!p) return { title: "Avokat — AvokatIM", robots: { index: false } };
-  const city = p.cities[0] || "Kosovë";
+  const [p, country] = await Promise.all([fetchProfile(id), serverCountry()]);
+  const brand = COUNTRY_BRAND[country];
+  const de = country === "DE";
+  if (!p) {
+    return { title: de ? `Anwalt — ${brand}` : `Avokat — ${brand}`, robots: { index: false } };
+  }
+  const city = p.cities[0] || (de ? "Deutschland" : "Kosovë");
   return {
-    title: `Av. ${p.full_name} — ${city}`,
-    description:
-      `${p.full_name} (${p.firm_name}) — avokat i verifikuar nga OAK në ${city}` +
-      (p.years_experience ? `, ${p.years_experience} vjet përvojë` : "") +
-      ". Dërgo rastin ose rezervo konsultë përmes AvokatIM — falas për qytetarët.",
+    title: de ? `RA ${p.full_name} — ${city}` : `Av. ${p.full_name} — ${city}`,
+    description: de
+      ? `${p.full_name} (${p.firm_name}) — geprüfte Anwältin/geprüfter Anwalt in ${city}` +
+        (p.years_experience ? `, ${p.years_experience} Jahre Erfahrung` : "") +
+        `. Fall senden oder Beratung buchen über ${brand} — kostenlos für Bürger.`
+      : `${p.full_name} (${p.firm_name}) — avokat i verifikuar nga OAK në ${city}` +
+        (p.years_experience ? `, ${p.years_experience} vjet përvojë` : "") +
+        `. Dërgo rastin ose rezervo konsultë përmes ${brand} — falas për qytetarët.`,
     alternates: { canonical: `/avokatet/${p.id}` },
   };
 }

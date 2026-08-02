@@ -13,7 +13,8 @@ from app.api.matters import restricted_visibility_filter
 from app.config import settings
 from app.database import get_db
 from app.deps import get_current_user
-from app.models import Deadline, Matter, User
+from app.jurisdictions import profile_for
+from app.models import Deadline, Matter, Tenant, User
 
 router = APIRouter(tags=["calendar"])
 
@@ -84,12 +85,15 @@ async def feed(
         )
     ).all()
 
+    tenant = await db.get(Tenant, user.tenant_id)
+    brand = profile_for(tenant.country if tenant else None).brand_name
     lines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
+        # PRODID is a stable product identifier — intentionally not rebranded
         "PRODID:-//AvokatIM//Deadlines//SQ",
         "CALSCALE:GREGORIAN",
-        "X-WR-CALNAME:AvokatIM",
+        f"X-WR-CALNAME:{brand}",
     ]
     for deadline, ref in rows:
         start = deadline.due_at.astimezone(UTC)

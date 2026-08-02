@@ -1532,25 +1532,25 @@ _ZH = {
 }
 
 _DE = {
-    "sms_case_match": "AvokatIM: Neuer Fall ({category}, {city}) passend zu Ihrem Profil. Ansehen: de.avokatiim.ai/marketplace",
-    "sms_sos_alert": "AvokatIM SOS: Dringender Fall ({city})! Jetzt einloggen: de.avokatiim.ai/marketplace",
+    "sms_case_match": "Ava Legal: Neuer Fall ({category}, {city}) passend zu Ihrem Profil. Ansehen: de.avokatiim.ai/marketplace",
+    "sms_sos_alert": "Ava Legal SOS: Dringender Fall ({city})! Jetzt einloggen: de.avokatiim.ai/marketplace",
     "case_quality_reject": "Die Beschreibung reicht nicht aus, damit ein Anwalt den Fall versteht. Schreiben Sie, was passiert ist, wann und wo — je mehr Details, desto schneller übernimmt ein Anwalt den Fall.",
     # Lawyer onboarding emails
-    "lawyer_verify_subject": "AvokatIM — E-Mail bestätigen",
+    "lawyer_verify_subject": "Ava Legal — E-Mail bestätigen",
     "lawyer_verify_body": (
         "Guten Tag,\n\nbestätigen Sie Ihre E-Mail-Adresse über diesen Link:\n{url}\n\n"
-        "Der Link ist 3 Tage gültig.\n\n— AvokatIM"
+        "Der Link ist 3 Tage gültig.\n\n— Ava Legal"
     ),
-    "lawyer_welcome_subject": "Willkommen bei AvokatIM, {name}!",
+    "lawyer_welcome_subject": "Willkommen bei Ava Legal, {name}!",
     "lawyer_welcome_body": (
         "Ihre digitale Kanzlei ist bereit. Drei Schritte zum Start:\n\n"
         "1. Aktivieren Sie Ihr öffentliches Profil — Bürger finden Sie im Verzeichnis und Sie erhalten Fälle aus dem Marktplatz:\n{onboarding_url}\n\n"
         "2. Die Verifizierung gegen das amtliche Anwaltsverzeichnis schaltet das Verifiziert-Abzeichen frei — Fälle gehen nur an verifizierte Anwälte.\n\n"
         "3. Legen Sie Ihre erste Akte an und testen Sie die Assistentin Ava.\n\n"
         "Die kostenlose Testphase dauert {trial_days} Tage — ohne Karte, ohne Verpflichtung.\n\n"
-        "Fragen? Wir antworten unter {contact_url}\n\n— Das AvokatIM-Team"
+        "Fragen? Wir antworten unter {contact_url}\n\n— Das Ava Legal-Team"
     ),
-    "notary_welcome_subject": "Willkommen bei AvokatIM, {name}!",
+    "notary_welcome_subject": "Willkommen bei Ava Legal, {name}!",
     "notary_welcome_body": (
         "Ihr digitales Notariat ist bereit. Drei Schritte zum Start:\n\n"
         "1. Vervollständigen Sie das Kanzleiprofil und den Terminplan:\n{onboarding_url}\n\n"
@@ -1558,36 +1558,36 @@ _DE = {
         "amtlichen Gebühren und hilft beim Entwerfen von Urkunden und beim Zusammenfassen von Dokumenten.\n\n"
         "3. Legen Sie den ersten notariellen Vorgang an und laden Sie Ihr Team ein.\n\n"
         "Die kostenlose Testphase dauert {trial_days} Tage — ohne Karte, ohne Verpflichtung.\n\n"
-        "Fragen? Wir antworten unter {contact_url}\n\n— Das AvokatIM-Team"
+        "Fragen? Wir antworten unter {contact_url}\n\n— Das Ava Legal-Team"
     ),
-    "lawyer_profile_nudge_subject": "AvokatIM — Ihr öffentliches Profil ist noch nicht aktiv",
+    "lawyer_profile_nudge_subject": "Ava Legal — Ihr öffentliches Profil ist noch nicht aktiv",
     "lawyer_profile_nudge_body": (
         "Bürger können Sie im Verzeichnis nicht finden und Sie erhalten keine Fälle aus dem Marktplatz.\n\n"
-        "Die Aktivierung dauert 2 Minuten:\n{url}\n\n— AvokatIM"
+        "Die Aktivierung dauert 2 Minuten:\n{url}\n\n— Ava Legal"
     ),
-    "citizen_verify_reminder_subject": "AvokatIM — Erinnerung: E-Mail bestätigen",
+    "citizen_verify_reminder_subject": "Ava Legal — Erinnerung: E-Mail bestätigen",
     "citizen_verify_reminder_body": (
         "Ihr Konto ist bereit, aber Ihre E-Mail ist noch nicht bestätigt — ohne Bestätigung können Sie keine Fälle einstellen.\n\n"
-        "Hier bestätigen:\n{url}\n\nDer Link ist 3 Tage gültig.\n\n— AvokatIM"
+        "Hier bestätigen:\n{url}\n\nDer Link ist 3 Tage gültig.\n\n— Ava Legal"
     ),
-    "citizen_case_followup_subject": "AvokatIM — Fall noch nicht eingestellt? Das können Sie kostenlos tun",
+    "citizen_case_followup_subject": "Ava Legal — Fall noch nicht eingestellt? Das können Sie kostenlos tun",
     "citizen_case_followup_body": (
-        "Ihr AvokatIM-Konto ist bereit — aber Sie haben noch keinen Fall eingestellt.\n\n"
+        "Ihr Ava Legal-Konto ist bereit — aber Sie haben noch keinen Fall eingestellt.\n\n"
         "Wenn Sie ein rechtliches Anliegen haben, beschreiben Sie es kurz, und verifizierte "
         "Anwälte für Ihr Rechtsgebiet und Ihre Stadt melden sich direkt — kostenlos:\n{post_url}\n\n"
         "Nicht sicher, ob es ein Fall für einen Anwalt ist? Fragen Sie Ava — unsere "
         "Assistentin mit den vollständigen Gesetzen antwortet sofort, auch per Sprache:\n{ava_url}\n\n"
-        "Dies ist die einzige E-Mail dieser Art — wir stören Sie nicht weiter.\n\n— AvokatIM"
+        "Dies ist die einzige E-Mail dieser Art — wir stören Sie nicht weiter.\n\n— Ava Legal"
     ),
-    "case_review_request_subject": "AvokatIM — Wie lief es mit Ihrem Anwalt? Ihre Bewertung hilft anderen",
+    "case_review_request_subject": "Ava Legal — Wie lief es mit Ihrem Anwalt? Ihre Bewertung hilft anderen",
     "case_review_request_body": (
-        "Ihr Fall auf AvokatIM ist abgeschlossen.\n\n"
+        "Ihr Fall auf Ava Legal ist abgeschlossen.\n\n"
         "Ihre Bewertung (Kommunikation, Tempo, Verständlichkeit) hilft anderen "
         "Bürgern, den richtigen Anwalt zu finden — und guten Anwälten, gesehen zu "
         "werden. Es dauert nur 30 Sekunden:\n{url}\n\n"
-        "Dies ist die einzige E-Mail dieser Art zu diesem Fall.\n\n— AvokatIM"
+        "Dies ist die einzige E-Mail dieser Art zu diesem Fall.\n\n— Ava Legal"
     ),
-    "reminder_subject": "[AvokatIM] Frist in {days} Tagen: {title}",
+    "reminder_subject": "[Ava Legal] Frist in {days} Tagen: {title}",
     "ntf_suggestions_title": "{n} vorgeschlagene Fristen — {ref}",
     "reminder_matter": "Akte",
     "reminder_deadline": "Frist",
@@ -1666,15 +1666,15 @@ _DE = {
     "email_signed_subject": "Dokument signiert",
     "email_signed_body": "{client} hat soeben das angeforderte Dokument signiert (Anfrage {request_id}).",
     # Marketplace (citizens)
-    "citizen_verify_subject": "AvokatIM — E-Mail bestätigen",
+    "citizen_verify_subject": "Ava Legal — E-Mail bestätigen",
     "citizen_verify_body": (
         "Bestätigen Sie Ihre E-Mail-Adresse über diesen Link:\n{url}\n\n"
         "Der Link ist 3 Tage gültig."
     ),
-    "citizen_welcome_subject": "Danke, {name} — Ihr AvokatIM-Konto ist bereit!",
+    "citizen_welcome_subject": "Danke, {name} — Ihr Ava Legal-Konto ist bereit!",
     "citizen_welcome_body": (
         "Guten Tag {name},\n\n"
-        "danke, dass Sie AvokatIM beigetreten sind — Ihr Konto ist bestätigt und "
+        "danke, dass Sie Ava Legal beigetreten sind — Ihr Konto ist bestätigt und "
         "alles ist bereit.\n\n"
         "Das haben Sie jetzt, völlig kostenlos:\n"
         "• Ava, die Rechtsassistentin — fragen Sie alles zum geltenden Recht: {ava_url}\n"
@@ -1683,57 +1683,57 @@ _DE = {
         "• Ausfüllfertige Schreiben und Widersprüche: {docs_url}\n"
         "• SOS für dringende Situationen — sofortige Hilfe.\n\n"
         "Für Sie als Bürger ist und bleibt die Plattform kostenlos.\n\n"
-        "Mit freundlichen Grüßen,\nArbër Arifi — AvokatIM"
+        "Mit freundlichen Grüßen,\nArbër Arifi — Ava Legal"
     ),
-    "citizen_reset_subject": "AvokatIM — Passwort zurücksetzen",
+    "citizen_reset_subject": "Ava Legal — Passwort zurücksetzen",
     "citizen_reset_body": (
         "Sie haben das Zurücksetzen des Passworts angefordert. Öffnen Sie diesen Link, um ein neues Passwort zu setzen:\n{url}\n\n"
         "Der Link ist 1 Stunde gültig. Falls Sie das nicht angefordert haben, ignorieren Sie diese E-Mail."
     ),
-    "case_claimed_subject": "AvokatIM — Ein Anwalt hat Ihren Fall übernommen",
+    "case_claimed_subject": "Ava Legal — Ein Anwalt hat Ihren Fall übernommen",
     "case_claimed_body": (
         "Ihr Fall wurde von {firm} übernommen. Der Anwalt meldet sich in Kürze — "
         "Sie können ihm auch unter 'Mein Fall' schreiben:\n{url}"
     ),
-    "case_directed_subject": "AvokatIM — Neue Anfrage von einem Bürger",
+    "case_directed_subject": "Ava Legal — Neue Anfrage von einem Bürger",
     "case_directed_body": (
         "Ein Bürger hat Ihnen eine Anfrage gesendet ({category}, {city}). "
-        "Ansehen im AvokatIM-Marktplatz:\n{url}"
+        "Ansehen im Ava Legal-Marktplatz:\n{url}"
     ),
-    "case_message_subject": "AvokatIM — Neue Nachricht zu Ihrem Fall",
+    "case_message_subject": "Ava Legal — Neue Nachricht zu Ihrem Fall",
     "case_message_body": "Sie haben eine neue Nachricht zu Ihrem Fall:\n{url}",
-    "case_portal_ready_subject": "AvokatIM — Fall angenommen, Ihr Portal ist bereit",
+    "case_portal_ready_subject": "Ava Legal — Fall angenommen, Ihr Portal ist bereit",
     "case_portal_ready_body": (
         "{firm} hat Ihren Fall angenommen. Sie haben jetzt Zugang zum "
         "Mandantenportal mit derselben E-Mail und demselben Passwort:\n{url}"
     ),
-    "booking_new_subject": "AvokatIM — Neue Beratungsanfrage",
+    "booking_new_subject": "Ava Legal — Neue Beratungsanfrage",
     "booking_new_body": (
         "{citizen} hat eine Beratung am {when} angefragt. Bestätigen oder "
         "ablehnen unter Marktplatz → Beratungen:\n{url}"
     ),
-    "booking_confirmed_subject": "AvokatIM — Beratung bestätigt",
+    "booking_confirmed_subject": "Ava Legal — Beratung bestätigt",
     "booking_confirmed_body": "{lawyer} hat Ihre Beratung am {when} bestätigt.",
-    "booking_declined_subject": "AvokatIM — Beratung nicht bestätigt",
+    "booking_declined_subject": "Ava Legal — Beratung nicht bestätigt",
     "booking_declined_body": (
         "{lawyer} kann die Beratung am {when} nicht wahrnehmen. "
         "Wählen Sie einen anderen Termin:\n{url}"
     ),
-    "sos_alert_subject": "AvokatIM — SOS: ein Bürger braucht DRINGEND Hilfe",
+    "sos_alert_subject": "Ava Legal — SOS: ein Bürger braucht DRINGEND Hilfe",
     "sos_alert_body": (
         "Ein Bürger bittet um dringende Hilfe ({city}). Sie haben SOS-Bereitschaft — "
         "öffnen Sie den Marktplatz und übernehmen Sie den Fall so schnell wie möglich:\n{url}"
     ),
-    "case_match_subject": "AvokatIM — Neuer Fall passend zu Ihrem Profil",
+    "case_match_subject": "Ava Legal — Neuer Fall passend zu Ihrem Profil",
     "case_match_body": (
         "Soeben wurde ein Fall eingestellt, der zu Ihrem Profil passt "
         "({category}, {city}). Der schnellste Anwalt erhält den Zuschlag:\n{url}"
     ),
-    "verify_approved_subject": "AvokatIM — Glückwunsch, {name}! Ihre Zulassung ist verifiziert",
+    "verify_approved_subject": "Ava Legal — Glückwunsch, {name}! Ihre Zulassung ist verifiziert",
     "verify_approved_body": (
         "Sehr geehrte/r {name},\n\n"
         "Ihre Zulassung wurde erfolgreich verifiziert — danke für Ihr Vertrauen "
-        "in AvokatIM!\n\n"
+        "in Ava Legal!\n\n"
         "Ab sofort trägt Ihr Profil das Verifiziert-Abzeichen, erscheint im "
         "öffentlichen Verzeichnis und Bürger können Sie direkt kontaktieren. "
         "Verifizierte Anwälte erhalten außerdem Marktplatz-Fälle und SOS-Alarme.\n\n"
@@ -1741,19 +1741,19 @@ _DE = {
         "Profileinstellungen: {settings_url}\n\n{founder}"
         "Wir bauen die Brücke zwischen Bürgern und Rechtsprofis — und Sie sind "
         "jetzt Teil davon. Schreiben Sie uns bei jeder Frage, wir antworten schnell.\n\n"
-        "Mit freundlichen Grüßen,\nArbër Arifi — AvokatIM"
+        "Mit freundlichen Grüßen,\nArbër Arifi — Ava Legal"
     ),
     "verify_approved_founder": (
         "Etwas Besonderes: Sie gehören zu den ersten 20 verifizierten Kanzleien "
         "auf der Plattform und behalten das 'Founder'-Abzeichen für immer — "
         "unser Dank für Ihr frühes Vertrauen."
     ),
-    "verify_rejected_subject": "AvokatIM — Zulassungsverifizierung nicht genehmigt",
+    "verify_rejected_subject": "Ava Legal — Zulassungsverifizierung nicht genehmigt",
     "verify_rejected_body": (
         "Ihre Zulassungsverifizierung wurde nicht genehmigt. Hinweis: {note}\n"
         "Korrigieren Sie die Angaben in den Einstellungen, um sie erneut einzureichen:\n{url}"
     ),
-    "platform_invoice_subject": "AvokatIM — Abonnementrechnung {number}",
+    "platform_invoice_subject": "Ava Legal — Abonnementrechnung {number}",
     "platform_invoice_body": (
         "Abonnementrechnung {number} für {period}:\n"
         "{seats} Nutzer × {price} € = {amount} €\n"
@@ -1761,13 +1761,13 @@ _DE = {
         "Zahlung per Überweisung (Rechnungsnummer als Verwendungszweck):\n{bank}\n\n"
         "Details und Kartenzahlung (sofern aktiviert) unter Einstellungen → Abonnement:\n{url}"
     ),
-    "platform_overdue_subject": "AvokatIM — Rechnung {number} ist überfällig",
+    "platform_overdue_subject": "Ava Legal — Rechnung {number} ist überfällig",
     "platform_overdue_body": (
         "Die Abonnementrechnung {number} ({amount} €) ist {days} Tage überfällig. "
         "Nach {grace} Tagen Verzug werden neue Marktplatz-Fälle pausiert — Ihre "
         "Daten bleiben immer zugänglich. Zahlen unter Einstellungen → Abonnement:\n{url}"
     ),
-    "trial_ending_subject": "AvokatIM — Ihre kostenlose Testphase endet in {days} Tagen",
+    "trial_ending_subject": "Ava Legal — Ihre kostenlose Testphase endet in {days} Tagen",
     "trial_ending_body": (
         "Ihre einjährige kostenlose Testphase endet in {days} Tagen. Wechseln Sie "
         "zum bezahlten Plan ({price} €/Nutzer/Monat — alles inklusive + unbegrenzte "

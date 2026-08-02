@@ -14,6 +14,7 @@ import { clientCountry, type Country } from "@/lib/country";
 import { LocaleSwitcher } from "@/components/ui";
 import PublicFooter from "@/components/public-footer";
 import AvaLauncher from "@/components/ava-launcher";
+import Brand from "@/components/brand";
 import { InstallBanner } from "@/components/install-banner";
 import {
   CitizenInfo,
@@ -194,7 +195,7 @@ export default function PublicShell({
               </svg>
             </span>
             <span>
-              Avokat<span className="text-slate-900">IM</span>
+              <Brand accentClass="text-slate-900" />
             </span>
           </Link>
           {/* whitespace-nowrap + tight gaps: the row must never wrap on

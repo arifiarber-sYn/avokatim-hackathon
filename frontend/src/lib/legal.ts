@@ -221,7 +221,7 @@ const tosDe: LegalDoc = {
   updated: "Version 1.0 · August 2026 · Entwurf — vor dem öffentlichen Start in Deutschland durch eine deutsche Anwältin/einen deutschen Anwalt zu prüfen",
   note: "Für Konten in Deutschland gilt diese deutsche Fassung.",
   sections: [
-    { h: "Der Dienst", p: "AvokatIM bietet Aktenverwaltung, Fristen, Dokumente, Abrechnung, Mandantenkommunikation und KI-Unterstützung. Die KI-Unterstützung ist unterstützender Natur und stellt keine Rechtsberatung im Sinne des RDG dar — die berufliche Verantwortung verbleibt bei der Rechtsanwältin/dem Rechtsanwalt." },
+    { h: "Der Dienst", p: "Ava Legal bietet Aktenverwaltung, Fristen, Dokumente, Abrechnung, Mandantenkommunikation und KI-Unterstützung. Die KI-Unterstützung ist unterstützender Natur und stellt keine Rechtsberatung im Sinne des RDG dar — die berufliche Verantwortung verbleibt bei der Rechtsanwältin/dem Rechtsanwalt." },
     { h: "Konto", p: "Die Kanzlei ist für die Richtigkeit der Registrierungsdaten und die Sicherung der Zugangsdaten verantwortlich. Unbefugte Zugriffe sind unverzüglich zu melden." },
     { h: "Daten", p: "Aktendaten und Dokumente sind Eigentum der Kanzlei. Sie werden ausschließlich nach dem Auftragsverarbeitungsvertrag (Art. 28 DSGVO) verarbeitet. Dokumente werden verschlüsselt gespeichert und mit lokalen Modellen indexiert." },
     { h: "Externe KI", p: "Die Nutzung externer KI ist optional und wird von der Kanzlei in den Einstellungen gesteuert; bei Deaktivierung wird nur das lokale Modell verwendet, das nichts an Dritte übermittelt." },
@@ -237,7 +237,7 @@ const privDe: LegalDoc = {
   updated: "Version 1.0 · August 2026 · Nach DSGVO · Entwurf — vor dem öffentlichen Start in Deutschland durch eine deutsche Anwältin/einen deutschen Anwalt zu prüfen",
   note: "Für Konten in Deutschland gilt diese deutsche Fassung.",
   sections: [
-    { h: "Wer Ihre Daten verarbeitet", p: "Verantwortlicher ist die Kanzlei, die Sie vertritt. Der Betreiber von AvokatIM ist Auftragsverarbeiter und handelt ausschließlich auf Weisung der Kanzlei nach Art. 28 DSGVO." },
+    { h: "Wer Ihre Daten verarbeitet", p: "Verantwortlicher ist die Kanzlei, die Sie vertritt. Der Betreiber von Ava Legal ist Auftragsverarbeiter und handelt ausschließlich auf Weisung der Kanzlei nach Art. 28 DSGVO." },
     { h: "Was verarbeitet wird", p: "Identifikationsdaten (Name, Kontakt), Aktendaten (Schriftsätze, Beweise, Korrespondenz), Finanzdaten (Rechnungen) und technische Daten (Logs, IP, Einwilligungen)." },
     { h: "Wie gespeichert wird", p: "Dokumente werden verschlüsselt gespeichert. Die Indexierung erfolgt mit lokalen Modellen — der Text verlässt den Server nicht. Kartenzahlungen verarbeitet der Zahlungsdienstleister; Kartendaten werden nicht gespeichert." },
     { h: "KI-Transparenz", p: "Ava ist ein KI-System (Art. 50 EU-KI-Verordnung). Sie liefert allgemeine Rechtsinformationen, keine Rechtsberatung im Einzelfall. Wenn die Kanzlei externe KI aktiviert, können Frage- und Kontextfragmente an den externen KI-Anbieter übermittelt werden; dies ist im Assistenten klar gekennzeichnet und vollständig abschaltbar." },
