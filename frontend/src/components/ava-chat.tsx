@@ -16,6 +16,7 @@ import { clientCountry, DE_REGIONS } from "@/lib/country";
 import { ovCaseMatch, OV_PORTAL_URL } from "@/lib/ov";
 import { Button, Card, ErrorNote, Textarea, TypingDots } from "@/components/ui";
 import { MicButton, SpeakButton, useVoiceAvailable } from "@/components/voice-controls";
+import { speak, stopSpeaking } from "@/lib/voice";
 import { IconChat } from "@/components/icons";
 
 interface ChatMsg {
@@ -57,6 +58,11 @@ export default function AvaChat({ variant = "page" }: { variant?: "page" | "pane
   // Landesrecht (D-035); remembered in localStorage
   const [isDE, setIsDE] = useState(false);
   const [region, setRegion] = useState("");
+  // Voice conversation mode (D-054 F4): mic → auto-send → answer spoken
+  // aloud → mic again. Fully local STT+TTS, hands-free.
+  const [convo, setConvo] = useState(false);
+  const convoRef = useRef(false);
+  convoRef.current = convo;
   const bottomRef = useRef<HTMLDivElement>(null);
   const busyRef = useRef(false);
   const messagesRef = useRef<ChatMsg[]>([]);
@@ -177,6 +183,10 @@ export default function AvaChat({ variant = "page" }: { variant?: "page" | "pane
         next[next.length - 1] = { role: "assistant", content: answer, citations };
         return next;
       });
+      // Conversation mode: read the answer aloud, hands-free
+      if (convoRef.current && answer) {
+        void speak(answer, locale, true);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : t.error);
     } finally {
@@ -391,13 +401,36 @@ export default function AvaChat({ variant = "page" }: { variant?: "page" | "pane
           <MicButton
             locale={locale}
             disabled={busy}
-            onText={(text) => setDraft((d) => (d ? `${d} ${text}` : text))}
+            onText={(text) => {
+              if (convoRef.current) {
+                stopSpeaking();
+                askQuestion(text);
+              } else {
+                setDraft((d) => (d ? `${d} ${text}` : text));
+              }
+            }}
           />
         )}
         <Button type="submit" disabled={busy || !draft.trim()}>
           {busy ? t.loading : t.mkSend}
         </Button>
       </form>
+      {voice.stt && voice.tts && (
+        <button
+          type="button"
+          onClick={() => {
+            if (convo) stopSpeaking();
+            setConvo(!convo);
+          }}
+          className={`self-start -mt-2 inline-flex items-center gap-1.5 text-[11px] rounded-full border px-2.5 py-1 transition ${
+            convo
+              ? "bg-emerald-50 border-emerald-300 text-emerald-800"
+              : "border-slate-200 text-slate-500 hover:bg-slate-50"
+          }`}
+        >
+          🎙 {convo ? t.vcOn : t.vcMode}
+        </button>
+      )}
     </div>
   );
 }

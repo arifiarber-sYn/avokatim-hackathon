@@ -95,11 +95,23 @@ async def send_whatsapp_text(to: str, text: str) -> bool:
 
 
 async def _answer_message(sender: str, text: str) -> None:
-    """Ask Ava (grounded in the XK corpus) and reply. Runs in background —
-    Meta requires the webhook to return 200 quickly."""
+    """24/7 receptionist (D-054 F4): first give the intake flow a chance —
+    "RAST" starts a guided case posting that ends on the marketplace with
+    consultation slots offered. Otherwise: Ava Q&A grounded in the corpus.
+    Runs in background — Meta requires the webhook to return 200 quickly."""
     from app.api.marketplace import AvaAskIn, _ava_prepare
     from app.database import SessionLocal
     from app.llm import get_provider
+    from app.services.wa_intake import daily_hint, handle_intake_message
+
+    try:
+        intake_reply = await handle_intake_message(sender, text)
+    except Exception as exc:
+        logger.warning("WhatsApp intake flow failed: %s", exc)
+        intake_reply = None
+    if intake_reply is not None:
+        await send_whatsapp_text(sender, intake_reply)
+        return
 
     if not await _daily_quota_ok(sender):
         await send_whatsapp_text(
@@ -122,6 +134,7 @@ async def _answer_message(sender: str, text: str) -> None:
             "Ava nuk është e disponueshme për momentin. Provo përsëri më vonë "
             f"ose shkruaj në {settings.public_base_url}/ava"
         )
+    answer += await daily_hint(settings.redis_url, sender)
     await send_whatsapp_text(sender, answer)
 
 

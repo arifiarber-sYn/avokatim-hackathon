@@ -3,6 +3,24 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-02 — 24/7 receptionist: voice conversation + WhatsApp intake (D-054 F4)
+
+- Voice conversation mode in the public Ava chat (page + launcher panel):
+  "🎙 Bisedo me zë" toggle — mic → auto-send → answer spoken aloud via the
+  local Piper/browser TTS → mic again, hands-free; speech is interrupted
+  when the user starts talking again. New i18n keys `vcMode`/`vcOn` (7 langs).
+- WhatsApp bot upgraded from Q&A to full intake (`services/wa_intake.py`):
+  "RAST"/"FALL"/"CASE" starts a Redis-backed state machine (describe → city
+  → name → email, 1h TTL, ANULO cancels), LLM classifies category/city/
+  urgency, then posts a structured `CaseRequest` on the marketplace
+  (citizen account auto-created/reused), alerts matching lawyers (push +
+  email + F1 notification center) and offers the next free consultation
+  slots from bookable lawyers right in the chat. AI self-declaration in the
+  first message (RDG/BRAO-safe). Q&A replies append a once-a-day RAST hint.
+- Files: `backend/app/services/wa_intake.py`, `backend/app/api/whatsapp.py`,
+  `backend/tests/test_wa_intake.py`, `frontend/src/components/ava-chat.tsx`,
+  `frontend/src/lib/dictionaries.ts`.
+
 ## 2026-08-02 — Proactive AI: briefing, case-law monitor, deadline audit (D-054 F3)
 
 - New: `services/proactive.py` — three background agents wired into
