@@ -3,6 +3,33 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-02 — Assistant actions with approval + Ask-Ava in Cmd+K + Ava in the citizen portal (D-053)
+
+- New: `POST /api/assistant/actions/extract-deadlines` — Ava re-reads an
+  answer and returns deadline proposals only (reuses
+  `extract_deadlines_from_text`, no side effects); creation goes through
+  the existing `POST /matters/{id}/deadlines/bulk` after per-item
+  approval in the panel.
+- New: `POST /api/assistant/actions/save-draft` — files an answer into
+  the matter as a draft PDF with `ai_generated=True`, so the D-044
+  human-review gate applies before sharing/signature. Both routes
+  audit-logged. Tests: `backend/tests/test_assistant_actions.py`.
+- Changed: `assistant-panel.tsx` — action chips under each answer when a
+  matter is in scope; checkbox proposal list (undated disabled), draft
+  title form, success notice linking to the matter.
+- Changed: `global-search.tsx` — Cmd+K/Ctrl+K focuses the box; first
+  dropdown row "Ask Ava: «query»" fires `avokatim:ask-ava` → the panel
+  opens with the question prefilled.
+- Changed: `rasti-im/page.tsx` — gradient Ava card fires
+  `avokatim:open-ava` → the public launcher sheet opens (mobile-first,
+  case view stays); `ava-launcher.tsx` listens for the event.
+- Changed: 9 new dictionary keys × 7 locales (apAct*, apDraftTitle,
+  gsAskAva, rmAvaB).
+- Files: `backend/app/api/assistant.py`,
+  `backend/tests/test_assistant_actions.py`,
+  `frontend/src/components/{assistant-panel,global-search,ava-launcher}.tsx`,
+  `frontend/src/app/rasti-im/page.tsx`, `frontend/src/lib/dictionaries.ts`, docs.
+
 ## 2026-08-02 — Ava everywhere: public launcher + contextual lawyer panel (D-052)
 
 - New: `frontend/src/components/ava-chat.tsx` — public Ava chat core

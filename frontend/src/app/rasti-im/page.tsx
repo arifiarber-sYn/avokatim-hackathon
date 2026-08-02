@@ -175,6 +175,22 @@ function MyCaseInner() {
         {verified && (
           <p className="text-sm bg-emerald-50 text-emerald-700 rounded-lg p-3">{t.mkEmailVerified}</p>
         )}
+
+        {/* Ava inside the portal (D-053): opens the floating sheet so the
+            citizen never loses their case view — key on mobile */}
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("avokatim:open-ava"))}
+          className="w-full text-left rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white p-4 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-3"
+        >
+          <span className="h-10 w-10 rounded-full bg-white/15 flex items-center justify-center shrink-0 text-lg">
+            ✦
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-bold">{t.mkAvaTitle}</span>
+            <span className="block text-xs text-indigo-100 mt-0.5">{t.rmAvaB}</span>
+          </span>
+          <span className="text-sm font-bold shrink-0">{t.avaFabLabel} →</span>
+        </button>
         {citizen !== null && sosOpen && sosEnabled && (
           <SosPanel
             locale={locale}

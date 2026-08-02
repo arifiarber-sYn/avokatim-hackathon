@@ -409,6 +409,15 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   listings include the cost calculator + guides (faqA1, landToolsB, new
   umbFnC9; /per-qytetaret tools card links /kostoja+/udhezues on XK,
   /rvg+/ratgeber on DE; toolsActive covers /udhezues and /ratgeber).
+- **Assistant actions with approval** (2026-08-02, D-053): under each
+  panel answer (matter in scope) the lawyer can extract deadlines
+  (`POST /assistant/actions/extract-deadlines` → proposals → existing
+  `/deadlines/bulk` on approval) or save the answer as a draft PDF
+  (`POST /assistant/actions/save-draft`, `ai_generated=True` → D-044
+  review gate). Cmd+K focuses global search whose first row "Ask Ava"
+  opens the panel with the query prefilled (`avokatim:ask-ava` event);
+  /rasti-im has an Ava card opening the public launcher sheet
+  (`avokatim:open-ava`).
 - **Ava everywhere** (2026-08-02, D-052): Ava chat core extracted to
   `components/ava-chat.tsx`; floating launcher `ava-launcher.tsx` on all
   public pages (PublicShell + /per-avokatet + /per-noteret, hidden on

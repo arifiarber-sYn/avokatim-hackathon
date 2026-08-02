@@ -30,6 +30,13 @@ export default function AvaLauncher() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
+  // In-page CTAs (e.g. the /rasti-im card) open the sheet via this event (D-053)
+  useEffect(() => {
+    const onOpen = () => setOpen(true);
+    window.addEventListener("avokatim:open-ava", onOpen);
+    return () => window.removeEventListener("avokatim:open-ava", onOpen);
+  }, []);
+
   if (pathname.startsWith("/ava")) return null;
 
   return (

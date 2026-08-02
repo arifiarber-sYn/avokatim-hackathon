@@ -10,6 +10,26 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-02 — D-053: Veprime me aprovim nga paneli + "Pyete Avën" në Cmd+K + Ava në /rasti-im (Cursor / Fable 5)
+
+- Done: backlog-u i D-052 u mbyll. Dy rrugë të reja te asistenti:
+  `/assistant/actions/extract-deadlines` (propozime pa efekte anësore,
+  ripërdor extract_deadlines_from_text) dhe `/assistant/actions/save-draft`
+  (PDF me ai_generated=True → porta e rishikimit njerëzor D-044);
+  krijimi i afateve kalon nëpër bulk-endpoint-in ekzistues pas
+  aprovimit me checkbox në panel. Chips veprimi nën çdo përgjigje
+  kur lënda është në fokus.
+- Done: Cmd+K/Ctrl+K fokuson kërkimin global; rreshti i parë i
+  dropdown-it "Pyete Avën: «pyetja»" hap panelin me pyetjen të
+  parambushur (event avokatim:ask-ava). Te /rasti-im kartë gradient
+  e Avës që hap sheet-in e launcher-it publik (event avokatim:open-ava)
+  — qytetari s'e humb pamjen e rastit, kyç në mobile.
+- Done: 9 çelësa të rinj ×7 gjuhë; test i ri backend
+  (test_assistant_actions.py).
+- Verified: build OK; pytest 222/222; health OK; /, /rasti-im, /ava 200
+  në XK dhe DE host; karta e Avës renderohet në SSR.
+- Left open: asgjë nga backlog-u i D-052.
+
 ## 2026-08-02 — D-052: Ava kudo (launcher publik + panel kontekstual) + AI në çdo mesazh (Cursor / Fable 5)
 
 - Done: hulumtim industrie (Harvey/Legora/Clio/Smokeball/AnNoText +

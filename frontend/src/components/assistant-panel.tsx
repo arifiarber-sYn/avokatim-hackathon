@@ -14,7 +14,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { apiGet, apiStream } from "@/lib/api";
+import { apiGet, apiPost, apiStream } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { Matter, Message } from "@/lib/types";
 import { Button, ErrorNote, Textarea } from "@/components/ui";
@@ -22,6 +22,22 @@ import { MicButton, SpeakButton, useVoiceAvailable } from "@/components/voice-co
 import { IconChat } from "@/components/icons";
 
 const MATTER_ROUTE = /^\/matters\/([0-9a-f-]{16,})/i;
+
+/** Deadline proposal from POST /assistant/actions/extract-deadlines. */
+interface DeadlineProposal {
+  title: string;
+  kind: string;
+  due_date: string | null;
+  trigger_date: string | null;
+  days: number | null;
+  legal_basis: string | null;
+  confidence: string;
+}
+
+/** One in-flight approval flow at a time, anchored to a message index. */
+type ActionState =
+  | { type: "deadlines"; msgIdx: number; busy: boolean; proposals: DeadlineProposal[] | null; selected: boolean[] }
+  | { type: "draft"; msgIdx: number; busy: boolean; title: string };
 
 export default function AssistantPanel() {
   const { t, locale } = useI18n();
@@ -41,8 +57,22 @@ export default function AssistantPanel() {
   // Ava to that matter automatically and shows it as a removable chip.
   const [ctxMatter, setCtxMatter] = useState<Matter | null>(null);
   const [scopeOn, setScopeOn] = useState(true);
+  // Action execution with approval (D-053): Ava proposes, the lawyer confirms
+  const [action, setAction] = useState<ActionState | null>(null);
+  const [notice, setNotice] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const providersLoaded = useRef(false);
+
+  // "Ask Ava" row in the global search dispatches this event (D-053)
+  useEffect(() => {
+    const onAsk = (e: Event) => {
+      const q = (e as CustomEvent<{ question?: string }>).detail?.question;
+      setOpen(true);
+      if (q) setQuestion(q);
+    };
+    window.addEventListener("avokatim:ask-ava", onAsk);
+    return () => window.removeEventListener("avokatim:ask-ava", onAsk);
+  }, []);
 
   useEffect(() => {
     if (!open || providersLoaded.current) return;
@@ -152,6 +182,64 @@ export default function AssistantPanel() {
     } finally {
       setBusy(false);
       setSteps([]);
+    }
+  }
+
+  async function extractDeadlines(msgIdx: number, text: string) {
+    if (!matterId) return;
+    setNotice("");
+    setError("");
+    setAction({ type: "deadlines", msgIdx, busy: true, proposals: null, selected: [] });
+    try {
+      const proposals = await apiPost<DeadlineProposal[]>(
+        "/assistant/actions/extract-deadlines",
+        { matter_id: matterId, text }
+      );
+      setAction({
+        type: "deadlines", msgIdx, busy: false, proposals,
+        // pre-select only the ones with a concrete date (bulk skips the rest)
+        selected: proposals.map((p) => Boolean(p.due_date)),
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+      setAction(null);
+    }
+  }
+
+  async function createSelectedDeadlines() {
+    if (!matterId || !action || action.type !== "deadlines" || !action.proposals) return;
+    const chosen = action.proposals.filter((_, i) => action.selected[i] && action.proposals![i].due_date);
+    if (chosen.length === 0) return;
+    setAction({ ...action, busy: true });
+    try {
+      const res = await apiPost<{ created: number }>(
+        `/matters/${matterId}/deadlines/bulk`,
+        { deadlines: chosen }
+      );
+      setNotice(t.apActDlDone.replace("{n}", String(res.created)));
+      setAction(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+      setAction({ ...action, busy: false });
+    }
+  }
+
+  async function saveDraft() {
+    if (!matterId || !ctxMatter || !action || action.type !== "draft") return;
+    const msg = messages[action.msgIdx];
+    if (!msg || !action.title.trim()) return;
+    setAction({ ...action, busy: true });
+    try {
+      await apiPost("/assistant/actions/save-draft", {
+        matter_id: matterId,
+        title: action.title.trim(),
+        content: msg.content,
+      });
+      setNotice(t.apActDraftDone);
+      setAction(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+      setAction({ ...action, busy: false });
     }
   }
 
@@ -276,11 +364,144 @@ export default function AssistantPanel() {
                   )}
                 </div>
                 {m.role === "assistant" && m.id !== "streaming" && m.content && (
-                  <SpeakButton text={m.content} locale={locale} serverTts={voice.tts} />
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <SpeakButton text={m.content} locale={locale} serverTts={voice.tts} />
+                    {/* Action execution with approval (D-053) — only with a matter in scope */}
+                    {matterId && (
+                      <>
+                        <button
+                          onClick={() => extractDeadlines(i, m.content)}
+                          disabled={busy || Boolean(action?.busy)}
+                          className="text-[11px] rounded-full border border-slate-200 px-2.5 py-1 text-slate-600 hover:border-indigo-300 hover:text-indigo-700 transition disabled:opacity-50"
+                        >
+                          📅 {t.apActExtract}
+                        </button>
+                        <button
+                          onClick={() =>
+                            setAction({
+                              type: "draft", msgIdx: i, busy: false,
+                              title: `${t.apActDraft} — ${ctxMatter?.reference || ""}`.trim(),
+                            })
+                          }
+                          disabled={busy || Boolean(action?.busy)}
+                          className="text-[11px] rounded-full border border-slate-200 px-2.5 py-1 text-slate-600 hover:border-indigo-300 hover:text-indigo-700 transition disabled:opacity-50"
+                        >
+                          📄 {t.apActDraft}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* Deadline proposals: the lawyer reviews before anything is saved */}
+                {action?.type === "deadlines" && action.msgIdx === i && (
+                  <div className="mt-1.5 rounded-xl border border-indigo-100 bg-indigo-50/60 p-3 space-y-2 text-xs">
+                    {action.busy && !action.proposals && (
+                      <p className="text-slate-500 animate-pulse">{t.thinking}</p>
+                    )}
+                    {action.proposals && action.proposals.length === 0 && (
+                      <p className="text-slate-500">{t.apActNoDl}</p>
+                    )}
+                    {action.proposals?.map((p, j) => (
+                      <label
+                        key={j}
+                        className={`flex items-start gap-2 ${p.due_date ? "cursor-pointer" : "opacity-50"}`}
+                      >
+                        <input
+                          type="checkbox"
+                          disabled={!p.due_date || action.busy}
+                          checked={action.selected[j] && Boolean(p.due_date)}
+                          onChange={(e) =>
+                            setAction({
+                              ...action,
+                              selected: action.selected.map((s, k) => (k === j ? e.target.checked : s)),
+                            })
+                          }
+                          className="accent-indigo-600 mt-0.5"
+                        />
+                        <span className="min-w-0">
+                          <span className="font-medium text-slate-800">{p.title}</span>{" "}
+                          {p.due_date ? <span className="text-indigo-700">— {p.due_date}</span> : null}
+                          {p.legal_basis ? (
+                            <span className="block text-slate-500">{p.legal_basis}</span>
+                          ) : null}
+                        </span>
+                      </label>
+                    ))}
+                    <div className="flex items-center gap-2 pt-1">
+                      {action.proposals && action.proposals.some((p, j) => action.selected[j] && p.due_date) && (
+                        <Button
+                          onClick={createSelectedDeadlines}
+                          disabled={action.busy}
+                          className="!px-3 !py-1.5 !text-xs"
+                        >
+                          {t.apActCreate.replace(
+                            "{n}",
+                            String(action.proposals.filter((p, j) => action.selected[j] && p.due_date).length)
+                          )}
+                        </Button>
+                      )}
+                      <button
+                        onClick={() => setAction(null)}
+                        disabled={action.busy}
+                        className="text-slate-500 hover:text-slate-700 px-2 py-1.5"
+                      >
+                        {t.close}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Draft form: named by the lawyer, saved with ai_generated=true */}
+                {action?.type === "draft" && action.msgIdx === i && (
+                  <div className="mt-1.5 rounded-xl border border-indigo-100 bg-indigo-50/60 p-3 space-y-2 text-xs">
+                    <label className="block">
+                      <span className="text-slate-500">{t.apDraftTitle}</span>
+                      <input
+                        value={action.title}
+                        onChange={(e) => setAction({ ...action, title: e.target.value })}
+                        disabled={action.busy}
+                        className="mt-1 w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm bg-white"
+                      />
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={saveDraft}
+                        disabled={action.busy || !action.title.trim()}
+                        className="!px-3 !py-1.5 !text-xs"
+                      >
+                        {action.busy ? t.loading : t.apActDraft}
+                      </Button>
+                      <button
+                        onClick={() => setAction(null)}
+                        disabled={action.busy}
+                        className="text-slate-500 hover:text-slate-700 px-2 py-1.5"
+                      >
+                        {t.close}
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
           ))}
+          {notice && (
+            <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+              ✓ {notice}
+              {ctxMatter && (
+                <>
+                  {" "}
+                  <Link
+                    href={`/matters/${ctxMatter.id}`}
+                    onClick={() => setOpen(false)}
+                    className="underline"
+                  >
+                    {ctxMatter.reference}
+                  </Link>
+                </>
+              )}
+            </p>
+          )}
           {busy && steps.length > 0 && (
             <div className="text-xs text-slate-500 bg-indigo-50/60 border border-indigo-100 rounded-xl px-3.5 py-2.5 space-y-1">
               <p className="font-semibold text-indigo-700">{t.deepResearch}</p>

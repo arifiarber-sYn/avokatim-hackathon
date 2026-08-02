@@ -527,3 +527,94 @@ async def prep_for_hearing(
     )
     await db.commit()
     return SummarizeResponse(summary=answer, citations=citations)
+
+
+# ---------- action execution with approval (D-053) ----------
+# The Clio/AnNoText pattern: the assistant proposes, the lawyer approves.
+# Extraction returns proposals only (no side effects); deadline creation
+# reuses POST /matters/{id}/deadlines/bulk, and drafts are filed with
+# ai_generated=True so the D-044 human-review gate applies before sharing.
+
+
+class ExtractActionsIn(BaseModel):
+    matter_id: uuid.UUID
+    text: str = Field(min_length=1, max_length=40_000)
+
+
+@router.post("/actions/extract-deadlines")
+async def extract_deadlines_from_answer(
+    body: ExtractActionsIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Ava re-reads one of her own answers and proposes concrete deadlines.
+    Nothing is saved here — the lawyer approves each proposal in the panel."""
+    from app.api.collab import ExtractedDeadline
+    from app.services.assistant import extract_deadlines_from_text
+
+    await get_owned_matter(db, user, body.matter_id)
+    try:
+        raw = await extract_deadlines_from_text(
+            body.text, provider_name=await _effective_provider(db, user, None)
+        )
+    except Exception as exc:
+        logger.warning("Assistant deadline extraction failed: %s", exc)
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "AI provider unavailable")
+
+    proposals: list[ExtractedDeadline] = []
+    for item in raw[:10]:
+        if not isinstance(item, dict):
+            continue
+        item["due_date"] = item.pop("date", None)
+        try:
+            proposals.append(ExtractedDeadline(**{
+                k: item.get(k) for k in
+                ("title", "kind", "due_date", "trigger_date", "days", "legal_basis", "confidence")
+                if item.get(k) is not None
+            }))
+        except Exception:
+            continue
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id,
+        action="assistant.extract_deadlines",
+        entity_type="matter", entity_id=str(body.matter_id),
+        details={"proposals": len(proposals)},
+    )
+    await db.commit()
+    return proposals
+
+
+class SaveDraftIn(BaseModel):
+    matter_id: uuid.UUID
+    title: str = Field(min_length=1, max_length=200)
+    content: str = Field(min_length=1, max_length=100_000)
+
+
+@router.post("/actions/save-draft", status_code=201)
+async def save_answer_as_draft(
+    body: SaveDraftIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """File an assistant answer into the matter as a draft PDF. Marked
+    ai_generated, so it must pass human review (D-044) before the client
+    can see it or it can be sent for signature."""
+    from app.api.templates import file_content_as_pdf
+    from app.schemas.documents import DocumentOut
+
+    matter = await get_owned_matter(db, user, body.matter_id)
+    doc = await file_content_as_pdf(
+        db, user, matter, body.content,
+        filename=f"{body.title} - {matter.reference}.pdf",
+        ai_generated=True,
+    )
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="assistant.save_draft",
+        entity_type="document", entity_id=str(doc.id),
+        details={"matter": matter.reference, "title": body.title},
+    )
+    await db.commit()
+    await db.refresh(doc)
+    out = DocumentOut.model_validate(doc)
+    out.has_text = True
+    return out

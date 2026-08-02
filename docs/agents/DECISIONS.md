@@ -1301,3 +1301,40 @@
   `frontend/src/app/ava/page.tsx`, `frontend/src/components/public-shell.tsx`,
   `frontend/src/app/(app)/layout.tsx`, `frontend/src/app/per-avokatet/page.tsx`,
   `frontend/src/app/per-noteret/page.tsx`, `frontend/src/lib/dictionaries.ts`.
+
+## D-053: Assistant action execution with approval + Ask-Ava in Cmd+K + Ava card in the citizen portal (2026-08-02)
+
+- Context: the D-052 backlog — the Clio Duo / AnNoText Expert AI
+  standard is "the assistant proposes, the lawyer approves": answers
+  should turn into deadlines and drafts without leaving the panel.
+  Mobile is the priority surface.
+- Decision (actions): two new assistant routes, no new create paths.
+  `POST /assistant/actions/extract-deadlines` {matter_id, text} reuses
+  `extract_deadlines_from_text` and returns proposals only (same
+  ExtractedDeadline shape as collab, zero side effects); creation goes
+  through the existing `POST /matters/{id}/deadlines/bulk` after the
+  lawyer ticks each proposal. `POST /assistant/actions/save-draft`
+  {matter_id, title, content} reuses `file_content_as_pdf` with
+  `ai_generated=True`, so the D-044 human-review gate blocks
+  sharing/signature until confirm-ai-review. Both audit-logged
+  (assistant.extract_deadlines / assistant.save_draft).
+- Decision (panel UI): action chips ("📅 extract deadlines",
+  "📄 save as draft") under every assistant answer when a matter is in
+  scope; proposals render as a checkbox list (undated ones disabled —
+  bulk skips them), drafts get a title field; success notice links to
+  the matter. One in-flight action at a time.
+- Decision (global search): Cmd+K/Ctrl+K now focuses the search box;
+  the dropdown's first row is "Ask Ava: «query»" which fires the
+  `avokatim:ask-ava` CustomEvent — the assistant panel opens with the
+  question prefilled (not auto-sent; sending stays a human act).
+- Decision (citizen portal): /rasti-im gets a gradient Ava card under
+  the intro firing `avokatim:open-ava`, which the public AvaLauncher
+  listens for — the citizen opens the full-screen sheet (mobile) or
+  side panel without losing the case view. No second embedded chat:
+  one shared session/quota via the launcher.
+- New dictionary keys ×7: apActExtract, apActDraft, apActCreate,
+  apActNoDl, apActDlDone, apActDraftDone, apDraftTitle, gsAskAva, rmAvaB.
+- Files: `backend/app/api/assistant.py`,
+  `backend/tests/test_assistant_actions.py`,
+  `frontend/src/components/{assistant-panel,global-search,ava-launcher}.tsx`,
+  `frontend/src/app/rasti-im/page.tsx`, `frontend/src/lib/dictionaries.ts`.

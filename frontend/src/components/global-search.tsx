@@ -48,6 +48,28 @@ export function GlobalSearch({ onNavigate }: { onNavigate?: () => void }) {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
+  // Cmd+K / Ctrl+K focuses the search from anywhere in the app (D-053)
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        boxRef.current?.querySelector("input")?.focus();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // "Ask Ava" row: hands the query to the assistant panel (D-053)
+  function askAva() {
+    const question = q.trim();
+    setOpen(false);
+    setQ("");
+    window.dispatchEvent(
+      new CustomEvent("avokatim:ask-ava", { detail: { question } })
+    );
+  }
+
   const empty =
     results &&
     results.matters.length === 0 &&
@@ -84,6 +106,15 @@ export function GlobalSearch({ onNavigate }: { onNavigate?: () => void }) {
       />
       {open && (results || busy) && (
         <div className="absolute z-50 mt-1 w-full max-h-[28rem] overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-xl divide-y divide-slate-100 pb-1">
+          {q.trim().length >= 2 && (
+            <button
+              onClick={askAva}
+              className="w-full text-left px-3 py-2 text-sm text-indigo-700 hover:bg-indigo-50 font-medium flex items-center gap-2"
+            >
+              <span className="h-6 w-6 rounded-full bg-indigo-100 flex items-center justify-center text-xs shrink-0">✦</span>
+              <span className="truncate">{t.gsAskAva.replace("{q}", q.trim())}</span>
+            </button>
+          )}
           {busy && !results && (
             <p className="px-3 py-3 text-sm text-slate-400">{t.loading}</p>
           )}
