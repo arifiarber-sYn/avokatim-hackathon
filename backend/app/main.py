@@ -53,6 +53,18 @@ from app.services.platform_billing import billing_loop
 
 logging.basicConfig(level=logging.INFO)
 
+# Error tracking (D-054 F6): self-hosted GlitchTip — everything stays local.
+# No PII, no request bodies; unhandled exceptions + explicit captures only.
+if settings.sentry_dsn:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        send_default_pii=False,
+        traces_sample_rate=0,
+        environment="production",
+    )
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

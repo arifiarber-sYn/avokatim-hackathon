@@ -1338,3 +1338,50 @@
   `backend/tests/test_assistant_actions.py`,
   `frontend/src/components/{assistant-panel,global-search,ava-launcher}.tsx`,
   `frontend/src/app/rasti-im/page.tsx`, `frontend/src/lib/dictionaries.ts`.
+
+## D-054: Technology-leadership wave — notifications, agentic AI, proactive AI, 24/7 receptionist, UX detail pass, local observability (2026-08-02)
+
+- Context: full comparison with the 2026 industry frontier (Harvey Agent
+  Builder, Clio Vincent agentic mode, Legora end-to-end vision, RA-MICRO
+  KI Widget, Smith.ai/ElevenLabs AI receptionists, ambient-AI trend).
+  We matched the leaders on in-context AI and approval-gated actions but
+  lacked in-app notifications/realtime, agentic multi-step execution,
+  proactive monitoring, a 24/7 intake channel, and 2026 UX table stakes.
+- Decision (F1, foundation): one `Notification` model + `/notifications`
+  API + lightweight SSE stream, with a per-user, per-kind "interrupt
+  budget" (push vs. center-only) in Settings. All existing sources
+  (deadlines, suggestions, email, Mahnung, intake, messages) write here
+  alongside email/push — one place to look, user-controlled interruption.
+- Decision (F2, agentic): `POST /assistant/agent-run` (SSE) — the LLM
+  plans visible steps from a goal and executes read-only tools
+  sequentially; anything that writes (deadlines, drafts) emits approval
+  events consumed by the D-053 approval UI. Human-on-the-loop is kept as
+  our BRAK-conform differentiator; every run lands in the KI-Register
+  (D-044).
+- Decision (F3, proactive): three background agents in `reminder_loop`
+  (morning briefing with local TTS; case-law monitor matching new corpus
+  judgments to open matters via local embeddings — active linkage no
+  competitor offers; deadline audit). All respect the interrupt budget,
+  none acts without approval.
+- Decision (F4, receptionist): hands-free voice conversation mode in the
+  public Ava chat (local STT→LLM→TTS loop — privacy-safe Albanian voice
+  no one else has), and the WhatsApp bot upgraded to full intake: a
+  Redis state machine ("RAST" → describe/city/name/email) that posts a
+  structured marketplace case, alerts matching lawyers (incl. F1
+  center) and offers real consultation slots in-chat. AI is declared in
+  the first message (RDG/BRAO).
+- Decision (F5, UX): passkeys/WebAuthn (passwordless login skips TOTP —
+  a passkey is already MFA) + sliding sessions; opt-in dark mode via a
+  `.theme-dark` utility remap (no second design system); Cmd+K becomes a
+  command palette (fuzzy actions + pg_trgm typo-tolerant search);
+  skeletons + optimistic updates; PWA install banner only after real
+  engagement; haptics on key actions.
+- Decision (F6, observability): GlitchTip self-hosted in the existing
+  compose stack (own DB in avokatim-db, Redis DB 2) instead of SaaS
+  Sentry — errors never leave the machine. Frontend errors relayed
+  through our own `POST /api/public/client-error` (rate-limited, no PII)
+  rather than shipping a Sentry browser SDK: one dependency less, same
+  visibility. Product usage as Umami custom events (`lib/analytics.ts`),
+  counts only.
+- Files: see the six F1–F6 entries in `docs/agent/CHANGELOG.md`
+  (2026-08-02); commits a63111a, 0bfcd39, d503020, ea338ac, 600a3be + F6.

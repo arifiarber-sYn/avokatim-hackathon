@@ -73,6 +73,56 @@ services:
       db:
         condition: service_healthy
 
+  # Self-hosted error tracking (Sentry-compatible, D-054 F6). Errors from the
+  # backend (sentry-sdk) and the frontend (relayed via /api/public/client-error)
+  # stay on this machine. Own `glitchtip` DB inside the existing Postgres,
+  # Redis DB 2 as broker. UI at http://127.0.0.1:8010.
+  glitchtip:
+    image: glitchtip/glitchtip:v5.1
+    container_name: avokatim-glitchtip
+    restart: unless-stopped
+    environment: &glitchtip_env
+      DATABASE_URL: postgresql://avokatim:${DB_PASSWORD:-avokatim-dev-password}@db:5432/glitchtip
+      REDIS_URL: redis://redis:6379/2
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:-glitchtip-dev-secret-change-me}
+      GLITCHTIP_DOMAIN: http://127.0.0.1:8010
+      EMAIL_URL: consolemail://
+      ENABLE_USER_REGISTRATION: "False"
+      ENABLE_ORGANIZATION_CREATION: "False"
+      CELERY_WORKER_AUTOSCALE: "1,2"
+    ports:
+      - "127.0.0.1:8010:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      glitchtip-migrate:
+        condition: service_completed_successfully
+
+  glitchtip-worker:
+    image: glitchtip/glitchtip:v5.1
+    container_name: avokatim-glitchtip-worker
+    restart: unless-stopped
+    command: ./bin/run-celery-with-beat.sh
+    environment: *glitchtip_env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      glitchtip-migrate:
+        condition: service_completed_successfully
+
+  glitchtip-migrate:
+    image: glitchtip/glitchtip:v5.1
+    container_name: avokatim-glitchtip-migrate
+    command: ./manage.py migrate
+    environment: *glitchtip_env
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   avokatim_pgdata:
   avokatim_redis:

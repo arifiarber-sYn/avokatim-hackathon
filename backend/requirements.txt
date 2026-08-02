@@ -30,5 +30,8 @@ huggingface_hub
 # WebAuthn passkeys (D-054)
 webauthn>=3.0
 
+# Error tracking to self-hosted GlitchTip (D-054 F6) — local only
+sentry-sdk[fastapi]>=2.19
+
 # security tooling (weekly dependency scan — scripts/security_scan.sh)
 pip-audit>=2.10

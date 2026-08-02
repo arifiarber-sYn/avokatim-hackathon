@@ -17,6 +17,7 @@ import { usePathname } from "next/navigation";
 import { apiGet, apiPost, apiStream } from "@/lib/api";
 import { haptic } from "@/lib/haptics";
 import { useI18n } from "@/lib/i18n";
+import { track } from "@/lib/analytics";
 import { Matter, Message } from "@/lib/types";
 import { Button, ErrorNote, Textarea } from "@/components/ui";
 import { MicButton, SpeakButton, useVoiceAvailable } from "@/components/voice-controls";
@@ -125,6 +126,7 @@ export default function AssistantPanel() {
 
   async function runAgent(goal: string) {
     if (!matterId) return;
+    track("agent_run");
     setBusy(true);
     setError("");
     setNotice("");

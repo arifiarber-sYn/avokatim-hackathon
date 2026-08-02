@@ -11,6 +11,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
+import { track } from "@/lib/analytics";
 import { getCitizenToken } from "@/lib/citizen";
 import { clientCountry, DE_REGIONS } from "@/lib/country";
 import { ovCaseMatch, OV_PORTAL_URL } from "@/lib/ov";
@@ -101,6 +102,7 @@ export default function AvaChat({ variant = "page" }: { variant?: "page" | "pane
 
   const askQuestion = useCallback(async (question: string) => {
     if (!question || busyRef.current) return;
+    track("ava_ask", { variant });
     busyRef.current = true;
     setBusy(true);
     setError("");
@@ -420,6 +422,7 @@ export default function AvaChat({ variant = "page" }: { variant?: "page" | "pane
           type="button"
           onClick={() => {
             if (convo) stopSpeaking();
+            else track("ava_voice_convo");
             setConvo(!convo);
           }}
           className={`self-start -mt-2 inline-flex items-center gap-1.5 text-[11px] rounded-full border px-2.5 py-1 transition ${

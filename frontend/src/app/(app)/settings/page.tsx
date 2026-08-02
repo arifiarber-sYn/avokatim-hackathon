@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiDelete, apiDownload, apiGet, apiPatch, apiPost, apiPut, apiUpload, setToken } from "@/lib/api";
 import { clientCountry, DE_REGIONS } from "@/lib/country";
+import { track } from "@/lib/analytics";
 import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
 import { Contact } from "@/lib/types";
@@ -1106,6 +1107,7 @@ function PasskeySection() {
       const optionsJSON = await apiPost<never>("/auth/passkeys/register-options");
       const credential = await startRegistration({ optionsJSON });
       await apiPost("/auth/passkeys/register", { credential });
+      track("passkey_added");
       load();
     } catch (err) {
       const aborted = err instanceof Error && err.name === "NotAllowedError";

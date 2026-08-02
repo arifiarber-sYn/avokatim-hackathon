@@ -409,6 +409,28 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   listings include the cost calculator + guides (faqA1, landToolsB, new
   umbFnC9; /per-qytetaret tools card links /kostoja+/udhezues on XK,
   /rvg+/ratgeber on DE; toolsActive covers /udhezues and /ratgeber).
+- **Technology-leadership wave** (2026-08-02, D-054): (1) in-app
+  notification center — `Notification` model, `/api/notifications` +
+  SSE stream, bell in header/bottom-nav, per-kind "interrupt budget"
+  prefs in Settings; all reminder/intake/email/Mahnung sources write
+  here. (2) Ava Agent: `POST /assistant/agent-run` (SSE) plans visible
+  steps from a goal, executes read-only tools, write actions go through
+  the D-053 approval UI; runs land in the KI-Register. (3) Proactive AI
+  in `services/proactive.py`: morning briefing (LLM + local TTS, kind
+  `briefing`, dashboard card), case-law monitor (new corpus judgments ↔
+  open matters via local embeddings), deadline audit. (4) 24/7
+  receptionist: voice conversation mode in the public Ava chat (local
+  STT→TTS loop, keys vcMode/vcOn) and WhatsApp full intake
+  (`services/wa_intake.py`: "RAST"/"FALL"/"CASE" → Redis state machine →
+  structured marketplace case + lawyer alerts + free consultation slots
+  in-chat; AI declared, RDG/BRAO-safe). (5) UX wave: passkeys, dark
+  mode, command palette, fuzzy search, skeletons, PWA install banner,
+  haptics. (6) Observability: GlitchTip at 127.0.0.1:8010 (see
+  containers below), backend sentry-sdk via `SENTRY_DSN`, browser errors
+  relayed through `POST /api/public/client-error`
+  (`components/error-reporter.tsx`), Umami product events via
+  `lib/analytics.ts` (ava_ask, agent_run, case_posted, pwa_install,
+  passkey_added, ava_voice_convo).
 - **Assistant actions with approval** (2026-08-02, D-053): under each
   panel answer (matter in scope) the lawyer can extract deadlines
   (`POST /assistant/actions/extract-deadlines` → proposals → existing
@@ -916,7 +938,13 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   own `umami` DB inside avokatim-db, public at https://stats.avokatiim.ai via
   the tunnel; admin credentials noted in the compose `.env`; frontend loads the
   cookie-free script when `NEXT_PUBLIC_UMAMI_SRC/ID` are set in
-  `frontend/.env.local` at build time).
+  `frontend/.env.local` at build time), `avokatim-glitchtip` +
+  `avokatim-glitchtip-worker` (error tracking, D-054 F6; UI at
+  127.0.0.1:8010, own `glitchtip` DB inside avokatim-db, Redis DB 2 as
+  broker; backend reports via `SENTRY_DSN` in `backend/.env`, browser
+  errors relayed via `POST /api/public/client-error`; registration
+  disabled — owner account `owner@avokatiim.ai`, reset the password with
+  `docker exec avokatim-glitchtip ./manage.py changepassword owner@avokatiim.ai`).
 - Backend: uvicorn on 127.0.0.1:8000, venv at `backend/.venv`. Frontend: Next.js on :3000.
 - Secrets in `backend/.env` (git-ignored): DeepSeek key, doc encryption key, DB password.
 - **Optional integrations, off until configured in `backend/.env`** (all degrade

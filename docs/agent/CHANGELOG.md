@@ -3,6 +3,26 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-02 — Observability: local GlitchTip + product events (D-054 F6)
+
+- GlitchTip v5.1 self-hosted in docker-compose (web 127.0.0.1:8010 +
+  celery worker + one-shot migrate; own `glitchtip` DB in avokatim-db,
+  Redis DB 2 as broker; registration disabled). Errors never leave the
+  machine.
+- Backend: `sentry-sdk[fastapi]`, init in `main.py` when `SENTRY_DSN` is
+  set (no PII, no traces). DSN in `backend/.env`.
+- Frontend: `components/error-reporter.tsx` in the root layout relays
+  window.onerror + unhandledrejection (deduped, ≤5/session, sendBeacon)
+  to new `POST /api/public/client-error` (rate-limited 10/h/IP), which
+  forwards to GlitchTip tagged `source=frontend`.
+- Product events in Umami via `lib/analytics.ts` `track()`: ava_ask,
+  ava_voice_convo, agent_run, case_posted, pwa_install, passkey_added.
+- Files: `docker-compose.yml`, `backend/app/{main,config}.py`,
+  `backend/app/api/feedback.py`, `backend/requirements.txt`,
+  `frontend/src/components/{error-reporter,install-banner,ava-chat,assistant-panel}.tsx`,
+  `frontend/src/lib/analytics.ts`, `frontend/src/app/layout.tsx`,
+  settings + posto-rastin pages.
+
 ## 2026-08-02 — 24/7 receptionist: voice conversation + WhatsApp intake (D-054 F4)
 
 - Voice conversation mode in the public Ava chat (page + launcher panel):

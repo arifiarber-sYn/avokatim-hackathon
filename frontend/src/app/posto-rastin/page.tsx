@@ -12,6 +12,7 @@ import {
 } from "@/lib/citizen";
 import { Button, Card, ErrorNote, Input, Label, Select, Spinner, Textarea } from "@/components/ui";
 import { clientCountry } from "@/lib/country";
+import { track } from "@/lib/analytics";
 import { ovCaseMatch, OV_PORTAL_URL } from "@/lib/ov";
 import PublicShell from "@/components/public-shell";
 import PageIntro from "@/components/page-intro";
@@ -128,6 +129,7 @@ function PostCaseInner() {
         insurer_name: insured === "yes" && insurerName ? insurerName : null,
       });
       setPosted(true);
+      track("case_posted", { category: form.category });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       const status = (err as Error & { status?: number }).status;

@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { haptic } from "@/lib/haptics";
+import { track } from "@/lib/analytics";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -46,6 +47,7 @@ export function InstallBanner() {
 
   async function install() {
     haptic();
+    track("pwa_install");
     try {
       await promptEvent!.prompt();
       await promptEvent!.userChoice;

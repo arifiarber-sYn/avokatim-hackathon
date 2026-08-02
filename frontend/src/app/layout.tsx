@@ -4,6 +4,7 @@ import "./globals.css";
 import type { Country } from "@/lib/country";
 import { I18nProvider } from "@/lib/i18n";
 import { COUNTRY_BASE_URL, serverCountry } from "@/lib/seo";
+import ErrorReporter from "@/components/error-reporter";
 
 // Self-hosted at build time by next/font — no runtime requests to Google.
 // latin-ext covers Albanian (ë, ç) and the Balkan languages.
@@ -118,6 +119,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd(country)) }}
         />
         <I18nProvider>{children}</I18nProvider>
+        <ErrorReporter />
         {UMAMI_SRC && UMAMI_ID && (
           <script defer src={UMAMI_SRC} data-website-id={UMAMI_ID} />
         )}

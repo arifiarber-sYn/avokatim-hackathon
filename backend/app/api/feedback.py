@@ -56,6 +56,39 @@ async def submit_feedback(
     return {"received": True}
 
 
+# ---------- frontend error relay (D-054 F6) ----------
+
+class ClientErrorIn(BaseModel):
+    message: str = Field(min_length=1, max_length=2000)
+    stack: str | None = Field(default=None, max_length=8000)
+    url: str | None = Field(default=None, max_length=500)
+
+
+@public_router.post("/client-error", status_code=status.HTTP_202_ACCEPTED)
+async def report_client_error(body: ClientErrorIn, request: Request):
+    """Browser errors land in the self-hosted GlitchTip (when configured)
+    instead of vanishing in users' consoles. No PII: message + stack + URL."""
+    from app.config import settings
+
+    await _rate_limit("client_error", _ip(request), limit=10, window_seconds=3600)
+    if settings.sentry_dsn:
+        import sentry_sdk
+
+        with sentry_sdk.new_scope() as scope:
+            scope.set_tag("source", "frontend")
+            scope.set_context(
+                "browser",
+                {
+                    "url": body.url or "",
+                    "user_agent": request.headers.get("user-agent", "")[:300],
+                },
+            )
+            sentry_sdk.capture_message(
+                f"[frontend] {body.message}\n{body.stack or ''}"[:9000], level="error"
+            )
+    return {"received": True}
+
+
 # ---------- operator review ----------
 
 @admin_router.get("/feedback/pending-count")

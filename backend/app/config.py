@@ -71,6 +71,11 @@ class Settings(BaseSettings):
     # Morning briefing (D-054 F3): generated after this local hour
     briefing_hour: int = 7
 
+    # Error tracking (D-054 F6): DSN of the self-hosted GlitchTip container
+    # (docker-compose, http://127.0.0.1:8010). Empty = disabled. Errors never
+    # leave this machine.
+    sentry_dsn: str = ""
+
     # Social login for citizen accounts (Google / Apple / Meta). A provider's
     # button appears only when its credentials are set. Redirect URIs to
     # register with each provider:

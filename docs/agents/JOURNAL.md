@@ -10,6 +10,38 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-02 — D-054: Vala e lidershipit teknologjik në 6 faza (Cursor / Fable 5)
+
+- Done (F1): qendra e njoftimeve — model `Notification`, API + stream SSE,
+  zile në header/bottom-nav, preferencat "interrupt budget" te Settings;
+  burimet ekzistuese (afate, sugjerime, email, Mahnung, intake, mesazhe)
+  shkruajnë aty krahas email/push.
+- Done (F2): Ava Agjente — `POST /assistant/agent-run` (SSE) me plan hapash
+  të dukshëm; veglat me shkrim kalojnë nëpër aprovimin e D-053; çdo run
+  në KI-Register.
+- Done (F3): AI proaktive — briefingu i mëngjesit me TTS lokal (kartë në
+  dashboard), monitoruesi i praktikës gjyqësore (aktgjykime të reja ↔
+  lëndë aktive me embeddings lokale), auditi i afateve në rrezik.
+- Done (F4): recepsionistja 24/7 — modalitet bisede me zë te Ava publike
+  (STT→LLM→TTS lokal, hands-free, çelësat vcMode/vcOn ×7) dhe WhatsApp
+  intake i plotë (`services/wa_intake.py`): RAST → makinë gjendjesh në
+  Redis → rast i strukturuar në treg + njoftim avokatëve + termine të
+  lira në chat; deklarim AI në mesazhin e parë.
+- Done (F5): vala UX — passkeys/WebAuthn + login pa fjalëkalim, dark mode,
+  paleta e komandave në Cmd+K + kërkim fuzzy (pg_trgm), skeletons +
+  optimistic updates, banner instalimi PWA, haptics.
+- Done (F6): GlitchTip v5.1 lokal në compose (127.0.0.1:8010, DB e vet në
+  avokatim-db, Redis DB 2), sentry-sdk në backend, rele
+  `POST /api/public/client-error` + `error-reporter.tsx` për gabimet e
+  shfletuesit, evente produkti në Umami (ava_ask, agent_run, case_posted,
+  pwa_install, passkey_added, ava_voice_convo).
+- Verified: pytest 243/243; build OK; health OK; XK (sq) dhe DE (de) 200;
+  gabim testues i dërguar → u shfaq në GlitchTip (event 1, tag frontend).
+- Left open: WhatsApp intake DE-lokalizim i mesazheve (sot sq me fjalë
+  kyçe FALL/CASE); llogaria GlitchTip e pronarit ka fjalëkalim të
+  rastësishëm — ndryshohet me `./manage.py changepassword
+  owner@avokatiim.ai` në kontejner.
+
 ## 2026-08-02 — D-053: Veprime me aprovim nga paneli + "Pyete Avën" në Cmd+K + Ava në /rasti-im (Cursor / Fable 5)
 
 - Done: backlog-u i D-052 u mbyll. Dy rrugë të reja te asistenti:
