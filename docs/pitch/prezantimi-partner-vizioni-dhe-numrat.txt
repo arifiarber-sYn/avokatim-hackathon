@@ -1,0 +1,50 @@
+*Vizioni dhe numrat — një kod, shumë vende: potenciali 5 dhe 10 vjeçar*
+
+*Arkitektura që e bën zgjerimin të lirë*
+
+Platforma jonë është ndërtuar me një parim të rrallë në industri: *juridiksioni është e dhënë, jo kod*. Afatet procedurale, festat, tarifat, ligjet, gjuha, çmimi, madje edhe emri tregtar — të gjitha janë të dhëna vendi. Prandaj i njëjti kod sot shërben dy tregje të gjalla: *AvokatIM* në Kosovë dhe *Ava Legal* në Gjermani. Hapja e një vendi të ri nuk është projekt vitesh — është punë javësh: korpusi ligjor, rregullat e afateve dhe përkthimi.
+
+Kjo është dëshmuar praktikisht: versioni gjerman — me afatet sipas ZPO/BGB, llogaritësin RVG, faturën elektronike ZUGFeRD, eksportin DATEV dhe mbi 15.400 vendime gjyqësore të indeksuara — u ngrit mbi themelin kosovar pa e prekur atë.
+
+*Tregu 1: Kosova — tregu ynë i referencës*
+
+Numra realë: rreth *1.460 avokatë të licencuar* në regjistrin e OAK-së dhe *141 noterë*. Çmimi ynë: 24 € për përdorues në muaj, viti i parë falas.
+
+• Tavani i tregut: rreth 1.600 profesionistë × 24 € × 12 muaj ≈ *460 mijë € në vit*.
+• Skenari 5-vjeçar (konservativ, 15% e tregut ≈ 240 përdorues): rreth *70 mijë € në vit*.
+• Skenari 10-vjeçar (35% ≈ 560 përdorues): rreth *160 mijë € në vit*.
+
+Kosova e vetme është biznes i shëndoshë, por jo historia e madhe — ajo është *laboratori dhe dëshmia*: tregu ku produkti provohet me avokatë realë, me kosto minimale, para se të garojë në tregjet e mëdha. Infrastruktura është vetanake, prandaj marzhet këtu janë mbi 80%.
+
+*Tregu 2: Gjermania — ku numrat ndryshojnë kategori*
+
+Numra realë: rreth *165 mijë avokatë* (regjistri federal BRAK), që sot paguajnë 50–109 € për përdorues në muaj për softuer zyre — një treg softueri prej qindra milionë eurosh në vit. Çmimi ynë: 39 €, 3 muaj falas, pa kontratë minimale.
+
+Llogaria bazë që duhet mbajtur mend: *çdo 1% e avokatëve gjermanë = rreth 770 mijë € të ardhura në vit* (1.650 përdorues × 39 € × 12).
+
+• Skenari 5-vjeçar (0,3–0,5% e tregut ≈ 500–800 përdorues): *230–370 mijë € në vit*.
+• Skenari 10-vjeçar (1–2% ≈ 1.650–3.300 përdorues): *0,8–1,5 milionë € në vit*.
+
+Këto përqindje janë të vogla me qëllim — nuk premtojmë pushtim tregu, premtojmë një pjesë realiste të një tregu gjigant që sapo po detyrohet të digjitalizohet (E-Rechnung 2027, beA, vala e AI-së). Edhe skenari më i ulët e kthen platformën në biznes milionësh me kosto operative të ulët — sepse i njëjti kod, i njëjti server dhe i njëjti ekip i shërbejnë të dy tregjeve.
+
+*Tregjet e ardhshme — rruga natyrale*
+
+• *Austria dhe Zvicra gjermanofolëse* — ripërdorim i drejtpërdrejtë i gjithë shtresës gjermane: gjuha, korpusi, kultura e tarifave. Kosto hyrjeje minimale.
+• *Rajoni shqipfolës* (Shqipëria, Maqedonia e Veriut) — ripërdorim i shtresës shqipe dhe i modelit qytetar–avokat.
+• Arkitektura mban të përgatitura si të dhëna edhe juridiksione të tjera — shtimi i një vendi është vendim biznesi, jo rindërtim teknik.
+
+*Profitabiliteti i pritur, me fjalë të thjeshta*
+
+Në vitin e 5-të, të dy tregjet së bashku në skenarin konservativ: rreth *300–440 mijë € të ardhura vjetore*, me marzhe 70–80% falë infrastrukturës vetanake dhe automatizimit (vetë platforma punon me AI — nga recepsionistja 24/7 deri te verifikimi automatik i licencave).
+
+Në vitin e 10-të: *1–1,7 milionë € të ardhura vjetore*, ende me vetëm 1–2% të tregut gjerman. Çdo pikë përqindjeje shtesë në Gjermani shton nga 770 mijë € — ky është leva e vërtetë e investimit.
+
+Dhe një gjë që numrat s'e tregojnë: platforma ka edhe *anën e qytetarit* — asistentja ligjore publike, tregu i rasteve, recepsionistja në WhatsApp. Kjo anë sjell klientë të rinj për avokatët tanë dhe e bën platformën të vështirë për t'u kopjuar: konkurrentët shesin vegla pune, ne ndërtojmë urën ku qytetari e takon avokatin.
+
+*Pyetja e vërtetë*
+
+A do të mbijetojë avokati i së ardhmes pa një sistem të tillë? Gjykatat digjitale, faturat elektronike të detyrueshme, klientët që pyesin AI para se të telefonojnë, gjenerata që avokatin e kërkon në internet — të gjitha këto tashmë janë realitet, jo parashikim. Profesioni nuk zhduket; zhduket mënyra e vjetër e ushtrimit të tij. Avokati me AI e zëvendëson avokatin pa të — dhe ne jemi sistemi që e vë AI-në në anën e avokatit.
+
+Partneri që hyn tani nuk blen një premtim — merr një platformë funksionale në dy tregje, me numra të verifikueshëm dhe një rrugë zgjerimi të provuar.
+
+[Emri] · [Telefoni] · avokatiim.ai · de.avokatiim.ai

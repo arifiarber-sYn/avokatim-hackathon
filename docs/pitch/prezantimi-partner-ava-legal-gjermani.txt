@@ -1,0 +1,44 @@
+*Ava Legal — platforma gjermane e zyrës moderne të avokatisë (de.avokatiim.ai)*
+
+I nderuar kolegë,
+
+Versioni gjerman i platformës sonë — me emrin tregtar *Ava Legal* — është i njëjti sistem, por i ndërtuar mbi ligjin gjerman, në gjuhën gjermane, për tregun më të madh ligjor të Evropës.
+
+*Momenti i tregut gjerman*
+
+Në Gjermani ushtrojnë profesionin rreth *165 mijë avokatë*, shumica në zyra të vogla me 1–5 avokatë. Këto zyra po përballen njëkohësisht me tri valë: komunikimi i detyrueshëm digjital me gjykatat (beA), *E-Rechnung e detyrueshme nga 1 janari 2027* (fatura elektronike e strukturuar për çdo faturë B2B), dhe vala e AI-së që klientët tashmë e presin. Softueri dominues i zyrave është nga epoka e Windows-it: i fuqishëm, por i rëndë dhe i shtrenjtë — 50 deri në 109 € për përdorues në muaj, pothuajse gjithmonë me kontrata 12–36 mujore.
+
+*Çfarë bën Ava Legal*
+
+• *E-Akte e plotë* — dosja digjitale me dokumente të enkriptuara, versionim, detyra dhe histori të plotë me audit-log.
+
+• *Afatet gjermane si rregulla të verifikuara* — ZPO, StPO, KSchG, VwGO, SGG, AO; muajt kalendarikë sipas §§ 187–188 BGB; fundjavat dhe festat sipas § 222 ZPO — përfshirë festat e landit përkatës, jo vetëm ato federale.
+
+• *Llogaritësi i plotë RVG* — tabela sipas § 13 RVG (gjendja 2025), pozicionet kryesore VV, llogaritja e Geschäftsgebühr — me një klik rezultatet bëhen zëra fature. Versioni publik ("Sa kushton avokati?") shërben njëkohësisht si kanal marketingu.
+
+• *E-Rechnung gati për 2027* — çdo faturë del automatikisht si PDF hibrid ZUGFeRD/Factur-X sipas standardit EN 16931, i validuar me veglat standarde të industrisë. Shumica e zyrave të vogla gjermane nuk janë gati për këtë detyrim; klientët tanë janë që sot.
+
+• *Eksporti DATEV* — kontabilisti e merr periudhën e plotë me një klik në formatin EXTF.
+
+• *Ava, asistentja ligjore në gjermanisht* — mbi një korpus real: *99 ligje federale e të landeve dhe mbi 15.400 vendime gjyqësore gjermane*, të indeksuara normë për normë. Përgjigjet vijnë me citim të saktë të normës dhe të vendimit. Qytetari mund të flasë me Avën me zë — njohja e zërit dhe zëri gjerman punojnë lokalisht në serverin tonë.
+
+• *Tregu i rasteve me sinjalin RSV* — qytetari e përshkruan rastin (vetë, me Avën, ose në WhatsApp 24/7) dhe Ava e pyet edhe për sigurimin juridik (Rechtsschutzversicherung). Rasti i mbërrin avokatit me shënimin "RSV ekziston" — sinjali më i fortë që mandati paguhet. Verifikimi i avokatëve bëhet automatikisht kundrejt regjistrit federal BRAV.
+
+• *Shtatë gjuhë* — gjermanisht, anglisht, turqisht, serbisht, boshnjakisht, shqip, kinezisht. Në një vend ku miliona njerëz e kanë gjermanishten gjuhë të dytë, zyra që i flet klientit në gjuhën e tij fiton besim që të tjerët s'e ofrojnë dot.
+
+*Çmimi si armë konkurruese*
+
+Tregu gjerman paguan 50–109 € për përdorues në muaj me kontrata shumëvjeçare. Ava Legal: *3 muaj falas, pastaj 39 € për përdorues në muaj, pa kontratë minimale, kurrë përqindje nga honorarët*. Rreth 25% më lirë se konkurrenti më i lirë i plotë — me anën e qytetarit që asnjë prej tyre s'e ka.
+
+*Transparenca e plotë*
+
+Një boshllëk e kemi dhe e themi hapur: integrimi beA (komunikimi zyrtar me gjykatat) ende s'është gati — procesi i regjistrimit te BRAK si prodhues softueri është nisur. Deri atëherë pozicionohemi si shtresa AI + kanali i klientëve mbi softuerin ekzistues të zyrës. Dhe drejtimi ynë strategjik: modeli AI lokal me përshtatje (fine-tuning) mbi tekste juridike gjermane — që asnjë e dhënë e mandatit të mos largohet nga serveri. Për një profesion me sekret profesional, kjo është garancia që cloud-i amerikan s'e jep dot.
+
+*A mbijeton avokati gjerman i së ardhmes pa një sistem të tillë?*
+
+Gjykatat komunikojnë vetëm digjitalisht. Faturat nga 2027 vetëm elektronike. Klientët pyesin AI para se të telefonojnë. Gjenerata e re e mandateve vjen nga interneti, jo nga tabela në hyrje të zyrës. Avokati që i menaxhon këto me katër vegla të palidhura humb kohë; ai që s'i menaxhon fare humb mandate. Avokati nuk zëvendësohet nga AI — por avokati me AI e zëvendëson avokatin pa të.
+
+Do të më vinte mirë t'jua tregoj platformën drejtpërdrejt në de.avokatiim.ai — demonstrimi zgjat 30 minuta.
+
+Me respekt,
+[Emri] · [Telefoni] · de.avokatiim.ai

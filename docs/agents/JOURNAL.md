@@ -10,6 +10,23 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-03 — Prezantimet për avokatin partner potencial (Cursor / Fable 5)
+
+- Done: tri prezantime tekstuale në `docs/pitch/` për bisedën me avokatin
+  partner, format WhatsApp/Facebook (pa tabela, *bold* me yllëza, .txt të
+  gatshëm për kopjim): `prezantimi-partner-avokatim-kosove.txt` (versioni
+  XK), `prezantimi-partner-ava-legal-gjermani.txt` (versioni DE me brandin
+  Ava Legal, beA i pranuar hapur si boshllëk), dhe
+  `prezantimi-partner-vizioni-dhe-numrat.txt` (një kod–shumë vende,
+  skenarët e profitabilitetit 5/10-vjeçar). Numrat realë: 1.457 avokatë
+  OAK + 141 noterë; 554 ligje + 2.532 aktgjykime XK; 165k avokatë BRAK;
+  99 ligje + 15.424 vendime DE; çmimet 24 €/39 € (D-057). Skenarët:
+  viti 5 ≈ 300–440k €/vit, viti 10 ≈ 1–1,7M €/vit (0,3–2% e tregut DE),
+  me levën "1% e Gjermanisë = ~770k €/vit".
+- Verified: statistikat e korpusit të lexuara live nga /api/public/stats
+  të të dy host-eve; regjistri OAK i numëruar nga data/oak_registry.csv.
+- Left open: përkthimi gjermanisht i prezantimit DE — vetëm po kërkohet.
+
 ## 2026-08-02 — Auditimi i Google login + niveli standard (D-058) (Cursor / Fable 5)
 
 - Done: auditim i plotë i OAuth-it të qytetarëve pas raportimit të pronarit
