@@ -32,6 +32,7 @@ export default function ForLawyersPage() {
   const features = [
     t.lpFeat1, t.lpFeat2, t.lpFeat3, t.lpFeat4,
     t.lpFeat5, t.lpFeat6, t.lpFeat7, t.lpFeat8, t.lpFeat9, t.lpFeat10,
+    t.lpFeat11, t.lpFeat12,
   ];
 
   const aiCards = [
@@ -41,6 +42,7 @@ export default function ForLawyersPage() {
     { icon: "✍️", title: t.lpAi2T, body: t.lpAi2B },
     { icon: "📄", title: t.lpAi3T, body: t.lpAi3B },
     { icon: "⏱️", title: t.lpAi4T, body: t.lpAi4B },
+    { icon: "✅", title: t.lpAi7T, body: t.lpAi7B },
   ];
 
   return (
@@ -136,6 +138,8 @@ export default function ForLawyersPage() {
                   </li>
                 ))}
               </ul>
+              {/* EDA export for the automated Mahnverfahren (D-059 F7) */}
+              <p className="text-sm text-slate-400 text-center">{t.lpDeEda}</p>
             </div>
           )}
         </div>

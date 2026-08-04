@@ -3,6 +3,25 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-04 — D-059 F9: verification, first corpus batch, marketing ×7, docs
+
+- Tests: 3 WA-intake tests updated for the questionnaire steps (D-059 F5
+  changed the flow) — full suite 304 passed. Clean frontend build; health
+  OK; `/api/public/intake-questions` verified live in de/sq; new strings
+  confirmed in the served HTML of both hosts.
+- First corpus batch run: ok=794 skip=2200 fail=6 → 16,218 DE judgments
+  (from 15,424), DB 922 MB; `avokatim-corpus.timer` armed for 01:30
+  nightly. openlegaldata dump still absent (owner action).
+- Marketing ×7 (dictionaries.ts): lpFeat11 (migration wizard), lpFeat12
+  (Outlook + dictation), AI card lpAi7T/B (verified citations), lpDeEda
+  (Mahnbescheid EDA, DE block on /per-avokatet), umbFnL12 (painless
+  switching, homepage lawyer list). Wired into per-avokatet + homepage.
+- Docs: D-059 in DECISIONS, JOURNAL entry, STATE (parity-wave block,
+  16,218 judgments, owner actions: sipgate, oldp dump, add-in sideload).
+- Ops reminder confirmed the hard way: after `npm run build` restart
+  `avokatim-frontend` (the `avokatim` unit is backend-only) — otherwise
+  the old next-server keeps serving stale SSR chunks.
+
 ## 2026-08-04 — Outlook add-in: save email to matter (D-059 F8)
 
 - Backend: `POST /matters/{id}/import-email` (documents.py) — email body

@@ -1462,3 +1462,58 @@
   state and save the last account. `/citizen/me` now exposes `photo` and
   `provider`. Owner action before enabling country callbacks: add the DE
   callback URL to the Google (and Apple/Meta, if desired) console.
+
+## D-059: German-market parity wave — pseudonymization, corpus scale, migration, telephony, EDA, Outlook
+
+- Context: a market analysis of German practice-management software
+  (RA-MICRO, Advoware, AnNoText, Kleos, DATEV, Advolux, JUPUS…) listed the
+  gaps that block competing for real Kanzleien. The owner deferred beA and
+  the local LLM to the next phase; everything else landed in this wave.
+- Decision, per gap (all data-driven, one codebase, both countries):
+  1. **Pseudonymization before external LLMs** (`llm/pseudonymize.py` +
+     `PseudonymizingProvider` wrapper in `get_provider()`, flag
+     `llm_pseudonymize`, default on): regex layer (emails, phones, IBANs,
+     personal/file numbers) + known-terms layer (client/party names via
+     contextvar from `build_matter_context`). Placeholders buffered across
+     stream chunks. Local providers bypass it.
+  2. **DE corpus to 100k+**: RII importer covers all federal courts
+     (+BVerwG, BFH, BSG, BPatG), 15 years; new `import_de_openlegaldata.py`
+     for LG/OLG/AG from the openlegaldata JSONL dump; unique index
+     `(jurisdiction_id, reference, region)`; nightly batch
+     `corpus_night_batch.sh` + `avokatim-corpus.timer` (01:30, 2000/night).
+  3. **Migration wizard** (switching cost → ~0): `POST /import/preview`
+     (dry-run + column mapping), RA-MICRO/Advoware/generic presets, XLSX
+     via openpyxl, `opposing_party` → MatterParty, legacy Aktenzeichen →
+     `Matter.extra["legacy_reference"]` (searchable), `POST
+     /import/documents` (ZIP `{reference}/file.pdf` through the standard
+     pipeline in background), 4-step UI in Settings ×7.
+  4. **Telephony-KI (sipgate)**: Asterisk container (profile `telephony`)
+     with pjsip trunk → AudioSocket TCP → `phone_gateway.py` (VAD,
+     faster-whisper STT, Piper TTS, intake dialog reusing wa_intake
+     classification + category questions) → CaseRequest + office notify.
+     Number lives in `JurisdictionProfile.phone_number`. Blocked on the
+     owner opening the sipgate account (credentials in .env).
+  5. **Structured intake questionnaires**: seed
+     `case_intake_questions.py` (family/labor/civil/criminal ×7 locales,
+     per-country filter), JSONB `structured_answers` on case_requests,
+     asked on the web form, WhatsApp (max 3) and phone; lawyer sees
+     labeled answers in marketplace + case views. Dictation (MicButton)
+     added to matter notes and the template editor.
+  6. **Citation verification**: `citation_check.py` extracts §§/Artikel/
+     nene/Aktenzeichen from Ava's answers and checks them against the
+     corpus (reference/title + chunk FTS); SSE event `citation_check`
+     after the stream; ✓/≈/? badges in the assistant page and panel.
+  7. **EDA export for the automated Mahnverfahren** (Beta): `mahn_eda.py`
+     builds the fixed-width EDA records (layouts + Mahngericht routing +
+     claim catalog as data) from an overdue invoice, plus a summary PDF;
+     DE-only buttons in Billing. Submission stays via the office's
+     EGVP/beA client — we generate, we don't transmit.
+  8. **Outlook add-in**: manifest + `/outlook` taskpane (Office.js, CSP
+     exception scoped to that route), `POST /matters/{id}/import-email`
+     (body → note, attachments → document pipeline).
+- Consequences: external AI never sees client names (BRAK/DSGVO argument
+  equal to RA-MICRO's), the corpus grows unattended every night, a
+  RA-MICRO/Advoware office can migrate in hours, and the intake channels
+  (web/WA/phone) share one questionnaire seed. Telephony and the
+  openlegaldata dump download remain owner actions. beA + local LLM =
+  next wave.

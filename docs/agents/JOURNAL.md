@@ -10,6 +10,43 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-04 — Vala D-059: pariteti me tregun gjerman (Cursor / Fable 5)
+
+- Done: tetë faza kundrejt analizës së tregut gjerman (pa beA, pa LLM
+  lokale — faza e ardhshme): (F1) pseudonimizimi lokal para çdo LLM-je të
+  jashtme (`llm/pseudonymize.py`, wrapper në `get_provider()`, flag
+  `llm_pseudonymize` default on, emrat e lëndës via contextvar, placeholder
+  të bufferuar në stream); (F2) korpusi DE — RII me të gjitha gjykatat
+  federale + `import_de_openlegaldata.py` për LG/OLG/AG + unique index
+  `(jurisdiction_id, reference, region)` + batch nate
+  (`corpus_night_batch.sh`, `avokatim-corpus.timer` 01:30); (F3) magjistari
+  i migrimit 4-hapësh (preview/dry-run, preset RA-MICRO/Advoware, XLSX,
+  palët kundërshtare, Aktenzeichen i vjetër i kërkueshëm, ZIP dokumentesh
+  në background) ×7; (F4) telefonia-KI: kontejner Asterisk (profil
+  `telephony`) + AudioSocket → `phone_gateway.py` (VAD, whisper, Piper,
+  dialog intake) — pret llogarinë sipgate; (F5) pyetësorë sipas fushës
+  (seed ×7, JSONB `structured_answers`, web + WA + telefon, përgjigjet e
+  etiketuara te avokati) + diktim te shënimet e lëndës e editori i
+  shablloneve; (F6) verifikimi i citimeve (`citation_check.py`, event SSE
+  `citation_check`, badge ✓/≈/? në panel + faqe); (F7) EDA-eksporti për
+  Mahnverfahren (Beta, `mahn_eda.py` si të dhëna, butona te faturimi DE,
+  PDF përmbledhës); (F8) Outlook add-in (manifest + `/outlook` taskpane +
+  `POST /matters/{id}/import-email`, CSP i shënjestruar). Marketing ×7:
+  lpFeat11/12 (migrimi, Outlook+diktimi), karta AI "Citime të verifikuara",
+  rreshti EDA te blloku DE, umbFnL12 në ballinë.
+- Verified: 304 teste kalojnë (3 teste WA intake u përditësuan për hapat e
+  rinj të pyetësorit); build i pastër; health OK; pyetësorët live në
+  `/api/public/intake-questions` (de/sq); batch-i i parë i korpusit:
+  +794 vendime (ok=794 skip=2200 fail=6) → **16,218 vendime DE**, DB 922 MB,
+  timer-i i natës aktiv. Strings-at e rinj live në të dy host-et.
+- **Gjetje operative**: `systemctl --user restart avokatim` rinis VETËM
+  backend-in — frontend-i është njësi më vete `avokatim-frontend.service`
+  dhe duhet rinisur pas çdo `npm run build`, ndryshe SSR-ja servon chunk-et
+  e vjetra nga memoria (kartat dilnin bosh). U dokumentua në STATE/AGENTS.
+- Left open / veprime pronari: llogaria sipgate + numri DE (F4 e gatshme
+  teknikisht); dump-i openlegaldata (`data/corpus/oldp-cases.jsonl.gz`)
+  për gjykatat e instancës; sideload i Outlook add-in-it në një M365 real.
+
 ## 2026-08-03 — Prezantimet për avokatin partner potencial (Cursor / Fable 5)
 
 - Done: tri prezantime tekstuale në `docs/pitch/` për bisedën me avokatin

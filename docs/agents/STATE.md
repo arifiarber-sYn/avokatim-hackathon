@@ -3,7 +3,7 @@
 > Update this file whenever the state changes (new module, dependency, behavior,
 > known issue). Keep it a snapshot, not a history — history lives in JOURNAL.md.
 
-**Last updated:** 2026-08-01
+**Last updated:** 2026-08-04
 
 ## Status: live in production at https://avokatiim.ai (Kosovo) + https://de.avokatiim.ai (Germany, D-034) — lawyer office + citizen marketplace + notary profession + growth ops (automated outreach, analytics); first real signups arriving (first outreach conversion 2026-07-13)
 
@@ -11,6 +11,35 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
 ## What exists and works
 
+- **German-market parity wave** (2026-08-04, D-059): (1) local
+  **pseudonymization** before external LLMs (`llm/pseudonymize.py`,
+  wrapper in `get_provider()`, flag `llm_pseudonymize` default on; regex
+  PII + matter names via contextvar; local provider bypasses); (2) DE
+  corpus scale-out: RII importer covers **all federal courts** (BGH, BAG,
+  BVerfG, BVerwG, BFH, BSG, BPatG, 15 years) + `import_de_openlegaldata.py`
+  for LG/OLG/AG (needs dump at `data/corpus/oldp-cases.jsonl.gz`), unique
+  index on `(jurisdiction_id, reference, region)`, nightly batch
+  `backend/scripts/corpus_night_batch.sh` via `avokatim-corpus.timer`
+  (01:30, 2000/night) — **16,218 DE judgments** after the first batch;
+  (3) **migration wizard** in Settings: 4 steps, RA-MICRO/Advoware/generic
+  presets, CSV+XLSX, dry-run preview, opposing parties → MatterParty,
+  legacy Aktenzeichen searchable in `Matter.extra`, document ZIP through
+  the standard pipeline; (4) **telephony-KI** (sipgate): Asterisk
+  container (`--profile telephony`) → AudioSocket → `phone_gateway.py`
+  (VAD + whisper + Piper intake dialog) — ready, waiting on the owner's
+  sipgate account (`SIPGATE_SIP_*` in .env, `phone_gateway_enabled`);
+  (5) **structured intake questionnaires** (seed
+  `case_intake_questions.py` ×7, JSONB `structured_answers`, web + WA +
+  phone, labeled answers shown to the lawyer) + dictation in matter notes
+  and the template editor; (6) **citation verification** of Ava answers
+  against the corpus (`citation_check.py`, SSE `citation_check`, ✓/≈/?
+  badges); (7) **EDA export for the automated Mahnverfahren** (Beta,
+  `mahn_eda.py`, DE-only billing buttons, summary PDF — submission via
+  the office's EGVP/beA client); (8) **Outlook add-in** (`/outlook`
+  taskpane + `frontend/public/outlook-manifest.xml` +
+  `POST /matters/{id}/import-email`, CSP exception only on that route,
+  sideload guide `docs/integrimet/outlook.md`). beA + local-LLM
+  fine-tuning deliberately deferred to the next wave.
 - **Germany expansion** (2026-08-01, D-034): one codebase, two countries.
   `app/jurisdictions.py` = declarative per-country profiles (XK/DE: **brand_name
   — the DE host trades as "Ava Legal" (D-056), XK stays "AvokatIM"**,
@@ -999,6 +1028,12 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - ~~PUBLIC_BASE_URL placeholder~~ set to https://avokatiim.ai (2026-07-10;
   was boraarifi.ai before).
 - Caddy serves a self-signed cert on :8443 (browser warning is expected on LAN).
+- **Owner actions pending (D-059)**: open a sipgate account + DE number and
+  set `SIPGATE_SIP_USER/PASSWORD` + `PHONE_GATEWAY_ENABLED=true` in
+  `backend/.env` (telephony-KI is otherwise ready, `docs/integrimet/telefonia.md`);
+  download the openlegaldata dump to `data/corpus/oldp-cases.jsonl.gz` so the
+  nightly batch starts importing LG/OLG/AG decisions; sideload the Outlook
+  add-in in a real M365 tenant (`docs/integrimet/outlook.md`).
 
 ## Jurisdictions
 

@@ -8,7 +8,14 @@ import pytest
 
 from app.i18n import tr
 from app.jurisdictions import country_for_phone
+from app.seeds.case_intake_questions import questions_for
 from app.services import wa_intake
+
+
+def _q_prompt(category: str, index: int, locale: str, country: str = "XK") -> str:
+    """Expected questionnaire prompt (D-059 F5) for a category question."""
+    pending = questions_for(category, country)[: wa_intake.CONVERSATIONAL_MAX_QUESTIONS]
+    return wa_intake._question_prompt(pending[index], locale)
 
 
 class FakeRedis:
@@ -76,6 +83,11 @@ async def test_full_flow_posts_case(fake_redis, stub_llm_and_finish):
     reply = await wa_intake.handle_intake_message(
         phone, "Punëdhënësi nuk më ka paguar tri paga të fundit dhe më largoi nga puna pa vendim."
     )
+    # Category questionnaire first (D-059 F5): up to 3 labor questions
+    assert reply == _q_prompt("labor", 0, "sq")
+    assert await wa_intake.handle_intake_message(phone, "15.06.2026") == _q_prompt("labor", 1, "sq")
+    assert await wa_intake.handle_intake_message(phone, "2") == _q_prompt("labor", 2, "sq")
+    reply = await wa_intake.handle_intake_message(phone, "po")
     assert reply == tr("sq", "wa_ask_city")  # classifier found no city
     assert await wa_intake.handle_intake_message(phone, "Prishtinë") == tr("sq", "wa_ask_name")
     assert await wa_intake.handle_intake_message(phone, "Filan Fisteku") == tr("sq", "wa_ask_email")
@@ -89,6 +101,10 @@ async def test_full_flow_posts_case(fake_redis, stub_llm_and_finish):
     assert state["name"] == "Filan Fisteku"
     assert state["email"] == "filan@example.com"
     assert state["country"] == "XK" and state["locale"] == "sq"
+    # questionnaire answers captured; "2" resolved to the choice value
+    assert state["answers"]["termination_date"] == "15.06.2026"
+    assert state["answers"]["employer_size"] == "10to50"
+    assert state["answers"]["written_contract"] == "yes"
     # state cleared — next message is normal Q&A again
     assert await wa_intake.handle_intake_message(phone, "faleminderit") is None
 
@@ -102,6 +118,12 @@ async def test_german_sender_gets_german_flow(fake_redis, stub_llm_and_finish):
     reply = await wa_intake.handle_intake_message(
         phone, "Mein Arbeitgeber hat mir fristlos gekündigt, ohne Abmahnung, letzte Woche in Berlin."
     )
+    # German questions from the same seed, German labels
+    assert reply == _q_prompt("labor", 0, "de", "DE")
+    assert "Kündigung" in reply
+    await wa_intake.handle_intake_message(phone, "01.07.2026")
+    await wa_intake.handle_intake_message(phone, "Bis 10 Mitarbeiter")
+    reply = await wa_intake.handle_intake_message(phone, "Ja")
     assert reply == tr("de", "wa_ask_city")
     await wa_intake.handle_intake_message(phone, "Berlin")
     await wa_intake.handle_intake_message(phone, "Max Mustermann")
@@ -109,6 +131,8 @@ async def test_german_sender_gets_german_flow(fake_redis, stub_llm_and_finish):
 
     state = stub_llm_and_finish[0]
     assert state["country"] == "DE" and state["locale"] == "de"
+    assert state["answers"]["employer_size"] == "lt10"  # matched by German label
+    assert state["answers"]["written_contract"] == "yes"
 
 
 @pytest.mark.anyio
@@ -122,6 +146,12 @@ async def test_classifier_city_skips_city_question(fake_redis, monkeypatch, stub
     reply = await wa_intake.handle_intake_message(
         phone, "Bashkëshorti nuk e respekton vendimin e gjykatës për kontaktin me fëmijët tanë."
     )
+    # family questionnaire runs first; afterwards the city question is
+    # skipped because the classifier already found the city
+    assert reply == _q_prompt("family", 0, "sq")
+    await wa_intake.handle_intake_message(phone, "2019")
+    await wa_intake.handle_intake_message(phone, "dy fëmijë, 4 dhe 7 vjeç")
+    reply = await wa_intake.handle_intake_message(phone, "po")
     assert reply == tr("sq", "wa_ask_name")
 
 
