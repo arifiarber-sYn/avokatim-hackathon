@@ -605,6 +605,43 @@ class CaseRequestIn(BaseModel):
     # Rechtsschutzversicherung (DE): None = unknown / not asked
     has_legal_insurance: bool | None = None
     insurer_name: str | None = Field(default=None, max_length=120)
+    # Category questionnaire answers (D-059 F5): {question_key: value};
+    # keys are validated against seeds/case_intake_questions.py
+    structured_answers: dict[str, str] | None = None
+
+
+def clean_structured_answers(
+    answers: dict[str, str] | None, category: str, country: str
+) -> dict | None:
+    """Keep only known question keys for the category, trimmed — everything
+    else is dropped silently (old clients, tampering)."""
+    if not answers:
+        return None
+    from app.seeds.case_intake_questions import questions_for
+
+    valid = {q["key"] for q in questions_for(category, country)}
+    cleaned = {
+        k: str(v).strip()[:300]
+        for k, v in answers.items()
+        if k in valid and str(v).strip()
+    }
+    return cleaned or None
+
+
+def _structured_answer_lines(case: CaseRequest, locale: str | None = None) -> list[dict]:
+    """Labeled questionnaire answers, localized (default: the case's own
+    language — in practice the lawyer's too, same country)."""
+    from app.seeds.case_intake_questions import choice_label, question_label
+
+    loc = pick_locale(locale or case.locale)
+    return [
+        {
+            "key": k,
+            "label": question_label(case.category, k, loc),
+            "value": choice_label(case.category, k, v, loc),
+        }
+        for k, v in (case.structured_answers or {}).items()
+    ]
 
 
 def _case_out(case: CaseRequest, firm_name: str | None = None) -> dict:
@@ -615,6 +652,7 @@ def _case_out(case: CaseRequest, firm_name: str | None = None) -> dict:
         "city": case.city,
         "urgency": case.urgency,
         "status": case.status,
+        "structured_answers": _structured_answer_lines(case),
         "directed": case.directed_tenant_id is not None,
         "has_legal_insurance": case.has_legal_insurance,
         "insurer_name": case.insurer_name,
@@ -626,6 +664,27 @@ def _case_out(case: CaseRequest, firm_name: str | None = None) -> dict:
         # opened" / "closed" timestamp (no dedicated columns for those)
         "updated_at": case.updated_at.isoformat() if case.updated_at else None,
     }
+
+
+@public_router.get("/intake-questions")
+async def intake_questions(request: Request, category: str, locale: str = "sq"):
+    """Category questionnaire for the posting form / conversational intake
+    (D-059 F5). Questions are seed data; labels localized here."""
+    from app.seeds.case_intake_questions import questions_for
+
+    loc = pick_locale(locale)
+    return [
+        {
+            "key": q["key"],
+            "type": q["type"],
+            "label": q["label"].get(loc) or q["label"]["sq"],
+            "choices": [
+                {"value": c["value"], "label": c["label"].get(loc) or c["label"]["sq"]}
+                for c in q.get("choices", [])
+            ],
+        }
+        for q in questions_for(category, country_from_request(request))
+    ]
 
 
 @public_router.post("/citizen/cases", status_code=201)
@@ -672,6 +731,9 @@ async def citizen_create_case(
         quality_flag=quality_flag,
         has_legal_insurance=body.has_legal_insurance,
         insurer_name=(body.insurer_name or None) if body.has_legal_insurance else None,
+        structured_answers=clean_structured_answers(
+            body.structured_answers, body.category, citizen.country
+        ),
     )
     db.add(case)
     await db.flush()
@@ -871,6 +933,7 @@ async def _notify_matching_lawyers(
     from app.services.push import send_push_to_user
 
     async with SessionLocal() as db:
+        case = await db.get(CaseRequest, case_id)
         rows = (
             await db.execute(
                 select(User, LawyerProfile)
@@ -898,6 +961,13 @@ async def _notify_matching_lawyers(
             subject = tr(loc, "case_match_subject")
             body = tr(loc, "case_match_body", category=category, city=city or "-",
                       url=f"{settings.public_base_url}/marketplace")
+            if case is not None and case.structured_answers:
+                # The questionnaire answers (D-059 F5), labeled in the
+                # lawyer's own language — triage before even opening the app
+                body += "\n\n" + "\n".join(
+                    f"• {line['label']}: {line['value']}"
+                    for line in _structured_answer_lines(case, loc)
+                )
             await send_push_to_user(
                 db, lawyer.id, title=subject, body=body, url="/marketplace"
             )

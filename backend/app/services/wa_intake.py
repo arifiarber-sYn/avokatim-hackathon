@@ -10,7 +10,7 @@ Country and language come from the sender's phone prefix (+49 → DE/de,
 and links point to the sender's country host.
 
 State machine per phone number, kept in Redis (1h TTL):
-    describe → city → name → email → done
+    describe → [category questions ×≤3 (D-059 F5)] → city → name → email → done
 Commands: RAST / FALL / CASE / SLUCAJ / DAVA start intake, ANULO / CANCEL /
 ABBRECHEN / OTKAZI / IPTAL / STOP aborts.
 """
@@ -30,6 +30,10 @@ from app.i18n import tr
 from app.jurisdictions import country_for_phone, profile_for, public_base_url_for
 from app.models import CaseRequest, CitizenUser, LawyerProfile, Tenant, User
 from app.security import hash_password
+from app.seeds.case_intake_questions import (
+    CONVERSATIONAL_MAX_QUESTIONS,
+    questions_for,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +96,42 @@ async def _classify(description: str) -> dict:
         "city": data.get("city"),
         "urgency": data.get("urgency") if data.get("urgency") in ("normal", "urgent") else "normal",
     }
+
+
+def _pending_questions(category: str, country: str) -> list[dict]:
+    """Up to CONVERSATIONAL_MAX_QUESTIONS category questions for the chat
+    flow (D-059 F5) — same seed the web form uses."""
+    return questions_for(category, country)[:CONVERSATIONAL_MAX_QUESTIONS]
+
+
+def _question_prompt(q: dict, locale: str) -> str:
+    """One chat message per question; choices become a numbered list."""
+    label = q["label"].get(locale) or q["label"]["sq"]
+    if q.get("choices"):
+        options = "\n".join(
+            f"{i}) {c['label'].get(locale) or c['label']['sq']}"
+            for i, c in enumerate(q["choices"], 1)
+        )
+        return f"{label}\n{options}"
+    return label
+
+
+def _parse_answer(q: dict, text: str) -> str:
+    """A choice answered by number or by (localized) text maps to the stable
+    choice value; anything else is kept as free text."""
+    answer = text.strip()[:300]
+    choices = q.get("choices")
+    if not choices:
+        return answer
+    if answer.isdigit() and 1 <= int(answer) <= len(choices):
+        return choices[int(answer) - 1]["value"]
+    lowered = answer.lower()
+    for c in choices:
+        if lowered == c["value"] or lowered in {
+            label.lower() for label in c["label"].values()
+        }:
+            return c["value"]
+    return answer
 
 
 async def _free_slot_lines(
@@ -168,6 +208,9 @@ async def _finish_intake(phone: str, state: dict) -> str:
             country=citizen.country,
             locale=citizen.locale,
             urgency=state.get("urgency") or "normal",
+            # Questionnaire answers (D-059 F5) — keys come from the seed, so
+            # they are valid by construction
+            structured_answers=state.get("answers") or None,
         )
         db.add(case)
         await db.commit()
@@ -211,18 +254,52 @@ async def handle_intake_message(phone: str, text: str) -> str | None:
 
         locale = state.get("locale") or locale
         step = state.get("step")
+
+        def _after_questions() -> str:
+            """Next prompt once the questionnaire (if any) is exhausted."""
+            if state.get("city"):
+                state["step"] = "name"
+                return tr(locale, "wa_ask_name")
+            state["step"] = "city"
+            return tr(locale, "wa_ask_city")
+
         if step == "describe":
             if len(text.strip()) < MIN_DESCRIPTION:
                 return tr(locale, "wa_too_short")
             state["description"] = text.strip()
             state.update(await _classify(text))
-            if state.get("city"):
-                state["step"] = "name"
+            # Category questionnaire (D-059 F5): up to 3 targeted questions
+            # before the generic city/name/email tail
+            pending = _pending_questions(
+                state.get("category") or "other", state.get("country") or country
+            )
+            if pending:
+                state["step"] = "question"
+                state["q_idx"] = 0
+                state["answers"] = {}
                 await _set_state(r, phone, state)
-                return tr(locale, "wa_ask_name")
-            state["step"] = "city"
+                return _question_prompt(pending[0], locale)
+            reply = _after_questions()
             await _set_state(r, phone, state)
-            return tr(locale, "wa_ask_city")
+            return reply
+
+        if step == "question":
+            pending = _pending_questions(
+                state.get("category") or "other", state.get("country") or country
+            )
+            idx = int(state.get("q_idx") or 0)
+            if idx < len(pending):
+                answers = state.get("answers") or {}
+                answers[pending[idx]["key"]] = _parse_answer(pending[idx], text)
+                state["answers"] = answers
+            idx += 1
+            if idx < len(pending):
+                state["q_idx"] = idx
+                await _set_state(r, phone, state)
+                return _question_prompt(pending[idx], locale)
+            reply = _after_questions()
+            await _set_state(r, phone, state)
+            return reply
 
         if step == "city":
             state["city"] = text.strip()[:120]

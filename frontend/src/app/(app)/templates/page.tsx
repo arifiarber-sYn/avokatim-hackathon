@@ -13,9 +13,11 @@ interface AiAssistResult {
   changes: string[];
 }
 import { Button, Card, ErrorNote, Input, Label, Select, Spinner, Textarea } from "@/components/ui";
+import { MicButton, useVoiceAvailable } from "@/components/voice-controls";
 
 export default function TemplatesPage() {
   const { t, locale } = useI18n();
+  const voice = useVoiceAvailable();
   const [templates, setTemplates] = useState<Template[] | null>(null);
   const [matters, setMatters] = useState<Matter[]>([]);
   const [templateId, setTemplateId] = useState("");
@@ -216,6 +218,19 @@ export default function TemplatesPage() {
                 }}
                 className="text-sm font-serif leading-relaxed bg-slate-50"
               />
+              {/* Dictation into the draft (D-059 F5) */}
+              {voice.stt && (
+                <div className="flex items-center gap-2">
+                  <MicButton
+                    locale={locale}
+                    onText={(text) => {
+                      setOutput((prev) => (prev ? `${prev}\n${text}` : text));
+                      setSavedDoc(null);
+                    }}
+                  />
+                  <span className="text-xs text-slate-400">{t.vMicHint}</span>
+                </div>
+              )}
 
               {/* AI clause assist: instruction → improved draft + risk flags */}
               <div className="border-t border-slate-100 pt-3 space-y-2">

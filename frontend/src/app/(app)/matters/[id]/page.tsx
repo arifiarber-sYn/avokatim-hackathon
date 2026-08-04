@@ -9,6 +9,7 @@ import {
 import {
   Badge, Button, Card, ErrorNote, Input, Label, Select, Spinner, Textarea,
 } from "@/components/ui";
+import { MicButton, useVoiceAvailable } from "@/components/voice-controls";
 
 interface Party {
   id: string;
@@ -1491,9 +1492,10 @@ function Deadlines({ matterId, practiceArea }: { matterId: string; practiceArea:
 }
 
 function Notes({ matterId }: { matterId: string }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [notes, setNotes] = useState<Note[]>([]);
   const [body, setBody] = useState("");
+  const voice = useVoiceAvailable();
 
   const load = useCallback(() => {
     apiGet<Note[]>(`/matters/${matterId}/notes`).then(setNotes).catch(() => {});
@@ -1515,7 +1517,15 @@ function Notes({ matterId }: { matterId: string }) {
       <Card className="p-4">
         <form onSubmit={add} className="space-y-3">
           <Textarea rows={3} value={body} onChange={(e) => setBody(e.target.value)} required placeholder={t.addNote} />
-          <Button type="submit">{t.addNote}</Button>
+          <div className="flex items-center gap-2">
+            <Button type="submit">{t.addNote}</Button>
+            {voice.stt && (
+              <MicButton
+                locale={locale}
+                onText={(text) => setBody((prev) => (prev ? `${prev} ${text}` : text))}
+              />
+            )}
+          </div>
         </form>
       </Card>
       {notes.map((n) => (

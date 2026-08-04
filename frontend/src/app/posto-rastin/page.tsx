@@ -21,6 +21,13 @@ import { IconCheck } from "@/components/icons";
 
 const AREAS = ["civil", "criminal", "family", "commercial", "labor", "administrative", "other"] as const;
 
+interface IntakeQuestion {
+  key: string;
+  type: "text" | "date" | "choice";
+  label: string;
+  choices: { value: string; label: string }[];
+}
+
 function StepIndicator({ current, labels }: { current: number; labels: string[] }) {
   return (
     <ol className="flex items-center gap-2">
@@ -56,7 +63,7 @@ function StepIndicator({ current, labels }: { current: number; labels: string[] 
 }
 
 function PostCaseInner() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const params = useSearchParams();
   const directedTenantId = params.get("avokati");
@@ -70,6 +77,17 @@ function PostCaseInner() {
   useEffect(() => setIsDE(clientCountry() === "DE"), []);
   const [insured, setInsured] = useState<"" | "yes" | "no">("");
   const [insurerName, setInsurerName] = useState("");
+
+  // Category questionnaire (D-059 F5): targeted questions per practice area
+  const [questions, setQuestions] = useState<IntakeQuestion[]>([]);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  useEffect(() => {
+    setAnswers({});
+    fetch(`/api/public/intake-questions?category=${form.category}&locale=${locale}`)
+      .then((res) => res.json())
+      .then((qs) => setQuestions(Array.isArray(qs) ? qs : []))
+      .catch(() => setQuestions([]));
+  }, [form.category, locale]);
 
   // Prefill from a public Ava conversation ("Më lidh me avokat"): either the
   // structured JSON draft from /ava/structure-case, or a plain-text fallback.
@@ -119,6 +137,9 @@ function PostCaseInner() {
     setBusy(true);
     setError("");
     try {
+      const filled = Object.fromEntries(
+        Object.entries(answers).filter(([, v]) => v.trim())
+      );
       await citizenPost("/citizen/cases", {
         category: form.category,
         description: form.description,
@@ -127,6 +148,7 @@ function PostCaseInner() {
         directed_tenant_id: directedTenantId,
         has_legal_insurance: insured === "" ? null : insured === "yes",
         insurer_name: insured === "yes" && insurerName ? insurerName : null,
+        structured_answers: Object.keys(filled).length ? filled : null,
       });
       setPosted(true);
       track("case_posted", { category: form.category });
@@ -236,6 +258,37 @@ function PostCaseInner() {
                   minLength={20}
                 />
               </div>
+              {/* Category questionnaire (D-059 F5) — optional, helps triage */}
+              {questions.length > 0 && (
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-3">
+                  <p className="text-xs font-semibold text-slate-500">{t.psQuestionsT}</p>
+                  <div className="grid md:grid-cols-2 gap-3">
+                    {questions.map((q) => (
+                      <div key={q.key}>
+                        <Label>{q.label}</Label>
+                        {q.type === "choice" ? (
+                          <Select
+                            value={answers[q.key] || ""}
+                            onChange={(e) => setAnswers({ ...answers, [q.key]: e.target.value })}
+                          >
+                            <option value="">—</option>
+                            {q.choices.map((c) => (
+                              <option key={c.value} value={c.value}>{c.label}</option>
+                            ))}
+                          </Select>
+                        ) : (
+                          <Input
+                            type={q.type === "date" ? "date" : "text"}
+                            value={answers[q.key] || ""}
+                            onChange={(e) => setAnswers({ ...answers, [q.key]: e.target.value })}
+                            maxLength={300}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {isDE && ovCaseMatch(form.description) && (
                 <div className="rounded-lg border border-sky-200 bg-sky-50 p-3 space-y-1">
                   <p className="text-sm font-semibold text-sky-800">{t.ovCitT}</p>

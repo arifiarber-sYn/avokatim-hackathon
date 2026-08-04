@@ -209,6 +209,10 @@ class CaseRequest(Base, TimestampMixin):
     # A strong conversion signal for lawyers — fees are covered by the insurer.
     has_legal_insurance: Mapped[bool | None] = mapped_column(Boolean)
     insurer_name: Mapped[str | None] = mapped_column(String(120))
+    # Category-specific intake answers (D-059 F5): {question_key: raw value}.
+    # Question texts/choices live in seeds/case_intake_questions.py (data,
+    # not code) — the lawyer sees them labeled in his own language.
+    structured_answers: Mapped[dict | None] = mapped_column(JSONB)
 
 
 class CaseReview(Base, TimestampMixin):

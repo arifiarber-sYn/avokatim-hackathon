@@ -23,6 +23,23 @@ interface OpenCase {
   matches_profile?: boolean;
   has_legal_insurance?: boolean | null;
   insurer_name?: string | null;
+  /** Labeled questionnaire answers (D-059 F5) */
+  structured_answers?: { key: string; label: string; value: string }[];
+}
+
+/** The category questionnaire answers, labeled (D-059 F5). */
+function StructuredAnswers({ lines }: { lines?: OpenCase["structured_answers"] }) {
+  if (!lines?.length) return null;
+  return (
+    <dl className="rounded-lg bg-slate-50 border border-slate-200 p-3 grid sm:grid-cols-2 gap-x-4 gap-y-1.5">
+      {lines.map((line) => (
+        <div key={line.key} className="text-xs">
+          <dt className="text-slate-400">{line.label}</dt>
+          <dd className="text-slate-700 font-medium">{line.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
 }
 
 interface MyCase extends OpenCase {
@@ -279,6 +296,7 @@ export default function MarketplacePage() {
                   </span>
                 </div>
                 <p className="text-sm text-slate-700 whitespace-pre-wrap">{c.description}</p>
+                <StructuredAnswers lines={c.structured_answers} />
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-xs text-slate-500">
                     {t.mkCitizen}: <span className="font-medium">{c.citizen_name}</span>
@@ -319,6 +337,7 @@ export default function MarketplacePage() {
                 </span>
               </div>
               <p className="text-sm text-slate-700 whitespace-pre-wrap">{c.description}</p>
+              <StructuredAnswers lines={c.structured_answers} />
               <div className="text-xs text-slate-500 space-x-3">
                 <span className="font-medium text-slate-700">{c.citizen_name}</span>
                 <span>{c.citizen_email}</span>

@@ -3,6 +3,28 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-04 — Structured intake questionnaires + dictation for the lawyer (D-059 F5)
+
+- New seed `backend/app/seeds/case_intake_questions.py`: 3–4 targeted
+  questions per practice area (family, labor, civil, criminal), labels and
+  choices in all 7 languages, as data (hard rule §5.4). Answers land in the
+  new JSONB column `case_requests.structured_answers` (migration
+  `20260804_d2e3f4a5b6c7`).
+- Web: `posto-rastin` fetches `GET /api/public/intake-questions` per
+  category+locale and shows the optional questionnaire under the
+  description; answers are validated server-side against the seed
+  (`clean_structured_answers` — unknown keys dropped).
+- WhatsApp intake: after LLM classification the bot asks up to 3 of the
+  category's questions (numbered choices, answer by number or text) before
+  the city/name/email tail; state machine step `question` in
+  `wa_intake.py`.
+- Lawyer side: labeled answers on marketplace cards (browse + mine) and in
+  the match notification (push/email) in the lawyer's own language.
+- Dictation (local Whisper STT): MicButton now also on matter notes and on
+  the template output editor — no backend change needed.
+- Tests: `backend/tests/test_intake_questions.py` (seed integrity ×7
+  locales, country filter, answer cleaning, WA prompt/parse helpers).
+
 ## 2026-08-04 — Migration wizard: presets, XLSX, preview, parties, document ZIP (D-059 F3)
 
 - Switching cost argument for the German market (offices pay 5–15k € to
