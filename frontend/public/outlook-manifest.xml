@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Outlook add-in "Save email to matter" (D-059 F8).
+     Sideload guide: docs/integrimet/outlook.md. For the German host,
+     replace avokatiim.ai with de.avokatiim.ai (and the names below). -->
+<OfficeApp
+  xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+  xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0"
+  xsi:type="MailApp">
+
+  <Id>7d1f7a3e-59c4-4d8a-b6a1-4d9f2b8f0c59</Id>
+  <Version>1.0.0.0</Version>
+  <ProviderName>AvokatIM</ProviderName>
+  <DefaultLocale>sq-AL</DefaultLocale>
+  <DisplayName DefaultValue="AvokatIM — Ruaje në lëndë">
+    <Override Locale="de-DE" Value="Ava Legal — In Akte speichern"/>
+    <Override Locale="en-US" Value="AvokatIM — Save to matter"/>
+  </DisplayName>
+  <Description DefaultValue="Ruaje emailin dhe bashkëngjitjet direkt në lëndën përkatëse.">
+    <Override Locale="de-DE" Value="E-Mail und Anhänge direkt in der passenden Akte speichern."/>
+    <Override Locale="en-US" Value="Save the email and its attachments straight into the right matter."/>
+  </Description>
+  <IconUrl DefaultValue="https://avokatiim.ai/icons/icon-192.png"/>
+  <HighResolutionIconUrl DefaultValue="https://avokatiim.ai/icons/icon-512.png"/>
+  <SupportUrl DefaultValue="https://avokatiim.ai/kontakt"/>
+
+  <AppDomains>
+    <AppDomain>https://avokatiim.ai</AppDomain>
+    <AppDomain>https://de.avokatiim.ai</AppDomain>
+  </AppDomains>
+
+  <Hosts>
+    <Host Name="Mailbox"/>
+  </Hosts>
+  <Requirements>
+    <Sets>
+      <Set Name="Mailbox" MinVersion="1.8"/>
+    </Sets>
+  </Requirements>
+
+  <FormSettings>
+    <Form xsi:type="ItemRead">
+      <DesktopSettings>
+        <SourceLocation DefaultValue="https://avokatiim.ai/outlook"/>
+        <RequestedHeight>420</RequestedHeight>
+      </DesktopSettings>
+    </Form>
+  </FormSettings>
+
+  <Permissions>ReadItem</Permissions>
+  <Rule xsi:type="RuleCollection" Mode="Or">
+    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Read"/>
+  </Rule>
+  <DisableEntityHighlighting>false</DisableEntityHighlighting>
+
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides" xsi:type="VersionOverridesV1_0">
+    <Requirements>
+      <bt:Sets DefaultMinVersion="1.8">
+        <bt:Set Name="Mailbox"/>
+      </bt:Sets>
+    </Requirements>
+    <Hosts>
+      <Host xsi:type="MailHost">
+        <DesktopFormFactor>
+          <ExtensionPoint xsi:type="MessageReadCommandSurface">
+            <OfficeTab id="TabDefault">
+              <Group id="avokatimGroup">
+                <Label resid="groupLabel"/>
+                <Control xsi:type="Button" id="openPaneButton">
+                  <Label resid="paneButtonLabel"/>
+                  <Supertip>
+                    <Title resid="paneButtonLabel"/>
+                    <Description resid="paneButtonTip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="icon16"/>
+                    <bt:Image size="32" resid="icon32"/>
+                    <bt:Image size="80" resid="icon80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <SourceLocation resid="taskpaneUrl"/>
+                  </Action>
+                </Control>
+              </Group>
+            </OfficeTab>
+          </ExtensionPoint>
+        </DesktopFormFactor>
+      </Host>
+    </Hosts>
+    <Resources>
+      <bt:Images>
+        <bt:Image id="icon16" DefaultValue="https://avokatiim.ai/icons/icon-192.png"/>
+        <bt:Image id="icon32" DefaultValue="https://avokatiim.ai/icons/icon-192.png"/>
+        <bt:Image id="icon80" DefaultValue="https://avokatiim.ai/icons/icon-192.png"/>
+      </bt:Images>
+      <bt:Urls>
+        <bt:Url id="taskpaneUrl" DefaultValue="https://avokatiim.ai/outlook"/>
+      </bt:Urls>
+      <bt:ShortStrings>
+        <bt:String id="groupLabel" DefaultValue="AvokatIM"/>
+        <bt:String id="paneButtonLabel" DefaultValue="Ruaje në lëndë"/>
+      </bt:ShortStrings>
+      <bt:LongStrings>
+        <bt:String id="paneButtonTip" DefaultValue="Ruaje emailin dhe bashkëngjitjet në lëndën përkatëse."/>
+      </bt:LongStrings>
+    </Resources>
+  </VersionOverrides>
+</OfficeApp>

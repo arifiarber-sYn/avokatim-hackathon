@@ -3,6 +3,24 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-04 — Outlook add-in: save email to matter (D-059 F8)
+
+- Backend: `POST /matters/{id}/import-email` (documents.py) — email body
+  becomes a MatterNote (subject/sender/date header), base64 attachments
+  run through the standard pipeline (allowlist, encrypt, OCR, index,
+  deadline scan, category `correspondence`), audited as
+  `matter.import_email`, skipped files reported back.
+- Taskpane: `frontend/src/app/outlook/page.tsx` at `/outlook` — Office.js
+  from the Microsoft CDN, lawyer login (JWT shared with the app; 2FA
+  accounts log in via the app once), matter search, one-click save.
+  Keys ×7 (olk*).
+- CSP: targeted exception ONLY for `/outlook` in proxy.ts (script/connect
+  to appsforoffice.microsoft.com, frame-ancestors for outlook.office.com/
+  office365/live) — every other route keeps frame-ancestors 'none'.
+- Manifest `frontend/public/outlook-manifest.xml` (ReadItem, taskpane
+  button on the message read surface, sq/de/en labels) + sideload guide
+  `docs/integrimet/outlook.md`.
+
 ## 2026-08-04 — EDA export for the court Mahnverfahren (D-059 F7, Beta)
 
 - New `backend/app/services/mahn_eda.py`: generates the EDA data set

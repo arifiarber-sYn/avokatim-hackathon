@@ -35,18 +35,26 @@ export function proxy(request: NextRequest) {
     // cannot load or exfiltrate to an attacker domain. stats.avokatiim.ai
     // is the self-hosted Umami; wss:/blob: cover LiveKit SOS calls and
     // voice recording; data:/blob: images cover lawyer photos and previews.
+    // /outlook only (D-059 F8): the add-in taskpane loads Office.js from
+    // the Microsoft CDN and runs inside an Outlook iframe — the exception
+    // is scoped to this one route, everything else keeps 'none'.
+    const isOutlook = request.nextUrl.pathname.startsWith("/outlook");
     response.headers.set(
       "Content-Security-Policy",
       [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' https://stats.avokatiim.ai",
+        "script-src 'self' 'unsafe-inline' https://stats.avokatiim.ai" +
+          (isOutlook ? " https://appsforoffice.microsoft.com https://ajax.aspnetcdn.com" : ""),
         "style-src 'self' 'unsafe-inline'",
         "img-src 'self' data: blob:",
         "font-src 'self' data:",
-        "connect-src 'self' https://stats.avokatiim.ai wss: blob:",
+        "connect-src 'self' https://stats.avokatiim.ai wss: blob:" +
+          (isOutlook ? " https://appsforoffice.microsoft.com" : ""),
         "media-src 'self' blob: data:",
         "worker-src 'self' blob:",
-        "frame-ancestors 'none'",
+        isOutlook
+          ? "frame-ancestors https://outlook.office.com https://outlook.office365.com https://outlook.live.com"
+          : "frame-ancestors 'none'",
         "object-src 'none'",
         "base-uri 'self'",
         "form-action 'self'",

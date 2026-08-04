@@ -162,6 +162,111 @@ async def upload_document(
     return _to_out(doc)
 
 
+# ---------- Outlook add-in: save an email into a matter (D-059 F8) ----------
+
+
+class EmailAttachmentIn(BaseModel):
+    name: str
+    content_base64: str
+
+
+class ImportEmailIn(BaseModel):
+    subject: str = ""
+    sender: str = ""
+    received_at: str = ""
+    body: str = ""
+    attachments: list[EmailAttachmentIn] = []
+
+
+@router.post("/matters/{matter_id}/import-email", status_code=status.HTTP_201_CREATED)
+async def import_email(
+    matter_id: uuid.UUID,
+    payload: ImportEmailIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Called by the Outlook taskpane (frontend /outlook): the email body
+    becomes a matter note, attachments go through the standard document
+    pipeline (encrypt -> OCR -> index -> deadline scan)."""
+    import base64
+
+    from app.models import MatterNote
+
+    await get_owned_matter(db, user, matter_id)
+    if not payload.body.strip() and not payload.attachments:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Empty email")
+
+    header = "\n".join(
+        line for line in (
+            f"📧 {payload.subject.strip()}" if payload.subject.strip() else "📧 Email",
+            f"Nga / Von: {payload.sender.strip()}" if payload.sender.strip() else "",
+            f"Data: {payload.received_at.strip()}" if payload.received_at.strip() else "",
+        ) if line
+    )
+    note = MatterNote(
+        tenant_id=user.tenant_id,
+        matter_id=matter_id,
+        author_id=user.id,
+        body=f"{header}\n\n{payload.body.strip()[:50000]}".strip(),
+    )
+    db.add(note)
+
+    saved_docs: list[str] = []
+    skipped: list[str] = []
+    for att in payload.attachments[:20]:
+        try:
+            content = base64.b64decode(att.content_base64, validate=True)
+        except Exception:
+            skipped.append(att.name)
+            continue
+        if not content or len(content) > MAX_UPLOAD_BYTES:
+            skipped.append(att.name)
+            continue
+        if not upload_type_allowed(att.name, None):
+            skipped.append(att.name)
+            continue
+        rel_path, sha, encrypted = storage.save_file(content, user.tenant_id)
+        text, ocr_status = storage.extract_text(
+            content, "application/octet-stream", att.name
+        )
+        doc = Document(
+            tenant_id=user.tenant_id,
+            matter_id=matter_id,
+            family_id=uuid.uuid4(),
+            version=1,
+            is_latest=True,
+            filename=att.name[:255],
+            mime_type="application/octet-stream",
+            size_bytes=len(content),
+            sha256=sha,
+            storage_path=rel_path,
+            encrypted=encrypted,
+            category="correspondence",
+            uploaded_by_id=user.id,
+            text_content=text or None,
+            ocr_status=ocr_status,
+        )
+        db.add(doc)
+        await db.flush()
+        if text:
+            await rag.index_document_chunks(db, doc)
+        saved_docs.append(str(doc.id))
+
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="matter.import_email",
+        entity_type="matter", entity_id=str(matter_id),
+        details={
+            "subject": payload.subject[:200],
+            "attachments": len(saved_docs),
+            "skipped": skipped[:10],
+        },
+    )
+    await db.commit()
+    for doc_id in saved_docs:
+        deadline_suggest.scan_document_background(uuid.UUID(doc_id))
+    return {"note": True, "documents": len(saved_docs), "skipped": skipped}
+
+
 @router.get("/documents/{document_id}/download")
 async def download_document(
     document_id: uuid.UUID,
