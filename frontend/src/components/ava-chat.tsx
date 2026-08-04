@@ -19,11 +19,14 @@ import { Button, Card, ErrorNote, Textarea, TypingDots } from "@/components/ui";
 import { MicButton, SpeakButton, useVoiceAvailable } from "@/components/voice-controls";
 import { speak, stopSpeaking } from "@/lib/voice";
 import { IconChat } from "@/components/icons";
+import CitationChecks, { CitationCheck } from "@/components/citation-checks";
 
 interface ChatMsg {
   role: "user" | "assistant";
   content: string;
   citations?: { title: string; section: string | null; type?: string; reference?: string | null }[];
+  /** Per-citation verification against the corpus (D-059 F6) */
+  checks?: CitationCheck[];
 }
 
 function sessionId(): string {
@@ -143,6 +146,7 @@ export default function AvaChat({ variant = "page" }: { variant?: "page" | "pane
         throw new Error(detail);
       }
       let citations: ChatMsg["citations"] = [];
+      let checks: CitationCheck[] = [];
       let answer = "";
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -175,6 +179,8 @@ export default function AvaChat({ variant = "page" }: { variant?: "page" | "pane
               next[next.length - 1] = { role: "assistant", content: answer, citations };
               return next;
             });
+          } else if (event.type === "citation_check") {
+            checks = (event.citations as CitationCheck[]) || [];
           } else if (event.type === "error") {
             throw new Error(String(event.detail || t.error));
           }
@@ -182,7 +188,7 @@ export default function AvaChat({ variant = "page" }: { variant?: "page" | "pane
       }
       setMessages((prev) => {
         const next = [...prev];
-        next[next.length - 1] = { role: "assistant", content: answer, citations };
+        next[next.length - 1] = { role: "assistant", content: answer, citations, checks };
         return next;
       });
       // Conversation mode: read the answer aloud, hands-free
@@ -335,6 +341,11 @@ export default function AvaChat({ variant = "page" }: { variant?: "page" | "pane
                         : ""}
                   </span>
                 ))}
+              </div>
+            )}
+            {m.role === "assistant" && !busy && m.checks && m.checks.length > 0 && (
+              <div className="mt-1.5">
+                <CitationChecks checks={m.checks} />
               </div>
             )}
             </div>

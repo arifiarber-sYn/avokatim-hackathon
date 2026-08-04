@@ -13,6 +13,8 @@ export default function SecurityPage() {
   const items: { icon: string; title: string; body: string }[] = [
     { icon: "🔐", title: t.secEncT, body: t.secEncB },
     { icon: "🖥️", title: t.secLocalT, body: t.secLocalB },
+    // Local pseudonymization before any external AI call (D-059 F1)
+    { icon: "🎭", title: t.secPseudoT, body: t.secPseudoB },
     { icon: "⛓️", title: t.secChainT, body: t.secChainB },
     { icon: "🔌", title: t.secKillT, body: t.secKillB },
     { icon: "💾", title: t.secBackupT, body: t.secBackupB },

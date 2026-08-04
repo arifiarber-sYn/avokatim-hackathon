@@ -10,6 +10,24 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-04 — Auditimi i ndërfaqes pas D-059 (Cursor / Fable 5)
+
+- Done: auditim "a e tregon ndërfaqja çfarë kemi" pas valës D-059. Katër
+  gjetje, të gjitha të rregulluara: (1) chat-i publik i Avës s'i tregonte
+  badge-t e verifikimit të citimeve — `/public/ava/ask-stream` tani emeton
+  `citation_check` dhe `ava-chat.tsx` i shfaq (trashëgohet nga faqja
+  publike, launcher-i dhe portali i qytetarit); (2) bug real: "Ligji Nr.
+  03/L-006" dilte i paverifikuar se lookup-i përdorte frazën e plotë
+  ndërsa `reference` në korpus ruan vetëm numrin — normalizim në
+  `extract_citations` + test; (3) karta e pseudonimizimit iu shtua
+  /siguria (secPseudo ×7); (4) Outlook add-in-i tani zbulohet në
+  Settings → zyra (URL e manifestit me copy + udhëzim një-rresh, ×7).
+- Verified: 304 teste; provë live — "neni 176 LPK" dhe "Ligji Nr.
+  03/L-006" të dyja "verified" kundrejt korpusit; /siguria e servuar me
+  kartën e re; build + restart të dy njësitë.
+- Left open: asgjë nga auditimi; telefonia mbetet jashtë marketingut
+  deri në verifikimin real (vendim i planit D-059).
+
 ## 2026-08-04 — Vala D-059: pariteti me tregun gjerman (Cursor / Fable 5)
 
 - Done: tetë faza kundrejt analizës së tregut gjerman (pa beA, pa LLM

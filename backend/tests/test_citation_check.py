@@ -54,7 +54,11 @@ def test_extracts_albanian_articles():
 
 def test_extracts_albanian_law_numbers():
     cites = extract_citations("E rregulluar me Ligji Nr. 03/L-006 për procedurën.")
-    assert any(c["kind"] == "law" and "03/L-006" in c["cite"] for c in cites)
+    law = next(c for c in cites if c["kind"] == "law")
+    assert "03/L-006" in law["cite"]
+    # The lookup code is the bare number — that is how corpus `reference`
+    # stores laws, so "Ligji Nr. 03/L-006" must not fail verification
+    assert law["code"] == "03/L-006"
 
 
 # ---------- extraction: hygiene ----------

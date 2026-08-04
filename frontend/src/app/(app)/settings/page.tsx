@@ -88,6 +88,7 @@ export default function SettingsPage() {
             <FirmSection />
             <TeamSection />
             <ImportSection />
+            <OutlookSection />
           </SettingsGroup>
 
           <SettingsGroup id="publik" title={groupLabels.publik}>
@@ -1675,6 +1676,17 @@ function CopyLinkCard({ title, hint, url }: { title: string; hint: string; url: 
       )}
     </Card>
   );
+}
+
+/** Outlook add-in (D-059 F8): the manifest URL + one-line sideload hint,
+    so the add-in is discoverable in-app and not only in the docs. */
+function OutlookSection() {
+  const { t } = useI18n();
+  const [url, setUrl] = useState("");
+  useEffect(() => {
+    setUrl(`${window.location.origin}/outlook-manifest.xml`);
+  }, []);
+  return <CopyLinkCard title={t.olkSetT} hint={t.olkSetHint} url={url} />;
 }
 
 function CalendarFeedSection() {

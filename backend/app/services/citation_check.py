@@ -61,6 +61,9 @@ _XK_ARTICLE_RE = re.compile(
     re.IGNORECASE,
 )
 _XK_LAW_RE = re.compile(r"(?P<xk_law>Ligji\s+[Nn]r\.?\s*\d{2}/L-\d{1,4})")
+# The bare law number ("03/L-006") — that is how `reference` is stored in
+# the corpus, so lookups must use it, not the full "Ligji Nr. …" phrase.
+_XK_LAW_NO_RE = re.compile(r"\d{2}/L-\d{1,4}")
 
 # Words the statute regex may capture that are never law codes
 _CODE_STOPWORDS = {
@@ -106,16 +109,23 @@ def extract_citations(text: str) -> list[dict]:
     for m in _XK_ARTICLE_RE.finditer(text):
         code = re.sub(r"\s+", " ", m.group("xk_code").strip())
         section = m.group("xk_sec")
+        law_no = _XK_LAW_NO_RE.search(code)
         _add({
             "kind": "statute",
             "cite": f"neni {section} {code}",
-            "code": code,
+            "code": law_no.group(0) if law_no else code,
             "section": section,
         })
 
     for m in _XK_LAW_RE.finditer(text):
         law = re.sub(r"\s+", " ", m.group("xk_law").strip())
-        _add({"kind": "law", "cite": law, "code": law, "section": ""})
+        law_no = _XK_LAW_NO_RE.search(law)
+        _add({
+            "kind": "law",
+            "cite": law,
+            "code": law_no.group(0) if law_no else law,
+            "section": "",
+        })
 
     return found[:MAX_CITATIONS]
 

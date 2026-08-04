@@ -1602,16 +1602,36 @@ async def ava_ask_stream(
             messages, citations = await _ava_prepare(db, body, country)
         yield sse({"type": "meta", "citations": citations, "remaining": remaining})
         provider = get_provider(profile_for(country).llm_provider)
+        parts: list[str] = []
         try:
             async for kind, text in provider.chat_stream(messages):
                 if kind == "thinking":
                     yield sse({"type": "thinking", "text": text})
                 else:
+                    parts.append(text)
                     yield sse({"type": "delta", "text": text})
         except Exception as exc:
             logger.exception("public ava stream failed")
             yield sse({"type": "error", "detail": str(exc)})
             return
+        # Citation verification (D-059 F6) — the same trust badges lawyers
+        # get; after the answer, never in the stream's critical path.
+        try:
+            from app.services.citation_check import verify_citations
+
+            async with SessionLocal() as db:
+                jur = (
+                    await db.execute(
+                        select(Jurisdiction).where(Jurisdiction.code == country)
+                    )
+                ).scalar_one_or_none()
+                checked = await verify_citations(
+                    db, jur.id if jur else None, "".join(parts)
+                )
+            if checked:
+                yield sse({"type": "citation_check", "citations": checked})
+        except Exception:
+            logger.exception("public citation verification failed")
         yield sse({"type": "done"})
 
     return StreamingResponse(

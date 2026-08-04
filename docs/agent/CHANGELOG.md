@@ -3,6 +3,27 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-04 — Interface audit after D-059: surface what we built
+
+- Audit finding 1: the public Ava chat showed sources but not the D-059
+  citation-verification badges (the marketing now claims them). Fixed:
+  `/public/ava/ask-stream` emits `citation_check` after the answer
+  (same verify_citations, off the critical path), `ava-chat.tsx` renders
+  `CitationChecks` under the answer — public page, launcher panel and
+  citizen portal all inherit it.
+- Audit finding 2 (real bug): "Ligji Nr. 03/L-006" was reported
+  unverified although the LPK is in the corpus — the lookup used the
+  full phrase while `reference` stores the bare number. `extract_citations`
+  now normalizes XK law codes to `NN/L-NNN` (statute + law kinds); test
+  tightened; verified live: both "neni 176 LPK" and "Ligji Nr. 03/L-006"
+  → verified.
+- Audit finding 3: `/siguria` had no pseudonymization card — added
+  (secPseudoT/B ×7, 🎭) next to encryption/local-processing.
+- Audit finding 4: the Outlook add-in was undiscoverable in-app — new
+  `OutlookSection` in Settings → office group (CopyLinkCard with the
+  host's manifest URL + one-line sideload hint, olkSetT/olkSetHint ×7).
+- 304 tests pass; build + both services restarted; health OK.
+
 ## 2026-08-04 — Status report for the German partner (English)
 
 - New `docs/pitch/german-partner-status-and-roadmap.txt`: everything
