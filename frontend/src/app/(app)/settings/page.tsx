@@ -503,6 +503,7 @@ interface KiUsage {
     external: boolean;
     embeddings: string;
     allow_external_ai: boolean;
+    pseudonymized: boolean;
   };
   actions: { action: string; count: number; last_at: string }[];
   users: { name: string; count: number }[];
@@ -564,6 +565,7 @@ function KiUsageSection() {
               {data.provider.external ? t.kiuExternal : t.kiuLocal}
             </p>
             <p>{t.kiuEmbeddings}</p>
+            {data.provider.pseudonymized && <p>{t.kiuPseudo}</p>}
           </div>
           {data.total === 0 ? (
             <p className="text-xs text-slate-400">{t.kiuEmpty}</p>

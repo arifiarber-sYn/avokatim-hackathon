@@ -92,6 +92,9 @@ def _ai_provider_info(tenant: Tenant) -> dict:
         "external": name != "local",
         "embeddings": "local",
         "allow_external_ai": tenant.allow_external_ai,
+        # D-059: prompts to external providers carry placeholders instead of
+        # names/emails/phones/IBANs — restored locally after the answer
+        "pseudonymized": name == "local" or settings.llm_pseudonymize,
     }
 
 
@@ -179,7 +182,7 @@ async def ai_usage_csv(
     writer = csv.writer(buf, delimiter=";")
     writer.writerow(
         ["timestamp", "user", "action", "entity_type", "entity_id",
-         "provider", "provider_location", "embeddings"]
+         "provider", "provider_location", "embeddings", "pseudonymized"]
     )
     location = "local" if not provider["external"] else "external-api"
     for entry, full_name in rows:
@@ -187,6 +190,7 @@ async def ai_usage_csv(
             entry.at.isoformat(), full_name or "", entry.action,
             entry.entity_type or "", entry.entity_id or "",
             provider["name"], location, "local",
+            "yes" if provider["pseudonymized"] else "no",
         ])
     await log_action(
         db, tenant_id=user.tenant_id, user_id=user.id, action="firm.ai_usage_export",

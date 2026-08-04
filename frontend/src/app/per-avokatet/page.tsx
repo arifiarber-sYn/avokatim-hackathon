@@ -199,6 +199,8 @@ export default function ForLawyersPage() {
                   {t.ftSecurity} →
                 </Link>
               </p>
+              {/* D-059 F1: local pseudonymization before any external AI call */}
+              <p className="text-sm text-slate-400">{t.lpPseudo}</p>
             </div>
           </div>
         </div>

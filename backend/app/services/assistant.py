@@ -10,6 +10,7 @@ from sqlalchemy.orm import selectinload
 
 from app.llm import get_provider
 from app.llm.base import ChatMessage
+from app.llm.pseudonymize import add_pii_terms
 from app.models import Deadline, Document, Matter, MatterNote, MatterParty
 from app.services import rag
 
@@ -74,6 +75,9 @@ async def build_matter_context(db: AsyncSession, matter_id: uuid.UUID) -> str:
     ]
     if matter.client:
         parts.append(f"Klienti: {matter.client.display_name}")
+        # Register the people of this matter so an external LLM only ever
+        # sees [PERSON_n]/[ID_n] placeholders (D-059 F1)
+        add_pii_terms([matter.client.display_name, matter.client.national_id])
     if matter.court_name:
         parts.append(f"Gjykata: {matter.court_name} ({matter.court_case_number or 'pa numër'})")
     if matter.description:
@@ -91,6 +95,8 @@ async def build_matter_context(db: AsyncSession, matter_id: uuid.UUID) -> str:
             "Palët: "
             + "; ".join(f"{p.contact.display_name} ({p.role})" for p in parties)
         )
+        add_pii_terms([p.contact.display_name for p in parties])
+        add_pii_terms([p.contact.national_id for p in parties])
 
     deadlines = (
         await db.execute(

@@ -47,6 +47,10 @@ class Settings(BaseSettings):
     local_llm_base_url: str = "http://127.0.0.1:11434/v1"
     local_llm_model: str = ""
     local_llm_api_key: str = "not-needed"
+    # Strip personal data (names, emails, phones, IBANs) to placeholders
+    # before ANY external provider call and restore them in the answer
+    # (D-059 F1 — parity with RA-MICRO JURA KI). Local providers skip this.
+    llm_pseudonymize: bool = True
 
     # RAG / embeddings
     embedding_model: str = "paraphrase-multilingual-MiniLM-L12-v2"

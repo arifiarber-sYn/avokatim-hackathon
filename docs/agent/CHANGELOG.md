@@ -3,6 +3,31 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-04 — Local pseudonymization before external LLM calls (D-059 F1)
+
+- Parity with RA-MICRO JURA KI: personal data never reaches an external
+  model in clear text. New `backend/app/llm/pseudonymize.py` — regex layer
+  (emails, phones, IBANs; date-like strings excluded so deadlines survive)
+  + known-terms layer (client/party names and IDs registered by
+  `build_matter_context` via contextvar, no call-site signature changes).
+- `PseudonymizingProvider` wrapper in `router.py`: `get_provider()` wraps
+  every non-local provider when `LLM_PSEUDONYMIZE=true` (default on).
+  Placeholders `[PERSON_n]/[EMAIL_n]/[TEL_n]/[IBAN_n]/[ID_n]` are restored
+  in the answer, with per-kind holdback buffers so a placeholder split
+  across streamed chunks is restored whole. Legal citations (§ 573 BGB,
+  VIII ZR 123/20, "neni 176 LPK") are deliberately untouched.
+- Covers all flows through `get_provider()` — matter assistant, public Ava,
+  WhatsApp intake, structure-case, case quality.
+- KI usage register: new `pseudonymized` field (JSON + CSV column) and a
+  "Pseudonymisierung: ja" line in the settings UI; marketing line on
+  /per-avokatet (`lpPseudo`, `kiuPseudo` ×7 languages).
+- Tests: `backend/tests/test_pseudonymize.py` (10) — roundtrip, stream
+  split, JSON parseability, DE/AL names, router wrapping rules.
+- Files: `backend/app/llm/{pseudonymize,router}.py`, `backend/app/config.py`,
+  `backend/app/services/assistant.py`, `backend/app/api/firm.py`,
+  `backend/tests/test_pseudonymize.py`, `frontend/src/app/(app)/settings/page.tsx`,
+  `frontend/src/app/per-avokatet/page.tsx`, `frontend/src/lib/dictionaries.ts`.
+
 ## 2026-08-02 — Citizen sign-in audit: photo, "Continue as X", country callbacks (D-058)
 
 - Audit after the owner hit friction with Google sign-in on the DE host.
