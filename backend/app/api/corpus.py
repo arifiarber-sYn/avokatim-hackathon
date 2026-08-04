@@ -6,6 +6,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -95,20 +96,18 @@ async def list_corpus(
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Jurisdiction not found")
     else:
         jurisdiction = await jurisdiction_row_for_tenant(db, user.tenant_id)
-    docs = (
+    # One grouped query instead of a count per doc — with a 100k+ judgment
+    # corpus (D-059 F2) the N+1 version took minutes
+    rows = (
         await db.execute(
-            select(LegalCorpusDoc).where(LegalCorpusDoc.jurisdiction_id == jurisdiction.id)
+            select(LegalCorpusDoc, func.count(LegalCorpusChunk.id))
+            .outerjoin(LegalCorpusChunk, LegalCorpusChunk.doc_id == LegalCorpusDoc.id)
+            .where(LegalCorpusDoc.jurisdiction_id == jurisdiction.id)
+            .group_by(LegalCorpusDoc.id)
         )
-    ).scalars().all()
+    ).all()
     out = []
-    for doc in docs:
-        count = (
-            await db.execute(
-                select(func.count(LegalCorpusChunk.id)).where(
-                    LegalCorpusChunk.doc_id == doc.id
-                )
-            )
-        ).scalar_one()
+    for doc, count in rows:
         item = CorpusDocOut.model_validate(doc)
         item.chunk_count = count
         out.append(item)
@@ -164,8 +163,16 @@ async def add_corpus_doc(
         entity_type="corpus_doc", entity_id=str(doc.id),
         details={"title": body.title, "chunks": len(pieces)},
     )
-    await db.commit()
     out = CorpusDocOut.model_validate(doc)
+    try:
+        await db.commit()
+    except IntegrityError:
+        # Unique (jurisdiction, reference, region) — D-059 F2: importers may
+        # race or resume; a duplicate is a clean 409, not a 500
+        await db.rollback()
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, "Document with this reference already exists"
+        )
     out.chunk_count = len(pieces)
     return out
 

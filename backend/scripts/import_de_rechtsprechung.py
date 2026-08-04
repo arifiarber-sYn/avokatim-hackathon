@@ -7,14 +7,17 @@ readable index at rii-toc.xml (~23 MB, one <item> per decision).
 
 Usage:
     cd backend
-    .venv/bin/python scripts/import_de_rechtsprechung.py                 # BGH+BAG+BVerfG, last 5 years
+    .venv/bin/python scripts/import_de_rechtsprechung.py                 # all federal courts, last 15 years
     .venv/bin/python scripts/import_de_rechtsprechung.py --limit 200     # newest 200 only
     .venv/bin/python scripts/import_de_rechtsprechung.py --courts BGH --years 2
 
 Resumable like the laws importer: decisions whose reference (Aktenzeichen)
-is already in the DE corpus are skipped. Import goes through the local
-corpus API so chunking (Leitsatz/Tenor/Gründe-aware splitter), tsvector and
-local embeddings happen exactly like every other corpus document.
+is already in the DE corpus are skipped — the existing references are read
+straight from the DB (D-059 F2: the GET /corpus roundtrip does not scale to
+100k docs) and the DB-level unique index catches any race as a 409. Import
+goes through the local corpus API so chunking (Leitsatz/Tenor/Gründe-aware
+splitter), tsvector and local embeddings happen exactly like every other
+corpus document.
 """
 import asyncio
 import io
@@ -28,12 +31,9 @@ from pathlib import Path
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from sqlalchemy import select  # noqa: E402
-
-from app.database import SessionLocal  # noqa: E402
-from app.models import User  # noqa: E402
-from app.security import create_access_token  # noqa: E402
+from corpus_common import api_token, existing_references  # noqa: E402
 
 API = "http://127.0.0.1:8000/api"
 RII = "https://www.rechtsprechung-im-internet.de"
@@ -41,9 +41,10 @@ TOC_URL = f"{RII}/rii-toc.xml"
 DOC_DELAY = 0.3
 MIN_CHARS = 400
 
-# Court name in <gericht> starts with one of these codes.
-DEFAULT_COURTS = ["BGH", "BAG", "BVerfG"]
-DEFAULT_YEARS = 5
+# Court name in <gericht> starts with one of these codes. D-059 F2: ALL
+# federal courts published on rechtsprechung-im-internet (same XML schema).
+DEFAULT_COURTS = ["BGH", "BAG", "BVerfG", "BVerwG", "BFH", "BSG", "BPatG"]
+DEFAULT_YEARS = 15
 
 # XML content sections, in citation-friendly reading order. The corpus
 # splitter recognises these exact heading lines and chunks by them.
@@ -59,14 +60,6 @@ _SECTIONS = [
 ]
 
 _DOKTYP_LABEL = {"urteil": "Urteil", "beschluss": "Beschluss"}
-
-
-async def _api_token() -> str:
-    async with SessionLocal() as db:
-        owner = (
-            await db.execute(select(User).where(User.role == "admin").limit(1))
-        ).scalars().first()
-        return create_access_token(str(owner.id), str(owner.tenant_id))
 
 
 def load_toc(path: Path, courts: list[str], since: date) -> list[dict]:
@@ -156,7 +149,7 @@ def parse_rii_xml(data: bytes) -> dict:
 
 async def import_decisions(courts: list[str], years: int, limit: int | None) -> None:
     since = date.today() - timedelta(days=365 * years)
-    token = await _api_token()
+    token = await api_token()
     stats = {"ok": 0, "skip": 0, "fail": 0}
 
     async with httpx.AsyncClient(
@@ -177,10 +170,7 @@ async def import_decisions(courts: list[str], years: int, limit: int | None) -> 
         if limit:
             items = items[:limit]
 
-        existing = {
-            d.get("reference")
-            for d in (await api.get(f"{API}/corpus?jurisdiction_code=DE")).json()
-        }
+        existing = await existing_references("DE")
 
         total = len(items)
         for i, item in enumerate(items, 1):
@@ -212,7 +202,7 @@ async def import_decisions(courts: list[str], years: int, limit: int | None) -> 
             try:
                 resp = await api.post(f"{API}/corpus", json=payload)
                 if resp.status_code == 401:  # token expired mid-run — refresh once
-                    token = await _api_token()
+                    token = await api_token()
                     api.headers["Authorization"] = f"Bearer {token}"
                     resp = await api.post(f"{API}/corpus", json=payload)
             except httpx.HTTPError as exc:
@@ -230,6 +220,9 @@ async def import_decisions(courts: list[str], years: int, limit: int | None) -> 
                 existing.add(item["az"])
                 print(f"[{i}/{total}] OK   {parsed['title'][:70]} "
                       f"({resp.json()['chunk_count']} chunks)", flush=True)
+            elif resp.status_code == 409:  # already in DB (unique index) — resume-safe
+                stats["skip"] += 1
+                existing.add(item["az"])
             else:
                 stats["fail"] += 1
                 print(f"[{i}/{total}] ERR  {item['az']} {resp.status_code}: "

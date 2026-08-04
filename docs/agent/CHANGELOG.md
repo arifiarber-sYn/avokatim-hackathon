@@ -3,6 +3,37 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-04 — DE corpus expansion: all federal courts + openlegaldata importer (D-059 F2)
+
+- Path from 15.4k to 100k+ decisions. RII importer now covers ALL federal
+  courts (BGH, BAG, BVerfG + new BVerwG, BFH, BSG, BPatG) and defaults to
+  15 years; existence check reads references straight from the DB (new
+  `scripts/corpus_common.py`) instead of the GET /corpus JSON roundtrip.
+- New `scripts/import_de_openlegaldata.py`: instance courts (AG/LG/OLG/
+  ArbG/LAG) from an openlegaldata.io JSONL dump, filtered by Aktenzeichen
+  register letters to civil/family/labor (criminal & administrative
+  excluded); reference includes the court name (AG file numbers collide).
+- DB hardening before the volume: partial unique index
+  `(jurisdiction_id, reference, COALESCE(region,''))` on legal_corpus_docs
+  (migration `c9d1e2f3a4b5`, pre-deduped keeping the oldest); POST /corpus
+  returns 409 on duplicates (importers treat as skip); GET /corpus now one
+  grouped count query instead of N+1.
+- Nightly batch: `scripts/corpus_night_batch.sh` (default 2000/night) +
+  systemd user timer `avokatim-corpus.timer` (01:30, enabled). Drop the
+  openlegaldata dump at `data/corpus/oldp-cases.jsonl.gz` to include
+  instance courts. Log: `data/corpus-batch.log`.
+- RAG: judgments may fill half the context slots (was one third) when the
+  query clearly asks for case law (`_wants_case_law` — court names,
+  Urteil/vendim/praktikë gjyqësore/ECLI…). Public DE prompt updated: all
+  federal courts + selected instance case law (LG/OLG/AG) as sources.
+- Tests: `tests/test_import_de_openlegaldata.py` (5). Smoke run: importer
+  picked up new BGH decision, skip/409 paths verified. Postgres growth
+  expected ~4–6 GB when the full backlog lands.
+- Files: `backend/scripts/{import_de_rechtsprechung.py,import_de_openlegaldata.py,corpus_common.py,corpus_night_batch.sh}`,
+  `backend/app/api/{corpus,marketplace}.py`, `backend/app/services/rag.py`,
+  `backend/alembic/versions/20260804_c9d1e2f3a4b5_*.py`,
+  `~/.config/systemd/user/avokatim-corpus.{service,timer}`.
+
 ## 2026-08-04 — Local pseudonymization before external LLM calls (D-059 F1)
 
 - Parity with RA-MICRO JURA KI: personal data never reaches an external

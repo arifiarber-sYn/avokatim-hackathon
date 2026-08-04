@@ -194,9 +194,12 @@ async def search_corpus(
     )
 
     if vec_rows or fts_rows or rare_rows:
+        # Statutes stay the primary ground; but when the question is openly
+        # about case law, judgments may take up to half the slots (D-059 F2)
+        cap = limit // 2 if _wants_case_law(query) else limit // 3
         rows = _rrf_fuse(
             [vec_rows, fts_rows, rare_rows], limit,
-            max_judgments=max(1, limit // 3),
+            max_judgments=max(1, cap),
         )
     else:
         # No embeddings and no FTS hits (model missing / exotic query) —
@@ -214,6 +217,21 @@ async def search_corpus(
         }
         for chunk, doc in rows
     ]
+
+
+# Signals that the user is explicitly after case law, not statutes —
+# court names, decision words (de/sq/en/sr) and Aktenzeichen patterns.
+_CASE_LAW_RE = re.compile(
+    r"\b(Urteil|Beschluss|Rechtsprechung|entschieden|BGH|BAG|BVerfG|BVerwG"
+    r"|BFH|BSG|BPatG|OLG|LG|AG\s+\w+|ECLI|Aktenzeichen"
+    r"|vendim\w*|praktik\w+\s+gjyqësor\w*|gjykata\s+supreme|aktgjykim\w*"
+    r"|presud\w*|sudska\s+praksa|case\s+law|judgment|ruling)\b",
+    re.IGNORECASE,
+)
+
+
+def _wants_case_law(query: str) -> bool:
+    return bool(_CASE_LAW_RE.search(query))
 
 
 # Words more frequent than this share of chunks carry no signal for the
