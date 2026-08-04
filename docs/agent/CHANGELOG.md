@@ -3,6 +3,34 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-04 — Migration wizard: presets, XLSX, preview, parties, document ZIP (D-059 F3)
+
+- Switching cost argument for the German market (offices pay 5–15k € to
+  migrate): `backend/app/api/imports.py` rebuilt.
+- New: `GET /import/presets` (generic / RA-MICRO / Advoware + canonical
+  fields), `POST /import/preview` (full dry run through the SAME code path
+  as the real import — mapping, unmapped columns, sample rows,
+  would-create/skip counts), XLSX reading (openpyxl, new dependency),
+  semicolon-CSV autodetection, German/Albanian header aliases as data,
+  Vorname/Nachname + Straße/PLZ/Ort composition, practice-area and status
+  value aliases (Arbeitsrecht→labor, offen→open…).
+- Matters import: `opposing_party` becomes a real MatterParty, the legacy
+  Aktenzeichen lands in `Matter.extra["legacy_reference"]` and global
+  search finds it (search.py).
+- New `POST /import/documents`: ZIP with `{reference}/file.pdf` folders
+  (legacy reference works too; "_" matches "/"), files run in background
+  through the standard pipeline (encrypt → OCR → index → deadline scan),
+  summary audit `import.documents`.
+- UI: ImportSection in Settings is now a 4-step wizard (source+preset →
+  column mapping with per-column override → preview with counts+sample →
+  run) plus a Documents (ZIP) tab. 21 new keys ×7 languages.
+- Tests: `tests/test_import_wizard.py` (6) — semicolon CSV, XLSX roundtrip,
+  RA-MICRO preset, name/address composition, custom mapping, mapping
+  validation. Full suite 269 passed.
+- Files: `backend/app/api/{imports,search}.py`, `backend/requirements.txt`,
+  `backend/tests/test_import_wizard.py`,
+  `frontend/src/app/(app)/settings/page.tsx`, `frontend/src/lib/dictionaries.ts`.
+
 ## 2026-08-04 — DE corpus expansion: all federal courts + openlegaldata importer (D-059 F2)
 
 - Path from 15.4k to 100k+ decisions. RII importer now covers ALL federal

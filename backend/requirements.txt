@@ -35,3 +35,6 @@ sentry-sdk[fastapi]>=2.19
 
 # security tooling (weekly dependency scan — scripts/security_scan.sh)
 pip-audit>=2.10
+
+# data migration importer (D-059 F3): XLSX exports from RA-MICRO/Advoware
+openpyxl>=3.1

@@ -41,6 +41,10 @@ async def global_search(
                     func.lower(Matter.reference).like(needle),
                     func.lower(func.coalesce(Matter.description, "")).like(needle),
                     func.lower(func.coalesce(Matter.court_case_number, "")).like(needle),
+                    # Old office's Aktenzeichen from the migration (D-059 F3)
+                    func.lower(
+                        func.coalesce(Matter.extra["legacy_reference"].astext, "")
+                    ).like(needle),
                     _fuzzy(Matter.title, q),
                 ),
             )

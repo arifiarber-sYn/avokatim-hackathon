@@ -889,21 +889,103 @@ function FirmSection() {
   );
 }
 
+interface ImportPreview {
+  rows_total: number;
+  mapping: Record<string, string>;
+  unmapped: string[];
+  sample: Record<string, string>[];
+  created: number;
+  skipped?: number;
+  new_contacts?: number;
+  errors: string[];
+}
+
+/** Migration wizard (D-059 F3): source → column mapping → preview (dry run)
+    → execute, plus a bulk-documents ZIP tab. The preview numbers come from
+    the same code path as the real import. */
 function ImportSection() {
   const { t } = useI18n();
+  const [tab, setTab] = useState<"data" | "docs">("data");
+  const [step, setStep] = useState(0);
+  const [kind, setKind] = useState<"contacts" | "matters">("contacts");
+  const [preset, setPreset] = useState("generic");
+  const [presets, setPresets] = useState<{ id: string; label: string }[]>([]);
+  const [fields, setFields] = useState<Record<string, string[]>>({});
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<ImportPreview | null>(null);
+  const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [result, setResult] = useState("");
+  const [docsResult, setDocsResult] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function importFile(kind: "contacts" | "matters", e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+  useEffect(() => {
+    apiGet<{ presets: { id: string; label: string }[]; fields: Record<string, string[]> }>(
+      "/import/presets"
+    )
+      .then((d) => {
+        setPresets(d.presets);
+        setFields(d.fields);
+      })
+      .catch(() => {});
+  }, []);
+
+  function reset() {
+    setStep(0);
+    setFile(null);
+    setPreview(null);
+    setOverrides({});
+    setResult("");
+    setError("");
+  }
+
+  async function runPreview(f: File, extra?: Record<string, string>) {
+    setBusy(true);
+    setError("");
+    try {
+      const form = new FormData();
+      form.append("kind", kind);
+      form.append("preset", preset);
+      form.append("file", f);
+      const merged = { ...overrides, ...extra };
+      if (Object.keys(merged).length) form.append("mapping", JSON.stringify(merged));
+      const p = await apiUpload<ImportPreview>("/import/preview", form);
+      setPreview(p);
+      return p;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+      return null;
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function chooseFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    setFile(f);
+    setOverrides({});
+    const p = await runPreview(f, {});
+    if (p) setStep(1);
+  }
+
+  async function changeMapping(source: string, field: string) {
+    if (!file) return;
+    const next = { ...overrides, [source]: field };
+    setOverrides(next);
+    await runPreview(file, next);
+  }
+
+  async function execute() {
     if (!file) return;
     setBusy(true);
-    setResult("");
     setError("");
     try {
       const form = new FormData();
       form.append("file", file);
+      form.append("preset", preset);
+      if (Object.keys(overrides).length) form.append("mapping", JSON.stringify(overrides));
       const r = await apiUpload<{ created: number; skipped?: number; errors: string[] }>(
         `/import/${kind}`,
         form
@@ -912,27 +994,57 @@ function ImportSection() {
       if (r.skipped) msg += ` · ${t.skippedCount}: ${r.skipped}`;
       if (r.errors?.length) msg += ` · ${t.errorsCount}: ${r.errors.length} (${r.errors[0]})`;
       setResult(msg);
+      setStep(3);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.error);
     } finally {
       setBusy(false);
-      e.target.value = "";
     }
   }
 
-  function templateCsv(kind: "contacts" | "matters") {
+  async function uploadZip(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    setBusy(true);
+    setError("");
+    setDocsResult("");
+    try {
+      const form = new FormData();
+      form.append("file", f);
+      const r = await apiUpload<{
+        matched_folders: number;
+        unmatched_folders: string[];
+        files_queued: number;
+      }>("/import/documents", form);
+      let msg = `${t.impDocsMatched.replace("{n}", String(r.matched_folders))} · ${t.impDocsQueued.replace("{n}", String(r.files_queued))}`;
+      if (r.unmatched_folders.length) {
+        msg += ` · ${t.impDocsUnmatched}: ${r.unmatched_folders.slice(0, 5).join(", ")}`;
+      }
+      setDocsResult(msg);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function templateCsv(k: "contacts" | "matters") {
     const content =
-      kind === "contacts"
+      k === "contacts"
         ? "display_name,kind,email,phone,address,national_id,notes\nFilan Fisteku,person,filan@shembull.com,+38344123456,Prishtinë,,\n"
-        : "title,practice_area,status,client_name,court_name,court_case_number,opened_on,description\nKontest pronësor,civil,open,Filan Fisteku,Gjykata Themelore Prishtinë,C-123/2026,2026-01-15,\n";
+        : "title,practice_area,status,client_name,opposing_party,court_name,court_case_number,opened_on,legacy_reference,description\nKontest pronësor,civil,open,Filan Fisteku,Pala Tjetër,Gjykata Themelore Prishtinë,C-123/2026,2026-01-15,A-99/2020,\n";
     const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = kind === "contacts" ? "shabllon-kontaktet.csv" : "shabllon-lendet.csv";
+    a.download = k === "contacts" ? "shabllon-kontaktet.csv" : "shabllon-lendet.csv";
     a.click();
     URL.revokeObjectURL(url);
   }
+
+  const steps = [t.impStepSource, t.impStepMapping, t.impStepPreview, t.impStepRun];
+  const kindFields = fields[kind] || [];
 
   return (
     <Card className="p-5 space-y-4">
@@ -940,35 +1052,204 @@ function ImportSection() {
         <h2 className="font-semibold">{t.dataImport}</h2>
         <p className="text-xs text-slate-500 mt-0.5">{t.dataImportHint}</p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {(["contacts", "matters"] as const).map((kind) => (
-          <div key={kind} className="border border-slate-200 rounded-lg p-4 space-y-2">
-            <p className="text-sm font-medium">
-              {kind === "contacts" ? t.importContacts : t.importMatters}
-            </p>
-            <label className="cursor-pointer inline-block">
-              <span className="px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 text-white hover:bg-indigo-700 inline-block">
-                {busy ? t.loading : t.chooseCsv}
-              </span>
-              <input
-                type="file"
-                accept=".csv,text/csv"
-                className="hidden"
-                disabled={busy}
-                onChange={(e) => importFile(kind, e)}
-              />
-            </label>
-            <button
-              type="button"
-              onClick={() => templateCsv(kind)}
-              className="block py-1.5 text-xs text-indigo-600 hover:underline"
-            >
-              {t.downloadTemplate}
-            </button>
-          </div>
+
+      <div className="flex gap-2 border-b border-slate-200">
+        {(["data", "docs"] as const).map((tb) => (
+          <button
+            key={tb}
+            onClick={() => setTab(tb)}
+            className={`px-3 py-1.5 text-sm font-medium border-b-2 -mb-px ${
+              tab === tb
+                ? "border-indigo-600 text-indigo-700"
+                : "border-transparent text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            {tb === "data" ? `${t.importContacts} / ${t.importMatters}` : t.impDocsTab}
+          </button>
         ))}
       </div>
-      {result && <p className="text-sm text-emerald-700">✓ {result}</p>}
+
+      {tab === "data" && (
+        <>
+          {/* Step indicator */}
+          <ol className="flex flex-wrap items-center gap-1 text-xs">
+            {steps.map((label, i) => (
+              <li key={label} className="flex items-center gap-1">
+                <span
+                  className={`h-5 w-5 rounded-full flex items-center justify-center font-bold ${
+                    i === step
+                      ? "bg-indigo-600 text-white"
+                      : i < step
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-slate-100 text-slate-400"
+                  }`}
+                >
+                  {i < step ? "✓" : i + 1}
+                </span>
+                <span className={i === step ? "font-semibold" : "text-slate-400"}>{label}</span>
+                {i < steps.length - 1 && <span className="text-slate-300 mx-1">→</span>}
+              </li>
+            ))}
+          </ol>
+
+          {step === 0 && (
+            <div className="space-y-3">
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <Label>{t.dataImport}</Label>
+                  <Select value={kind} onChange={(e) => setKind(e.target.value as "contacts" | "matters")}>
+                    <option value="contacts">{t.importContacts}</option>
+                    <option value="matters">{t.importMatters}</option>
+                  </Select>
+                </div>
+                <div>
+                  <Label>{t.impPreset}</Label>
+                  <Select value={preset} onChange={(e) => setPreset(e.target.value)}>
+                    {presets.map((p) => (
+                      <option key={p.id} value={p.id}>{p.label}</option>
+                    ))}
+                  </Select>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <label className="cursor-pointer inline-block">
+                  <span className="px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 text-white hover:bg-indigo-700 inline-block">
+                    {busy ? t.loading : t.impChooseFile}
+                  </span>
+                  <input
+                    type="file"
+                    accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    className="hidden"
+                    disabled={busy}
+                    onChange={chooseFile}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => templateCsv(kind)}
+                  className="text-xs text-indigo-600 hover:underline"
+                >
+                  {t.downloadTemplate}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 1 && preview && (
+            <div className="space-y-3">
+              <p className="text-xs text-slate-500">{t.impMappingHint}</p>
+              <div className="max-h-64 overflow-y-auto border border-slate-200 rounded-lg divide-y divide-slate-100">
+                {[...Object.entries(preview.mapping), ...preview.unmapped.map((u) => [u, ""] as [string, string])].map(
+                  ([source, field]) => (
+                    <div key={source} className="flex items-center gap-2 px-3 py-1.5 text-sm">
+                      <span className="font-mono text-xs flex-1 truncate">{source}</span>
+                      <span className="text-slate-300">→</span>
+                      <select
+                        value={field}
+                        disabled={busy}
+                        onChange={(e) => changeMapping(source, e.target.value)}
+                        className="text-xs border border-slate-200 rounded px-1.5 py-1 bg-white max-w-[12rem]"
+                      >
+                        <option value="">{t.impIgnore}</option>
+                        {kindFields.map((f) => (
+                          <option key={f} value={f}>{f}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button variant="secondary" onClick={reset}>{t.impBack}</Button>
+                <Button onClick={() => setStep(2)} disabled={busy}>{t.impStepPreview} →</Button>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && preview && (
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-2 text-xs">
+                <span className="px-2 py-1 rounded bg-slate-100">{t.impRowsTotal.replace("{n}", String(preview.rows_total))}</span>
+                <span className="px-2 py-1 rounded bg-emerald-50 text-emerald-700 font-medium">
+                  {t.impWouldCreate.replace("{n}", String(preview.created))}
+                </span>
+                {preview.skipped != null && preview.skipped > 0 && (
+                  <span className="px-2 py-1 rounded bg-amber-50 text-amber-700">
+                    {t.impWouldSkip.replace("{n}", String(preview.skipped))}
+                  </span>
+                )}
+                {preview.new_contacts != null && preview.new_contacts > 0 && (
+                  <span className="px-2 py-1 rounded bg-indigo-50 text-indigo-700">
+                    {t.impNewContacts.replace("{n}", String(preview.new_contacts))}
+                  </span>
+                )}
+              </div>
+              {preview.sample.length > 0 && (
+                <div className="max-h-56 overflow-auto border border-slate-200 rounded-lg">
+                  <table className="text-xs w-full">
+                    <thead className="bg-slate-50 sticky top-0">
+                      <tr>
+                        {Object.keys(preview.sample[0]).map((f) => (
+                          <th key={f} className="px-2 py-1.5 text-left font-semibold text-slate-500">{f}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {preview.sample.map((row, i) => (
+                        <tr key={i}>
+                          {Object.keys(preview.sample[0]).map((f) => (
+                            <td key={f} className="px-2 py-1 truncate max-w-[14rem]">{row[f] || ""}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {preview.errors.length > 0 && (
+                <div className="text-xs text-amber-700 bg-amber-50 rounded-lg p-2 space-y-0.5">
+                  {preview.errors.slice(0, 5).map((e, i) => (
+                    <p key={i}>{e}</p>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button variant="secondary" onClick={() => setStep(1)}>{t.impBack}</Button>
+                <Button onClick={execute} disabled={busy || preview.created === 0}>
+                  {busy ? t.loading : t.impRun}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-3">
+              <p className="text-sm text-emerald-700">✓ {t.impDone} {result}</p>
+              <Button variant="secondary" onClick={reset}>{t.impBack}</Button>
+            </div>
+          )}
+        </>
+      )}
+
+      {tab === "docs" && (
+        <div className="space-y-3">
+          <p className="text-xs text-slate-500">{t.impDocsHint}</p>
+          <label className="cursor-pointer inline-block">
+            <span className="px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 text-white hover:bg-indigo-700 inline-block">
+              {busy ? t.loading : "ZIP"}
+            </span>
+            <input
+              type="file"
+              accept=".zip,application/zip"
+              className="hidden"
+              disabled={busy}
+              onChange={uploadZip}
+            />
+          </label>
+          {docsResult && <p className="text-sm text-emerald-700">✓ {docsResult}</p>}
+        </div>
+      )}
+
       <ErrorNote message={error} />
     </Card>
   );
