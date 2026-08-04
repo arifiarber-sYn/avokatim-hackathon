@@ -1,3 +1,3 @@
-from app.llm.router import get_provider, list_providers
+from app.llm.router import LOCAL_PINNED, get_provider, list_providers
 
-__all__ = ["get_provider", "list_providers"]
+__all__ = ["LOCAL_PINNED", "get_provider", "list_providers"]

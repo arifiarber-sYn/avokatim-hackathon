@@ -49,7 +49,7 @@ def _extract_json(text: str) -> dict | None:
 
 
 async def classify_intake(summary: str, provider_name: str | None = None) -> dict | None:
-    provider = get_provider(provider_name)
+    provider = get_provider(provider_name, purpose="json")
     result = await provider.chat(
         [
             ChatMessage(role="system", content=SYSTEM_PROMPT),
@@ -317,7 +317,7 @@ async def deep_research_stream(
     """CoCounsel-style deep research: decompose the question into sub-questions,
     search the corpus for each one, then synthesize a cited answer.
     Async generator of event dicts: step / thinking / delta / citations."""
-    provider = get_provider(provider_name)
+    provider = get_provider(provider_name, purpose="research")
 
     yield {"type": "step", "step": "subquestions", "status": "start"}
     subquestions = [question]
@@ -428,7 +428,7 @@ async def prepare_matter_stream(
     research each one in the corpus, then synthesize situation + legal basis
     + next steps + a ready-to-edit draft document. Async generator of event
     dicts: step / thinking / delta / citations."""
-    provider = get_provider(provider_name)
+    provider = get_provider(provider_name, purpose="research")
     system = _system_prompt(style)
 
     yield {"type": "step", "step": "reading", "status": "start"}
@@ -571,7 +571,7 @@ async def extract_deadlines_from_text(
     text: str, provider_name: str | None = None
 ) -> list[dict]:
     """Ask the LLM to extract procedural dates/deadlines from a court document."""
-    provider = get_provider(provider_name)
+    provider = get_provider(provider_name, purpose="json")
     result = await provider.chat(
         [
             ChatMessage(role="system", content=SYSTEM_PROMPT),

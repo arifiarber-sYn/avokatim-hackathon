@@ -1685,7 +1685,7 @@ async def ava_structure_case(body: StructureCaseIn, request: Request):
     if not lines:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Empty conversation")
 
-    provider = get_provider(None)
+    provider = get_provider(None, purpose="json")
     try:
         result = await provider.chat(
             [ChatMessage(

@@ -58,7 +58,7 @@ async def assess_case(description: str, category: str) -> tuple[bool, str]:
         from app.llm.base import ChatMessage
         from app.llm.router import get_provider
 
-        provider = get_provider(None)
+        provider = get_provider(None, purpose="json")
         result = await provider.chat(
             [
                 ChatMessage(

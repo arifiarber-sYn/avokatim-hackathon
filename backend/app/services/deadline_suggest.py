@@ -17,6 +17,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import SessionLocal
+from app.llm import LOCAL_PINNED
 from app.models import (
     DeadlineRule,
     DeadlineSuggestion,
@@ -149,7 +150,7 @@ async def scan_document(document_id: uuid.UUID, source: str = "document") -> int
             return 0
         tenant = await db.get(Tenant, doc.tenant_id)
         # BRAK/DSGVO gate: office forbids external AI → local provider only
-        provider = "local" if tenant and not tenant.allow_external_ai else None
+        provider = LOCAL_PINNED if tenant and not tenant.allow_external_ai else None
 
         try:
             items = await extract_deadlines_from_text(doc.text_content, provider)

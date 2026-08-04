@@ -84,7 +84,7 @@ async def _classify(description: str) -> dict:
         '"urgency": "normal|urgent"}\n\nCASE:\n' + description[:4000]
     )
     try:
-        provider = get_provider(None)
+        provider = get_provider(None, purpose="json")
         result = await provider.chat([ChatMessage(role="user", content=prompt)])
         match = re.search(r"\{.*\}", result.content, re.DOTALL)
         data = json.loads(match.group(0)) if match else {}

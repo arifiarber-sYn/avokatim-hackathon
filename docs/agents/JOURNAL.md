@@ -10,6 +10,25 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-04 — D-060: rrugëzimi LLM (detyra + fallback + pinned) (Cursor / Fable 5)
+
+- Done: pas pyetjes së pronarit "a e zëvendëson LLM-ja lokale DeepSeek-un":
+  (1) `get_provider(name, purpose)` — thirrjet json/research mbi lokalen
+  e preferuar ri-rrugëzohen te provideri i jashtëm i pseudonimizuar;
+  (2) `FallbackProvider` — lokalja e dështuar bie në heshtje te i jashtmi
+  (stream-et vetëm para copëzës së parë); (3) `LOCAL_PINNED` — çelësi i
+  privatësisë së zyrës dhe zgjedhja eksplicite "local" e përdoruesit
+  mbeten lokale pa asnjë përjashtim. Flags `llm_task_routing` /
+  `llm_local_fallback`. Ops: drop-in i Ollama-s me
+  OLLAMA_CONTEXT_LENGTH=16384 (prompt-et RAG priteshin në heshtje te
+  default-i) + OLLAMA_KEEP_ALIVE=2h.
+- Verified: 10 teste të reja router-i; suita 314 kalon; gemma3:27b i
+  ringarkuar me ctx 16,384 (VRAM 22.8/32.6 GB), përgjigje live 67 tok/s;
+  health OK.
+- Left open: kthimi i DE-së te `llm_provider="local"` (DE-LAUNCH-GATE #3)
+  tani është i sigurt — një rresht kur pronari ta vendosë; fine-tuning-u
+  juridik mbetet për fazën e ardhshme (D-059 backlog).
+
 ## 2026-08-04 — Auditimi i ndërfaqes pas D-059 (Cursor / Fable 5)
 
 - Done: auditim "a e tregon ndërfaqja çfarë kemi" pas valës D-059. Katër

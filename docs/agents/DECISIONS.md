@@ -1517,3 +1517,34 @@
   (web/WA/phone) share one questionnaire seed. Telephony and the
   openlegaldata dump download remain owner actions. beA + local LLM =
   next wave.
+
+## D-060: LLM routing — task routing, local fallback, pinned privacy local
+
+- Context: the owner asked whether the local model (Ollama gemma3:27b on
+  the RTX 5090) can replace DeepSeek. Assessment: yes for German chat and
+  drafting (RAG carries the legal substance; 67 tok/s measured), weaker
+  for strict-JSON outputs, deep-research synthesis and Albanian. Voice is
+  unaffected architecturally (STT/TTS are separate local components), but
+  the LLM shares the GPU with whisper.
+- Decision, three layers in `llm/router.py`:
+  1. `get_provider(name, purpose=...)`: when the resolved provider is
+     local BY PREFERENCE, `purpose="json"|"research"` calls (classify,
+     extract-deadlines, structure-case, WA classify, case quality, agent
+     plan/tools, deep research, prepare-matter) route to the external
+     default — pseudonymized (flag `llm_task_routing`).
+  2. `FallbackProvider`: everything that stays local gets the external
+     default (pseudonymized) as a transparent safety net when the local
+     server errors out; streams only fall back before the first chunk
+     (flag `llm_local_fallback`).
+  3. `LOCAL_PINNED` provider name: the tenant privacy switch
+     (`allow_external_ai=false`) and an explicit user "local" choice pin
+     to plain local — no rerouting, no external fallback, data never
+     leaves the machine. Used by assistant API, proactive briefing,
+     deadline scan.
+- Ops: Ollama systemd drop-in (`/etc/systemd/system/ollama.service.d/
+  avokatim.conf`): `OLLAMA_CONTEXT_LENGTH=16384` (RAG prompts were
+  silently truncated at the tiny default) + `OLLAMA_KEEP_ALIVE=2h`;
+  verified: model loaded with ctx 16,384, VRAM 22.8/32.6 GB.
+- Consequences: flipping DE to `llm_provider="local"` becomes safe for
+  launch — chat/drafting local, structured and research work on DeepSeek
+  (pseudonymized), outage-proof, and privacy-pinned offices untouched.

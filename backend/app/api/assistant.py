@@ -12,7 +12,7 @@ from sqlalchemy.orm import selectinload
 from app.api.matters import get_owned_matter
 from app.database import SessionLocal, get_db
 from app.deps import get_current_user
-from app.llm import list_providers
+from app.llm import LOCAL_PINNED, list_providers
 from app.llm.base import ChatMessage
 from app.models import Conversation, Jurisdiction, Message, Tenant, User
 from app.schemas.assistant import (
@@ -48,7 +48,11 @@ async def _effective_provider(
     db: AsyncSession, user: User, requested: str | None
 ) -> str | None:
     if not await _external_ai_allowed(db, user):
-        return "local"
+        return LOCAL_PINNED
+    if requested == "local":
+        # An explicit user choice of the local model is treated as a privacy
+        # decision too — task routing must not silently go external (D-060)
+        return LOCAL_PINNED
     return requested
 
 

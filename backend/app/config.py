@@ -51,6 +51,14 @@ class Settings(BaseSettings):
     # before ANY external provider call and restore them in the answer
     # (D-059 F1 — parity with RA-MICRO JURA KI). Local providers skip this.
     llm_pseudonymize: bool = True
+    # D-060: when the resolved provider is the local model (country default
+    # or user choice — NOT the tenant privacy switch, see LOCAL_PINNED),
+    # strict-JSON and deep-research calls are routed to the external default
+    # (pseudonymized), where output reliability matters most...
+    llm_task_routing: bool = True
+    # ...and everything that stays local gets the external default as a
+    # transparent safety net if the local server errors out.
+    llm_local_fallback: bool = True
 
     # RAG / embeddings
     embedding_model: str = "paraphrase-multilingual-MiniLM-L12-v2"

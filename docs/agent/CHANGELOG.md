@@ -3,6 +3,25 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-04 — D-060: LLM task routing + local fallback + pinned privacy local
+
+- `llm/router.py`: `get_provider(name, purpose)` — json/research calls on
+  a preference-local provider reroute to the external default
+  (pseudonymized); `FallbackProvider` retries external when the local
+  server errors (streams: only before the first chunk); `LOCAL_PINNED`
+  name for the tenant privacy switch — never rerouted, never falls back.
+- Call sites: purpose="json" on classify_intake, extract_deadlines,
+  wa_intake._classify, case_quality, structure-case, agent_run;
+  purpose="research" on deep_research, prepare_matter. Privacy sites
+  (assistant API _effective_provider, proactive briefing, deadline scan)
+  now pass LOCAL_PINNED; an explicit user "local" request is pinned too.
+- Config flags `llm_task_routing` / `llm_local_fallback` (default on).
+- Ollama drop-in (system service): OLLAMA_CONTEXT_LENGTH=16384 +
+  OLLAMA_KEEP_ALIVE=2h — RAG prompts no longer silently truncated;
+  verified live (ctx 16,384, VRAM 22.8/32.6 GB, model answers).
+- 10 new router tests; suite 314 passed (one transient voice-test flake
+  while the GPU reloaded the model — passes in isolation and on rerun).
+
 ## 2026-08-04 — Interface audit after D-059: surface what we built
 
 - Audit finding 1: the public Ava chat showed sources but not the D-059

@@ -117,7 +117,8 @@ async def agent_run_stream(
     style: str | None = None,
 ) -> AsyncIterator[dict]:
     """Yields: plan, step (running/done/failed), result, approval, done."""
-    provider = get_provider(provider_name)
+    # The plan and every tool call are strict JSON — route for reliability
+    provider = get_provider(provider_name, purpose="json")
 
     # 1. Plan
     plan_msg = PLAN_PROMPT.format(

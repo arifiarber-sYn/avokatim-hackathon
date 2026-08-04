@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import SessionLocal
-from app.llm import get_provider
+from app.llm import LOCAL_PINNED, get_provider
 from app.llm.base import ChatMessage
 from app.models import (
     Deadline,
@@ -131,7 +131,7 @@ async def _briefing_data(db: AsyncSession, tenant_id: uuid.UUID) -> tuple[str, d
 
 async def _generate_briefing(db: AsyncSession, tenant: Tenant) -> str:
     data, _counts = await _briefing_data(db, tenant.id)
-    provider_name = None if tenant.allow_external_ai else "local"
+    provider_name = None if tenant.allow_external_ai else LOCAL_PINNED
     try:
         provider = get_provider(provider_name)
         result = await provider.chat(
