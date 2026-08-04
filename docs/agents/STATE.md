@@ -997,6 +997,13 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   `SMS_ACCOUNT_SID/AUTH_TOKEN/FROM` (Twilio-compatible), card payments
   `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` (route the public URL to
   `/api/stripe/webhook`).
+- **Ollama** (system service, RTX 5090): drop-in
+  `/etc/systemd/system/ollama.service.d/avokatim.conf` sets
+  `OLLAMA_CONTEXT_LENGTH=16384` + `OLLAMA_KEEP_ALIVE=2h` (D-060). LLM
+  routing (D-060): `get_provider(name, purpose)` reroutes json/research
+  work from a preference-local provider to the pseudonymized external
+  default; `FallbackProvider` covers local outages; `LOCAL_PINNED` =
+  privacy-enforced local (tenant switch), never rerouted.
 - Optional extras installed in venv: `requirements-ai.txt` (local embeddings, OCR).
 - System tesseract 5.5.2 installed (2026-07-07) with sqi/eng/chi_sim langpacks;
   OCR verified end-to-end on synthetic Albanian scanned image and image-only PDF.
