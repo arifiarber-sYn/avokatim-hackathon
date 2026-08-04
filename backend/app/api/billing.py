@@ -863,6 +863,78 @@ async def mahnung_send(
     return await _load_invoice(db, user, invoice_id)
 
 
+# ---------- EDA export for the court Mahnverfahren (D-059 F7, Beta) ----------
+
+
+async def _mahn_eda_target(
+    db: AsyncSession, user: User, invoice_id: uuid.UUID
+) -> tuple[Invoice, Tenant, Contact]:
+    """Overdue sent invoice of a German office with an invoiced contact."""
+    invoice = await _load_invoice(db, user, invoice_id)
+    tenant = await db.get(Tenant, user.tenant_id)
+    if tenant.country != "DE":
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "Mahnverfahren export is DE-only"
+        )
+    if invoice.status != "sent" or invoice.due_on is None or invoice.due_on >= date.today():
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "Only sent, overdue invoices can be filed"
+        )
+    contact = await db.get(Contact, invoice.contact_id) if invoice.contact_id else None
+    if contact is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invoice has no client")
+    return invoice, tenant, contact
+
+
+@router.get("/invoices/{invoice_id}/mahn-eda")
+async def mahn_eda_file(
+    invoice_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """The EDA data set (Antrag auf Erlass eines Mahnbescheids) — Beta;
+    the lawyer files it through the office's own EGVP/beA client."""
+    from app.services.mahn_eda import build_mahn_eda
+
+    invoice, tenant, contact = await _mahn_eda_target(db, user, invoice_id)
+    eda = build_mahn_eda(invoice=invoice, tenant=tenant, contact=contact)
+    await log_action(
+        db, tenant_id=user.tenant_id, user_id=user.id, action="invoice.mahn_eda",
+        entity_type="invoice", entity_id=str(invoice.id),
+        details={"court": eda.court["name"], "total_cents": eda.total_cents},
+    )
+    await db.commit()
+    return Response(
+        content=eda.as_text().encode("latin-1", errors="replace"),
+        media_type="application/octet-stream",
+        headers={
+            "Content-Disposition": f'attachment; filename="mahnbescheid-{invoice.number}.eda"'
+        },
+    )
+
+
+@router.get("/invoices/{invoice_id}/mahn-eda/summary")
+async def mahn_eda_summary(
+    invoice_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Review PDF for the Mahnbescheid application (court, parties, claim,
+    warnings about missing data)."""
+    from app.services.mahn_eda import build_mahn_eda, build_summary_pdf
+
+    invoice, tenant, contact = await _mahn_eda_target(db, user, invoice_id)
+    eda = build_mahn_eda(invoice=invoice, tenant=tenant, contact=contact)
+    pdf = build_summary_pdf(eda=eda, invoice=invoice, tenant=tenant, contact=contact)
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="mahnbescheid-{invoice.number}.pdf"'
+        },
+    )
+
+
 @router.post("/invoices/{invoice_id}/payment-link", response_model=InvoiceOut)
 async def create_invoice_payment_link(
     invoice_id: uuid.UUID,

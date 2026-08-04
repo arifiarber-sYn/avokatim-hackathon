@@ -3,6 +3,27 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-04 — EDA export for the court Mahnverfahren (D-059 F7, Beta)
+
+- New `backend/app/services/mahn_eda.py`: generates the EDA data set
+  (Antrag auf Erlass eines Mahnbescheids) from an overdue invoice — the
+  office claims its fee from the invoiced client. Record layouts, the
+  Mahngericht routing table (all 16 Bundesländer → their central court)
+  and the claim catalog (Katalog-Nr. 19 Anwaltshonorar) are DATA, not
+  code. Fixed 128-char records, DIN transliteration (ü→UE, ß→SS),
+  amounts in zero-padded cents, dates TTMMJJJJ, CRLF.
+- Missing office Bundesland or unparseable PLZ become explicit warnings
+  (shown on the review PDF), never silent bad data.
+- Endpoints (DE tenants, sent+overdue invoices only):
+  `GET /invoices/{id}/mahn-eda` (.eda download, audited) and
+  `GET /invoices/{id}/mahn-eda/summary` (WeasyPrint review PDF with Beta
+  label + note that filing goes through the office's EGVP/beA client).
+- UI: two buttons on overdue invoices in Billing (DE host only), keys ×7
+  (edaBtn/edaPdfBtn/edaHint).
+- Accepted risk (per plan): without Mahngericht access the file is not
+  certified end-to-end — tests validate structure against the public
+  spec (`backend/tests/test_mahn_eda.py`, 8 tests).
+
 ## 2026-08-04 — Telephony-KI: Ava answers the phone via sipgate (D-059 F4)
 
 - Full architecture built and tested; goes live once the owner opens the

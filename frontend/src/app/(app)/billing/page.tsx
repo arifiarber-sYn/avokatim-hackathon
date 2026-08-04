@@ -624,6 +624,9 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
   // Kosovo cost-risk card (host-scoped; resolved after mount for SSR parity)
   const [isXK, setIsXK] = useState(false);
   useEffect(() => setIsXK(clientCountry() === "XK"), []);
+  // Court Mahnverfahren EDA export — German offices only (D-059 F7, Beta)
+  const [isDE, setIsDE] = useState(false);
+  useEffect(() => setIsDE(clientCountry() === "DE"), []);
   const [rvgOpen, setRvgOpen] = useState(false);
   const [rvgValue, setRvgValue] = useState("");
   const [rvgSelected, setRvgSelected] = useState<string[]>([
@@ -1095,6 +1098,34 @@ function InvoicesTab({ matters }: { matters: Matter[] }) {
                     >
                       {t.mhnBtn}
                     </Button>
+                  )}
+                  {/* Court Mahnverfahren (D-059 F7): EDA file + review PDF, Beta */}
+                  {isDE && isOverdue(inv) && (
+                    <>
+                      <Button
+                        variant="secondary"
+                        title={t.edaHint}
+                        onClick={() =>
+                          apiDownload(
+                            `/invoices/${inv.id}/mahn-eda`,
+                            `mahnbescheid-${inv.number}.eda`
+                          )
+                        }
+                      >
+                        {t.edaBtn}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        onClick={() =>
+                          apiDownload(
+                            `/invoices/${inv.id}/mahn-eda/summary`,
+                            `mahnbescheid-${inv.number}.pdf`
+                          )
+                        }
+                      >
+                        {t.edaPdfBtn}
+                      </Button>
+                    </>
                   )}
                   {inv.status === "sent" && payingId !== inv.id && (
                     <Button onClick={() => setPayingId(inv.id)}>{t.markPaid}</Button>
