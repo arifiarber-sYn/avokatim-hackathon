@@ -21,6 +21,7 @@ import { track } from "@/lib/analytics";
 import { Matter, Message } from "@/lib/types";
 import { Button, ErrorNote, Textarea } from "@/components/ui";
 import { MicButton, SpeakButton, useVoiceAvailable } from "@/components/voice-controls";
+import CitationChecks, { CitationCheck } from "@/components/citation-checks";
 import { IconChat } from "@/components/icons";
 
 const MATTER_ROUTE = /^\/matters\/([0-9a-f-]{16,})/i;
@@ -68,6 +69,8 @@ export default function AssistantPanel() {
   // Action execution with approval (D-053): Ava proposes, the lawyer confirms
   const [action, setAction] = useState<ActionState | null>(null);
   const [notice, setNotice] = useState("");
+  // Per-message citation verification results (D-059 F6)
+  const [checks, setChecks] = useState<Record<string, CitationCheck[]>>({});
   // Ava Agent mode (D-054): goal → visible plan → step-by-step execution
   const [agentMode, setAgentMode] = useState(false);
   const [agentSteps, setAgentSteps] = useState<AgentStep[]>([]);
@@ -229,6 +232,7 @@ export default function AssistantPanel() {
       let newConversationId: string | null = null;
       let finalMessage: Message | null = null;
       let errorDetail: string | null = null;
+      let citationChecks: CitationCheck[] = [];
       await apiStream(
         deep ? "/assistant/deep-research" : "/assistant/ask-stream",
         {
@@ -259,6 +263,8 @@ export default function AssistantPanel() {
               ...prev.filter((m) => m.id !== "streaming"),
               { id: "streaming", role: "assistant", content: text, citations: [], created_at: new Date().toISOString() },
             ]);
+          } else if (ev.type === "citation_check") {
+            citationChecks = ev.citations as CitationCheck[];
           } else if (ev.type === "done") {
             finalMessage = ev.message as unknown as Message;
           } else if (ev.type === "error") {
@@ -269,6 +275,7 @@ export default function AssistantPanel() {
       if (errorDetail) throw new Error(errorDetail);
       if (!finalMessage) throw new Error(t.error);
       const reply = finalMessage as Message;
+      if (citationChecks.length) setChecks((prev) => ({ ...prev, [reply.id]: citationChecks }));
       if (newConversationId) setConversationId(newConversationId);
       setMessages((prev) => [
         ...prev.filter((m) => m.id !== "tmp" && m.id !== "streaming"),
@@ -487,6 +494,7 @@ export default function AssistantPanel() {
                     </div>
                   )}
                 </div>
+                {m.role === "assistant" && <CitationChecks checks={checks[m.id]} />}
                 {m.role === "assistant" && m.id !== "streaming" && m.content && (
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <SpeakButton text={m.content} locale={locale} serverTts={voice.tts} />

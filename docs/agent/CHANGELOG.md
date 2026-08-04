@@ -3,6 +3,24 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-04 — Citation verification in Ava's answers (D-059 F6)
+
+- New `backend/app/services/citation_check.py`: regex extraction of German
+  (§ 573 Abs. 2 BGB, Art. 14 GG, Aktenzeichen VIII ZR 285/18) and Kosovar
+  (neni 176 i LPK, Ligji Nr. 03/L-006) citations, verified against
+  `legal_corpus_docs` (reference/title) and the doc's chunks for the exact
+  section. Three levels: verified / law_found (law exists, exact provision
+  not confirmed) / unverified.
+- Runs AFTER the answer completes — extra SSE event `citation_check` on
+  `/assistant/ask-stream` and `/assistant/deep-research`, never in the
+  stream's critical path, failure-proof (`_checked_citations`).
+- UI: badge row under the answer (✓ green / ≈ amber / ? gray with
+  tooltips) via new `frontend/src/components/citation-checks.tsx`, wired
+  into the assistant page and the slide-over panel. Keys ×7 (ccTitle,
+  ccVerified, ccLawFound, ccUnverified).
+- Tests: `backend/tests/test_citation_check.py` — extraction DE/XK, dedup
+  + cap, verification levels against a scripted fake DB.
+
 ## 2026-08-04 — Structured intake questionnaires + dictation for the lawyer (D-059 F5)
 
 - New seed `backend/app/seeds/case_intake_questions.py`: 3–4 targeted

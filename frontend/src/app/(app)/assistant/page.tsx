@@ -5,6 +5,7 @@ import { apiGet, apiPost, apiStream } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
 import { MicButton, SpeakButton, useVoiceAvailable } from "@/components/voice-controls";
+import CitationChecks, { CitationCheck } from "@/components/citation-checks";
 import { Conversation, Matter, Message } from "@/lib/types";
 import { Button, Card, ErrorNote, Select, Textarea } from "@/components/ui";
 
@@ -30,6 +31,8 @@ export default function AssistantPage() {
   const [deep, setDeep] = useState(false);
   const [steps, setSteps] = useState<string[]>([]);
   const [mode, setMode] = useState<"legal" | "office">("legal");
+  // Per-message citation verification results (D-059 F6)
+  const [checks, setChecks] = useState<Record<string, CitationCheck[]>>({});
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -74,6 +77,7 @@ export default function AssistantPage() {
       let newConversationId: string | null = null;
       let finalMessage: Message | null = null;
       let errorDetail: string | null = null;
+      let citationChecks: CitationCheck[] = [];
       await apiStream(
         deep ? "/assistant/deep-research" : "/assistant/ask-stream",
         {
@@ -104,6 +108,8 @@ export default function AssistantPage() {
               ...prev.filter((m) => m.id !== "streaming"),
               { id: "streaming", role: "assistant", content: text, citations: [], created_at: new Date().toISOString() },
             ]);
+          } else if (ev.type === "citation_check") {
+            citationChecks = ev.citations as CitationCheck[];
           } else if (ev.type === "done") {
             finalMessage = ev.message as unknown as Message;
           } else if (ev.type === "error") {
@@ -115,6 +121,7 @@ export default function AssistantPage() {
       if (!finalMessage) throw new Error(t.error);
       // TS cannot see assignments made inside the stream callback
       const reply = finalMessage as Message;
+      if (citationChecks.length) setChecks((prev) => ({ ...prev, [reply.id]: citationChecks }));
       if (newConversationId) setConversationId(newConversationId);
       setMessages((prev) => [
         ...prev.filter((m) => m.id !== "tmp" && m.id !== "streaming"),
@@ -301,6 +308,7 @@ export default function AssistantPage() {
                     </div>
                   )}
                 </div>
+                {m.role === "assistant" && <CitationChecks checks={checks[m.id]} />}
                 {m.role === "assistant" && m.id !== "streaming" && m.content && (
                   <SpeakButton text={m.content} locale={locale} serverTts={voice.tts} />
                 )}

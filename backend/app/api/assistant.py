@@ -347,6 +347,13 @@ async def ask_stream(body: AskRequest, user: User = Depends(get_current_user)):
                 yield _sse({"type": "error", "detail": str(exc)})
                 return
 
+            # Citation verification (D-059 F6) — after the stream, off the
+            # critical path: which cited §§/nene/case numbers exist in our
+            # indexed corpus?
+            checked = await _checked_citations(db, jurisdiction_id, "".join(parts))
+            if checked:
+                yield _sse({"type": "citation_check", "citations": checked})
+
             reply = await _save_exchange(db, user, body, conversation, "".join(parts), citations)
             yield _sse(
                 {
@@ -361,6 +368,17 @@ async def ask_stream(body: AskRequest, user: User = Depends(get_current_user)):
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+async def _checked_citations(db, jurisdiction_id, answer: str) -> list[dict]:
+    """Never let the verification break a finished answer."""
+    from app.services.citation_check import verify_citations
+
+    try:
+        return await verify_citations(db, jurisdiction_id, answer)
+    except Exception:
+        logger.exception("citation verification failed")
+        return []
 
 
 @router.post("/deep-research")
@@ -404,6 +422,10 @@ async def deep_research(body: AskRequest, user: User = Depends(get_current_user)
                 await db.rollback()
                 yield _sse({"type": "error", "detail": str(exc)})
                 return
+
+            checked = await _checked_citations(db, jurisdiction_id, "".join(parts))
+            if checked:
+                yield _sse({"type": "citation_check", "citations": checked})
 
             reply = await _save_exchange(
                 db, user, body, conversation, "".join(parts), citations
