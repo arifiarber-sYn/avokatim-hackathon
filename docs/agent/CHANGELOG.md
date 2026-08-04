@@ -3,6 +3,18 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-04 — Status report for the German partner (English)
+
+- New `docs/pitch/german-partner-status-and-roadmap.txt`: everything
+  built (office software, Ava AI layer with verified citations, intake
+  on web/WhatsApp/phone, migration wizard, EDA, Outlook, compliance
+  posture), what remains for the next phase (beA with real third-party
+  costs: beA card ~50 EUR/yr, BRAK interface agreement; local-LLM legal
+  fine-tuning on top of the already-running Gemma 3 27B), and the
+  concrete partner actions with costs (sipgate ~10-20 EUR/mo, first
+  real Mahnbescheid 36 EUR court fee, M365 sideload, free oldp dump).
+  No product pricing mentioned, per the owner's standing instruction.
+
 ## 2026-08-04 — D-059 F9: verification, first corpus batch, marketing ×7, docs
 
 - Tests: 3 WA-intake tests updated for the questionnaire steps (D-059 F5
