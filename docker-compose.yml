@@ -123,6 +123,27 @@ services:
       db:
         condition: service_healthy
 
+  # Telephony-KI (D-059 F4): Asterisk terminates the sipgate SIP trunk and
+  # bridges call audio to the backend's AudioSocket gateway (127.0.0.1:4573,
+  # app/services/phone_gateway.py). Off by default — needs the sipgate
+  # account (owner action). Start with:
+  #   SIPGATE_SIP_USER=... SIPGATE_SIP_PASSWORD=... \
+  #   docker compose --profile telephony up -d asterisk
+  # host network: SIP/RTP to sipgate + loopback to the backend, no NAT games.
+  asterisk:
+    image: andrius/asterisk:alpine-20.5.2
+    container_name: avokatim-asterisk
+    restart: unless-stopped
+    profiles: ["telephony"]
+    network_mode: host
+    environment:
+      SIPGATE_SIP_USER: ${SIPGATE_SIP_USER:-}
+      SIPGATE_SIP_PASSWORD: ${SIPGATE_SIP_PASSWORD:-}
+      SIPGATE_SIP_HOST: ${SIPGATE_SIP_HOST:-sipgate.de}
+    volumes:
+      - ./infra/asterisk:/etc/asterisk-templates:ro,z
+    entrypoint: ["/bin/sh", "/etc/asterisk-templates/entrypoint.sh"]
+
 volumes:
   avokatim_pgdata:
   avokatim_redis:

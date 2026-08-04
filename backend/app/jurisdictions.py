@@ -68,6 +68,9 @@ class JurisdictionProfile:
     # Default region per city (lowercased key) — a UX prefill only, the
     # user-picked region is always the source of truth.
     city_regions: dict[str, str] = field(default_factory=dict)
+    # Ava's phone number for this country (D-059 F4, sipgate trunk).
+    # None = telephony not offered here yet; set once the number is live.
+    phone_number: str | None = None
 
 
 PROFILES: dict[str, JurisdictionProfile] = {

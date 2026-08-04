@@ -3,6 +3,33 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-04 — Telephony-KI: Ava answers the phone via sipgate (D-059 F4)
+
+- Full architecture built and tested; goes live once the owner opens the
+  sipgate account (documented in `docs/integrimet/telefonia.md`).
+- Asterisk container (docker compose `--profile telephony`, host network)
+  terminates the sipgate SIP trunk; `infra/asterisk/` holds the pjsip
+  template (credentials injected by entrypoint from backend/.env), the
+  dialplan (Answer → link caller via loopback GET
+  /api/public/phone/link → AudioSocket to 127.0.0.1:4573) and a minimal
+  modules.conf.
+- New `backend/app/services/phone_gateway.py`: AudioSocket TCP server
+  (frames: hangup/uuid/slin-8kHz), energy VAD (speech start, 1.4 s
+  trailing silence, caps), local Whisper STT + Piper TTS with ffmpeg
+  resample to phone slin. Dialog M1+M2: greeting (brand + AI disclosure
+  per country) → description → LLM classify (wa_intake) → up to 3
+  category questions (same seed as web/WA, D-059 F5) → city/name →
+  CaseRequest + lawyer/ops notifications. Callers without email get a
+  `tel-…@phone.invalid` stub account, lawyer calls back.
+- Config: `phone_gateway_enabled` (default off), port 4573, `sipgate_*`;
+  gateway starts from the app lifespan. `JurisdictionProfile.phone_number`
+  ready for the public number. i18n: 8 `phone_*` keys ×7 languages.
+- Tests: `backend/tests/test_phone_gateway.py` — framing roundtrip, RMS
+  VAD, hangup handling, scripted DE/XK dialogs (case saved with
+  questionnaire answers, Albanian for +383, German for +49).
+- Marketing intentionally NOT updated yet — waits for a real verified
+  call on the sipgate number (owner action).
+
 ## 2026-08-04 — Citation verification in Ava's answers (D-059 F6)
 
 - New `backend/app/services/citation_check.py`: regex extraction of German

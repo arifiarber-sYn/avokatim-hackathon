@@ -30,6 +30,7 @@ from app.api import (
     notifications as notifications_api,
     oauth_citizen,
     passkeys,
+    phone,
     platform,
     portal,
     privacy,
@@ -74,10 +75,18 @@ async def lifespan(app: FastAPI):
     reminders = asyncio.create_task(reminder_loop())
     email_ingest = asyncio.create_task(email_ingest_loop())
     billing = asyncio.create_task(billing_loop())
+    # Telephony-KI (D-059 F4): AudioSocket gateway for the sipgate trunk
+    phone_task = None
+    if settings.phone_gateway_enabled:
+        from app.services.phone_gateway import serve as phone_serve
+
+        phone_task = asyncio.create_task(phone_serve())
     yield
     reminders.cancel()
     email_ingest.cancel()
     billing.cancel()
+    if phone_task:
+        phone_task.cancel()
 
 
 app = FastAPI(title="AvokatIM API", version="0.1.0", lifespan=lifespan)
@@ -125,6 +134,7 @@ app.include_router(oauth_citizen.router, prefix=api_prefix)
 app.include_router(subscription.router, prefix=api_prefix)
 app.include_router(voice.router, prefix=api_prefix)
 app.include_router(whatsapp.router, prefix=api_prefix)
+app.include_router(phone.router, prefix=api_prefix)
 app.include_router(public_tools.router, prefix=api_prefix)
 app.include_router(bookings.router, prefix=api_prefix)
 app.include_router(bookings.public_router, prefix=api_prefix)

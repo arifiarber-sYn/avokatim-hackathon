@@ -10,6 +10,31 @@ for text generated on the server.
 from app.config import settings
 
 _SQ = {
+    # Telephony-KI (D-059 F4): spoken prompts for calls to Ava's number
+    "phone_greeting": (
+        "Përshëndetje, keni thirrur {brand}. Unë jam Ava, asistentja me "
+        "inteligjencë artificiale. Do të marr të dhënat e rastit tuaj dhe "
+        "një avokat i verifikuar ju kthen përgjigje."
+    ),
+    "phone_ask_describe": (
+        "Ju lutem përshkruani shkurt çfarë ka ndodhur: kur, ku, dhe çfarë "
+        "kërkoni. Flisni pas tingullit."
+    ),
+    "phone_repeat": "Më falni, nuk ju dëgjova. A mund ta përsërisni?",
+    "phone_ask_city": "Në cilin qytet ka ndodhur, ose ku banoni?",
+    "phone_ask_name": "Si quheni, ju lutem?",
+    "phone_confirm": (
+        "Faleminderit{name_part}. Kërkesa juaj u regjistrua dhe një avokat "
+        "do t'ju telefonojë në këtë numër. Mirupafshim!"
+    ),
+    "phone_goodbye_nothing": (
+        "Nuk mora dot një përshkrim të rastit. Provoni përsëri ose vizitoni "
+        "faqen tonë. Mirupafshim!"
+    ),
+    "phone_error": (
+        "Ndodhi një gabim teknik. Ju lutem provoni më vonë ose postoni "
+        "rastin në faqen tonë."
+    ),
     "sms_case_match": "AvokatIM: Rast i ri ({category}, {city}) që përputhet me profilin tënd. Shiko te Tregu: avokatiim.ai/marketplace",
     "sms_sos_alert": "AvokatIM SOS: Rast urgjent ({city})! Hyr menjëherë: avokatiim.ai/marketplace",
     "case_quality_reject": "Përshkrimi nuk duket i mjaftueshëm që një avokat ta kuptojë rastin. Shkruaj çfarë ka ndodhur, kur dhe ku — sa më shumë detaje, aq më shpejt e merr një avokat rastin.",
@@ -290,6 +315,30 @@ _SQ = {
 }
 
 _SR = {
+    "phone_greeting": (
+        "Dobar dan, pozvali ste {brand}. Ja sam Ava, asistentkinja sa "
+        "veštačkom inteligencijom. Zabeležiću podatke o vašem slučaju i "
+        "verifikovani advokat će vam se javiti."
+    ),
+    "phone_ask_describe": (
+        "Molim vas ukratko opišite šta se dogodilo: kada, gde i šta "
+        "tražite. Govorite posle zvučnog signala."
+    ),
+    "phone_repeat": "Izvinite, nisam vas čula. Možete li ponoviti?",
+    "phone_ask_city": "U kom gradu se dogodilo, ili gde živite?",
+    "phone_ask_name": "Kako se zovete, molim vas?",
+    "phone_confirm": (
+        "Hvala{name_part}. Vaš zahtev je registrovan i advokat će vas "
+        "pozvati na ovaj broj. Doviđenja!"
+    ),
+    "phone_goodbye_nothing": (
+        "Nisam uspela da zabeležim opis slučaja. Pokušajte ponovo ili "
+        "posetite naš sajt. Doviđenja!"
+    ),
+    "phone_error": (
+        "Došlo je do tehničke greške. Pokušajte kasnije ili objavite "
+        "slučaj na našem sajtu."
+    ),
     "sms_case_match": "AvokatIM: Novi predmet ({category}, {city}) koji odgovara vašem profilu. Pogledajte: avokatiim.ai/marketplace",
     "sms_sos_alert": "AvokatIM SOS: Hitan slučaj ({city})! Prijavite se odmah: avokatiim.ai/marketplace",
     "case_quality_reject": "Opis ne izgleda dovoljan da advokat razume slučaj. Napišite šta se dogodilo, kada i gde — što više detalja, to će advokat brže preuzeti slučaj.",
@@ -555,6 +604,30 @@ _SR = {
 }
 
 _TR = {
+    "phone_greeting": (
+        "İyi günler, {brand} hattını aradınız. Ben Ava, yapay zekâ "
+        "asistanıyım. Davanızın bilgilerini alacağım ve doğrulanmış bir "
+        "avukat size dönüş yapacak."
+    ),
+    "phone_ask_describe": (
+        "Lütfen ne olduğunu kısaca anlatın: ne zaman, nerede ve ne talep "
+        "ediyorsunuz. Sinyalden sonra konuşun."
+    ),
+    "phone_repeat": "Özür dilerim, sizi duyamadım. Tekrar eder misiniz?",
+    "phone_ask_city": "Hangi şehirde oldu, ya da nerede yaşıyorsunuz?",
+    "phone_ask_name": "Adınız nedir, lütfen?",
+    "phone_confirm": (
+        "Teşekkürler{name_part}. Talebiniz kaydedildi ve bir avukat sizi "
+        "bu numaradan arayacak. Hoşça kalın!"
+    ),
+    "phone_goodbye_nothing": (
+        "Dava açıklamasını alamadım. Tekrar deneyin veya web sitemizi "
+        "ziyaret edin. Hoşça kalın!"
+    ),
+    "phone_error": (
+        "Teknik bir hata oluştu. Lütfen daha sonra tekrar deneyin veya "
+        "davanızı web sitemizde yayınlayın."
+    ),
     "sms_case_match": "AvokatIM: Profilinize uyan yeni dosya ({category}, {city}). Görüntüleyin: avokatiim.ai/marketplace",
     "sms_sos_alert": "AvokatIM SOS: Acil dosya ({city})! Hemen giriş yapın: avokatiim.ai/marketplace",
     "case_quality_reject": "Açıklama, bir avukatın davayı anlaması için yeterli görünmüyor. Ne olduğunu, ne zaman ve nerede olduğunu yazın — ne kadar çok ayrıntı, o kadar hızlı bir avukat davayı üstlenir.",
@@ -822,6 +895,30 @@ _TR = {
 }
 
 _BS = {
+    "phone_greeting": (
+        "Dobar dan, pozvali ste {brand}. Ja sam Ava, asistentica sa "
+        "umjetnom inteligencijom. Zabilježit ću podatke o vašem slučaju i "
+        "verificirani advokat će vam se javiti."
+    ),
+    "phone_ask_describe": (
+        "Molim vas ukratko opišite šta se dogodilo: kada, gdje i šta "
+        "tražite. Govorite poslije zvučnog signala."
+    ),
+    "phone_repeat": "Izvinite, nisam vas čula. Možete li ponoviti?",
+    "phone_ask_city": "U kojem gradu se dogodilo, ili gdje živite?",
+    "phone_ask_name": "Kako se zovete, molim vas?",
+    "phone_confirm": (
+        "Hvala{name_part}. Vaš zahtjev je registrovan i advokat će vas "
+        "pozvati na ovaj broj. Doviđenja!"
+    ),
+    "phone_goodbye_nothing": (
+        "Nisam uspjela zabilježiti opis slučaja. Pokušajte ponovo ili "
+        "posjetite našu stranicu. Doviđenja!"
+    ),
+    "phone_error": (
+        "Došlo je do tehničke greške. Pokušajte kasnije ili objavite "
+        "slučaj na našoj stranici."
+    ),
     "sms_case_match": "AvokatIM: Novi predmet ({category}, {city}) koji odgovara vašem profilu. Pogledajte: avokatiim.ai/marketplace",
     "sms_sos_alert": "AvokatIM SOS: Hitan slučaj ({city})! Prijavite se odmah: avokatiim.ai/marketplace",
     "case_quality_reject": "Opis ne izgleda dovoljan da advokat razumije slučaj. Napišite šta se dogodilo, kada i gdje — što više detalja, to će advokat brže preuzeti slučaj.",
@@ -1087,6 +1184,30 @@ _BS = {
 }
 
 _EN = {
+    "phone_greeting": (
+        "Hello, you have reached {brand}. I am Ava, the AI assistant. "
+        "I will take down your case details and a verified lawyer will "
+        "get back to you."
+    ),
+    "phone_ask_describe": (
+        "Please briefly describe what happened: when, where, and what "
+        "you are seeking. Speak after the tone."
+    ),
+    "phone_repeat": "Sorry, I did not catch that. Could you repeat it?",
+    "phone_ask_city": "In which city did it happen, or where do you live?",
+    "phone_ask_name": "What is your name, please?",
+    "phone_confirm": (
+        "Thank you{name_part}. Your request is registered and a lawyer "
+        "will call you back on this number. Goodbye!"
+    ),
+    "phone_goodbye_nothing": (
+        "I could not capture a case description. Please try again or "
+        "visit our website. Goodbye!"
+    ),
+    "phone_error": (
+        "A technical error occurred. Please try again later or post "
+        "your case on our website."
+    ),
     "sms_case_match": "AvokatIM: New case ({category}, {city}) matching your profile. View it: avokatiim.ai/marketplace",
     "sms_sos_alert": "AvokatIM SOS: Urgent case ({city})! Log in now: avokatiim.ai/marketplace",
     "case_quality_reject": "The description doesn't look sufficient for a lawyer to understand the case. Write what happened, when and where — the more detail, the faster a lawyer takes the case.",
@@ -1353,6 +1474,14 @@ _EN = {
 }
 
 _ZH = {
+    "phone_greeting": "您好，这里是{brand}。我是AI助手Ava。我将记录您的案件信息，认证律师会与您联系。",
+    "phone_ask_describe": "请简要描述发生了什么：何时、何地、您的诉求是什么。请在提示音后讲话。",
+    "phone_repeat": "抱歉，我没有听清。您能重复一遍吗？",
+    "phone_ask_city": "事情发生在哪个城市，或者您住在哪里？",
+    "phone_ask_name": "请问您的姓名？",
+    "phone_confirm": "谢谢{name_part}。您的请求已登记，律师将回拨此号码。再见！",
+    "phone_goodbye_nothing": "我未能记录案件描述。请重试或访问我们的网站。再见！",
+    "phone_error": "发生技术错误。请稍后重试，或在我们的网站上发布您的案件。",
     "sms_case_match": "AvokatIM：有与您资料匹配的新案件（{category}，{city}）。查看：avokatiim.ai/marketplace",
     "sms_sos_alert": "AvokatIM SOS：紧急案件（{city}）！立即登录：avokatiim.ai/marketplace",
     "case_quality_reject": "描述似乎不足以让律师理解案件。请写明发生了什么、何时、何地——细节越多，律师接案越快。",
@@ -1532,6 +1661,30 @@ _ZH = {
 }
 
 _DE = {
+    "phone_greeting": (
+        "Guten Tag, Sie haben {brand} erreicht. Ich bin Ava, die "
+        "KI-Assistentin. Ich nehme Ihr Anliegen auf, und ein geprüfter "
+        "Anwalt meldet sich bei Ihnen."
+    ),
+    "phone_ask_describe": (
+        "Bitte beschreiben Sie kurz, was passiert ist: wann, wo und was "
+        "Sie erreichen möchten. Sprechen Sie nach dem Ton."
+    ),
+    "phone_repeat": "Entschuldigung, ich habe Sie nicht verstanden. Können Sie das wiederholen?",
+    "phone_ask_city": "In welcher Stadt ist es passiert, oder wo wohnen Sie?",
+    "phone_ask_name": "Wie heißen Sie, bitte?",
+    "phone_confirm": (
+        "Danke{name_part}. Ihre Anfrage ist registriert, und ein Anwalt "
+        "ruft Sie unter dieser Nummer zurück. Auf Wiederhören!"
+    ),
+    "phone_goodbye_nothing": (
+        "Ich konnte keine Fallbeschreibung aufnehmen. Bitte versuchen Sie "
+        "es erneut oder besuchen Sie unsere Website. Auf Wiederhören!"
+    ),
+    "phone_error": (
+        "Es ist ein technischer Fehler aufgetreten. Bitte versuchen Sie es "
+        "später erneut oder stellen Sie Ihren Fall auf unserer Website ein."
+    ),
     "sms_case_match": "Ava Legal: Neuer Fall ({category}, {city}) passend zu Ihrem Profil. Ansehen: de.avokatiim.ai/marketplace",
     "sms_sos_alert": "Ava Legal SOS: Dringender Fall ({city})! Jetzt einloggen: de.avokatiim.ai/marketplace",
     "case_quality_reject": "Die Beschreibung reicht nicht aus, damit ein Anwalt den Fall versteht. Schreiben Sie, was passiert ist, wann und wo — je mehr Details, desto schneller übernimmt ein Anwalt den Fall.",

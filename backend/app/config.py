@@ -181,6 +181,20 @@ class Settings(BaseSettings):
     voice_max_audio_seconds: int = 120
     voice_max_tts_chars: int = 900
 
+    # Telephony-KI (D-059 F4): Ava answers a real phone number. A sipgate
+    # SIP trunk terminates in the Asterisk container (docker compose
+    # --profile telephony), which bridges call audio to this backend over
+    # the AudioSocket protocol (TCP, 16-bit slin 8 kHz). Disabled until the
+    # owner opens the sipgate account and sets the credentials in .env.
+    phone_gateway_enabled: bool = False
+    phone_gateway_host: str = "127.0.0.1"
+    phone_gateway_port: int = 4573
+    # sipgate SIP credentials (SIP-ID/password of the sipgate device;
+    # docker-compose passes them into the Asterisk pjsip template).
+    sipgate_sip_user: str = ""
+    sipgate_sip_password: str = ""
+    sipgate_sip_host: str = "sipgate.de"
+
     # Web Push (PWA notifications). Generated once; empty = push disabled.
     vapid_public_key: str = ""
     vapid_private_key: str = ""
