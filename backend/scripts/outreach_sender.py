@@ -76,7 +76,10 @@ def _api(path: str, payload: dict | None = None, method: str = "GET") -> dict:
         f"{RESEND_API}{path}",
         data=json.dumps(payload).encode() if payload is not None else None,
         headers={"Authorization": f"Bearer {key}",
-                 "Content-Type": "application/json"},
+                 "Content-Type": "application/json",
+                 # Resend's API sits behind Cloudflare, which returns 403
+                 # (error 1010) for the default Python-urllib User-Agent.
+                 "User-Agent": "halim-outreach/1.0 (+avokatiim.ai)"},
         method="POST" if payload is not None else method,
     )
     try:

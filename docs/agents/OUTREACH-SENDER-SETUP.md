@@ -1,5 +1,12 @@
 # OUTREACH-SENDER-SETUP — dërguesi i dedikuar për cold outreach (D-069)
 
+> STATUS: **LIVE (2026-08-05).** Domain `mail.avokatiim.ai` i krijuar në Resend,
+> DKIM+SPF+DMARC në Cloudflare, i verifikuar; fushatat në mode `resend`.
+> Çelësat: `OUTREACH_RESEND_KEY`/`OUTREACH_FROM` te `infrastructure.env`;
+> Cloudflare token te `~/.cloudflared/cert.pem` (vegla `~/scripts/cloudflare_dns.py`).
+> Hapat e mëposhtëm mbahen për referencë/rollback ose për një domain të ri.
+
+
 **Pse:** auditimi 2026-08-05 gjeti ~930 cold-emaila të dërguar nga Gmail-i
 personal (`arifi.arber@gmail.com`) — i njëjti që mban verify-links të
 platformës, bankën, git. Një bllokim/blacklist do t'i thyente të gjitha
