@@ -1,0 +1,340 @@
+==================================================================
+AVA LEGAL — PLATTFORM-ANGEBOT
+Eine vollständige, KI-native Kanzleisoftware für den deutschen Markt
+==================================================================
+
+Datum: 5. August 2026
+Gültigkeit: 90 Tage ab obigem Datum
+Empfänger: ausgewählte deutsche Legal-Tech-Unternehmen
+
+Dieses Dokument ist ein vollständiges, in sich geschlossenes
+Angebot. Es beschreibt die Plattform im Detail, nennt konkrete
+Preise für jede Kooperations- und Kaufoption und erläutert genau,
+was jeweils enthalten ist. Die untenstehenden Preise sind unsere
+besten Preise, von Anfang an offen genannt. Wir haben sie bewusst
+am unteren Ende unseres Spielraums angesetzt, damit keine
+Verhandlungsphase nötig ist: Was Sie hier lesen, ist das, was Sie
+zahlen.
+
+
+==================================================================
+1. WARUM WIR IHNEN SCHREIBEN
+==================================================================
+
+Der deutsche Markt für Kanzleisoftware befindet sich mitten in
+seiner KI-Transformation. Jeder etablierte Anbieter kündigt
+KI-Funktionen an; sie richtig zu bauen — verankert im juristischen
+Korpus, datenschutzkonform, integriert in den täglichen
+Arbeitsablauf einer Kanzlei — erfordert ein dediziertes Team von
+5-7 Ingenieuren über etwa 18-24 Monate, bevor der erste Kunde
+überhaupt etwas sieht.
+
+Wir haben es bereits gebaut. Ava Legal ist ein Produktivsystem,
+heute live, das drei Dinge vereint, die derzeit kein einzelner
+deutscher Anbieter in einem Produkt bietet:
+
+  1. Eine vollständige, moderne Kanzleisoftware (Akten, Fristen,
+     RVG, E-Rechnung, Mahnwesen, Dokumente, Vorlagen, Abrechnung).
+  2. Eine tiefe KI-Schicht, verankert in einem indexierten Korpus
+     deutscher Gesetze und Gerichtsentscheidungen, mit
+     Zitatverifizierung und einer Datenschutzarchitektur, die
+     BRAK- und DSGVO-Prüfungen standhält.
+  3. Eine 24/7-Mandantenakquise: Bürgerportal, strukturierte
+     Fallaufnahme, KI-Rezeption per WhatsApp und Telefon.
+
+Wir sind ein kleines, schnelles Team. Unsere Stärke ist
+Entwicklungsgeschwindigkeit, nicht Vertrieb im deutschen Markt.
+Sie haben den Vertrieb, die Marke und das Vertrauen der Kunden.
+Dieses Angebot existiert, damit unsere Technologie über Sie den
+Markt erreicht — als Komponente, als Ihr White-Label-Produkt oder
+als Ihr vollständiges Eigentum.
+
+
+==================================================================
+2. DIE PLATTFORM — VOLLSTÄNDIGES INVENTAR
+==================================================================
+
+2.1 KERN DER KANZLEIVERWALTUNG
+  - Digitale Akten mit vollem Lebenszyklus: Aufnahme,
+    Kollisionsprüfung, Parteien, Gegenparteien, Notizen, Dokumente,
+    Fristen, Abrechnung — von Grund auf mandantenfähig
+    (Multi-Tenant).
+  - Fristen-Engine, in der alle Regeln DATEN sind, kein Code:
+    Fristenregeln nach ZPO, ArbGG, VwGO sowie deutsche
+    Gerichtsfeiertage werden als Stammdaten ausgeliefert; neue
+    Regeln kommen hinzu, ohne die Programmlogik anzufassen.
+  - Kalender mit Fristen, Terminen und Verhandlungen; ICS-Feeds.
+  - Vorlagensystem mit Variablen, Vorlagenpaketen je Rechtsordnung,
+    Dokumentgenerierung als DOCX/PDF.
+  - Volltextsuche über Akten, Kontakte, Dokumente und den
+    juristischen Korpus, mit Fehlertoleranz (Fuzzy-Suche) und
+    Cmd+K-Befehlspalette.
+  - Kontakt- und Mandantenverwaltung inkl. juristischer Personen.
+  - Revisionssicheres Protokoll (Audit-Trail): jede sichtbare
+    Aktion an Akten und Dokumenten wird je Mandant unveränderlich
+    protokolliert.
+
+2.2 DEUTSCHE RECHTSKONFORMITÄT, EINGEBAUT
+  - RVG-Gebührenberechnung (Verfahrens-/Termins-/Einigungsgebühr,
+    Anrechnung, Tabellen als Daten) und ein öffentlicher
+    Prozesskostenrechner.
+  - E-Rechnung: Erzeugung von ZUGFeRD 2.x und XRechnung,
+    DATEV-Export.
+  - Mahnwesen: Mahnläufe, Zinsberechnung und EDA-Dateiexport für
+    das automatisierte gerichtliche Mahnverfahren (Struktur gegen
+    die öffentliche Spezifikation validiert; als Beta
+    gekennzeichnet bis zur ersten Live-Einreichung bei einem
+    Mahngericht).
+  - Rechtsschutzversicherungs-Workflows: Erstellung und Verfolgung
+    von Deckungsanfragen je Akte.
+  - Strukturierte Aufnahme-Fragebögen je Rechtsgebiet (Familie,
+    Arbeit, Miete, Verkehr, Erbe, ...), identisch erhoben über
+    Web, WhatsApp und Telefon.
+  - Pseudonymisierungsschicht: Namen, E-Mail-Adressen,
+    Telefonnummern, IBANs und Ausweisnummern werden durch stabile
+    Platzhalter ersetzt, BEVOR ein Prompt den Server in Richtung
+    eines externen KI-Anbieters verlässt, und in der Antwort
+    transparent wiederhergestellt — auch bei gestreamten
+    Antworten. Mandantendaten erreichen ein externes Modell
+    niemals im Klartext.
+  - Lokale Embeddings (sentence-transformers) für die gesamte
+    Dokumenten- und Korpusindexierung: Dokumenttexte verlassen die
+    Maschine zu Indexierungszwecken nie.
+  - Dokumente verschlüsselt gespeichert; strikte Trennung je
+    Mandant; ausschließlich anfügende (append-only)
+    Datenbank-Migrationshistorie (52 Migrationen).
+
+2.3 DIE KI-SCHICHT
+  - Assistent, verankert (RAG) in einem indexierten Korpus
+    deutscher Bundesgesetze und über 16.000 veröffentlichter
+    Gerichtsentscheidungen, der jede Nacht über automatisierte
+    Importe wächst (Bundesgerichte + openlegaldata-Pipeline);
+    hybride Suche (semantisch + Volltext, Reciprocal Rank Fusion).
+  - Automatische Zitatverifizierung: jede Norm und jedes
+    Aktenzeichen, das die KI zitiert, wird gegen den Korpus
+    geprüft und in der Oberfläche als verifiziert/nicht
+    verifiziert gekennzeichnet — die Antwort verdient sich
+    Vertrauen, statt nur eloquent zu sein.
+  - Agentische Ausführung: der Assistent plant mehrstufige
+    Aktionen (Frist anlegen, Schriftsatz entwerfen, Termin
+    vereinbaren) mit sichtbarem Schrittplan und ausdrücklicher
+    anwaltlicher Freigabe, bevor irgendetwas ausgeführt wird.
+  - Proaktive KI: Morgenbriefing je Anwalt (optional gesprochen,
+    lokale Sprachsynthese), nächtliche Überwachung neuer
+    Rechtsprechung mit Bezug zu offenen Akten, automatische
+    Fristenaudits.
+  - Tiefer Recherchemodus mit strukturierter juristischer Analyse.
+  - KI-E-Mail-Klassifizierung und Fristenextraktion aus Dokumenten
+    (Fristvorschläge mit anwaltlicher Bestätigung).
+  - LLM-agnostische Architektur: eine Abstraktionsschicht bedient
+    DeepSeek, jede OpenAI-kompatible API oder ein vollständig
+    LOKALES Modell (validiert auf eigener GPU-Infrastruktur mit
+    gemma3:27b via Ollama). Aufgabenbasiertes Routing und
+    automatischer Fallback sind eingebaut. Ein harter
+    „local-pinned"-Modus garantiert, dass datenschutzsensible
+    Kanzleien niemals ein externes Modell berühren.
+  - Lokaler Sprach-Stack: Whisper (Spracherkennung) und Piper
+    (Sprachsynthese) laufen auf dem Server — Stimme verlässt die
+    Maschine nie. Genutzt für Diktat, gesprochene Briefings,
+    Sprachdialogmodus und Telefonie.
+
+2.4 MANDANTENAKQUISE — DIE 24/7-EINGANGSTÜR
+  - Öffentliches Bürgerportal: Rechtsratgeber, Kostenrechner,
+    Gerichtskostenrechner, öffentlicher KI-Chat mit derselben
+    Korpusverankerung und Zitatverifizierung wie die
+    anwaltsseitige KI.
+  - Strukturierte Fallaufnahme: Bürger schildern ihr Problem, die
+    KI ordnet das Rechtsgebiet zu, stellt die fachspezifischen
+    Fragen, die ein Anwalt stellen würde, und liefert eine
+    strukturierte Fallanfrage.
+  - WhatsApp-Aufnahme: das vollständige Aufnahmegespräch inklusive
+    rechtsgebietsspezifischer Fragebögen und Terminvereinbarung
+    läuft über WhatsApp in der Sprache des Bürgers.
+  - KI-Telefonrezeption: Asterisk + SIP-Trunk (z. B. sipgate),
+    lokale Spracherkennung und -synthese, dialogbasierte Aufnahme,
+    die aus einem Telefonanruf eine strukturierte Fallanfrage
+    erzeugt — rund um die Uhr, ohne Personal.
+  - Mandantenportal für laufende Akten: Status, Dokumente,
+    Nachrichten.
+  - Online-Terminbuchung.
+
+2.5 WECHSELWERKZEUGE — GEBAUT, UM LOCK-IN ZU SCHLAGEN
+  - 4-Schritte-Datenmigrationsassistent: CSV/XLSX-Import mit
+    Spaltenzuordnungs-Presets für RA-MICRO- und Advoware-Exporte,
+    Probelauf-Vorschau (Dry-Run), Gegenparteien, alte Aktenzeichen
+    (durchsuchbar) sowie Massen-Dokumentenimport per ZIP mit
+    automatischer Aktenzuordnung.
+  - Outlook-Add-in: „E-Mail zur Akte speichern" (Nachricht +
+    Anhänge) direkt aus dem Outlook-Aufgabenbereich, angebunden an
+    die reguläre Dokumentenpipeline und den Audit-Trail.
+  - 7 Oberflächensprachen (DE, EN, SQ, TR, SR, BS, ZH) — relevant
+    für Kanzleien mit internationaler Mandantschaft.
+
+2.6 TECHNISCHES FUNDAMENT
+  - Stack: Python 3 / FastAPI / SQLAlchemy 2 (async) /
+    PostgreSQL 17 mit pgvector / Redis / Next.js + TypeScript +
+    Tailwind.
+  - Umfang: ca. 76.000 Zeilen Produktivcode, 287 API-Endpunkte,
+    314 automatisierte Tests, 52 append-only DB-Migrationen.
+  - Mandantenfähige Architektur; Länderprofile je Rechtsordnung —
+    jede Jurisdiktion (Fristenregeln, Feiertage, Vorlagen,
+    Gebühren, Korpus) ist Daten, kein Code. Die Erweiterung auf
+    Österreich oder die Schweiz ist Konfiguration plus
+    Korpusimport, kein Neubau.
+  - Selbstgehostete Observability: Fehler-Tracking
+    (GlitchTip/Sentry-kompatibel) und datenschutzfreundliche
+    Analytik (Umami).
+  - Passkey-Login (WebAuthn), Google OAuth, Dark Mode,
+    PWA-Installation, Skeleton-Ladezustände — durchgehend UX der
+    aktuellen Generation.
+  - Saubere Lizenzierung aller Abhängigkeiten (keine
+    Copyleft-Kontamination), vom ersten Tag an für Due Diligence
+    gebaut.
+
+2.7 EHRLICHER STAND DER OFFENEN PUNKTE
+  - beA-Integration: noch nicht umgesetzt (erfordert beA-Karte und
+    Zertifizierungsprozess). Die Architektur hat dafür eine klar
+    definierte Schnittstelle; bei den Optionen 2-4 ist sie der
+    erste Punkt der Roadmap.
+  - Juristisches Fine-Tuning des lokalen LLM: das lokale Modell
+    läuft heute in Produktionsqualität; ein deutsch-juristisches
+    Fine-Tuning ist als nächster Schritt spezifiziert und in den
+    untenstehenden Entwicklungsvereinbarungen enthalten.
+  - EDA/Mahnverfahren: Struktur gegen die öffentliche
+    Spezifikation validiert, Beta bis zur ersten
+    Live-Einreichung bei Gericht.
+
+
+==================================================================
+3. DAS ANGEBOT — VIER OPTIONEN, KONKRETE PREISE
+==================================================================
+
+Alle vier Optionen liegen gleichzeitig auf dem Tisch. Wählen Sie
+die Verbindlichkeitsstufe, die zu Ihrer Strategie passt. Alle
+Preise verstehen sich zuzüglich Umsatzsteuer.
+
+------------------------------------------------------------------
+OPTION 1 — OEM-LIZENZ: DIE KI-SCHICHT IN IHREM PRODUKT
+------------------------------------------------------------------
+Sie betten unseren KI-Stack unter Ihrer Marke in Ihr bestehendes
+Produkt ein: korpusverankerter Assistent, nächtliche
+Korpus-Pipeline, Zitatverifizierung, Pseudonymisierungsschicht,
+strukturierte KI-Fallaufnahme (Web/WhatsApp/Telefon), lokaler
+Sprach-Stack.
+
+  PREIS:  EUR 30.000 einmalige Lizenzgebühr
+          + EUR 3,00 je aktivem Nutzer pro Monat
+          (Jahresminimum EUR 25.000)
+
+  Enthalten: API-Zugang oder eingebettetes Deployment,
+  Integrationsunterstützung durch unsere Ingenieure (bis zu 20
+  Personentage im ersten Jahr), Updates der KI-Schicht und der
+  Korpus-Pipeline für die Dauer der Lizenz.
+  Laufzeit: 3 Jahre, verlängerbar. Nicht exklusiv.
+
+------------------------------------------------------------------
+OPTION 2 — EXKLUSIVE WHITE-LABEL-LIZENZ FÜR DACH
+------------------------------------------------------------------
+Die vollständige Plattform (alles aus Abschnitt 2) unter Ihrer
+Marke, exklusiv für Deutschland, Österreich und die Schweiz. Ihnen
+gehören die Kundenbeziehung, die Preisgestaltung und der Vertrieb;
+wir entwickeln das Produkt weiter — Ihre Roadmap zuerst.
+
+  PREIS:  EUR 75.000 einmalig
+          + 20% Umsatzbeteiligung am Abonnementumsatz
+          + Entwicklungspauschale EUR 10.000/Monat
+            (Mindestlaufzeit 24 Monate)
+
+  Enthalten: vollständige Plattform unter Ihrer Marke, Ihren
+  Domains, Ihrer Corporate Identity; sämtliche Weiterentwicklung
+  während der Pauschale (beA-Integration und das
+  deutsch-juristische LLM-Fine-Tuning sind die ersten beiden
+  Roadmap-Punkte); Hosting wahlweise auf Ihrer Infrastruktur oder
+  durch uns verwaltet. Die Exklusivität ist an eine gemeinsam
+  vereinbarte Mindestvertriebsleistung gekoppelt; wird das Minimum
+  nicht erreicht, entfällt die Exklusivität (nicht die Lizenz).
+
+------------------------------------------------------------------
+OPTION 3 — VOLLSTÄNDIGER ERWERB DER PLATTFORM FÜR DACH
+------------------------------------------------------------------
+Sie erwerben die Plattform vollständig für Deutschland, Österreich
+und die Schweiz: Quellcode, alle Rechte für das Gebiet,
+Infrastruktur-Blaupausen, Dokumentation, Korpus-Pipeline,
+Handelsname „Ava Legal". (Der kleine Heimatmarktbetrieb unseres
+Gründers im Kosovo, unter anderer Marke, ist ausgenommen und wird
+unabhängig fortgeführt — er konkurriert nicht in DACH.)
+
+Zwei Varianten, dasselbe Eigentumsergebnis:
+
+  VARIANTE 3A — mit Entwicklungspartnerschaft (empfohlen):
+          EUR 500.000 bei Vertragsunterzeichnung
+          + Entwicklungsvereinbarung EUR 120.000/Jahr über 3 Jahre
+            (das Team, das die Plattform gebaut hat, liefert IHRE
+            Roadmap: beA-Integration, LLM-Fine-Tuning,
+            Feature-Entwicklung, Second-Level-Support und
+            Wissenstransfer)
+          Gesamt über 3 Jahre: EUR 860.000
+
+  VARIANTE 3B — reiner Kauf, ohne laufende Verpflichtungen:
+          EUR 700.000 bei Vertragsunterzeichnung
+          + 90 Tage Übergangsunterstützung kostenfrei enthalten
+
+  In beiden enthalten: vollständiger Quellcode samt Git-Historie,
+  gesamte Dokumentation (Architektur, Entscheidungen, Betrieb),
+  Stammdaten, Korpus-Importer, Deployment-Automatisierung,
+  Marken-/Domainübertragung für DACH, Wettbewerbsverbot für DACH.
+
+------------------------------------------------------------------
+OPTION 4 — VOLLSTÄNDIGER GLOBALER ERWERB
+------------------------------------------------------------------
+Alles aus Option 3, für alle Märkte und alle künftigen
+Jurisdiktionen, einschließlich der
+Ein-Codebasis-Multi-Jurisdiktions-Architektur. Der Kosovo-Betrieb
+des Gründers erhält eine unbefristete, lizenzgebührenfreie
+Rücklizenz ausschließlich für seinen Heimatmarkt.
+
+  PREIS:  EUR 1.000.000 bei Vertragsunterzeichnung
+          + optionale Entwicklungsvereinbarung, EUR 120.000/Jahr
+            (Konditionen wie Variante 3A)
+
+------------------------------------------------------------------
+WARUM DIESE PREISE NIEDRIG SIND — UND WARUM SIE FINAL SIND
+------------------------------------------------------------------
+Diese Plattform intern nachzubauen bedeutet ein 5-7-köpfiges Team
+über 18-24 Monate: EUR 1,5-2,5 Mio. allein an Entwicklungskosten,
+plus 18-24 Monate verlorener Marktzeit, während Wettbewerber KI
+ausliefern. Wir setzen die Preise deutlich unter die
+Nachbaukosten, weil uns Geschwindigkeit und ein starker Partner
+wichtiger sind als der Maximalpreis. Aus demselben Grund sind die
+Preise final: Wir bevorzugen eine schnelle, saubere Einigung
+gegenüber monatelangen Verhandlungen.
+
+
+==================================================================
+4. ÜBERGANG UND LIEFERUNG
+==================================================================
+
+  - Live-Demonstration auf dem Produktivsystem: innerhalb einer
+    Woche nach Ihrer Antwort, vor Ort oder remote.
+  - Due Diligence (Optionen 3/4): vollständiger Zugang zu Code,
+    Test-Suite und Dokumentation nach unterzeichneter
+    Absichtserklärung (LOI) und NDA. Die Codebasis wurde dafür
+    gebaut — append-only Migrationshistorie, 314 automatisierte
+    Tests, Entscheidungsprotokoll, saubere Lizenzierung.
+  - Übergabe (Optionen 3/4): vollständiges
+    Wissenstransferprogramm; die Entwicklungsvereinbarung (3A/4)
+    garantiert Kontinuität mit dem ursprünglichen
+    Entwicklungsteam.
+  - Deployment: die Plattform ist auf Ihrer Infrastruktur selbst
+    hostbar (heute Docker Compose; Kubernetes-fähige Architektur)
+    oder bleibt während des Übergangs von uns verwaltet.
+
+
+==================================================================
+5. NÄCHSTER SCHRITT
+==================================================================
+
+Antworten Sie uns, um eine Live-Demonstration zu vereinbaren. Alle
+Gespräche unter NDA. Dieses Angebot ist 90 Tage ab obigem Datum
+gültig; die Optionen schließen sich je Gebiet gegenseitig aus und
+werden der Partei gewährt, die zuerst unterzeichnet.
