@@ -10,6 +10,32 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-05 — Fuqizimi i plotë i Halimit: kredencialet, skills, monitorim 24/7 (D-065) (Cursor / Fable 5)
+
+- Done: (F1) `secrets/CREDENTIALS.md` (chmod 600) = harta e vetme e çdo
+  kredenciali (41 loginat e Firefox + `.env`-të + tokenat) me rregullin
+  "vetëm në makinë, kurrë jashtë"; lidhur me workspace `AGENTS.md`
+  (session-start); fjalëkalimi i llogarisë Mozilla u shtua te `secrets/README.md`.
+  (F2) 8 skills të kuruara u aktivizuan në `openclaw.json` (healthcheck,
+  skill-creator, weather, session-logs, summarize, blogwatcher, nano-pdf,
+  mcporter) + rindezje gateway-i; dokumentuar te `TOOLS.md`. (F3) OpenCode
+  (`opencode-ai`) i instaluar dhe i lidhur me çelësin ekzistues DeepSeek
+  (`~/.config/opencode/opencode.json`); skill `coding-agent` = ready;
+  guardrails te `CODING-OPS.md` (autonom vetëm AvokatIM/OpsHub/NaturalBeauty,
+  EdaS dy-agjentësh, KURRË TotoTrading/BoraLaw). (F4) `scripts/ops_roster_health.py`
+  (pa LLM) + cron `avokatim-roster-health` (çdo 6h, `--repair` vetëm projektet e
+  sigurta) + cron `halim-heartbeat` (çdo 30 min); `ops_watchdog.py` tani alarmon
+  për heartbeat të vjetruar (>70 min) → skedulues i vdekur kapet nga jashtë;
+  raporti i mëngjesit u rikrijua me bllokun e shëndetit të projekteve.
+- Verified: `opencode run` → OPENCODE_DEEPSEEK_OK; `openclaw skills list` tregon
+  8+coding-agent ready/needs-setup; `openclaw cron list` tregon 5 punë;
+  `ops_roster_health.py --status` → të gjitha projektet aktive (disk 68%, docker 8);
+  `ops_watchdog.py --status` OK; pytest: 16 (mail reliability+mailbox) + 5
+  (roster-health) = kaluan.
+- Left open / next: skills me CLI (summarize/blogwatcher/nano-pdf/mcporter)
+  instalojnë binarin në përdorimin e parë; shtesat me pagesë (voice/WhatsApp/X)
+  mbeten për vendim të mëvonshëm.
+
 ## 2026-08-05 — Harmonizimi i plotë i Halimit: mailbox + makina (D-064) (Cursor / Fable 5)
 
 - Done: Halimi merr menaxhim të plotë të arifi.arber@gmail.com dhe një rol të

@@ -1716,3 +1716,47 @@
   risks stay guarded — client mail (alias firewall) and personal
   correspondence (PO/JO). No new secrets service, no cloud dependency; the
   D-063 watchdog still covers pipeline failure.
+
+## D-065: Empower Halim — one credential map, curated skills, safe-auto coding, 24/7 monitor
+
+- Date: 2026-08-05
+- Status: accepted
+- Context: after D-064 the owner asked to (a) let Halim read *all* credentials
+  and be empowered with them, and (b) research OpenClaw extensions so Halim can
+  run more of the owner's tasks across every project 24/7. Research findings:
+  all 44 OpenClaw skills were disabled (many macOS-only, useless on Fedora; no
+  git remotes so github/gh-issues N/A); OpenClaw cron had only 3 AvokatIM jobs;
+  no coding backend installed; Halim's model is DeepSeek (reuse, no new cost).
+  Two owner decisions steered scope: coding autonomy = **safe projects only**;
+  paid comms (voice/WhatsApp/Twitter) = **free-only for now**.
+- Decision:
+  1. **One credential map**: `~/.openclaw/workspace/secrets/CREDENTIALS.md`
+     (chmod 600) points to the 41 Firefox logins + project `.env`s + tokens,
+     with the iron rule "use only on this machine, never in a message/log/
+     commit/off-box". Linked from workspace `AGENTS.md` session-start. The
+     Mozilla-account password (`accounts.firefox.com`) is recorded there; the
+     Firefox profile has no primary password so the export stays valid.
+  2. **Curated skills** enabled in `~/.openclaw/openclaw.json` (free, Linux,
+     safe): healthcheck, skill-creator, weather, session-logs, summarize,
+     blogwatcher, nano-pdf, mcporter. CLI-backed ones self-install on first
+     use. Documented in `TOOLS.md`. NOT enabled: macOS skills, github/gh-issues
+     (no remotes), paid voice-call/wacli/xurl.
+  3. **Safe-auto coding**: OpenCode (`opencode-ai`, `~/.config/opencode/
+     opencode.json`) wired to the existing DeepSeek key (no new cost) as the
+     `coding-agent` backend. Autonomous only for AvokatIM/OpsHub/NaturalBeauty
+     (EdaS under the two-agent rule); **never TotoTrading or BoraLaw**.
+     Guardrails in `~/.openclaw/workspace/CODING-OPS.md` + `MAKINA.md`.
+  4. **24/7 monitoring**: `backend/scripts/ops_roster_health.py` (LLM-free)
+     checks every project (systemd + HTTP health + docker + disk + failed
+     units) and repairs only the safe projects; OpenClaw cron
+     `avokatim-roster-health` runs it every 6h (`--repair`). A
+     `halim-heartbeat` cron writes `data/ops/halim_heartbeat.txt` every 30 min;
+     `ops_watchdog.py` (external systemd timer) now alarms if that heartbeat
+     goes stale (>70 min), so a dead OpenClaw scheduler is caught from outside.
+     The morning report embeds a projects-health block.
+- Consequences: Halim can find any credential in one place, has a useful safe
+  toolset, can be delegated code on the safe projects, and the whole machine is
+  watched around the clock with an external failsafe for the scheduler itself —
+  all with no new paid dependency (DeepSeek reused). Money-real (TotoTrading)
+  and frozen (BoraLaw) projects remain observe-only. Tests:
+  `backend/tests/test_ops_roster_health.py`.

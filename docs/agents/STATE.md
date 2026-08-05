@@ -358,6 +358,19 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   is ledgered in `data/ops/replies_log.csv`; `ops_digest.py` reports
   `replies_sent_24h` + `watchdog_alarms_24h`. Tests:
   `backend/tests/test_ops_mail_reliability.py`.
+- **Halim empowered: credentials + skills + coding + 24/7 monitor** (2026-08-05,
+  D-065): one credential map `~/.openclaw/workspace/secrets/CREDENTIALS.md`
+  (chmod 600, linked from workspace `AGENTS.md`). 8 curated OpenClaw skills
+  enabled (healthcheck, skill-creator, weather, session-logs, summarize,
+  blogwatcher, nano-pdf, mcporter) — see `TOOLS.md`. Coding delegation via
+  OpenCode + existing DeepSeek key (`~/.config/opencode/opencode.json`,
+  `coding-agent` skill), autonomous only for AvokatIM/OpsHub/NaturalBeauty
+  (EdaS two-agent), never TotoTrading/BoraLaw — guardrails in `CODING-OPS.md`.
+  `backend/scripts/ops_roster_health.py` (LLM-free) + OpenClaw crons
+  `avokatim-roster-health` (6h, `--repair` safe projects) and `halim-heartbeat`
+  (30m); `ops_watchdog.py` now alarms on stale heartbeat (>70m) as an external
+  failsafe for the scheduler; morning report shows a projects-health block.
+  Tests: `tests/test_ops_roster_health.py`.
 - **Halim manages the full mailbox** (2026-08-05, D-064):
   `arifi.arber@gmail.com` is the owner's single personal + operational
   account. `backend/scripts/ops_mailbox.py` adds the write side to triage's

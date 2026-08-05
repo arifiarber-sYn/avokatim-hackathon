@@ -41,12 +41,14 @@ from app.config import PROJECT_DIR, settings  # noqa: E402
 
 INBOX_STATE = PROJECT_DIR / "data" / "ops" / "inbox_state.json"
 WATCHDOG_STATE = PROJECT_DIR / "data" / "ops" / "watchdog_state.json"
+HEARTBEAT = PROJECT_DIR / "data" / "ops" / "halim_heartbeat.txt"
 OPENCLAW_CFG = Path.home() / ".openclaw" / "openclaw.json"
 OPENCLAW_DB = Path.home() / ".openclaw" / "state" / "openclaw.sqlite"
 TRIAGE_JOB_NAME = "avokatim-inbox-triage"
 
 STALE_AFTER_MIN = 60      # unprocessed mail older than this -> alarm
 ERROR_STREAK = 3          # consecutive failed cron runs -> alarm
+HEARTBEAT_STALE_MIN = 70  # no OpenClaw heartbeat for this long -> scheduler dead
 REALARM_HOURS = 3         # don't repeat the same alarm more often than this
 STATUS_ONLY = "--status" in sys.argv
 
@@ -189,10 +191,26 @@ def _should_alarm(key: str, state: dict) -> bool:
         return True
 
 
+def check_heartbeat() -> str | None:
+    """OpenClaw's own cron writes HEARTBEAT every 30 min (D-065). If it goes
+    stale, the scheduler itself is down — nothing inside OpenClaw could tell us,
+    so this external timer must. Absent file on a fresh install is not an alarm.
+    """
+    if not HEARTBEAT.exists():
+        return None
+    age_min = (datetime.now(UTC).timestamp() - HEARTBEAT.stat().st_mtime) / 60
+    if age_min > HEARTBEAT_STALE_MIN:
+        return (f"OpenClaw-i s'ka shkruar heartbeat prej {age_min:.0f} min "
+                f"(pragu {HEARTBEAT_STALE_MIN}). Skeduluesi/gateway-i i Halimit "
+                f"mund të jetë i vdekur — kontrollo openclaw-gateway.service.")
+    return None
+
+
 def main() -> int:
     findings: list[tuple[str, str]] = []
     for key, check in (("stale_mail", check_stale_mail),
-                       ("cron_errors", check_cron_errors)):
+                       ("cron_errors", check_cron_errors),
+                       ("heartbeat", check_heartbeat)):
         try:
             problem = check()
         except Exception as exc:

@@ -3,6 +3,33 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-05 — D-065: Empower Halim — credential map, skills, safe-auto coding, 24/7 monitor
+
+- `secrets/CREDENTIALS.md` (NEW, chmod 600): single map to all credentials
+  (41 Firefox logins + project `.env`s + tokens) with a use-on-this-machine-
+  only rule; linked from workspace `AGENTS.md` session-start.
+- Curated OpenClaw skills enabled (healthcheck, skill-creator, weather,
+  session-logs, summarize, blogwatcher, nano-pdf, mcporter); documented in
+  `TOOLS.md`. Gateway restarted.
+- OpenCode installed and wired to the existing DeepSeek key; `coding-agent`
+  skill enabled. Guardrails in `~/.openclaw/workspace/CODING-OPS.md`:
+  autonomous only for AvokatIM/OpsHub/NaturalBeauty (EdaS two-agent), never
+  TotoTrading/BoraLaw.
+- `backend/scripts/ops_roster_health.py` (NEW, LLM-free): per-project health
+  (systemd + HTTP + docker + disk + failed units); repairs only safe projects;
+  its own Telegram summary. Tests: `backend/tests/test_ops_roster_health.py`.
+- OpenClaw cron: `avokatim-roster-health` (every 6h, `--repair`) and
+  `halim-heartbeat` (every 30m). `scripts/ops_watchdog.py` now alarms when the
+  heartbeat is stale (>70m) — external failsafe for a dead scheduler. Morning
+  report cron recreated with a projects-health block.
+- Why: owner wanted Halim empowered with all credentials and able to run more
+  tasks across every project 24/7; scope bounded by owner decisions (coding
+  autonomy = safe projects only; paid comms = free-only for now).
+- Files: `secrets/CREDENTIALS.md`, `secrets/README.md`, `~/.openclaw/workspace/{AGENTS,TOOLS,CODING-OPS}.md`,
+  `~/.openclaw/openclaw.json`, `~/.config/opencode/opencode.json`,
+  `~/openclaw-knowledge/MAKINA.md`, `backend/scripts/ops_roster_health.py`,
+  `backend/scripts/ops_watchdog.py`, `backend/tests/test_ops_roster_health.py`.
+
 ## 2026-08-05 — D-064: Halim fully manages the mailbox + the machine
 
 - `scripts/ops_mailbox.py` (NEW): write side for the operator mailbox —
