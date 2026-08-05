@@ -19,8 +19,8 @@ ready-to-send draft and a yes/no question.
 
 ## Lane A — automatic emails (trigger → recipient → i18n key → code)
 
-All templates live in `backend/app/i18n.py` in **6 languages**
-(sq/sr/tr/bs/en/zh) and are sent via `send_email` in
+All templates live in `backend/app/i18n.py` in **7 languages**
+(sq/sr/tr/bs/en/zh/de) and are sent via `send_email` in
 `backend/app/services/notifications.py`, which **suppresses test/simulation
 recipients** (`_is_test_recipient`).
 
@@ -55,9 +55,23 @@ recipients** (`_is_test_recipient`).
 
 ### Outreach (acquisition)
 
-Daily batch of 30 introduction emails to OAK lawyers (then ONK notaries) via
-`avokatim-outreach.timer` → `backend/scripts/oak_outreach_campaign.py`. Dedup +
-suppression of already-registered addresses; log `data/outreach.log`.
+**Kosovo (XK)** — daily batch of 60 introduction emails to OAK lawyers (then
+ONK notaries) via `avokatim-outreach.timer` → `backend/scripts/oak_outreach_campaign.py`.
+Dedup + suppression of already-registered addresses; log `data/outreach.log`.
+
+**Germany (DE)** — daily batch of 15 "Gründungspartner" emails (in German,
+signed "Arbër Arifi · Ava Legal", links only to `de.avokatiim.ai`) to lawyers
+harvested from the public DAV directory into `data/de_lawyers.csv`
+(`backend/scripts/scrape_de_lawyers.py`), sent via `avokatim-outreach-de.timer`
+→ `backend/scripts/de_outreach_campaign.py` at 09:45. Volume kept low on
+purpose (shared transactional Gmail reputation + UWG §7 grey zone). Log
+`data/outreach_de.log`.
+
+**Opt-outs (both campaigns)** — a reply that is essentially "STOP" /
+"abmelden" / "unsubscribe" / "mos më shkruani" is auto-classified by
+`ops_inbox_triage.py` (class `optout`), appended to `data/de_suppress.txt`
+and thereby suppressed in BOTH the DE and XK campaigns forever. Halim never
+replies to opt-outs and never maintains the list by hand.
 
 One-off manual sends live in `backend/scripts/` and are kept for the record,
 e.g. `send_visibility_nudge.py` (2026-07-31: asked the two newly verified
@@ -80,7 +94,7 @@ the owner/agent and never wired to a timer.
 
 ## Rules for agents (any LLM working here)
 
-1. **New outbound email ⇒** all 6 languages in `i18n.py` + test-recipient
+1. **New outbound email ⇒** all 7 languages in `i18n.py` + test-recipient
    suppression + a row in the tables above + (if operationally relevant) a
    `notify_ops` event so Halim stays aware.
 2. **Tone of automated letters**: warm, personal, concrete next steps, signed

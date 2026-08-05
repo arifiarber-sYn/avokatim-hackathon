@@ -3,6 +3,31 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-05 — D-061: automated German lawyer outreach (Track B)
+
+- `scripts/scrape_de_lawyers.py`: harvests lawyer contacts from the DAV
+  directory anwaltauskunft.de via its JSON endpoint
+  `/wp-json/search/v1/query` (verified live) into `data/de_lawyers.csv`;
+  iterates diaspora-heavy cities x our strong practice areas, ranks
+  Albanian-sounding names first (alb_score heuristic). 2-city smoke run
+  → 269 lawyers with e-mail.
+- `scripts/de_outreach_campaign.py`: mirror of the XK campaign — 15/day,
+  German "Gründungspartner" letter, signed "Arbër Arifi · Ava Legal",
+  links only to de.avokatiim.ai (never AvokatIM/Kosovo, brand split
+  D-056); daily guard + dedup (`data/de_outreach_log.csv`) + suppression
+  (DB + ledger + static).
+- `scripts/ops_inbox_triage.py`: new `optout` class — a reply that is
+  essentially STOP/abmelden/unsubscribe/"mos më shkruani" (<=80 chars) is
+  auto-appended to `data/de_suppress.txt`; both DE and XK campaigns read
+  that ledger (`oak_outreach_campaign.py` now reads it too). Precision over
+  recall: a long human reply containing "stop" stays human.
+- systemd: `avokatim-outreach-de.service/.timer` (daily 09:45,
+  Persistent=true), log `data/outreach_de.log`. Halim guardrails
+  (AVOKATIM-OPS.md) + COMMS.md updated: reply to DE prospects in German as
+  Ava Legal, opt-outs auto-handled.
+- 10 new tests (`tests/test_de_outreach.py`); full suite 324 passed.
+  Accepted residual UWG §7 risk (low volume + instant STOP = mitigation).
+
 ## 2026-08-04 — D-060: LLM task routing + local fallback + pinned privacy local
 
 - `llm/router.py`: `get_provider(name, purpose)` — json/research calls on

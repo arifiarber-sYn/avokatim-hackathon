@@ -36,6 +36,16 @@ BOUNCE_FROM_RE = re.compile(
     r"(mailer-daemon|postmaster|mail delivery (subsystem|system)|delivery status)",
     re.IGNORECASE,
 )
+# Opt-out signals in a reply to outreach — German (UWG-safe) + Albanian +
+# English. A bare "STOP" (the phrase our letters advertise) counts too.
+OPTOUT_RE = re.compile(
+    r"\b(stop|unsubscribe|abbestellen|abmelden|austragen|keine\s+werbung|"
+    r"nicht\s+kontaktieren|keine\s+e-?mails?|c[ë|e]rregjistro|hiqmani?|"
+    r"mos\s+m[ë|e]\s+shkruani?|remove\s+me|opt[\s-]?out)\b",
+    re.IGNORECASE,
+)
+# Suppression ledger shared by both outreach campaigns (DE + XK read it).
+SUPPRESS_LEDGER = PROJECT_DIR / "data" / "de_suppress.txt"
 # Our own outbound identity: notifications AvokatIM sends to the operator
 _SELF_ADDRESSES = {
     settings.smtp_user.lower(),
@@ -89,13 +99,45 @@ def _body_snippet(msg: email.message.Message) -> str:
     return "\n".join(lines).strip()[:MAX_SNIPPET]
 
 
-def _classify(from_addr: str, subject: str) -> str:
+def _classify(from_addr: str, subject: str, body: str = "") -> str:
     if BOUNCE_FROM_RE.search(from_addr) or BOUNCE_FROM_RE.search(subject):
         return "bounce"
     addr = email.utils.parseaddr(from_addr)[1].lower()
     if addr in _SELF_ADDRESSES:
         return "system"
+    # Opt-out only when the phrase essentially IS the whole reply — never
+    # swallow a long human message that merely contains the word "stop"
+    # (a false positive would silently drop a hot lead and suppress it
+    # forever, which is worse than a missed opt-out the owner reviews by hand).
+    head = f"{subject}\n{body}".strip()
+    if OPTOUT_RE.search(head) and len(head) <= 80:
+        return "optout"
     return "human"
+
+
+def _record_optout(addr: str) -> bool:
+    """Append an address to the shared suppression ledger (dedup). Returns
+    True when newly added. Both outreach campaigns read this file, so a STOP
+    silences all future cold mail everywhere."""
+    addr = (addr or "").strip().lower()
+    if "@" not in addr:
+        return False
+    existing: set[str] = set()
+    if SUPPRESS_LEDGER.exists():
+        for line in SUPPRESS_LEDGER.read_text(encoding="utf-8").splitlines():
+            s = line.strip().lower()
+            if s and not s.startswith("#"):
+                existing.add(s)
+    if addr in existing:
+        return False
+    SUPPRESS_LEDGER.parent.mkdir(parents=True, exist_ok=True)
+    new_file = not SUPPRESS_LEDGER.exists()
+    with SUPPRESS_LEDGER.open("a", encoding="utf-8") as f:
+        if new_file:
+            f.write("# Outreach opt-outs (STOP replies). Auto-maintained by "
+                    "ops_inbox_triage.py. Read by DE + XK campaigns.\n")
+        f.write(f"{addr}\n")
+    return True
 
 
 def _load_state() -> dict:
@@ -122,6 +164,8 @@ def run() -> dict:
         "human": [],
         "system_count": 0,
         "bounce_count": 0,
+        "optout_count": 0,
+        "optouts": [],
     }
 
     imap = imaplib.IMAP4_SSL(host, port)
@@ -158,11 +202,20 @@ def run() -> dict:
             msg = email.message_from_bytes(msg_data[0][1])
             from_h = _decode(msg.get("From"))
             subject = _decode(msg.get("Subject"))
-            kind = _classify(from_h, subject)
+            snippet = _body_snippet(msg)
+            kind = _classify(from_h, subject, snippet)
             if kind == "bounce":
                 report["bounce_count"] += 1
             elif kind == "system":
                 report["system_count"] += 1
+            elif kind == "optout":
+                # Silence future cold mail; do NOT hand it to Halim to answer.
+                addr = email.utils.parseaddr(
+                    _decode(msg.get("Reply-To") or msg.get("From"))
+                )[1]
+                report["optout_count"] += 1
+                if _record_optout(addr):
+                    report["optouts"].append(addr)
             elif len(report["human"]) < MAX_HUMAN_PER_RUN:
                 report["human"].append({
                     "uid": uid,
@@ -173,7 +226,7 @@ def run() -> dict:
                     "subject": subject,
                     "date": _decode(msg.get("Date")),
                     "message_id": (msg.get("Message-ID") or "").strip(),
-                    "snippet": _body_snippet(msg),
+                    "snippet": snippet,
                 })
 
         state["last_uid"] = max(uids)

@@ -3,7 +3,7 @@
 > Update this file whenever the state changes (new module, dependency, behavior,
 > known issue). Keep it a snapshot, not a history — history lives in JOURNAL.md.
 
-**Last updated:** 2026-08-04
+**Last updated:** 2026-08-05
 
 ## Status: live in production at https://avokatiim.ai (Kosovo) + https://de.avokatiim.ai (Germany, D-034) — lawyer office + citizen marketplace + notary profession + growth ops (automated outreach, analytics); first real signups arriving (first outreach conversion 2026-07-13)
 
@@ -317,6 +317,17 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   users/citizens auto-suppressed from the DB. Phase 1 lawyers
   (`data/oak_registry.csv`), then automatically phase 2 notaries
   (`data/notaries.json`) with a notary letter. Output → `data/outreach.log`.
+- **Automated German outreach** (2026-08-05, D-061): second campaign for
+  Ava Legal, mirror of the XK one. `backend/scripts/scrape_de_lawyers.py`
+  harvests lawyer contacts from anwaltauskunft.de (JSON endpoint
+  `/wp-json/search/v1/query`) into `data/de_lawyers.csv`, diaspora names
+  ranked first. `avokatim-outreach-de.timer` (daily 09:45, `Persistent=true`)
+  runs `de_outreach_campaign.py`: 15 German "Gründungspartner" letters/day,
+  signed "Arbër Arifi · Ava Legal", links only to `de.avokatiim.ai`; same
+  guards + dedup (`data/de_outreach_log.csv`) + suppression. Output →
+  `data/outreach_de.log`. Opt-outs are auto-handled: `ops_inbox_triage.py`
+  classifies a STOP-only reply as `optout` → `data/de_suppress.txt`, read by
+  BOTH campaigns. Accepted residual UWG §7 risk (low volume + instant STOP).
 - **Feedback lives in-platform only** (2026-07-14): `/kontakti` submissions
   no longer email the operator; `GET /platform/feedback/pending-count`
   powers a red badge on the Platform nav item (app sidebar).

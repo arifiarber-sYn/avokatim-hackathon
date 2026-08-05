@@ -1548,3 +1548,36 @@
 - Consequences: flipping DE to `llm_provider="local"` becomes safe for
   launch — chat/drafting local, structured and research work on DeepSeek
   (pseudonymized), outage-proof, and privacy-pinned offices untouched.
+
+## D-061: Automated German lawyer outreach (Track B), mirror of the XK campaign
+
+- Context: the owner wants German client acquisition (Ava Legal) automated
+  exactly like the Kosovo campaign — harvest contacts, send a daily batch,
+  let Halim (OpenClaw) handle replies. The German bar register BRAV carries
+  no e-mails, and cold B2B e-mail in Germany is a UWG §7 grey zone.
+- Decision:
+  1. Source e-mails from the DAV public directory anwaltauskunft.de via its
+     unauthenticated JSON endpoint `/wp-json/search/v1/query`
+     (`scrape_de_lawyers.py` → `data/de_lawyers.csv`), iterating diaspora-
+     heavy cities x our strong practice areas, ranking Albanian-sounding
+     names first (warmest first door per the go-to-market strategy).
+  2. `de_outreach_campaign.py` mirrors `oak_outreach_campaign.py` (daily
+     guard, dedup log, DB + file suppression) but sends the German
+     "Gründungspartner" letter, signed "Arbër Arifi · Ava Legal", linking
+     only to `de.avokatiim.ai` — never AvokatIM/Kosovo (brand split D-056).
+     Volume 15/day (vs 60 XK): shared transactional Gmail reputation + the
+     UWG risk demand a small, polite, clearly-opt-out-able trickle.
+  3. Opt-outs are automated: `ops_inbox_triage.py` classifies a reply that
+     essentially IS "STOP/abmelden/unsubscribe/mos më shkruani" (<=80 chars)
+     as `optout`, appends it to `data/de_suppress.txt` and both campaigns
+     (DE + XK) read that ledger — one STOP silences all cold mail forever.
+     Precision favored over recall: a long human reply merely containing
+     "stop" stays `human` (a false positive would drop a hot lead).
+  4. `avokatim-outreach-de.timer` fires 09:45 daily, `Persistent=true`,
+     log `data/outreach_de.log`. Halim's guardrails updated: reply to DE
+     prospects in German as Ava Legal, never touch opt-outs.
+- Consequences: German acquisition runs unattended alongside Kosovo, with a
+  deliberately low, opt-out-respecting volume that limits both spam-reputation
+  and legal exposure. Accepted residual risk: an individual UWG §7 Abmahnung
+  is still possible; the low volume + one-shot + source citation + instant
+  STOP are the mitigations, not a guarantee.

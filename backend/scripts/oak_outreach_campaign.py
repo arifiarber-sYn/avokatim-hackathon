@@ -40,6 +40,9 @@ DATA = Path(__file__).resolve().parents[2] / "data"
 REGISTRY = DATA / "oak_registry.csv"
 NOTARIES = DATA / "notaries.json"
 LOG = DATA / "oak_outreach_log.csv"
+# Shared opt-out ledger (STOP replies), auto-maintained by ops_inbox_triage.
+# Read by both the DE and XK campaigns so one STOP silences all cold mail.
+SUPPRESS_LEDGER = DATA / "de_suppress.txt"
 
 DRY_RUN = "--dry-run" in sys.argv
 FORCE = "--force" in sys.argv
@@ -173,6 +176,18 @@ def log_send(row: dict, audience: str) -> None:
                     "audience": audience})
 
 
+def ledger_suppressions() -> set[str]:
+    """Opt-out addresses (STOP replies) shared across campaigns."""
+    if not SUPPRESS_LEDGER.exists():
+        return set()
+    out: set[str] = set()
+    for line in SUPPRESS_LEDGER.read_text(encoding="utf-8").splitlines():
+        s = line.strip().lower()
+        if s and not s.startswith("#") and "@" in s:
+            out.add(s)
+    return out
+
+
 def registered_emails() -> set[str]:
     """Emails of everyone already on the platform (professionals + citizens) —
     they get product emails, never cold outreach."""
@@ -228,7 +243,7 @@ def main() -> None:
         return
 
     sent = {r["email"].lower() for r in log_rows}
-    suppress = {s.lower() for s in SUPPRESS} | registered_emails()
+    suppress = {s.lower() for s in SUPPRESS} | ledger_suppressions() | registered_emails()
 
     def pending(rows: list[dict]) -> list[dict]:
         return [r for r in rows

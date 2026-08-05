@@ -10,6 +10,33 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-05 — Automatizimi i outreach-it gjerman (Track B, D-061) (Cursor / Fable 5)
+
+- Done: fushatë email plotësisht e automatizuar për avokatët gjermanë, pasqyrë
+  e fushatës XK. (F1) `scrape_de_lawyers.py` — harvester nga anwaltauskunft.de
+  përmes endpoint-it JSON `/wp-json/search/v1/query` (verifikuar live), mbledh
+  emër/gjini/qytet/PLZ/email nga qytete me diasporë × fushat tona → 
+  `data/de_lawyers.csv`, radhit emrat shqiptarë të parët (heuristikë alb_score).
+  Provë 2 qytete → 269 avokatë me email. (F2) `de_outreach_campaign.py` — 
+  15/ditë, letra gjermanisht "Gründungspartner" (12 muaj falas, migrim falas,
+  39 €), firmë "Arbër Arifi · Ava Legal", vetëm linke de.avokatiim.ai, kurrë
+  AvokatIM/Kosovë; guard ditor + dedup + suppression (DB + ledger + statik).
+  (F3) `ops_inbox_triage.py` — klasa e re `optout` (STOP/abmelden/unsubscribe/
+  mos më shkruani, ≤80 char), shton vetë te `data/de_suppress.txt`; të dyja
+  fushatat (DE+XK) e lexojnë ledger-in → një STOP i heshton kudo; precizion
+  mbi recall (mesazh i gjatë me "stop" mbetet human). (F4) njësitë systemd
+  `avokatim-outreach-de.service/.timer` (09:45, Persistent=true), log
+  `data/outreach_de.log`. (F5) COMMS.md + AVOKATIM-OPS.md i Halimit: përgjigje
+  ndaj prospekteve DE në gjermanisht si Ava Legal, opt-out-et auto, s'i prek.
+- Verified: 10 teste të reja (`test_de_outreach.py`) — klasifikimi optout,
+  dedup i ledger-it, përshëndetja/brandi i letrës, alb_score; suita e plotë
+  324 kalon (314 + 10). Dry-run i të dyja fushatave OK (XK i paprekur: 932
+  dërguar/520 pending). Timer-i DE i planifikuar për nesër 09:45.
+- Left open: harvest i plotë (27 qytete, ~30-60 min) — deri tani vetëm 2
+  qytete provë; niset kur pronari të dojë listë më të gjerë. Rreziku UWG §7
+  i pranuar (volum i ulët + STOP i menjëhershëm = zbutje, jo garanci).
+  Përmirësim opsional: dërgues @domain në vend të Gmail-it.
+
 ## 2026-08-05 — Strategjia e plotë e tregut gjerman + përditësimi i AGENTS.md (Cursor / Fable 5)
 
 - Done: (1) `docs/pitch/strategjia-tregu-gjerman.txt` — strategjia e plotë
