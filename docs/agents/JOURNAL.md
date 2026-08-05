@@ -10,6 +10,41 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-05 — Posta që s'ikën kurrë + auditimi mobile (D-063) (Cursor / Fable 5)
+
+- Done: rasti Vuksani (përgjigje me 4.7 h vonesë, pa dijeninë e pronarit)
+  u mbyll në të katër frontet. (F1) Vuksani s'është regjistruar ende → draft
+  follow-up me ofertë regjistrimi të asistuar te Halimi me PO/JO; verifikimi
+  i propozimeve M&A zbuloi se TË TRIA mbërritën në Telegram dhe Septeo u
+  DËRGUA me PO-në e pronarit (info@stp.one, 10:58 — letra e parë M&A jashtë!);
+  ADVOCARD + ROLAND presin PO/JO. `de_company_outreach.py` mori `--mark
+  <domain> sent|closed` — follow-up-et shkojnë vetëm te letrat e dërguara.
+  (F2) `ops_watchdog.py` + `avokatim-watchdog.timer` (çdo 30 min, pa asnjë
+  LLM: IMAP + cron_run_logs → alarm direkt në Telegram Bot API, fallback
+  email, dedup 3h); fix i humbjes së heshtur në triage (last_uid ndalon te
+  emaili i fundit i raportuar, `truncated: true`); `timeoutSeconds: 600` për
+  DeepSeek në openclaw.json (gateway u rindez); regjistri
+  `data/ops/replies_log.csv` për çdo dërgim + `ops_digest` raporton
+  `replies_sent_24h` dhe `watchdog_alarms_24h`. (F3) auditim real mobile
+  (390×844) në të dy hostet + Lighthouse (perf 82–89, a11y 96): u rregulluan
+  CSP-ja për Cloudflare-beacon (gabim konsole kudo), kontrasti
+  footer/bottom-nav, aria-label i Ava FAB; banner "shfletues i vjetër" (probe
+  ES5) + <noscript> në 7 gjuhë; inputs 16px në mobile (s'ka më auto-zoom
+  iOS); redirects për slug-et gjermane (/anmelden, /fuer-anwaelte, …).
+  Gjetjet "404 blocker" të subagentit ishin URL-a të shpikura — rrugët reale
+  kthejnë 200 në të dy hostet. (F4) pariteti XK↔DE i postës u fiksua me
+  teste; PS mobil (hap në Chrome/Safari) në të dyja letrat XK.
+  AVOKATIM-OPS.md: detyra --mark, transparenca e korrespondencës, watchdog.
+- Verified: 11 teste të reja (`test_ops_mail_reliability.py`: pariteti
+  human/company/optout, backlog 15 emaila pa humbje në 2 run-e, ledger-i,
+  watchdog stale-mail/error-streak/recovery/dedup) — testet zbuluan edhe dy
+  defekte reale robustësie (charset "unknown-8bit" dhe Message-ID jo-ASCII
+  rrëzonin gjithë run-in) që u rregulluan; suita e plotë kalon; watchdog
+  `--status` OK live; timer aktiv; frontend rebuild + restart.
+- Left open / next: PO/JO për follow-up-in e Vuksanit dhe për
+  ADVOCARD/ROLAND; përgjigja e Septeo-s (ledger-i i ndal follow-up-et
+  automatikisht kur të vijë).
+
 ## 2026-08-05 — Rikahëzimi DE: outreach drejt kompanive (Kanali A, D-062) (Cursor / Fable 5)
 
 - Done: Gjermania synon tani KOMPANITË që blejnë/licencojnë platformën, jo

@@ -78,7 +78,12 @@ def _decode(value: str | None) -> str:
     out = []
     for text, charset in parts:
         if isinstance(text, bytes):
-            out.append(text.decode(charset or "utf-8", errors="replace"))
+            # Malformed senders declare bogus charsets ("unknown-8bit");
+            # one bad header must never kill the whole triage run.
+            try:
+                out.append(text.decode(charset or "utf-8", errors="replace"))
+            except LookupError:
+                out.append(text.decode("utf-8", errors="replace"))
         else:
             out.append(text)
     return " ".join(out).strip()
@@ -259,15 +264,25 @@ def run() -> dict:
         if not uids:
             return report
 
+        # last_uid must never advance past an UNREPORTED human mail: after a
+        # long outage the backlog can exceed MAX_HUMAN_PER_RUN, and the old
+        # behavior (always advancing to max(uids)) silently lost the rest
+        # forever. Now we stop at the cap and the next run picks up there.
+        processed_up_to = last_uid
         for uid in sorted(uids):
             status, msg_data = imap.uid("FETCH", str(uid), "(BODY.PEEK[])")
             if status != "OK" or not msg_data or msg_data[0] is None:
+                processed_up_to = uid  # unfetchable — skip, don't loop on it
                 continue
             msg = email.message_from_bytes(msg_data[0][1])
             from_h = _decode(msg.get("From"))
             subject = _decode(msg.get("Subject"))
             snippet = _body_snippet(msg)
             kind = _classify(from_h, subject, snippet, company_domains)
+            if kind == "human" and len(report["human"]) >= MAX_HUMAN_PER_RUN:
+                report["truncated"] = True
+                report["truncated_at_uid"] = uid
+                break
             if kind == "bounce":
                 report["bounce_count"] += 1
             elif kind == "system":
@@ -287,7 +302,7 @@ def run() -> dict:
                     "reply_to": reply_to,
                     "subject": subject,
                     "date": _decode(msg.get("Date")),
-                    "message_id": (msg.get("Message-ID") or "").strip(),
+                    "message_id": str(msg.get("Message-ID") or "").strip(),
                     "snippet": snippet,
                 })
             elif kind == "optout":
@@ -298,7 +313,7 @@ def run() -> dict:
                 report["optout_count"] += 1
                 if _record_optout(addr):
                     report["optouts"].append(addr)
-            elif len(report["human"]) < MAX_HUMAN_PER_RUN:
+            else:
                 report["human"].append({
                     "uid": uid,
                     "from": from_h,
@@ -307,11 +322,12 @@ def run() -> dict:
                     )[1],
                     "subject": subject,
                     "date": _decode(msg.get("Date")),
-                    "message_id": (msg.get("Message-ID") or "").strip(),
+                    "message_id": str(msg.get("Message-ID") or "").strip(),
                     "snippet": snippet,
                 })
+            processed_up_to = uid
 
-        state["last_uid"] = max(uids)
+        state["last_uid"] = processed_up_to
         state["last_run"] = report["checked_at"]
         _save_state(state)
         return report

@@ -15,6 +15,24 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // German visitors on de.avokatiim.ai type/guess German slugs (mobile audit
+  // D-063 confirmed people land on them) — route names are Albanian, so
+  // catch the obvious German equivalents instead of serving a 404.
+  async redirects() {
+    return [
+      { source: "/fuer-anwaelte", destination: "/per-avokatet", permanent: true },
+      { source: "/für-anwälte", destination: "/per-avokatet", permanent: true },
+      { source: "/fuer-notare", destination: "/per-noteret", permanent: true },
+      { source: "/fuer-buerger", destination: "/per-qytetaret", permanent: true },
+      { source: "/anmelden", destination: "/kycu", permanent: true },
+      { source: "/registrieren", destination: "/regjistrohu", permanent: true },
+      { source: "/fall-posten", destination: "/posto-rastin", permanent: true },
+      { source: "/mein-fall", destination: "/rasti-im", permanent: true },
+      { source: "/kontakt", destination: "/kontakti", permanent: true },
+      { source: "/anwaelte", destination: "/avokatet", permanent: true },
+      { source: "/notare", destination: "/noteret", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

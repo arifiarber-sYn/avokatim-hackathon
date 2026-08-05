@@ -43,12 +43,14 @@ export function proxy(request: NextRequest) {
       "Content-Security-Policy",
       [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' https://stats.avokatiim.ai" +
+        // static.cloudflareinsights.com: Cloudflare injects its RUM beacon on
+        // proxied hosts; blocking it spams every visitor's console (D-063).
+        "script-src 'self' 'unsafe-inline' https://stats.avokatiim.ai https://static.cloudflareinsights.com" +
           (isOutlook ? " https://appsforoffice.microsoft.com https://ajax.aspnetcdn.com" : ""),
         "style-src 'self' 'unsafe-inline'",
         "img-src 'self' data: blob:",
         "font-src 'self' data:",
-        "connect-src 'self' https://stats.avokatiim.ai wss: blob:" +
+        "connect-src 'self' https://stats.avokatiim.ai https://cloudflareinsights.com wss: blob:" +
           (isOutlook ? " https://appsforoffice.microsoft.com" : ""),
         "media-src 'self' blob: data:",
         "worker-src 'self' blob:",

@@ -11,17 +11,37 @@ safely. --attach may be repeated (e.g. to attach the platform offer PDF for a
 company outreach). Refuses test/simulation recipients. Prints a JSON result.
 """
 import argparse
+import csv
+import hashlib
 import json
 import mimetypes
 import smtplib
 import sys
+from datetime import UTC, datetime
 from email.message import EmailMessage
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app.config import settings  # noqa: E402
+from app.config import PROJECT_DIR, settings  # noqa: E402
 from app.services.notifications import _is_test_recipient  # noqa: E402
+
+# Correspondence ledger: every operator send lands here so the owner has a
+# full audit trail of what Halim sent in his name (surfaced by ops_digest).
+REPLIES_LOG = PROJECT_DIR / "data" / "ops" / "replies_log.csv"
+
+
+def _log_send(to: str, subject: str, body: str, attachments: int) -> None:
+    REPLIES_LOG.parent.mkdir(parents=True, exist_ok=True)
+    new = not REPLIES_LOG.exists()
+    with REPLIES_LOG.open("a", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        if new:
+            w.writerow(["sent_at", "to", "subject", "attachments", "body_sha256"])
+        w.writerow([
+            datetime.now(UTC).isoformat(timespec="seconds"), to, subject,
+            attachments, hashlib.sha256(body.encode()).hexdigest()[:16],
+        ])
 
 
 def main() -> dict:
@@ -65,6 +85,7 @@ def main() -> dict:
         if settings.smtp_user:
             server.login(settings.smtp_user, settings.smtp_password)
         server.send_message(msg)
+    _log_send(args.to, args.subject, body, len(args.attach))
     return {"sent": True, "to": args.to, "subject": args.subject,
             "attachments": len(args.attach)}
 

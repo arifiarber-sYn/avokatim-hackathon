@@ -340,7 +340,33 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   10-day nudge (PO/JO again). Log `data/de_company_outreach_log.csv`. Triage
   classifies replies from target domains as `company` (outranks even optout),
   records them in `data/de_company_replies.txt`, and Halim must never answer
-  them autonomously. `ops_send_reply.py` gained `--attach`.
+  them autonomously. `ops_send_reply.py` gained `--attach`. Statuses in the
+  log are owner-decision driven (D-063): after PO+send Halim runs
+  `de_company_outreach.py --mark <domain> sent`, after JO `--mark <domain>
+  closed`; follow-ups nudge ONLY `sent` rows. **First letter actually sent
+  2026-08-05: Septeo (info@stp.one), with the offer PDF, on the owner's PO.**
+- **Mail pipeline reliability — LLM-free watchdog** (2026-08-05, D-063, born
+  from the Vuksani incident): `backend/scripts/ops_watchdog.py` +
+  `avokatim-watchdog.timer` (every 30 min, Persistent) checks via read-only
+  IMAP for unprocessed mail older than 60 min and for ≥3 consecutive triage
+  cron failures in OpenClaw's `cron_run_logs`; alarms go directly to
+  Telegram Bot API (fallback: email), deduped 3h via
+  `data/ops/watchdog_state.json`, log `data/watchdog.log`. Triage no longer
+  loses backlog (last_uid stops at the last reported mail, `truncated`
+  flag) and survives malformed headers. DeepSeek provider in
+  `openclaw.json` got `timeoutSeconds: 600`. Every `ops_send_reply.py` send
+  is ledgered in `data/ops/replies_log.csv`; `ops_digest.py` reports
+  `replies_sent_24h` + `watchdog_alarms_24h`. Tests:
+  `backend/tests/test_ops_mail_reliability.py`.
+- **Mobile graceful degradation** (2026-08-05, D-063): `<noscript>` notice +
+  ES5-probe "old browser" banner (server-rendered, 7 languages,
+  `components/legacy-banner.tsx`); form inputs forced to 16px on <768px
+  screens (no more iOS auto-zoom); German slug redirects on the DE host
+  (/anmelden, /registrieren, /fuer-anwaelte, /fall-posten, /mein-fall, …)
+  in `next.config.ts`; CSP allows the Cloudflare RUM beacon; footer +
+  bottom-nav contrast fixed (WCAG AA); both XK outreach letters carry a
+  mobile P.S. (open directly in Chrome/Safari). Lighthouse mobile: perf
+  82–89, a11y 96 on both hosts.
 - **Feedback lives in-platform only** (2026-07-14): `/kontakti` submissions
   no longer email the operator; `GET /platform/feedback/pending-count`
   powers a red badge on the Platform nav item (app sidebar).

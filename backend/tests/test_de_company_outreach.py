@@ -118,13 +118,15 @@ def test_propose_orders_by_wave_skips_hold_and_dedups(pipeline):
     assert len(pipeline) == 2
 
 
-def test_followups_after_10_days_skip_replied(pipeline, monkeypatch):
+def test_followups_only_for_sent_letters_and_skip_replied(pipeline, monkeypatch):
     outreach.propose(5, dry_run=False)
     pipeline.clear()
-    log = outreach.load_log()
+    # Owner said PO for both; Halim marked them sent 11 days ago.
     old = (datetime.now(UTC) - timedelta(days=11)).isoformat(timespec="seconds")
+    log = outreach.load_log()
     for row in log:
-        row["proposed_at"] = old
+        row["status"] = "sent"
+        row["sent_at"] = old
     outreach.save_log(log)
     # ROLAND already replied — must never get a nudge.
     outreach.REPLIES.write_text("roland-rechtsschutz.de\n", encoding="utf-8")
@@ -133,8 +135,32 @@ def test_followups_after_10_days_skip_replied(pipeline, monkeypatch):
     assert len(pipeline) == 1
     assert "ADVOCARD" in pipeline[0][1]
     statuses = {r["company"]: r["status"] for r in outreach.load_log()}
-    assert statuses == {"ADVOCARD": "followup", "ROLAND": "proposed"}
+    assert statuses == {"ADVOCARD": "followup", "ROLAND": "sent"}
     # Follow-up happens once only
     pipeline.clear()
     outreach.followups(dry_run=False)
     assert pipeline == []
+
+
+def test_followups_never_nudge_unsent_proposals(pipeline):
+    outreach.propose(5, dry_run=False)
+    pipeline.clear()
+    # 11 days pass but the owner never said PO — status stays "proposed";
+    # the company never got a letter, so a "following up" mail would be absurd.
+    old = (datetime.now(UTC) - timedelta(days=11)).isoformat(timespec="seconds")
+    log = outreach.load_log()
+    for row in log:
+        row["proposed_at"] = old
+    outreach.save_log(log)
+    outreach.followups(dry_run=False)
+    assert pipeline == []
+
+
+def test_mark_updates_status_and_sent_at(pipeline):
+    outreach.propose(5, dry_run=False)
+    outreach.mark("advocard.de", "sent")
+    row = {r["domain"]: r for r in outreach.load_log()}["advocard.de"]
+    assert row["status"] == "sent" and row["sent_at"]
+    outreach.mark("advocard.de", "closed")
+    row = {r["domain"]: r for r in outreach.load_log()}["advocard.de"]
+    assert row["status"] == "closed"

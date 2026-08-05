@@ -98,6 +98,10 @@ Për çdo pyetje më përgjigjuni direkt në këtë email — ju përgjigjem vet
 Me respekt,
 Arbër Arifi
 Krijuesi i AvokatIM · https://avokatiim.ai
+
+P.S. Nëse e hapni nga telefoni dhe faqja nuk shfaqet si duhet, hapeni
+direkt në Chrome ose Safari (jo brenda aplikacionit të email-it) — shkruani
+avokatiim.ai në shiritin e adresës.
 """
 
 NOTARY_SUBJECT = "AvokatIM — zyra noteriale digjitale me AI dhe termine online"
@@ -136,6 +140,10 @@ Për çdo pyetje më përgjigjuni direkt në këtë email — ju përgjigjem vet
 Me respekt,
 Arbër Arifi
 Krijuesi i AvokatIM · https://avokatiim.ai
+
+P.S. Nëse e hapni nga telefoni dhe faqja nuk shfaqet si duhet, hapeni
+direkt në Chrome ose Safari (jo brenda aplikacionit të email-it) — shkruani
+avokatiim.ai në shiritin e adresës.
 """
 
 

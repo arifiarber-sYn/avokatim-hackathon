@@ -58,6 +58,8 @@ recipients** (`_is_test_recipient`).
 **Kosovo (XK)** — daily batch of 60 introduction emails to OAK lawyers (then
 ONK notaries) via `avokatim-outreach.timer` → `backend/scripts/oak_outreach_campaign.py`.
 Dedup + suppression of already-registered addresses; log `data/outreach.log`.
+Both letters end with a mobile P.S. (open avokatiim.ai directly in
+Chrome/Safari, not inside the mail app) — the Vuksani lesson (D-063).
 
 **Germany (DE), lawyers — PAUSED** (2026-08-05, D-062): the daily batch of 15
 "Gründungspartner" emails to individual lawyers (`de_outreach_campaign.py`,
@@ -76,10 +78,13 @@ cover letter (German/English per target) + the full offer as PDF and hands the
 draft to Halim via `notify_ops` (`lead-m&a`); **nothing is sent without an
 explicit "PO" from the owner on Telegram** — Halim then sends with
 `ops_send_reply.py --attach <offer.pdf>`. State:
-`data/de_company_outreach_log.csv` (proposed/followup). `--followups` drafts a
-single 10-day nudge (again PO/JO). Replies from target domains are classified
-`company` by the triage ("LEAD M&A"), escalated first, never answered
-autonomously, and recorded in `data/de_company_replies.txt` (stops nudges).
+`data/de_company_outreach_log.csv` — statuses proposed → sent/closed, set by
+Halim after the PO/JO outcome via `--mark <domain> sent|closed` (D-063);
+`--followups` drafts a single 10-day nudge for SENT letters only (again
+PO/JO). Replies from target domains are classified `company` by the triage
+("LEAD M&A"), escalated first, never answered autonomously, and recorded in
+`data/de_company_replies.txt` (stops nudges). First letter sent 2026-08-05:
+Septeo (info@stp.one), owner's PO, offer PDF attached.
 
 **Opt-outs (both campaigns)** — a reply that is essentially "STOP" /
 "abmelden" / "unsubscribe" / "mos më shkruani" is auto-classified by
@@ -105,6 +110,13 @@ the owner/agent and never wired to a timer.
   he only informs the owner ("s'kërkohet veprim").
 - Platform events reach Halim in real time via `services/ops_notify.py`
   (loopback hook). Guardrails live in `~/.openclaw/workspace/AVOKATIM-OPS.md`.
+- **Audit trail (D-063)**: every `ops_send_reply.py` send is automatically
+  ledgered in `data/ops/replies_log.csv`; the morning digest reports
+  `replies_sent_24h` so the owner sees everything sent in his name. An
+  LLM-free watchdog (`avokatim-watchdog.timer`, every 30 min) alarms the
+  owner directly on Telegram when inbound mail sits unprocessed >60 min or
+  the triage cron fails 3× in a row — detection never shares a failure mode
+  with processing.
 
 ## Rules for agents (any LLM working here)
 

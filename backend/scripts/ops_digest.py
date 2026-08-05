@@ -31,6 +31,8 @@ from app.models import (  # noqa: E402
 )
 
 OUTREACH_LOG = PROJECT_DIR / "data" / "outreach.log"
+REPLIES_LOG = PROJECT_DIR / "data" / "ops" / "replies_log.csv"
+WATCHDOG_STATE = PROJECT_DIR / "data" / "ops" / "watchdog_state.json"
 
 
 async def _count(db, stmt) -> int:
@@ -115,6 +117,38 @@ async def gather() -> dict:
         ]
         out["outreach_last"] = (interesting or lines)[-1][-300:] if lines else None
     except FileNotFoundError:
+        pass
+
+    # --- correspondence transparency (Vuksani lesson, D-063): everything the
+    # operator assistant sent in the owner's name in the last 24h, so nothing
+    # ever happens invisibly ---
+    out["replies_sent_24h"] = []
+    try:
+        import csv as _csv
+        with REPLIES_LOG.open(encoding="utf-8") as f:
+            for row in _csv.DictReader(f):
+                try:
+                    when = datetime.fromisoformat(row["sent_at"])
+                except (KeyError, ValueError):
+                    continue
+                if when >= since:
+                    out["replies_sent_24h"].append(
+                        {"to": row["to"], "subject": row["subject"][:80],
+                         "at": row["sent_at"]}
+                    )
+    except FileNotFoundError:
+        pass
+
+    # --- watchdog alarms in the last 24h (mail pipeline health) ---
+    out["watchdog_alarms_24h"] = []
+    try:
+        for key, ts in json.loads(WATCHDOG_STATE.read_text()).items():
+            try:
+                if datetime.fromisoformat(ts) >= since:
+                    out["watchdog_alarms_24h"].append({"kind": key, "at": ts})
+            except ValueError:
+                continue
+    except (FileNotFoundError, json.JSONDecodeError):
         pass
 
     # --- traffic from the local Umami database (read-only) ---

@@ -360,7 +360,7 @@ function BottomItem({
     <Link
       href={href}
       className={`flex flex-col items-center gap-0.5 py-2 min-w-[64px] min-h-[48px] justify-center ${
-        active ? "text-indigo-700" : "text-slate-400"
+        active ? "text-indigo-700" : "text-slate-600"
       }`}
     >
       <Icon className="h-5 w-5" />

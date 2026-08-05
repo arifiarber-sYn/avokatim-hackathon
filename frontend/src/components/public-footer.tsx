@@ -37,7 +37,7 @@ export default function PublicFooter() {
         </div>
 
         <div className={col}>
-          <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+          <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
             {t.ftCitizens}
           </div>
           <Link href="/per-qytetaret" className={link}>{t.umbCitizenT}</Link>
@@ -57,7 +57,7 @@ export default function PublicFooter() {
         </div>
 
         <div className={col}>
-          <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+          <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
             {t.ftLawyersCol}
           </div>
           <Link href="/per-avokatet" className={link}>{t.ftJoin}</Link>
@@ -66,7 +66,7 @@ export default function PublicFooter() {
         </div>
 
         <div className={col}>
-          <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+          <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
             {t.ftLegalCol}
           </div>
           <Link href="/kushtet" className={link}>{t.termsOfService}</Link>
@@ -77,7 +77,7 @@ export default function PublicFooter() {
         </div>
       </div>
       <div className="border-t border-slate-800">
-        <div className="max-w-5xl mx-auto px-4 py-4 text-xs text-slate-500 flex flex-wrap items-center justify-between gap-2">
+        <div className="max-w-5xl mx-auto px-4 py-4 text-xs text-slate-400 flex flex-wrap items-center justify-between gap-2">
           <span>© {new Date().getFullYear()} {isDE ? "Ava Legal" : "AvokatIM"}</span>
           <span className="text-slate-400">
             Krijuar nga <span className="font-semibold text-slate-300">Arbër Arifi</span>

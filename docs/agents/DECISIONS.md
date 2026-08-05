@@ -1626,3 +1626,53 @@
   strategy — a small, researched, high-value pipeline under full owner
   control, while the SaaS machinery (pricing, signup, lawyer campaign
   code) stays ready if Track B is ever resumed.
+
+## D-063: Mail pipeline must fail loudly — LLM-free watchdog + full audit trail
+
+- Date: 2026-08-05
+- Status: accepted
+- Context: a lawyer (K. Vuksani) replied to the XK outreach on Aug 4 13:42;
+  Halim's triage cron hit 8 consecutive "model idle timeout" failures and
+  the reply sat unanswered for 4.7 h. The owner learned about it only by
+  reading Sent by hand. Investigation exposed three systemic defects:
+  (1) when the LLM stalls, nothing alarms anyone — the "notify after 2
+  errors" rule lives inside the very component that is down; (2) triage
+  capped reports at 10 human mails but advanced `last_uid` past ALL of
+  them — backlog overflow was silently lost forever; (3) Halim's
+  autonomous replies left no owner-visible trace.
+- Decision:
+  1. **Watchdog outside the LLM**: `backend/scripts/ops_watchdog.py` +
+     `avokatim-watchdog.timer` (every 30 min, Persistent). Pure
+     Python/IMAP/SQLite; alarms go DIRECTLY to Telegram via Bot API
+     (token from the OpenClaw config), falling back to email. Two checks:
+     unprocessed inbox mail older than 60 min (UID vs
+     `data/ops/inbox_state.json`) and ≥3 consecutive failed triage runs in
+     OpenClaw's `cron_run_logs` (read-only). Alarm dedup: one per condition
+     per 3 h (`data/ops/watchdog_state.json`).
+  2. **last_uid fix**: triage advances state only up to the last REPORTED
+     mail when the cap is hit (`truncated: true` in the report); the rest
+     arrives next run. One malformed header (bogus charset, non-ASCII
+     Message-ID) can no longer kill a whole run.
+  3. **Model timeout**: `timeoutSeconds: 600` on the DeepSeek provider in
+     `openclaw.json` (was unset; V4 Pro with thinking "high" regularly
+     exceeded the default).
+  4. **Correspondence ledger**: every `ops_send_reply.py` send appends to
+     `data/ops/replies_log.csv` (when/to/subject/attachments/body hash);
+     `ops_digest.py` now reports `replies_sent_24h` + `watchdog_alarms_24h`
+     so the morning report shows everything Halim did in the owner's name.
+  5. **Outreach statuses**: `de_company_outreach.py --mark <domain>
+     sent|closed` after the PO/JO outcome; follow-up nudges go ONLY to
+     letters actually sent (a company that never got the letter must never
+     get a "following up" email).
+  6. **Mobile graceful degradation** (same incident, root cause on her
+     side): server-rendered `<noscript>` notice + ES5 probe banner for
+     old browsers/WebViews (7 languages), 16px inputs on mobile (kills
+     iOS auto-zoom), German slug redirects (/anmelden, /fuer-anwaelte …),
+     CSP allows the Cloudflare RUM beacon, footer/bottom-nav contrast
+     fixed, and a mobile P.S. (open in Chrome/Safari) in both XK letters.
+- Consequences: correspondence can no longer disappear silently — the
+  detection path (systemd watchdog) shares no failure mode with the
+  processing path (LLM cron). The owner has a complete audit trail of
+  autonomous sends. Both campaigns (XK lawyers, DE companies) sit behind
+  the same protected inbox; parity is pinned by tests
+  (`test_ops_mail_reliability.py`).

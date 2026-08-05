@@ -1277,6 +1277,10 @@ const sq = {
   ctMsgMore: "Edhe {n} shkronja që mesazhi të dërgohet",
   ctMsgOk: "{n} / 5000",
   ctErrEmail: "Adresa e email-it nuk duket e saktë — kontrolloje ose lëre bosh.",
+  legacyBrowserWarn:
+    "Shfletuesi juaj është i vjetëruar dhe disa pjesë të faqes mund të mos punojnë. Hapeni faqen në Chrome ose Safari të përditësuar.",
+  noscriptWarn:
+    "JavaScript është i çaktivizuar në shfletuesin tuaj — regjistrimi dhe asistentja nuk punojnë pa të. Hapeni faqen në Chrome ose Safari.",
   ctErrRate: "Ke dërguar disa mesazhe brenda një ore. Provo përsëri më vonë.",
   ctErrInvalid: "Mesazhi duhet të ketë së paku 10 shkronja dhe email-i (nëse e shkruan) format të saktë.",
   pfTitle: "Ankesat & sugjerimet",
@@ -2689,6 +2693,10 @@ const en: typeof sq = {
   ctMsgMore: "{n} more characters for the message to send",
   ctMsgOk: "{n} / 5000",
   ctErrEmail: "The email address doesn't look right — check it or leave it empty.",
+  legacyBrowserWarn:
+    "Your browser is outdated and parts of this site may not work. Please open the site in an up-to-date Chrome or Safari.",
+  noscriptWarn:
+    "JavaScript is disabled in your browser — registration and the assistant will not work without it. Please open the site in Chrome or Safari.",
   ctErrRate: "You've sent several messages within an hour. Please try again later.",
   ctErrInvalid: "The message needs at least 10 characters and the email (if provided) must be valid.",
   pfTitle: "Complaints & suggestions",
@@ -4091,6 +4099,10 @@ const zh: typeof sq = {
   ctMsgMore: "还需 {n} 个字符才能发送",
   ctMsgOk: "{n} / 5000",
   ctErrEmail: "邮箱地址似乎不正确——请检查或留空。",
+  legacyBrowserWarn:
+    "您的浏览器版本过旧，网站的部分功能可能无法使用。请使用最新版 Chrome 或 Safari 打开本网站。",
+  noscriptWarn:
+    "您的浏览器已禁用 JavaScript——没有它，注册和智能助手将无法使用。请使用 Chrome 或 Safari 打开本网站。",
   ctErrRate: "您在一小时内发送了多条消息，请稍后再试。",
   ctErrInvalid: "消息至少需要10个字符，邮箱（如填写）格式必须正确。",
   pfTitle: "投诉与建议",
@@ -5499,6 +5511,10 @@ const sr: typeof sq = {
   ctMsgMore: "Još {n} znakova da bi poruka bila poslata",
   ctMsgOk: "{n} / 5000",
   ctErrEmail: "Email adresa ne izgleda ispravno — proverite je ili ostavite prazno.",
+  legacyBrowserWarn:
+    "Vaš pregledač je zastareo i delovi sajta možda neće raditi. Otvorite sajt u ažuriranom Chrome-u ili Safari-ju.",
+  noscriptWarn:
+    "JavaScript je isključen u vašem pregledaču — registracija i asistent ne rade bez njega. Otvorite sajt u Chrome-u ili Safari-ju.",
   ctErrRate: "Poslali ste više poruka u toku jednog sata. Pokušajte ponovo kasnije.",
   ctErrInvalid: "Poruka mora imati najmanje 10 znakova, a email (ako ga unesete) ispravan format.",
   pfTitle: "Žalbe i predlozi",
@@ -6913,6 +6929,10 @@ const tr: typeof sq = {
   ctMsgMore: "Mesajın gönderilmesi için {n} karakter daha gerekli",
   ctMsgOk: "{n} / 5000",
   ctErrEmail: "E-posta adresi doğru görünmüyor — kontrol edin veya boş bırakın.",
+  legacyBrowserWarn:
+    "Tarayıcınız güncel değil ve sitenin bazı bölümleri çalışmayabilir. Lütfen siteyi güncel Chrome veya Safari ile açın.",
+  noscriptWarn:
+    "Tarayıcınızda JavaScript devre dışı — kayıt ve asistan onsuz çalışmaz. Lütfen siteyi Chrome veya Safari ile açın.",
   ctErrRate: "Bir saat içinde birden fazla mesaj gönderdiniz. Lütfen daha sonra tekrar deneyin.",
   ctErrInvalid: "Mesaj en az 10 karakter olmalı ve e-posta (girildiyse) geçerli formatta olmalıdır.",
   pfTitle: "Şikayetler ve öneriler",
@@ -8321,6 +8341,10 @@ const bs: typeof sq = {
   ctMsgMore: "Još {n} znakova da bi poruka bila poslana",
   ctMsgOk: "{n} / 5000",
   ctErrEmail: "E-mail adresa ne izgleda ispravno — provjerite je ili ostavite prazno.",
+  legacyBrowserWarn:
+    "Vaš preglednik je zastario i dijelovi stranice možda neće raditi. Otvorite stranicu u ažuriranom Chromeu ili Safariju.",
+  noscriptWarn:
+    "JavaScript je isključen u vašem pregledniku — registracija i asistentica ne rade bez njega. Otvorite stranicu u Chromeu ili Safariju.",
   ctErrRate: "Poslali ste više poruka u toku jednog sata. Pokušajte ponovo kasnije.",
   ctErrInvalid: "Poruka mora imati najmanje 10 znakova, a e-mail (ako ga unesete) ispravan format.",
   pfTitle: "Žalbe i prijedlozi",
@@ -9736,6 +9760,10 @@ const de: typeof sq = {
   ctMsgMore: "Noch {n} Zeichen, damit die Nachricht gesendet werden kann",
   ctMsgOk: "{n} / 5000",
   ctErrEmail: "Die E-Mail-Adresse sieht nicht korrekt aus — prüfen Sie sie oder lassen Sie das Feld leer.",
+  legacyBrowserWarn:
+    "Ihr Browser ist veraltet — Teile dieser Seite funktionieren möglicherweise nicht. Bitte öffnen Sie die Seite in einem aktuellen Chrome oder Safari.",
+  noscriptWarn:
+    "JavaScript ist in Ihrem Browser deaktiviert — Registrierung und Assistentin funktionieren ohne es nicht. Bitte öffnen Sie die Seite in Chrome oder Safari.",
   ctErrRate: "Sie haben innerhalb einer Stunde mehrere Nachrichten gesendet. Bitte versuchen Sie es später erneut.",
   ctErrInvalid: "Die Nachricht braucht mindestens 10 Zeichen und die E-Mail (falls angegeben) muss gültig sein.",
   pfTitle: "Beschwerden & Vorschläge",

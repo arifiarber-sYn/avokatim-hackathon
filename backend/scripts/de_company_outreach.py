@@ -18,6 +18,13 @@ Usage:
     python scripts/de_company_outreach.py --propose 3            # next 3 (PO/JO)
     python scripts/de_company_outreach.py --propose 3 --dry-run  # print only
     python scripts/de_company_outreach.py --followups            # 10-day nudges
+    python scripts/de_company_outreach.py --mark stp.one sent    # after PO+send
+    python scripts/de_company_outreach.py --mark arag.de closed  # after JO
+
+Statuses: proposed (draft handed to the owner) -> sent (owner said PO and the
+letter went out; Halim marks this) / closed (owner said JO, or conversation
+over). Follow-up nudges go ONLY to "sent" rows — a company that never
+received the letter must never get a "following up" email.
 """
 import argparse
 import asyncio
@@ -74,10 +81,10 @@ def save_log(rows: list[dict]) -> None:
     with LOG.open("w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=[
             "company", "domain", "contact_email", "wave", "status",
-            "proposed_at", "followup_at", "offer_option", "pdf_path",
+            "proposed_at", "sent_at", "followup_at", "offer_option", "pdf_path",
         ])
         w.writeheader()
-        w.writerows(rows)
+        w.writerows({**{"sent_at": ""}, **r} for r in rows)
 
 
 def replied_domains() -> set[str]:
@@ -239,8 +246,9 @@ def propose(n: int, dry_run: bool) -> None:
         log.append({
             "company": c["company"], "domain": c["domain"],
             "contact_email": c["contact_email"], "wave": c["wave"],
-            "status": "proposed", "proposed_at": now, "followup_at": "",
-            "offer_option": c["offer_option"], "pdf_path": str(pdf),
+            "status": "proposed", "proposed_at": now, "sent_at": "",
+            "followup_at": "", "offer_option": c["offer_option"],
+            "pdf_path": str(pdf),
         })
         print(f"proposed: {c['company']} ({c['domain']}) → Halim")
 
@@ -258,12 +266,14 @@ def followups(dry_run: bool) -> None:
     now = datetime.now(UTC)
     changed = False
     for row in log:
-        if row["status"] != "proposed":
+        # Only letters that actually went out (owner said PO) get a nudge —
+        # "proposed" rows were never sent, so there is nothing to follow up.
+        if row["status"] != "sent":
             continue
         if row["domain"].lower() in replied:
             continue
         try:
-            proposed = datetime.fromisoformat(row["proposed_at"])
+            proposed = datetime.fromisoformat(row.get("sent_at") or row["proposed_at"])
         except ValueError:
             continue
         if (now - proposed).days < FOLLOWUP_AFTER_DAYS:
@@ -289,6 +299,27 @@ def followups(dry_run: bool) -> None:
         print("no companies are due for a follow-up")
 
 
+def mark(domain: str, status: str) -> None:
+    """Record the PO/JO outcome: 'sent' after the owner approved and the
+    letter went out, 'closed' after a JO or a finished conversation."""
+    if status not in ("sent", "closed", "replied"):
+        print(f"unknown status '{status}' (use: sent / closed / replied)")
+        return
+    log = load_log()
+    hit = False
+    for row in log:
+        if row["domain"].lower() == domain.lower():
+            row["status"] = status
+            if status == "sent" and not row.get("sent_at"):
+                row["sent_at"] = datetime.now(UTC).isoformat(timespec="seconds")
+            hit = True
+    if not hit:
+        print(f"domain '{domain}' not found in the outreach log")
+        return
+    save_log(log)
+    print(f"marked {domain} -> {status}")
+
+
 def show_list() -> None:
     log = {r["domain"].lower(): r for r in load_log()}
     replied = replied_domains()
@@ -306,12 +337,15 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--propose", type=int, metavar="N")
     ap.add_argument("--followups", action="store_true")
+    ap.add_argument("--mark", nargs=2, metavar=("DOMAIN", "STATUS"))
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
     if args.list:
         show_list()
+    elif args.mark:
+        mark(args.mark[0], args.mark[1])
     elif args.followups:
         followups(args.dry_run)
     elif args.propose:

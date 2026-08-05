@@ -3,6 +3,39 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-05 — D-063: mail that can never vanish + mobile hardening
+
+- Vuksani incident closed: follow-up draft (assisted registration) to the
+  owner with PO/JO; all 3 M&A proposals verified as delivered — Septeo was
+  SENT on the owner's PO (info@stp.one, first M&A letter out); ADVOCARD +
+  ROLAND still await PO/JO.
+- `scripts/ops_watchdog.py` + `avokatim-watchdog.timer` (NEW): LLM-free
+  30-min check — stale inbound mail (>60 min unprocessed, read-only IMAP)
+  and triage cron error streaks (OpenClaw sqlite) alarm the owner directly
+  via Telegram Bot API with email fallback; 3h dedup; log `data/watchdog.log`.
+- `scripts/ops_inbox_triage.py`: last_uid now stops at the last REPORTED
+  mail when the 10-human cap is hit (`truncated` flag) — no more silent
+  backlog loss; malformed headers (bogus charset / non-ASCII Message-ID)
+  no longer crash the run.
+- `openclaw.json`: DeepSeek provider `timeoutSeconds: 600` (was unset —
+  root cause of the 4.7 h stall); gateway restarted.
+- `scripts/ops_send_reply.py`: every send ledgered in
+  `data/ops/replies_log.csv`; `scripts/ops_digest.py` reports
+  `replies_sent_24h` + `watchdog_alarms_24h`.
+- `scripts/de_company_outreach.py`: `--mark <domain> sent|closed` after the
+  PO/JO outcome; follow-ups nudge only `sent` rows.
+- Mobile (audit on both hosts, 390×844 + Lighthouse): legacy-browser ES5
+  probe banner + `<noscript>` notice in 7 languages
+  (`components/legacy-banner.tsx`, mounted in `app/layout.tsx`); 16px form
+  inputs on <768px (kills iOS auto-zoom); German slug redirects in
+  `next.config.ts` (/anmelden, /fuer-anwaelte, /fall-posten, /mein-fall…);
+  CSP allows the Cloudflare RUM beacon (console error on every page);
+  footer/bottom-nav contrast to WCAG AA; Ava FAB aria-label fixed; mobile
+  P.S. added to both XK outreach letters.
+- Tests: `tests/test_ops_mail_reliability.py` (11 new — XK/DE parity,
+  capped-backlog no-loss, ledger, watchdog); AVOKATIM-OPS.md updated
+  (--mark duty, correspondence transparency, watchdog protocol).
+
 ## 2026-08-05 — D-062: Germany retargeted to companies (Track A, PO/JO)
 
 - `avokatim-outreach-de.timer` disabled (lawyer campaign paused before its
