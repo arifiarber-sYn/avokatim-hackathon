@@ -62,16 +62,17 @@ Revenue model (D-016): citizens never pay; lawyers pay a flat per-seat monthly
 subscription after a 365-day trial (first year free — extended from 90 days
 on 2026-07-28). Never a percentage of lawyer fees.
 
-- **Jurisdictions**: Kosovo (XK) is active. GB, CN, INTL are prepared as data.
+- **Jurisdictions**: Kosovo (XK) and Germany (DE) are **active** (DE since
+  D-034/D-037: host `de.avokatiim.ai`, trades as **"Ava Legal"** per D-056 —
+  brand is data, never hardcode it). GB, CN, INTL are prepared as data.
   Jurisdiction rules (deadlines, holidays, templates, legal corpus) are **data,
   not code** — never hardcode jurisdiction-specific logic.
 - **Tenancy**: multi-tenant from the foundation (solo lawyer now, firms later).
 - **Languages**: UI in Albanian (sq), Serbian (sr), Turkish (tr), Bosnian (bs),
- English (en), Chinese (zh) — Kosovo's official languages (Law 02/L-37) plus
- extras. Every new UI string must be added to **all six** in
- `frontend/src/lib/dictionaries.ts`. Server-generated client communications
- (emails, SMS, invoice PDF) are localized via `backend/app/i18n.py` using
- `Contact.locale` → tenant default → sq.
+ English (en), Chinese (zh), German (de). Every new UI string must be added to
+ **all seven** in `frontend/src/lib/dictionaries.ts`. Server-generated client
+ communications (emails, SMS, invoice PDF) are localized via
+ `backend/app/i18n.py` using `Contact.locale` → tenant default → sq.
 - **Privacy**: client documents are encrypted at rest and indexed with **local**
   embeddings — document text must never leave this machine for indexing.
 - **Compliance is a feature**: data protection per Kosovo Law 06/L-082
@@ -79,6 +80,33 @@ on 2026-07-28). Never a percentage of lawyer fees.
   external-AI kill switch) and AML per Law 05/L-096 (KYC on contacts, source
   of funds, checklist + suspicion reports). Compliance rules live as data and
   explicit records, never hidden logic (see DECISIONS D-011).
+
+## 1b. German market capture (DE) — active campaign
+
+Germany is not just a second jurisdiction; it is an **active market-capture
+campaign** running on two parallel tracks. Any agent touching DE pricing,
+marketing or pitch material MUST read
+`docs/pitch/strategjia-tregu-gjerman.txt` (full strategy, Albanian) first.
+
+- **Product**: full German parity is live — RVG billing, ZPO/ArbGG/VwGO
+  deadlines, ZUGFeRD/XRechnung + DATEV export, Mahnwesen with EDA export
+  (Beta), German corpus (federal law + 16k+ decisions, nightly imports),
+  migration wizard with RA-MICRO/Advoware presets, Outlook add-in,
+  telephony-KI. Pricing: 39 €/user/month after 3 months free (D-057).
+- **Track A — sell/license the platform** to German legal-tech companies:
+  the complete fixed-price offer (4 options: OEM / white-label DACH /
+  DACH acquisition / global acquisition) lives in
+  `docs/pitch/ava-legal-platform-offer.txt` (EN) and `...-offer-de.txt` (DE).
+  Prices in those documents are FINAL floor prices (decision 2026-08-05):
+  never lower them further; if traction grows, they go UP on renewal.
+  `docs/pitch/qmimet-dyshemete-interne.txt` is internal-only — never share.
+- **Track B — direct pilot acquisition** of German lawyers/firms:
+  "Gründungspartner" program (first 5 firms: 12 months free + free
+  migration + price locked at 39 €), starting with the Albanian-German
+  legal diaspora. Cold B2B email in Germany is restricted (UWG §7) —
+  prefer referrals, LinkedIn/XING, physical letters, events.
+- **Kosovo is never for sale** in any Track A option except the global one
+  (and there only with a perpetual royalty-free license-back).
 
 ## 2. Session protocol (MANDATORY)
 
@@ -195,7 +223,7 @@ before touching anything that emails users. The short version:
 - **Lane B (Halim)**: the OpenClaw operator assistant handles inbound human
   email — drafts a final reply, asks the owner only **PO/JO** on Telegram,
   sends on "PO". The owner never composes routine mail.
-- If you add or change an outbound email: all 6 languages in
+- If you add or change an outbound email: all 7 languages in
   `backend/app/i18n.py`, test-recipient suppression, a row in COMMS.md, and a
   `notify_ops` event when operationally relevant — in the same commit.
 
@@ -206,7 +234,7 @@ before touching anything that emails users. The short version:
 2. **Never delete or rewrite `data/`** — it contains encrypted client documents.
 3. **Migrations are append-only.** Never edit an applied Alembic revision; create a new one.
 4. **Jurisdiction logic is data.** New rules go in `backend/app/seeds/`, not in service code.
-5. **Every UI string in 6 languages** (sq/sr/tr/bs/en/zh) in `dictionaries.ts`. Default locale is sq. Backend client-facing strings go in `backend/app/i18n.py`, also in all 6.
+5. **Every UI string in 7 languages** (sq/sr/tr/bs/en/zh/de) in `dictionaries.ts`. Default locale is sq (de on the DE host). Backend client-facing strings go in `backend/app/i18n.py`, also in all 7.
 6. **LLM calls only through the abstraction** in `backend/app/llm/` — never call a
    provider API directly from services. This keeps the app LLM-agnostic.
 7. **Local embeddings only** for document/corpus indexing (sentence-transformers).

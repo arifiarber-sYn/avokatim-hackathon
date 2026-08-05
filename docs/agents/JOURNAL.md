@@ -10,6 +10,32 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-05 — Strategjia e plotë e tregut gjerman + përditësimi i AGENTS.md (Cursor / Fable 5)
+
+- Done: (1) `docs/pitch/strategjia-tregu-gjerman.txt` — strategjia e plotë
+  dy-kanalëshe: Kanali A = oferta e platformës te 5 kompani legal-tech
+  të renditura me arsyetim (Septeo/stp.one, Wolters Kluwer DE, Haufe/
+  Advolux, RA-MICRO, dokSAFE/Actaport; rezervë DATEV, C.H.Beck,
+  Otto Schmidt; JUPUS me kujdes si konkurrent); Kanali B = pilotët me
+  avokatë gjermanë (programi "Gründungspartner": 5 zyrat e para 12 muaj
+  falas + migrim falas + çmim i ngrirë 39 €), duke nisur nga diaspora
+  juridike shqiptaro-gjermane; template gjermanisht për të dy kanalet;
+  sekuenca javore, pika kontrolli 30/90 ditë, KPI, veprimet e pronarit
+  (email biznesi, NDA/LOI, lista e kontakteve, sipgate). Kujdes ligjor:
+  UWG §7 kufizon cold-email B2B — rekomandime/LinkedIn/letra fizike.
+  (2) `AGENTS.md` u përditësua: DE tani shënohet aktive (ishte e
+  vjetruar — s'e përmendte fare), 6→7 gjuhë (de) në §1/§4b/§5, dhe
+  seksioni i ri "1b. German market capture (DE)" me të dy kanalet,
+  rregullin "çmimet e ofertës janë dysheme finale — kurrë më poshtë"
+  dhe "Kosova s'shitet kurrë përveç opsionit global me licencë
+  mbrapsht".
+- Verified: `backend/app/i18n.py` dhe `dictionaries.ts` konfirmuar me
+  7 gjuhë; peizazhi i kompanive i verifikuar me kërkim web (Advoware
+  tani nën Septeo; RA-MICRO ~70k vende pune, "Jura-KI").
+- Left open: veprimet e pronarit nga strategjia (PDF-imi i ofertave,
+  email biznesi, NDA template, lista personale e diasporës, sipgate);
+  video-demo 3-minutëshe gjermanisht për Kanalin B.
+
 ## 2026-08-05 — Strategjia e shitjes: menyja e ofertave + dyshemetë interne (Cursor / Fable 5)
 
 - Done: pas analizës së vlerësimit (cost-to-replicate ~76k LoC / 287
