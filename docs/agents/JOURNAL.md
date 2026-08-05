@@ -10,6 +10,31 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-05 — Harmonizimi i plotë i Halimit: mailbox + makina (D-064) (Cursor / Fable 5)
+
+- Done: Halimi merr menaxhim të plotë të arifi.arber@gmail.com dhe një rol të
+  qartë mbi gjithë makinën. (F1) `scripts/ops_mailbox.py` — unread-count,
+  search, read (PEEK), mark-read, archive (Gmail `-X-GM-LABELS \Inbox`),
+  label; mur zjarri që refuzon të prekë flag-un e çdo mesazhi drejtuar një
+  alias-i lënde `+token@` (që `email_ingest.py` t'i marrë i pari). (F2)
+  `GMAIL-OPS.md` i ri: harta e korsive + korsia PERSONALE gjithmonë me PO/JO
+  (firma "Arbër", kurrë autonom); `AVOKATIM-OPS.md`/`USER.md`/`MAKINA.md`
+  deklarojnë se mailbox-i është personal+operacional dhe Halimi është
+  menaxheri. (F3) eksport i plotë (zgjedhja e pronarit): 41 fjalëkalime
+  Firefox → `secrets/firefox-logins.csv` (libnss3, punon me Firefox hapur),
+  chmod 600; `secrets/README.md` = inventari qendror i kredencialeve +
+  rregulli "vetëm në këtë makinë, kurrë jashtë". (F4) `MAKINA.md`: tabela e
+  autonomisë sipas projektit (AvokatIM/OpsHub operim i plotë, TotoTrading
+  vetëm vëzhgim/para reale, të tjerat monitorim+riparim, BoraLaw mos prek) +
+  blloku ditor "shëndeti i makinës" në raportin e mëngjesit.
+- Verified: 5 teste (`test_ops_mailbox.py`: muri i alias-eve për mark-read/
+  archive/label, read read-only) kalojnë; `ops_mailbox.py unread-count` live
+  (106 të palexuar) + search read-only OK; eksporti nxori 41 rreshta pa
+  gabim. Zbulim: Halimi e lexonte gjithmonë inbox-in (të njëjtat kredenciale
+  IMAP si triage) — mungonte ana e shkrimit + vetëdija, jo aksesi.
+- Left open / next: Halimi të kalojë gradualisht 106 të palexuarit; posta e
+  bankës/TikTok trajtohet me PO/JO kur të vijë.
+
 ## 2026-08-05 — Posta që s'ikën kurrë + auditimi mobile (D-063) (Cursor / Fable 5)
 
 - Done: rasti Vuksani (përgjigje me 4.7 h vonesë, pa dijeninë e pronarit)

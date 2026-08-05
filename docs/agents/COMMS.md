@@ -117,6 +117,13 @@ the owner/agent and never wired to a timer.
   owner directly on Telegram when inbound mail sits unprocessed >60 min or
   the triage cron fails 3× in a row — detection never shares a failure mode
   with processing.
+- **Personal lane (D-064)**: `arifi.arber@gmail.com` is the owner's single
+  personal + operational account, not an AvokatIM-only address. Non-AvokatIM
+  mail (bank, TikTok, private) is NEVER answered autonomously — Halim drafts,
+  signs "Arbër" (not AvokatIM/Ava Legal), and asks PO/JO on Telegram. Halim
+  now also manages the box (`scripts/ops_mailbox.py`: mark-read/archive/
+  label) with a firewall protecting matter `+token@` aliases. Full protocol:
+  `~/.openclaw/workspace/GMAIL-OPS.md`.
 
 ## Rules for agents (any LLM working here)
 

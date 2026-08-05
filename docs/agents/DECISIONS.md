@@ -1676,3 +1676,43 @@
   autonomous sends. Both campaigns (XK lawyers, DE companies) sit behind
   the same protected inbox; parity is pinned by tests
   (`test_ops_mail_reliability.py`).
+
+## D-064: Halim manages the full mailbox + machine; personal lane is PO/JO
+
+- Date: 2026-08-05
+- Status: accepted
+- Context: the owner asked Halim to fully manage arifi.arber@gmail.com and, more
+  broadly, to be able to do everything the owner does on this machine with
+  all his credentials. Investigation showed Halim ALREADY read that inbox
+  (triage uses those IMAP creds) — the gaps were: no write side (mark-read/
+  archive/label), no awareness the mailbox is the owner's single personal +
+  operational account, no protocol for personal mail, no credential
+  inventory, and no per-project task roster.
+- Decision:
+  1. **Mailbox write side**: `backend/scripts/ops_mailbox.py` (IMAP, same
+     creds, no Gmail API/OAuth) — `unread-count`, `search`, `read` (PEEK),
+     `mark-read`, `archive` (Gmail `-X-GM-LABELS \Inbox`), `label`. A
+     firewall refuses to change flags on any message addressed to a matter
+     `+token@` alias, so email_ingest.py (UNSEEN poller) always files client
+     mail first. Pinned by `backend/tests/test_ops_mailbox.py`.
+  2. **Personal lane = PO/JO**: personal mail (bank, TikTok, private) is
+     never answered autonomously — draft signed "Arbër" + a single PO/JO on
+     Telegram. Only AvokatIM mail stays autonomous. Protocol in the new
+     `~/.openclaw/workspace/GMAIL-OPS.md`; `AVOKATIM-OPS.md` and `USER.md`
+     updated to reflect the shared account.
+  3. **Credentials, full export** (owner's choice): 41 Firefox logins
+     exported via libnss3 (`secrets/firefox_export.py`, works with Firefox
+     open by copying key4/cert9/logins) into
+     `~/.openclaw/workspace/secrets/firefox-logins.csv` (chmod 600);
+     `secrets/README.md` is now the central inventory (which credential lives
+     where) with a use-only-on-this-machine, never-share rule.
+  4. **Machine roster + daily health**: `~/openclaw-knowledge/MAKINA.md`
+     gets a per-project autonomy table (AvokatIM/OpsHub = full operation,
+     TotoTrading = observe-only/real money, others = monitor+repair,
+     BoraLaw = don't touch) and a morning "machine health" block
+     (`systemctl --user --failed`, `df -h`, `docker ps`, timers).
+- Consequences: Halim is now the real manager of the owner's mailbox and a
+  daily pair of eyes over the whole machine, while the two irreversible
+  risks stay guarded — client mail (alias firewall) and personal
+  correspondence (PO/JO). No new secrets service, no cloud dependency; the
+  D-063 watchdog still covers pipeline failure.

@@ -3,6 +3,24 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-05 — D-064: Halim fully manages the mailbox + the machine
+
+- `scripts/ops_mailbox.py` (NEW): write side for the operator mailbox —
+  unread-count, search, read (PEEK), mark-read, archive (Gmail label op),
+  label. Firewall refuses to change flags on matter `+token@` aliases so
+  email_ingest.py files client mail first. Tests: `tests/test_ops_mailbox.py`.
+- Personal-mail lane: non-AvokatIM mail is PO/JO only (never autonomous),
+  signed "Arbër". New `~/.openclaw/workspace/GMAIL-OPS.md`; AVOKATIM-OPS.md,
+  USER.md, MAKINA.md updated to reflect the shared personal+ops account.
+- Credentials: 41 Firefox logins exported via libnss3
+  (`~/.openclaw/workspace/secrets/firefox_export.py`) to `firefox-logins.csv`
+  (chmod 600); `secrets/README.md` is now the credential inventory.
+- `~/openclaw-knowledge/MAKINA.md`: per-project autonomy roster + daily
+  machine-health block (failed units, disk, docker, timers).
+- Note: workspace docs (GMAIL-OPS.md, MAKINA.md, secrets/*) live outside the
+  AvokatIM git repo; only the script + tests + docs/agents entries are
+  committed here.
+
 ## 2026-08-05 — D-063: mail that can never vanish + mobile hardening
 
 - Vuksani incident closed: follow-up draft (assisted registration) to the

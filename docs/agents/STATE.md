@@ -358,6 +358,19 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   is ledgered in `data/ops/replies_log.csv`; `ops_digest.py` reports
   `replies_sent_24h` + `watchdog_alarms_24h`. Tests:
   `backend/tests/test_ops_mail_reliability.py`.
+- **Halim manages the full mailbox** (2026-08-05, D-064):
+  `arifi.arber@gmail.com` is the owner's single personal + operational
+  account. `backend/scripts/ops_mailbox.py` adds the write side to triage's
+  read side — `unread-count`, `search`, `read` (PEEK), `mark-read`,
+  `archive`, `label` — with a firewall that refuses to touch any message on
+  a matter `+token@` alias (so `email_ingest.py` files client mail first;
+  pinned by `tests/test_ops_mailbox.py`). Personal mail (bank, TikTok,
+  private) is PO/JO only, signed "Arbër"; AvokatIM mail stays autonomous.
+  Protocol: `~/.openclaw/workspace/GMAIL-OPS.md`. Credentials: 41 Firefox
+  logins exported to `~/.openclaw/workspace/secrets/firefox-logins.csv`
+  (libnss3, chmod 600), inventory in `secrets/README.md`. Machine roster +
+  daily health block in `~/openclaw-knowledge/MAKINA.md` (AvokatIM/OpsHub
+  full operation, TotoTrading observe-only, BoraLaw off-limits).
 - **Mobile graceful degradation** (2026-08-05, D-063): `<noscript>` notice +
   ES5-probe "old browser" banner (server-rendered, 7 languages,
   `components/legacy-banner.tsx`); form inputs forced to 16px on <768px
