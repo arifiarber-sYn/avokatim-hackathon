@@ -1,7 +1,12 @@
 FLETA INTERNE E ÇMIMEVE — VETËM PËR NE, KURRË PËR BLERËSIT
-Strategjia agresive: paradhënie e ulët, vlerë e mbrojtur me komponentë
-rrjedhës të garantuar. Numrat jepen me gojë gjatë bisedës, kurrë në
-letrën e parë.
+
+VENDIM (2026-08-05): Pronari zgjodhi strategjinë "çmimi më i ulët që
+në herën e parë, pa negociata". Oferta publike
+(ava-legal-platform-offer.txt) tani i përmban ÇMIMET E DYSHEMESË nga
+kjo fletë. Rrjedhimisht: NUK ka më hapësirë zbritjeje — nëse një
+blerës kërkon ulje, përgjigja është "çmimet janë finale, prandaj
+janë kaq të ulëta". Nivelet "lista" dhe "agresive" më poshtë mbeten
+vetëm si referencë historike e vlerës reale.
 
 PARIMI I DYSHEMESË
 Alternativa jonë (mbajtja) kushton pothuajse zero dhe ruan opsionin

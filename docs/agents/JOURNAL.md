@@ -13,13 +13,18 @@
 ## 2026-08-05 — Strategjia e shitjes: menyja e ofertave + dyshemetë interne (Cursor / Fable 5)
 
 - Done: pas analizës së vlerësimit (cost-to-replicate ~76k LoC / 287
-  endpoints / 314 teste), u finalizua strategjia agresive e shitjes për
-  tregun gjerman me 4 modele të ofruara njëkohësisht (OEM, white-label
-  DACH, shitje e plotë DACH me carve-out të Kosovës, shitje globale).
-  Dy dokumente të reja: `docs/pitch/acquisition-offer-menu.txt`
-  (buyer-facing, anglisht, PA çmime) dhe
-  `docs/pitch/qmimet-dyshemete-interne.txt` (fleta interne me çmimet
-  lista/agresive/dysheme + rregullat e negociatës).
+  endpoints / 314 teste), u finalizua strategjia e shitjes për tregun
+  gjerman me 4 modele të ofruara njëkohësisht (OEM, white-label DACH,
+  shitje e plotë DACH me carve-out të Kosovës, shitje globale).
+  Vendimi i pronarit: çmimet MË TË ULËTA (dyshemetë) që në herën e
+  parë, pa fazë negociate. Dokumenti kryesor:
+  `docs/pitch/ava-legal-platform-offer.txt` — ofertë e plotë në
+  anglisht me inventar të detajuar të platformës dhe çmime konkrete
+  (OEM €30k + €3/user/muaj; white-label DACH €75k + 20% + retainer
+  €10k/muaj; shitja DACH €500k + dev €120k/vit×3 OSE €700k e pastër;
+  globale €1M). Fleta interne
+  `docs/pitch/qmimet-dyshemete-interne.txt` u shënua: s'ka më
+  hapësirë zbritjeje, çmimet publike janë dyshemetë.
 - Verified: n/a (dokumente strategjie, jo kod).
 - Left open: identifikimi i 4-6 blerësve konkretë dhe kontakti i parë
   — veprim i pronarit; traction-i DE vazhdon paralelisht.
