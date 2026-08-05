@@ -22,6 +22,10 @@
   `halim-heartbeat` (every 30m). `scripts/ops_watchdog.py` now alarms when the
   heartbeat is stale (>70m) — external failsafe for a dead scheduler. Morning
   report cron recreated with a projects-health block.
+- Reboot hardening: the heartbeat staleness check is suppressed while system
+  uptime is under the staleness window, so Fedora update reboots never fire a
+  false "scheduler dead" alarm (all boot-enabled services + linger already
+  bring the stack back automatically).
 - Why: owner wanted Halim empowered with all credentials and able to run more
   tasks across every project 24/7; scope bounded by owner decisions (coding
   autonomy = safe projects only; paid comms = free-only for now).

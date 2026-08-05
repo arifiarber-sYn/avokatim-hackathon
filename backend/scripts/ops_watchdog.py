@@ -191,12 +191,27 @@ def _should_alarm(key: str, state: dict) -> bool:
         return True
 
 
+def _uptime_min() -> float:
+    """System uptime in minutes (0 if unreadable)."""
+    try:
+        return float(Path("/proc/uptime").read_text().split()[0]) / 60
+    except Exception:
+        return 0.0
+
+
 def check_heartbeat() -> str | None:
     """OpenClaw's own cron writes HEARTBEAT every 30 min (D-065). If it goes
     stale, the scheduler itself is down — nothing inside OpenClaw could tell us,
     so this external timer must. Absent file on a fresh install is not an alarm.
+
+    After a reboot (e.g. Fedora updates) the heartbeat file is briefly stale
+    until the gateway comes back and the 30-min cron ticks again; suppress the
+    alarm while the machine's uptime is still under the staleness window so a
+    normal reboot never triggers a false 'scheduler dead' alarm.
     """
     if not HEARTBEAT.exists():
+        return None
+    if _uptime_min() < HEARTBEAT_STALE_MIN:
         return None
     age_min = (datetime.now(UTC).timestamp() - HEARTBEAT.stat().st_mtime) / 60
     if age_min > HEARTBEAT_STALE_MIN:
