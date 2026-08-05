@@ -317,17 +317,30 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   users/citizens auto-suppressed from the DB. Phase 1 lawyers
   (`data/oak_registry.csv`), then automatically phase 2 notaries
   (`data/notaries.json`) with a notary letter. Output → `data/outreach.log`.
-- **Automated German outreach** (2026-08-05, D-061): second campaign for
-  Ava Legal, mirror of the XK one. `backend/scripts/scrape_de_lawyers.py`
-  harvests lawyer contacts from anwaltauskunft.de (JSON endpoint
-  `/wp-json/search/v1/query`) into `data/de_lawyers.csv`, diaspora names
-  ranked first. `avokatim-outreach-de.timer` (daily 09:45, `Persistent=true`)
-  runs `de_outreach_campaign.py`: 15 German "Gründungspartner" letters/day,
-  signed "Arbër Arifi · Ava Legal", links only to `de.avokatiim.ai`; same
-  guards + dedup (`data/de_outreach_log.csv`) + suppression. Output →
-  `data/outreach_de.log`. Opt-outs are auto-handled: `ops_inbox_triage.py`
-  classifies a STOP-only reply as `optout` → `data/de_suppress.txt`, read by
-  BOTH campaigns. Accepted residual UWG §7 risk (low volume + instant STOP).
+- **German lawyer outreach — PAUSED** (built 2026-08-05 as D-061, paused the
+  same day by D-062): `scrape_de_lawyers.py` (harvest from anwaltauskunft.de
+  → `data/de_lawyers.csv`) and `de_outreach_campaign.py` (15 German
+  "Gründungspartner" letters/day) are ready, but `avokatim-outreach-de.timer`
+  is **disabled** — in Germany we target companies, not 39 €/month
+  subscribers. Re-enable only on owner decision:
+  `systemctl --user enable --now avokatim-outreach-de.timer`. Opt-outs stay
+  auto-handled (`optout` class → `data/de_suppress.txt`, read by BOTH
+  campaigns).
+- **German company outreach — Track A, the primary DE channel** (2026-08-05,
+  D-062): ~12 researched buyer candidates (insurers ADVOCARD/ROLAND/ARAG,
+  no-AI vendors Haufe-Advolux/Actaport, consolidators Septeo/WK, publishers,
+  RA-MICRO, JUPUS on hold) scored into 3 waves in `data/de_companies.csv`;
+  dossier `docs/pitch/hulumtimi-blersit-de.md`. Key research finding:
+  RA-MICRO and Wolters Kluwer already ship anonymization + citation
+  verification — our real differentiators are 24/7 intake (voice/WhatsApp/
+  phone), the local LLM and multi-jurisdiction-from-one-codebase.
+  `backend/scripts/de_company_outreach.py --propose N` drafts a personalized
+  cover letter (de/en) + the offer PDF and hands it to Halim (`lead-m&a`);
+  **nothing is sent without the owner's PO on Telegram**; `--followups` = one
+  10-day nudge (PO/JO again). Log `data/de_company_outreach_log.csv`. Triage
+  classifies replies from target domains as `company` (outranks even optout),
+  records them in `data/de_company_replies.txt`, and Halim must never answer
+  them autonomously. `ops_send_reply.py` gained `--attach`.
 - **Feedback lives in-platform only** (2026-07-14): `/kontakti` submissions
   no longer email the operator; `GET /platform/feedback/pending-count`
   powers a red badge on the Platform nav item (app sidebar).

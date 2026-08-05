@@ -93,18 +93,25 @@ marketing or pitch material MUST read
   (Beta), German corpus (federal law + 16k+ decisions, nightly imports),
   migration wizard with RA-MICRO/Advoware presets, Outlook add-in,
   telephony-KI. Pricing: 39 €/user/month after 3 months free (D-057).
-- **Track A — sell/license the platform** to German legal-tech companies:
-  the complete fixed-price offer (4 options: OEM / white-label DACH /
+- **Track A — sell/license the platform** to German legal companies —
+  **the PRIMARY German track** (owner decision 2026-08-05, D-062). The
+  complete fixed-price offer (4 options: OEM / white-label DACH /
   DACH acquisition / global acquisition) lives in
   `docs/pitch/ava-legal-platform-offer.txt` (EN) and `...-offer-de.txt` (DE).
   Prices in those documents are FINAL floor prices (decision 2026-08-05):
   never lower them further; if traction grows, they go UP on renewal.
   `docs/pitch/qmimet-dyshemete-interne.txt` is internal-only — never share.
-- **Track B — direct pilot acquisition** of German lawyers/firms:
-  "Gründungspartner" program (first 5 firms: 12 months free + free
-  migration + price locked at 39 €), starting with the Albanian-German
-  legal diaspora. Cold B2B email in Germany is restricted (UWG §7) —
-  prefer referrals, LinkedIn/XING, physical letters, events.
+  Buyer research: `docs/pitch/hulumtimi-blersit-de.md` + `data/de_companies.csv`
+  (~12 candidates scored in 3 waves; best fits are legal insurers and
+  no-AI vendors, NOT the AI leaders RA-MICRO/Wolters Kluwer who already
+  ship anonymization + citation verification). Outreach is semi-automated:
+  `backend/scripts/de_company_outreach.py` drafts, Halim relays, and
+  **nothing is sent without the owner's explicit PO on Telegram**.
+- **Track B — direct pilot acquisition** of German lawyers/firms — **PAUSED**
+  (2026-08-05): the "Gründungspartner" campaign to individual lawyers
+  (`de_outreach_campaign.py`, `avokatim-outreach-de.timer`) is disabled but
+  ready; re-enable only on the owner's decision. Cold B2B email in Germany
+  is restricted (UWG §7) — prefer referrals, LinkedIn/XING, letters, events.
 - **Kosovo is never for sale** in any Track A option except the global one
   (and there only with a perpetual royalty-free license-back).
 

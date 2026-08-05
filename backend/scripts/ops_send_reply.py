@@ -4,13 +4,15 @@ never sends mail on its own initiative).
 
 Usage:
     ops_send_reply.py --to someone@example.com --subject "Re: ..." \
-        [--in-reply-to "<message-id>"] < body.txt
+        [--in-reply-to "<message-id>"] [--attach path.pdf ...] < body.txt
 
 The body is read from stdin (UTF-8) so drafts with any quoting/newlines pass
-safely. Refuses test/simulation recipients. Prints a JSON result.
+safely. --attach may be repeated (e.g. to attach the platform offer PDF for a
+company outreach). Refuses test/simulation recipients. Prints a JSON result.
 """
 import argparse
 import json
+import mimetypes
 import smtplib
 import sys
 from email.message import EmailMessage
@@ -27,6 +29,8 @@ def main() -> dict:
     parser.add_argument("--to", required=True)
     parser.add_argument("--subject", required=True)
     parser.add_argument("--in-reply-to", default="")
+    parser.add_argument("--attach", action="append", default=[],
+                        help="file to attach (repeatable)")
     args = parser.parse_args()
 
     body = sys.stdin.read().strip()
@@ -46,13 +50,23 @@ def main() -> dict:
         msg["References"] = args.in_reply_to
     msg.set_content(body)
 
+    for path_str in args.attach:
+        p = Path(path_str)
+        if not p.is_file():
+            return {"sent": False, "error": f"attachment not found: {path_str}"}
+        ctype, _ = mimetypes.guess_type(p.name)
+        maintype, subtype = (ctype or "application/octet-stream").split("/", 1)
+        msg.add_attachment(p.read_bytes(), maintype=maintype,
+                           subtype=subtype, filename=p.name)
+
     with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=30) as server:
         if settings.smtp_starttls:
             server.starttls()
         if settings.smtp_user:
             server.login(settings.smtp_user, settings.smtp_password)
         server.send_message(msg)
-    return {"sent": True, "to": args.to, "subject": args.subject}
+    return {"sent": True, "to": args.to, "subject": args.subject,
+            "attachments": len(args.attach)}
 
 
 if __name__ == "__main__":

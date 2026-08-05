@@ -4,6 +4,12 @@ Runs from an OpenClaw cron job every ~10 minutes. Fetches messages newer than
 the last seen UID with BODY.PEEK (never marks anything read, never deletes),
 classifies them and prints a JSON report to stdout:
 
+- "company": reply from a domain in data/de_companies.csv (Track A — the M&A/
+            licensing outreach to German legal-tech companies). Escalated
+            FIRST with full context; the assistant NEVER answers these
+            autonomously — always a draft + PO/JO from the owner. The replying
+            domain is recorded in data/de_company_replies.txt so
+            de_company_outreach.py stops follow-ups.
 - "human":  real correspondence (lawyers/notaries/citizens) that may need a
             reply — full sender/subject/snippet so the assistant can draft one.
 - "system": notifications sent by AvokatIM itself (From = our own address) —
@@ -46,6 +52,9 @@ OPTOUT_RE = re.compile(
 )
 # Suppression ledger shared by both outreach campaigns (DE + XK read it).
 SUPPRESS_LEDGER = PROJECT_DIR / "data" / "de_suppress.txt"
+# Track A (company M&A outreach): target list + replied-domain ledger.
+COMPANIES_CSV = PROJECT_DIR / "data" / "de_companies.csv"
+COMPANY_REPLIES = PROJECT_DIR / "data" / "de_company_replies.txt"
 # Our own outbound identity: notifications AvokatIM sends to the operator
 _SELF_ADDRESSES = {
     settings.smtp_user.lower(),
@@ -99,12 +108,64 @@ def _body_snippet(msg: email.message.Message) -> str:
     return "\n".join(lines).strip()[:MAX_SNIPPET]
 
 
-def _classify(from_addr: str, subject: str, body: str = "") -> str:
+def _company_domains() -> dict[str, str]:
+    """domain -> company name from the Track A target list (empty if absent)."""
+    if not COMPANIES_CSV.exists():
+        return {}
+    import csv
+
+    with COMPANIES_CSV.open(encoding="utf-8") as f:
+        return {r["domain"].strip().lower(): r["company"]
+                for r in csv.DictReader(f) if r.get("domain")}
+
+
+def _match_company(addr: str, domains: dict[str, str]) -> tuple[str, str] | None:
+    """(target domain, company name) when the sender's domain is (a subdomain
+    of) a Track A target. The TARGET domain (not the raw sender domain) is what
+    the reply ledger stores, so subdomain replies still stop follow-ups."""
+    dom = addr.rsplit("@", 1)[-1].lower() if "@" in addr else ""
+    while dom:
+        if dom in domains:
+            return dom, domains[dom]
+        dom = dom.partition(".")[2] if "." in dom else ""
+    return None
+
+
+def _record_company_reply(domain: str) -> None:
+    """Remember that a Track A company answered (dedup) so the outreach tool
+    never sends them a follow-up nudge."""
+    domain = (domain or "").strip().lower()
+    if not domain:
+        return
+    existing: set[str] = set()
+    if COMPANY_REPLIES.exists():
+        existing = {l.strip().lower()
+                    for l in COMPANY_REPLIES.read_text(encoding="utf-8").splitlines()
+                    if l.strip() and not l.startswith("#")}
+    if domain in existing:
+        return
+    COMPANY_REPLIES.parent.mkdir(parents=True, exist_ok=True)
+    new_file = not COMPANY_REPLIES.exists()
+    with COMPANY_REPLIES.open("a", encoding="utf-8") as f:
+        if new_file:
+            f.write("# Domains of Track A companies that replied. Auto-"
+                    "maintained by ops_inbox_triage.py; read by "
+                    "de_company_outreach.py --followups.\n")
+        f.write(f"{domain}\n")
+
+
+def _classify(from_addr: str, subject: str, body: str = "",
+              company_domains: dict[str, str] | None = None) -> str:
     if BOUNCE_FROM_RE.search(from_addr) or BOUNCE_FROM_RE.search(subject):
         return "bounce"
     addr = email.utils.parseaddr(from_addr)[1].lower()
     if addr in _SELF_ADDRESSES:
         return "system"
+    # Track A (M&A) companies outrank everything else, including opt-out:
+    # even a terse "no interest, stop" from a target company is a signal the
+    # owner must see and decide on — never silently suppressed.
+    if company_domains and _match_company(addr, company_domains):
+        return "company"
     # Opt-out only when the phrase essentially IS the whole reply — never
     # swallow a long human message that merely contains the word "stop"
     # (a false positive would silently drop a hot lead and suppress it
@@ -161,12 +222,15 @@ def run() -> dict:
     report: dict = {
         "checked_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "mailbox": user,
+        # Track A M&A replies first — highest-value mail in the box.
+        "company": [],
         "human": [],
         "system_count": 0,
         "bounce_count": 0,
         "optout_count": 0,
         "optouts": [],
     }
+    company_domains = _company_domains()
 
     imap = imaplib.IMAP4_SSL(host, port)
     try:
@@ -203,11 +267,29 @@ def run() -> dict:
             from_h = _decode(msg.get("From"))
             subject = _decode(msg.get("Subject"))
             snippet = _body_snippet(msg)
-            kind = _classify(from_h, subject, snippet)
+            kind = _classify(from_h, subject, snippet, company_domains)
             if kind == "bounce":
                 report["bounce_count"] += 1
             elif kind == "system":
                 report["system_count"] += 1
+            elif kind == "company":
+                reply_to = email.utils.parseaddr(
+                    _decode(msg.get("Reply-To") or msg.get("From"))
+                )[1]
+                sender = email.utils.parseaddr(from_h)[1].lower()
+                target_domain, name = _match_company(sender, company_domains) or ("", "")
+                _record_company_reply(target_domain)
+                report["company"].append({
+                    "uid": uid,
+                    "lead": f"LEAD M&A — përgjigje nga {name}",
+                    "company": name,
+                    "from": from_h,
+                    "reply_to": reply_to,
+                    "subject": subject,
+                    "date": _decode(msg.get("Date")),
+                    "message_id": (msg.get("Message-ID") or "").strip(),
+                    "snippet": snippet,
+                })
             elif kind == "optout":
                 # Silence future cold mail; do NOT hand it to Halim to answer.
                 addr = email.utils.parseaddr(

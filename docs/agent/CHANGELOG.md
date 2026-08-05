@@ -3,6 +3,29 @@
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 
+## 2026-08-05 — D-062: Germany retargeted to companies (Track A, PO/JO)
+
+- `avokatim-outreach-de.timer` disabled (lawyer campaign paused before its
+  first batch; code kept ready, XK campaign untouched).
+- Buyer research: `docs/pitch/hulumtimi-blersit-de.md` + `data/de_companies.csv`
+  — 12 candidates scored into 3 waves (wave 1: ADVOCARD, ROLAND, Septeo,
+  Haufe/Advolux, ARAG; JUPUS on hold for copy risk). Research corrected the
+  "our AI is unique" assumption: RA-MICRO JURA KI and Wolters Kluwer Expert
+  AI already do anonymization + citation verification; our differentiators
+  are 24/7 intake, local LLM, multi-jurisdiction codebase.
+- `scripts/de_company_outreach.py`: `--propose N` renders the offer txt to
+  PDF (weasyprint) + personalized cover letter (de/en via `fit_letter`
+  column, internal Albanian notes never leak) and pushes the draft to Halim
+  as `lead-m&a`; owner PO/JO on Telegram gates every send; `--followups` =
+  single 10-day nudge; state in `data/de_company_outreach_log.csv`.
+- `scripts/ops_send_reply.py`: new repeatable `--attach` flag.
+- `scripts/ops_inbox_triage.py`: new `company` class — mail from target
+  domains (subdomain-aware) outranks every class incl. optout, escalated as
+  "LEAD M&A", replied domains recorded in `data/de_company_replies.txt`.
+- Halim protocol (AVOKATIM-OPS.md): "Kanali A" = exception to autonomy —
+  always draft + PO/JO, never internal floor prices, never Kosovo/AvokatIM.
+- 7 new tests (`tests/test_de_company_outreach.py`); full suite 331 passed.
+
 ## 2026-08-05 — D-061: automated German lawyer outreach (Track B)
 
 - `scripts/scrape_de_lawyers.py`: harvests lawyer contacts from the DAV

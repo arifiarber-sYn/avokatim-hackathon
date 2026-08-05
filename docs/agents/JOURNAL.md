@@ -10,6 +10,38 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-05 — Rikahëzimi DE: outreach drejt kompanive (Kanali A, D-062) (Cursor / Fable 5)
+
+- Done: Gjermania synon tani KOMPANITË që blejnë/licencojnë platformën, jo
+  avokatët 39 €/muaj. (F1) `avokatim-outreach-de.timer` u fik (kodi mbetet;
+  fushata XK e paprekur). (F2) hulumtim real blerësish →
+  `docs/pitch/hulumtimi-blersit-de.md` + `data/de_companies.csv` (12
+  kandidatë, pikëzim në 3 valë). Zbulim kyç: RA-MICRO (JURA KI) dhe Wolters
+  Kluwer (Expert AI) KANË tashmë anonimizim + verifikim citimesh — "AI unike"
+  s'është argument ndaj liderëve; diferencuesit tanë realë janë akuizicioni
+  24/7 (zë/WhatsApp/telefon + portali i qytetarit), LLM-ja lokale dhe një kod
+  për shumë juridiksione. Vala 1: ADVOCARD, ROLAND, Septeo, Haufe/Advolux,
+  ARAG. JUPUS në `hold` (rrezik kopjimi). (F3) `de_company_outreach.py` —
+  `--propose N` gjeneron letër shoqëruese të personalizuar (de/en, kolona
+  `fit_letter` në gjuhën e targetit) + ofertën PDF (weasyprint nga tekstet
+  ekzistuese) dhe ia çon Halimit si `lead-m&a`; ASGJË s'dërgohet pa PO nga
+  pronari në Telegram; `--followups` një nxitje pas 10 ditësh (sërish PO/JO);
+  log `data/de_company_outreach_log.csv`. `ops_send_reply.py` mori `--attach`.
+  (F4) triage: klasa `company` (domain-et e targetit, subdomain-aware) mbi
+  çdo klasë tjetër PËRFSHIRË optout — edhe "STOP" nga një kandidat blerësi
+  eskalohet, kurrë s'heshtet; domain-et me përgjigje → `de_company_replies.txt`
+  (ndal follow-up-et). AVOKATIM-OPS.md: protokolli "Kanali A" = përjashtim
+  nga autonomia e Halimit. (F5) COMMS/AGENTS/DECISIONS/STATE/CHANGELOG.
+- Verified: 7 teste të reja (`test_de_company_outreach.py`) — klasa company,
+  subdomain match, dedup i ledger-it, gjuha e letrës (fit-i shqip s'rrjedh
+  kurrë në letër), renditja/hold/dedup i propozimeve, follow-up pas 10 ditësh
+  që respekton përgjigjet; suita e plotë 331 kalon. Dry-run i `--propose` OK
+  (letra gjermanisht e plotë, PDF 6-faqësh gjenerohet). Timer-i DE inactive/
+  disabled, timer-i XK aktiv (nesër 09:30).
+- Left open: kontaktet e saktë M&A për 9 kandidatët pa email (Impressum/
+  LinkedIn — Halim i gjen para propozimit); vendimi i pronarit se kur niset
+  vala 1 (`--propose 3`... deri 5).
+
 ## 2026-08-05 — Automatizimi i outreach-it gjerman (Track B, D-061) (Cursor / Fable 5)
 
 - Done: fushatë email plotësisht e automatizuar për avokatët gjermanë, pasqyrë

@@ -59,13 +59,27 @@ recipients** (`_is_test_recipient`).
 ONK notaries) via `avokatim-outreach.timer` → `backend/scripts/oak_outreach_campaign.py`.
 Dedup + suppression of already-registered addresses; log `data/outreach.log`.
 
-**Germany (DE)** — daily batch of 15 "Gründungspartner" emails (in German,
-signed "Arbër Arifi · Ava Legal", links only to `de.avokatiim.ai`) to lawyers
-harvested from the public DAV directory into `data/de_lawyers.csv`
-(`backend/scripts/scrape_de_lawyers.py`), sent via `avokatim-outreach-de.timer`
-→ `backend/scripts/de_outreach_campaign.py` at 09:45. Volume kept low on
-purpose (shared transactional Gmail reputation + UWG §7 grey zone). Log
-`data/outreach_de.log`.
+**Germany (DE), lawyers — PAUSED** (2026-08-05, D-062): the daily batch of 15
+"Gründungspartner" emails to individual lawyers (`de_outreach_campaign.py`,
+harvest in `data/de_lawyers.csv`) is on hold — `avokatim-outreach-de.timer` is
+disabled. The primary German track is now selling/licensing the platform to
+companies (below). The code stays ready; re-enable with
+`systemctl --user enable --now avokatim-outreach-de.timer` only on the
+owner's decision.
+
+**Germany (DE), companies — Track A, PO/JO gated** (2026-08-05, D-062): the
+main German channel. ~12 researched buyer candidates (insurers, vendors,
+consolidators, publishers) live in `data/de_companies.csv`, built from the
+research dossier `docs/pitch/hulumtimi-blersit-de.md`.
+`backend/scripts/de_company_outreach.py --propose N` generates a personalized
+cover letter (German/English per target) + the full offer as PDF and hands the
+draft to Halim via `notify_ops` (`lead-m&a`); **nothing is sent without an
+explicit "PO" from the owner on Telegram** — Halim then sends with
+`ops_send_reply.py --attach <offer.pdf>`. State:
+`data/de_company_outreach_log.csv` (proposed/followup). `--followups` drafts a
+single 10-day nudge (again PO/JO). Replies from target domains are classified
+`company` by the triage ("LEAD M&A"), escalated first, never answered
+autonomously, and recorded in `data/de_company_replies.txt` (stops nudges).
 
 **Opt-outs (both campaigns)** — a reply that is essentially "STOP" /
 "abmelden" / "unsubscribe" / "mos më shkruani" is auto-classified by

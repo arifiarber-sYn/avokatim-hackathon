@@ -1581,3 +1581,48 @@
   and legal exposure. Accepted residual risk: an individual UWG §7 Abmahnung
   is still possible; the low volume + one-shot + source citation + instant
   STOP are the mitigations, not a guarantee.
+
+## D-062: Germany targets companies (Track A, PO/JO), lawyer campaign paused
+
+- Context: one day after D-061 went live (first batch scheduled for
+  2026-08-06 09:45), the owner drew a sharp line: in Kosovo lawyers are the
+  paying customers, but in Germany we are NOT competing for 39 €/month
+  subscribers — we are selling/licensing the platform to legal companies.
+  D-061's automated lawyer campaign therefore targeted the wrong audience.
+  Fresh research also corrected a core assumption: RA-MICRO (JURA KI) and
+  Wolters Kluwer (Expert AI) ALREADY ship local anonymization + automatic
+  citation verification, so "our AI is unique" is not an argument against
+  the leaders. Our real differentiators are 24/7 client acquisition
+  (voice/WhatsApp/phone + citizen portal), a fully local LLM option, and
+  one codebase running multiple jurisdictions.
+- Decision:
+  1. `avokatim-outreach-de.timer` disabled (code kept; re-enable only on
+     owner decision). The XK campaign is untouched.
+  2. Buyer research is a deliverable: `docs/pitch/hulumtimi-blersit-de.md`
+     scores ~12 candidates (gap we fill / acquisition history / capacity /
+     decision speed / copy risk) into 3 waves. Wave 1 = legal insurers
+     (ADVOCARD, ROLAND, ARAG — intake is their business), the no-AI vendor
+     Haufe/Advolux, and the consolidator Septeo. AI leaders (WK, RA-MICRO)
+     drop to waves 2–3; JUPUS is on `hold` (copy risk, NDA only).
+     Machine-readable pipeline: `data/de_companies.csv` (with a
+     `fit_letter` column in the TARGET language so the internal Albanian
+     `fit_reason` can never leak into a letter).
+  3. Every company email is M&A correspondence → NOTHING is auto-sent.
+     `de_company_outreach.py --propose N` renders the offer txt to PDF
+     (weasyprint) + a personalized cover letter and pushes the draft to
+     Halim (`lead-m&a`); the owner answers PO/JO on Telegram; on "PO"
+     Halim sends via `ops_send_reply.py --attach` (attachment support
+     added). `--followups` drafts one 10-day nudge, again PO/JO gated.
+  4. Triage class `company`: mail from a target domain (subdomain-aware)
+     outranks every other class INCLUDING optout — even a terse "no,
+     stop" from a buyer candidate is a signal the owner must see, never a
+     silent suppression. Replied target domains land in
+     `data/de_company_replies.txt`, which stops follow-ups.
+  5. Halim protocol (AVOKATIM-OPS.md): "Kanali A" is the explicit
+     exception to his autonomy — always draft + PO/JO, never autonomous,
+     never internal floor prices, never Kosovo/AvokatIM, demo-first,
+     code only after LOI + NDA.
+- Consequences: the German go-to-market now matches the owner's actual
+  strategy — a small, researched, high-value pipeline under full owner
+  control, while the SaaS machinery (pricing, signup, lawyer campaign
+  code) stays ready if Track B is ever resumed.
