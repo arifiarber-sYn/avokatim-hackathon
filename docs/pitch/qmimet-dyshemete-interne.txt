@@ -1,0 +1,55 @@
+FLETA INTERNE E ÇMIMEVE — VETËM PËR NE, KURRË PËR BLERËSIT
+Strategjia agresive: paradhënie e ulët, vlerë e mbrojtur me komponentë
+rrjedhës të garantuar. Numrat jepen me gojë gjatë bisedës, kurrë në
+letrën e parë.
+
+PARIMI I DYSHEMESË
+Alternativa jonë (mbajtja) kushton pothuajse zero dhe ruan opsionin
+e SaaS-it (skenari i vitit 5: €300-440k/vit). E zbritur për risk,
+vlera e "mbajtjes" është €150-400k. Asnjë shitje totale nën ~€400k
+paketë të plotë — aty shkatërrohet vlerë kundrejt mbajtjes.
+
+MODELI 1 — OEM (vetëm shtresa AI)
+  Lista:      €150k paradhënie + €3-5/user/muaj
+  Agresive:   €50k paradhënie + €3/user/muaj, minimum vjetor €25k
+  DYSHEMEJA:  €30k paradhënie — vetëm me royalty + minimum vjetor
+              të garantuar. Nën këtë: refuzo.
+
+MODELI 2 — WHITE-LABEL EKSKLUZIV DACH
+  Lista:      €400k paradhënie + 20-25% royalty + retainer €15k/muaj
+  Agresive:   €120k paradhënie + 20% royalty + retainer €10k/muaj
+              (12 muaj të garantuar)
+  DYSHEMEJA:  €75k paradhënie — vetëm me retainer ≥€10k/muaj × 24 muaj
+              të garantuar. Ekskluziviteti GJITHMONË me klauzolë
+              performance (X licenca/vit ose bie ekskluziviteti).
+
+MODELI 3 — SHITJE E PLOTË DACH (Kosova carve-out i pathyeshëm)
+  Lista:      kërkesa €1.5M + earn-out + kontratë zhvillimi
+  Agresive:   €600k paradhënie + €400k earn-out (24-36 muaj) +
+              kontratë zhvillimi €150k/vit × 3 vjet
+              (paketë ~€1.45M, paradhënia duket gjysma e listës)
+  DYSHEMEJA:  €450-500k paradhënie me kontratë zhvillimi të garantuar
+              ≥€120k/vit × 3 (paketa ~€850k), OSE €700k e pastër.
+              Nën këtë: licencimi na del më mirë — kthehu te Modeli 2.
+
+MODELI 4 — SHITJE GLOBALE (Kosova me licencë të përjetshme falas)
+  Lista:      €3M+
+  Agresive:   €1.2-1.5M + kontratë zhvillimi
+  DYSHEMEJA:  €1M — kurrë nën të.
+
+HAPËSIRA TOTALE E ZBRITJES
+  Lista → agresive: ~50-60% ulje paradhëniesh (kompensohet me
+  komponentët rrjedhës). Agresive → dysheme: edhe ~25%. Kaq ka.
+  "Fire sale" nën dysheme: vetëm në urgjencë financiare — s'e kemi.
+
+RREGULLAT E NEGOCIATËS
+  1. Kush e shkruan numrin i pari, humb ankorimin — numrat me gojë.
+  2. Çdo ulje paradhëniesh = komponent rrjedhës i garantuar në këmbim
+     (retainer minimum, royalty me dysheme vjetore, earn-out i matshëm).
+  3. Kurrë një blerës i vetëm — 4-6 njëkohësisht, dhe thuaju që
+     procesi është konkurrues.
+  4. Çdo zyrë gjermane paguese para nënshkrimit e ngre tavolinën —
+     traction-i vazhdon paralelisht me negociatat.
+  5. Kosova, brandi AvokatIM dhe tregjet jo-DACH nuk preken në asnjë
+     model përveç Modelit 4 (dhe aty me licencë të përjetshme mbrapsht).
+  6. Demo po, kod jo — deri në letter of intent me NDA të fortë.

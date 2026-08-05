@@ -10,6 +10,20 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-05 — Strategjia e shitjes: menyja e ofertave + dyshemetë interne (Cursor / Fable 5)
+
+- Done: pas analizës së vlerësimit (cost-to-replicate ~76k LoC / 287
+  endpoints / 314 teste), u finalizua strategjia agresive e shitjes për
+  tregun gjerman me 4 modele të ofruara njëkohësisht (OEM, white-label
+  DACH, shitje e plotë DACH me carve-out të Kosovës, shitje globale).
+  Dy dokumente të reja: `docs/pitch/acquisition-offer-menu.txt`
+  (buyer-facing, anglisht, PA çmime) dhe
+  `docs/pitch/qmimet-dyshemete-interne.txt` (fleta interne me çmimet
+  lista/agresive/dysheme + rregullat e negociatës).
+- Verified: n/a (dokumente strategjie, jo kod).
+- Left open: identifikimi i 4-6 blerësve konkretë dhe kontakti i parë
+  — veprim i pronarit; traction-i DE vazhdon paralelisht.
+
 ## 2026-08-04 — D-060: rrugëzimi LLM (detyra + fallback + pinned) (Cursor / Fable 5)
 
 - Done: pas pyetjes së pronarit "a e zëvendëson LLM-ja lokale DeepSeek-un":

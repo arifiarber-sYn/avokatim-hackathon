@@ -1,0 +1,85 @@
+AVA LEGAL — PARTNERSHIP & ACQUISITION OPPORTUNITIES
+A complete, AI-native legal practice platform for the German market
+(buyer-facing — no internal figures; pricing is discussed in person)
+
+==================================================================
+WHAT IS ON THE TABLE
+==================================================================
+
+A production-ready, AI-native Kanzleisoftware plus citizen intake
+platform, built for the German market and live today:
+
+- Full practice management: digital Akten, deadline engine (ZPO/ArbGG/
+  VwGO rules as data), RVG billing, ZUGFeRD/XRechnung e-invoices,
+  DATEV export, Mahnwesen incl. EDA file for the automated court
+  Mahnverfahren, Rechtsschutz workflows.
+- The AI layer incumbents are missing: assistant grounded in an indexed
+  corpus of German federal law and 16,000+ court decisions (growing
+  nightly), automatic citation verification against the corpus,
+  local pseudonymization before any external AI call, agentic
+  multi-step execution with lawyer approval, morning briefings,
+  overnight case-law monitoring.
+- 24/7 client acquisition: citizen portal, structured intake, booking,
+  AI receptionist on web chat, WhatsApp and telephone (local
+  speech-to-text and text-to-speech — audio never leaves the server).
+- Switching tooling: a 4-step migration wizard with RA-MICRO/Advoware
+  presets and mass document import; Outlook add-in ("save email to
+  matter"); 7 interface languages.
+- Engineering scale: ~76,000 lines of production code, 287 API
+  endpoints, 314 automated tests, multi-tenant, full audit trail,
+  encrypted documents, self-hosted error tracking and analytics.
+
+Demonstrated development velocity: German market parity (RVG, EDA,
+corpus, telephony, migration tooling) was designed, built, tested and
+shipped in weeks, not years. That velocity is part of the offer — the
+same capacity continues to build YOUR roadmap after the deal.
+
+==================================================================
+FOUR WAYS TO WORK WITH US — from component licensing to acquisition
+==================================================================
+
+MODEL 1 — OEM: LICENSE THE AI LAYER
+Embed our AI stack (corpus-grounded assistant, citation verification,
+pseudonymization, 24/7 intake) into your existing product under your
+brand. Fastest time-to-market: your customers get the AI features your
+competitors are announcing, this quarter. Structure: upfront license +
+per-user royalty. Integration support included.
+
+MODEL 2 — EXCLUSIVE WHITE-LABEL LICENSE (DACH)
+The complete platform under your brand, exclusively for DACH. You own
+the customer, the pricing and the market; we keep building the product
+under a development retainer with your roadmap first. Structure:
+upfront + revenue share + development retainer. Exclusivity is tied to
+agreed distribution performance.
+
+MODEL 3 — FULL ACQUISITION OF THE GERMAN BUSINESS
+You acquire the platform and all rights for DACH (the founder's home
+market operation in Kosovo is carved out and continues independently).
+Includes source code, infrastructure, documentation and a committed
+multi-year development agreement with the team that built it —
+guaranteeing roadmap continuity, beA integration and the legal
+fine-tune of the local LLM under your ownership. Structure: upfront +
+milestone earn-out + development agreement.
+
+MODEL 4 — FULL GLOBAL ACQUISITION
+Everything in Model 3 plus all markets and future jurisdictions
+(one-codebase architecture: every jurisdiction is data, not code —
+expansion to AT/CH is configuration plus corpus import, not a rewrite).
+
+==================================================================
+WHY THIS IS INTERESTING NOW
+==================================================================
+
+- The German legal software market is in its AI transition. Building
+  this stack in-house is a 5-7 person team for 18-24 months — before
+  the first customer sees it. This one is live.
+- Privacy posture that survives BRAK/DSGVO scrutiny: local
+  pseudonymization, local embeddings, local voice, optional fully
+  local LLM (validated on our own GPU infrastructure).
+- No legacy: modern stack (FastAPI/Postgres/Next.js), 314 tests,
+  append-only migrations, clean dependency licensing — built for due
+  diligence from day one.
+
+Contact for a live demonstration on the production system.
+All conversations under NDA. Deal structures are flexible and can
+combine elements of the four models above.
