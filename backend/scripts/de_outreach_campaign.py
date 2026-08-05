@@ -18,23 +18,30 @@ grey zone (UWG §7) — a small, polite, clearly-opt-out-able trickle keeps
 both sender reputation and legal exposure minimal. Raise only after weeks
 without complaints (see docs/pitch/strategjia-tregu-gjerman.txt).
 
+TRACK B IS PAUSED (audit D-069, 2026-08-05): because of the UWG §7 grey
+zone, real sends refuse to run unless the environment explicitly sets
+DE_TRACK_B_ENABLE=1. --dry-run always works. Do NOT set that variable in
+any timer/cron without the owner's explicit decision.
+
 Usage:
     python scripts/de_outreach_campaign.py --dry-run   # preview batch
-    python scripts/de_outreach_campaign.py             # send batch of 15
+    DE_TRACK_B_ENABLE=1 python scripts/de_outreach_campaign.py  # send batch
     python scripts/de_outreach_campaign.py --limit 10  # custom size
     python scripts/de_outreach_campaign.py --force     # ignore daily guard
 """
 import asyncio
 import csv
+import os
 import smtplib
+import subprocess
 import sys
 import time
 from datetime import UTC, datetime
-from email.mime.text import MIMEText
-from email.utils import formataddr
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from outreach_sender import Sender  # noqa: E402
 from app.config import settings  # noqa: E402
 
 DATA = Path(__file__).resolve().parents[2] / "data"
@@ -46,6 +53,8 @@ DRY_RUN = "--dry-run" in sys.argv
 FORCE = "--force" in sys.argv
 LIMIT = int(sys.argv[sys.argv.index("--limit") + 1]) if "--limit" in sys.argv else 15
 SEND_DELAY_S = 10
+
+HALIM_GUARD = Path.home() / "scripts" / "halim_guard.py"
 
 # Static floor of never-contact addresses (owner's own, partners, press).
 SUPPRESS = {
@@ -202,7 +211,38 @@ def area_line(row: dict) -> str:
     )
 
 
+def _kill_switch_active() -> bool:
+    """True when halim_guard says autonomy is halted (exit code 1)."""
+    if not HALIM_GUARD.exists():
+        return False
+    return subprocess.run(
+        [sys.executable, str(HALIM_GUARD), "status"],
+        capture_output=True,
+    ).returncode != 0
+
+
+def _audit(action: str) -> None:
+    """Append the batch to the halim_guard action audit log (best effort)."""
+    if not HALIM_GUARD.exists():
+        return
+    subprocess.run(
+        [sys.executable, str(HALIM_GUARD), "audit",
+         "--account", "arifi.arber@gmail.com",
+         "--action", action, "--result", "ok"],
+        capture_output=True,
+    )
+
+
 def main() -> None:
+    if not DRY_RUN and os.environ.get("DE_TRACK_B_ENABLE") != "1":
+        print("Track B (avokatët gjermanë) është PAUSED (UWG §7, D-069). "
+              "Dërgimi real kërkon DE_TRACK_B_ENABLE=1 — vendos vetëm me "
+              "vendim eksplicit të Kllosha-s. --dry-run punon gjithmonë.")
+        return
+    if not DRY_RUN and _kill_switch_active():
+        print("AUTONOMY_HALT active (halim_guard) — refusing to send")
+        return
+
     if not REGISTRY.exists():
         print(f"no registry at {REGISTRY} — run scrape_de_lawyers.py first")
         return
@@ -223,15 +263,16 @@ def main() -> None:
         print("campaign complete — every harvested lawyer has been contacted")
         return
 
-    batch = pending[:LIMIT]
-    print(f"sent so far: {len(sent)} | pending: {len(pending)} | "
-          f"this batch: {len(batch)}\n")
+    sender = Sender()
+    limit = LIMIT
+    if sender.daily_cap is not None and sender.daily_cap < limit:
+        limit = sender.daily_cap  # warm-up cap on the fresh Resend domain
+        print(f"(warm-up cap active: {limit}/day on the dedicated domain)")
+    batch = pending[:limit]
+    print(f"mode: {sender.mode} | sent so far: {len(sent)} | "
+          f"pending: {len(pending)} | this batch: {len(batch)}\n")
 
-    smtp = None
-    if not DRY_RUN:
-        smtp = smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=30)
-        smtp.starttls()
-        smtp.login(settings.smtp_user, settings.smtp_password)
+    sent_count = 0
 
     for i, row in enumerate(batch, 1):
         body = BODY.format(anrede_line=salutation(row), area_line=area_line(row))
@@ -240,25 +281,26 @@ def main() -> None:
             print(f"[dry-run] {i:>3}. {name or '(Kanzlei)'} <{row['email']}> "
                   f"({row.get('city')}) alb={row.get('alb_score')}")
             continue
-        msg = MIMEText(body, "plain", "utf-8")
-        msg["Subject"] = SUBJECT
-        msg["From"] = formataddr(("Arbër Arifi · Ava Legal", settings.smtp_user))
-        msg["To"] = row["email"]
-        msg["Reply-To"] = settings.smtp_user
         try:
-            smtp.sendmail(settings.smtp_user, [row["email"]], msg.as_string())
+            # RFC 2369 one-click opt-out; the STOP subject is picked up by
+            # ops_inbox_triage which writes the address to de_suppress.txt.
+            sender.send(row["email"], SUBJECT, body, "Arbër Arifi · Ava Legal",
+                        f"<mailto:{settings.smtp_user}?subject=STOP>")
             log_send(row)
+            sent_count += 1
             print(f"{i:>3}. sent to {name} <{row['email']}>")
         except smtplib.SMTPRecipientsRefused:
             log_send(row)  # log anyway so we never retry a dead address
             print(f"{i:>3}. REFUSED {row['email']}")
-        except smtplib.SMTPException as exc:
+        except (smtplib.SMTPException, RuntimeError) as exc:
             print(f"{i:>3}. ERROR {row['email']}: {exc} — stopping batch")
             break
         time.sleep(SEND_DELAY_S)
 
-    if smtp is not None:
-        smtp.quit()
+    sender.close()
+    if not DRY_RUN and sent_count:
+        _audit(f"de outreach batch (Track B): {sent_count} emails, "
+               f"mode={sender.mode}")
     print("\nbatch done")
 
 

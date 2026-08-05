@@ -10,6 +10,25 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-05 — Auditimi outreach + Gmail: throttle, pajtueshmëri, dërgues i dedikuar (D-069) (Cursor / Fable 5)
+
+- Done: heartbeat-i i cron-it u kalua në rrugë absolute (`~/AvokatIM/data/ops/` —
+  bug-u i alarmeve false çdo 3h); XK outreach 60→25/ditë me jitter 20–60s + dedup
+  brenda batch-it (fix-i Vuksani) + `List-Unsubscribe`; DE Track B i mbyllur fort
+  (refuzon pa `DE_TRACK_B_ENABLE=1`, UWG §7); të dy fushatat respektojnë
+  kill-switch-in e halim_guard dhe shkruajnë audit; modul i ri
+  `scripts/outreach_sender.py` (Resend nga `mail.avokatiim.ai` + fallback Gmail
+  SMTP + warm-up 10/20/25) i integruar në të dy fushatat; prompt-i i cron-it
+  triage me rregulla sipas klase (personale/company = PO/JO); rregull i fortë
+  "dërgim vetëm me ops_send_reply.py" te GMAIL-OPS/AVOKATIM-OPS; COMMS.md i
+  sinkronizuar me realitetin.
+- Verified: watchdog "OK" pas fix-it; dry-run të dy fushatat (batch 25/15, mode
+  smtp); opt-out end-to-end (STOP → `_classify` → `de_suppress.txt` → skip në të
+  dy fushatat); guard-i Track B refuzon pa flag; py_compile OK.
+- Left open / next: 2 hapa manualë të Kllosha-s për Resend + DNS —
+  `docs/agents/OUTREACH-SENDER-SETUP.md`; pas verifikimit fushatat kalojnë vetë
+  në mode `resend` me warm-up.
+
 ## 2026-08-05 — Fuqizimi i plotë i Halimit: kredencialet, skills, monitorim 24/7 (D-065) (Cursor / Fable 5)
 
 - Done: (F1) `secrets/CREDENTIALS.md` (chmod 600) = harta e vetme e çdo

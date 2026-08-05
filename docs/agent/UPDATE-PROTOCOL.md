@@ -1,3 +1,9 @@
+> ⛔ **DEPRECATED (D-066, 2026-08-05).** The canonical write procedure lives in
+> **`../agents/UPDATE-PROTOCOL.md`** (plural). Write to `docs/agents/`
+> (JOURNAL/STATE/LESSONS/DECISIONS/COMMS), not here. This file is archived.
+
+---
+
 # UPDATE PROTOCOL — keep this layer alive (read when you change ANYTHING)
 
 This layer is only useful while it stays true. Updating it is part of the

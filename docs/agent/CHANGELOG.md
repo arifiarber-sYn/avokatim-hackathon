@@ -1,5 +1,9 @@
 # CHANGELOG — dated trail of changes (newest on top)
 
+> ⛔ **DEPRECATED (D-066, 2026-08-05).** New work entries go to
+> **`../agents/JOURNAL.md`** (plural = source of truth). This CHANGELOG is an
+> archive of earlier entries; do not append here.
+
 > One entry per finished piece of work. Never optional (Definition of Done).
 > Format: date, what changed, why, files touched.
 

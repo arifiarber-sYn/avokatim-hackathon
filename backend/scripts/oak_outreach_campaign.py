@@ -10,30 +10,35 @@ twice, and a batch refuses to run twice in the same day — this makes the scrip
 safe to trigger from a systemd timer with Persistent=true (catch-up runs after
 a reboot cannot double-send).
 
-Default 60/run with 8s spacing — raised from 30 on 2026-07-28 (owner asked
-to speed the campaign up). Kept well under Gmail's consumer limits because
-the same account also delivers the platform's transactional email (verify
-links) — its sender reputation must stay clean. Two weeks at 30/day with
-zero bounce complaints justified the ramp.
+Default 25/run with 20-60s random spacing — lowered from 60 on 2026-08-05
+(audit D-069): the same personal Gmail account also delivers the platform's
+transactional email (verify links), so its sender reputation must stay clean.
+Randomised delays look less bot-like to Gmail's rate heuristics. The plan is
+to migrate cold outreach to a dedicated sending domain (Resend) entirely.
+
+Guardrails (D-069): honours the halim_guard kill switch (AUTONOMY_HALT) and
+appends every real batch to the action audit log.
 
 Usage:
     python scripts/oak_outreach_campaign.py --dry-run     # preview batch
-    python scripts/oak_outreach_campaign.py               # send batch of 60
-    python scripts/oak_outreach_campaign.py --limit 50    # custom batch size
+    python scripts/oak_outreach_campaign.py               # send batch of 25
+    python scripts/oak_outreach_campaign.py --limit 10    # custom batch size
     python scripts/oak_outreach_campaign.py --force       # ignore daily guard
 """
 import asyncio
 import csv
 import json
+import random
 import smtplib
+import subprocess
 import sys
 import time
 from datetime import UTC, datetime
-from email.mime.text import MIMEText
-from email.utils import formataddr
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from outreach_sender import Sender  # noqa: E402
 from app.config import settings  # noqa: E402
 
 DATA = Path(__file__).resolve().parents[2] / "data"
@@ -46,8 +51,10 @@ SUPPRESS_LEDGER = DATA / "de_suppress.txt"
 
 DRY_RUN = "--dry-run" in sys.argv
 FORCE = "--force" in sys.argv
-LIMIT = int(sys.argv[sys.argv.index("--limit") + 1]) if "--limit" in sys.argv else 60
-SEND_DELAY_S = 8
+LIMIT = int(sys.argv[sys.argv.index("--limit") + 1]) if "--limit" in sys.argv else 25
+SEND_DELAY_RANGE_S = (20, 60)
+
+HALIM_GUARD = Path.home() / "scripts" / "halim_guard.py"
 
 # Never cold-email people already in touch with the platform (static floor —
 # registered users are also excluded dynamically from the database).
@@ -244,7 +251,33 @@ def load_notaries() -> list[dict]:
     return rows
 
 
+def _kill_switch_active() -> bool:
+    """True when halim_guard says autonomy is halted (exit code 1)."""
+    if not HALIM_GUARD.exists():
+        return False
+    return subprocess.run(
+        [sys.executable, str(HALIM_GUARD), "status"],
+        capture_output=True,
+    ).returncode != 0
+
+
+def _audit(action: str) -> None:
+    """Append the batch to the halim_guard action audit log (best effort)."""
+    if not HALIM_GUARD.exists():
+        return
+    subprocess.run(
+        [sys.executable, str(HALIM_GUARD), "audit",
+         "--account", "arifi.arber@gmail.com",
+         "--action", action, "--result", "ok"],
+        capture_output=True,
+    )
+
+
 def main() -> None:
+    if not DRY_RUN and _kill_switch_active():
+        print("AUTONOMY_HALT active (halim_guard) — refusing to send")
+        return
+
     log_rows = load_log()
     if sent_today(log_rows) and not DRY_RUN and not FORCE:
         print("today's batch already sent — nothing to do (use --force to override)")
@@ -254,9 +287,18 @@ def main() -> None:
     suppress = {s.lower() for s in SUPPRESS} | ledger_suppressions() | registered_emails()
 
     def pending(rows: list[dict]) -> list[dict]:
-        return [r for r in rows
-                if r["email"].lower() not in sent
-                and r["email"].lower() not in suppress]
+        """Filter out already-sent/suppressed addresses AND duplicates within
+        the source list itself (the registry can list one address twice —
+        the 2026-07 'Vuksani' double-send incident)."""
+        seen_in_batch: set[str] = set()
+        out: list[dict] = []
+        for r in rows:
+            addr = r["email"].lower()
+            if addr in sent or addr in suppress or addr in seen_in_batch:
+                continue
+            seen_in_batch.add(addr)
+            out.append(r)
+        return out
 
     lawyers = pending(load_lawyers())
     notaries = pending(load_notaries())
@@ -272,16 +314,17 @@ def main() -> None:
         print("campaign complete — every lawyer and notary has been contacted")
         return
 
-    batch = batch_pool[:LIMIT]
-    print(f"audience: {audience} | sent so far: {len(sent)} | "
+    sender = Sender()
+    limit = LIMIT
+    if sender.daily_cap is not None and sender.daily_cap < limit:
+        limit = sender.daily_cap  # warm-up cap on the fresh Resend domain
+        print(f"(warm-up cap active: {limit}/day on the dedicated domain)")
+    batch = batch_pool[:limit]
+    print(f"audience: {audience} | mode: {sender.mode} | sent so far: {len(sent)} | "
           f"pending lawyers: {len(lawyers)} | pending notaries: {len(notaries)} | "
           f"this batch: {len(batch)}\n")
 
-    smtp = None
-    if not DRY_RUN:
-        smtp = smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=30)
-        smtp.starttls()
-        smtp.login(settings.smtp_user, settings.smtp_password)
+    sent_count = 0
 
     for i, row in enumerate(batch, 1):
         city = row.get("city") or ""
@@ -294,25 +337,26 @@ def main() -> None:
             print(f"[dry-run] {i:>3}. {row['name']} <{row['email']}> "
                   f"({row.get('region') or city})")
             continue
-        msg = MIMEText(body, "plain", "utf-8")
-        msg["Subject"] = subject
-        msg["From"] = formataddr(("Arbër Arifi", settings.smtp_user))
-        msg["To"] = row["email"]
-        msg["Reply-To"] = settings.smtp_user
         try:
-            smtp.sendmail(settings.smtp_user, [row["email"]], msg.as_string())
+            # RFC 2369 one-click opt-out; the STOP subject is picked up by
+            # ops_inbox_triage which writes the address to de_suppress.txt.
+            sender.send(row["email"], subject, body, "Arbër Arifi",
+                        f"<mailto:{settings.smtp_user}?subject=STOP>")
             log_send(row, audience)
+            sent_count += 1
             print(f"{i:>3}. sent to {row['name']} <{row['email']}>")
         except smtplib.SMTPRecipientsRefused:
             log_send(row, audience)  # log anyway so we never retry a dead address
             print(f"{i:>3}. REFUSED {row['email']}")
-        except smtplib.SMTPException as exc:
+        except (smtplib.SMTPException, RuntimeError) as exc:
             print(f"{i:>3}. ERROR {row['email']}: {exc} — stopping batch")
             break
-        time.sleep(SEND_DELAY_S)
+        time.sleep(random.uniform(*SEND_DELAY_RANGE_S))
 
-    if smtp is not None:
-        smtp.quit()
+    sender.close()
+    if not DRY_RUN and sent_count:
+        _audit(f"oak outreach batch: {sent_count} emails ({audience}, "
+               f"mode={sender.mode})")
     print("\nbatch done")
 
 

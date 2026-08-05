@@ -1,3 +1,13 @@
+> ⛔ **DEPRECATED (D-066, 2026-08-05).** This `docs/agent/` (singular) directory
+> is NOT the source of truth. The canonical agent-knowledge layer is
+> **`docs/agents/`** (plural) — root `AGENTS.md` routes there
+> (STATE / JOURNAL / DECISIONS / LESSONS / COMMS / ROADMAP / INDEX /
+> UPDATE-PROTOCOL). Do NOT write new entries here. This folder is kept only as
+> an archive of earlier notes (esp. `CHANGELOG.md`). If you landed here, go to
+> `../agents/INDEX.md`.
+
+---
+
 # INDEX — Documentation router (read this, then load ONE topic)
 
 Purpose: let **any LLM/agent** understand and safely change AvokatIM

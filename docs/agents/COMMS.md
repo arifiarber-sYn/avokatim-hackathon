@@ -55,19 +55,30 @@ recipients** (`_is_test_recipient`).
 
 ### Outreach (acquisition)
 
-**Kosovo (XK)** — daily batch of 60 introduction emails to OAK lawyers (then
-ONK notaries) via `avokatim-outreach.timer` → `backend/scripts/oak_outreach_campaign.py`.
-Dedup + suppression of already-registered addresses; log `data/outreach.log`.
-Both letters end with a mobile P.S. (open avokatiim.ai directly in
-Chrome/Safari, not inside the mail app) — the Vuksani lesson (D-063).
+**Kosovo (XK)** — daily batch of **25** introduction emails (lowered from 60
+on 2026-08-05, audit D-069) with randomized 20-60s spacing, to OAK lawyers
+(then ONK notaries) via `avokatim-outreach.timer` →
+`backend/scripts/oak_outreach_campaign.py`. Dedup (including within-batch,
+the Vuksani fix) + suppression of registered addresses + `List-Unsubscribe`
+header; honours the halim_guard kill switch and writes to the action audit
+log. Log `data/outreach.log`. Both letters end with a mobile P.S. (open
+avokatiim.ai directly in Chrome/Safari, not inside the mail app) — the
+Vuksani lesson (D-063).
 
-**Germany (DE), lawyers — PAUSED** (2026-08-05, D-062): the daily batch of 15
-"Gründungspartner" emails to individual lawyers (`de_outreach_campaign.py`,
-harvest in `data/de_lawyers.csv`) is on hold — `avokatim-outreach-de.timer` is
-disabled. The primary German track is now selling/licensing the platform to
-companies (below). The code stays ready; re-enable with
-`systemctl --user enable --now avokatim-outreach-de.timer` only on the
-owner's decision.
+**Sending identity (D-069):** both campaigns now send through
+`backend/scripts/outreach_sender.py` — Resend API from `mail.avokatiim.ai`
+once the domain is verified (setup: `OUTREACH-SENDER-SETUP.md`), with the
+personal Gmail as SMTP fallback until then. Replies always flow to
+`arifi.arber@gmail.com` (Reply-To), so triage/opt-out are unchanged. On the
+dedicated domain a warm-up cap applies: 10/day week 1, 20/day week 2, then 25.
+
+**Germany (DE), lawyers — PAUSED, hard-gated** (2026-08-05, D-062 + D-069):
+the daily batch of 15 "Gründungspartner" emails to individual lawyers
+(`de_outreach_campaign.py`, harvest in `data/de_lawyers.csv`) is on hold —
+no timer exists, and since D-069 the script itself **refuses real sends
+unless `DE_TRACK_B_ENABLE=1`** is set (UWG §7 grey zone; `--dry-run` always
+works). The primary German track is selling/licensing the platform to
+companies (below). Re-enable only on the owner's explicit decision.
 
 **Germany (DE), companies — Track A, PO/JO gated** (2026-08-05, D-062): the
 main German channel. ~12 researched buyer candidates (insurers, vendors,
