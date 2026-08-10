@@ -10,6 +10,16 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-10 — ops_roster_health: green kur vetë-riparon + hiq edas-acestep (D-070) (Cursor / Fable 5)
+- Done: `ops_roster_health.py` del me kod jo-zero VETËM për probleme të PAZGJIDHURA (vetë-riparimi
+  s'është më "error"); shtova riverifikim pas restart-it (`repaired_all`) + rreshtat "u vetë-riparuan"/
+  "ende të pazgjidhura". Hoqa `edas-acestep.service` (dhe la vetëm edas.service + edas-frontend) nga
+  lista e monitoruar sepse GPU manager-i i EdaS (`~/EdaS/data/gpu_manager.json`: auto_release, idle 15m)
+  e ndal QËLLIMISHT për të liruar VRAM-in e RTX 5090 → alarme false + luftë rinisjeje.
+- Verified: `--status` = "Të gjitha projektet aktive", exit 0; `--repair` para heqjes = "u vetë-riparuan", exit 0.
+- Left open / next: rrënja e vërtetë (acestep flap) është sjellje normale idle-release; s'kërkon veprim.
+  Konteksti i plotë (autonomi D-070 pa limite) te openclaw-knowledge DECISIONS D-070 / LESSONS L-08.
+
 ## 2026-08-05 — Auditimi outreach + Gmail: throttle, pajtueshmëri, dërgues i dedikuar (D-069) (Cursor / Fable 5)
 
 - Done: heartbeat-i i cron-it u kalua në rrugë absolute (`~/AvokatIM/data/ops/` —

@@ -48,8 +48,13 @@ PROJECTS: dict[str, dict] = {
         "repairable": True,
     },
     "EdaS": {
-        "services": ["edas.service", "edas-frontend.service",
-                     "edas-tools.service", "edas-acestep.service"],
+        # NOTE (D-070): edas-acestep / edas-tools are on-demand GPU workers.
+        # EdaS's GPU manager (~/EdaS/data/gpu_manager.json: auto_release=true,
+        # idle_minutes=15) deliberately STOPS edas-acestep when idle to free the
+        # RTX 5090's VRAM. Monitoring it as "must be active" produced false
+        # alarms and restart-fights with the manager, so it is intentionally not
+        # listed here. edas.service + edas-frontend stay always-on.
+        "services": ["edas.service", "edas-frontend.service"],
         "url": "http://127.0.0.1:8002/api/health",
         "repairable": True,  # careful: two-agent rule for CODE, restart is ops-only
     },
@@ -114,11 +119,17 @@ def _restart(name: str) -> bool:
     return r.returncode == 0 and _svc_active(name)
 
 
-def check() -> tuple[list[str], list[str], list[str]]:
-    """Returns (problem_lines, repair_lines, ok_names)."""
+def check() -> tuple[list[str], list[str], list[str], list[str]]:
+    """Returns (problem_lines, repair_lines, ok_names, unresolved_names).
+
+    A project counts as *unresolved* only if it still has a problem AFTER any
+    repair attempt: not repairable, repair not requested, a restart failed, or
+    the HTTP endpoint still refuses. A fully self-healed project is NOT an error
+    — this keeps the 6h cron green when a flap was fixed automatically (D-070)."""
     problems: list[str] = []
     repairs: list[str] = []
     ok: list[str] = []
+    unresolved: list[str] = []
     for name, cfg in PROJECTS.items():
         down_svcs = [s for s in cfg["services"] if not _svc_active(s)]
         http = _http_up(cfg["url"])
@@ -133,15 +144,22 @@ def check() -> tuple[list[str], list[str], list[str]]:
             detail.append(f"health {cfg['url']} nuk përgjigjet")
         problems.append(f"• {name}: " + "; ".join(detail))
         # repair only safe projects, only their down services
+        repaired_all = False
         if DO_REPAIR and cfg["repairable"] and down_svcs:
+            results = []
             for s in down_svcs:
                 ok_r = _restart(s)
+                results.append(ok_r)
                 repairs.append(f"  ↳ {name}: restart {s} → "
                                + ("OK" if ok_r else "DËSHTOI"))
-    return problems, repairs, ok
+            # re-verify: services back AND http not refusing after restart
+            repaired_all = all(results) and (_http_up(cfg["url"]) is not False)
+        if not repaired_all:
+            unresolved.append(name)
+    return problems, repairs, ok, unresolved
 
 
-def build_report(problems, repairs, ok) -> str:
+def build_report(problems, repairs, ok, unresolved) -> str:
     failed = _failed_units()
     disk = _disk_free_pct()
     dockers = _docker_count()
@@ -153,6 +171,10 @@ def build_report(problems, repairs, ok) -> str:
         if repairs:
             lines.append("Riparime (vetëm projektet e sigurta):")
             lines.extend(repairs)
+        if not unresolved:
+            lines.append("✅ Të gjitha u vetë-riparuan.")
+        else:
+            lines.append("⚠️ Ende të pazgjidhura: " + ", ".join(unresolved))
     else:
         lines.append("✅ Të gjitha projektet aktive.")
     lines.append(f"OK: {', '.join(ok) if ok else '—'}")
@@ -190,12 +212,14 @@ def send_telegram(text: str) -> bool:
 
 
 def main() -> int:
-    problems, repairs, ok = check()
-    report = build_report(problems, repairs, ok)
+    problems, repairs, ok, unresolved = check()
+    report = build_report(problems, repairs, ok, unresolved)
     print(report)
     if not STATUS_ONLY:
         send_telegram(report)
-    return 1 if problems else 0
+    # Exit non-zero ONLY on genuinely unresolved problems, so a successful
+    # self-repair no longer trips the cron into a red "error" state (D-070).
+    return 1 if unresolved else 0
 
 
 if __name__ == "__main__":
