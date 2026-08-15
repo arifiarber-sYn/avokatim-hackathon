@@ -10,6 +10,20 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-15 — Fix: auto-verify NameError + corpus duplicate -> 409 (Halim)
+- Done: (1) `app/api/marketplace.py` — `_auto_verify_or_notify` thirrte
+  `try_auto_verify` pa import; çdo onboarding submit dështonte me NameError dhe
+  binte te fallback manual (ndodhi 2x sot për regjistrimet e reja). Shtoi
+  importin. (2) `app/api/corpus.py` — guard-i IntegrityError mbështillte vetëm
+  `commit()`, por INSERT-i ndodh te `flush()`; duplikatet iknin si 500 në vend
+  të 409-së së projektuar. Guard-i tani rrethon `flush()`.
+- Verified: py_compile OK; 11 teste corpus/rag kalojnë; avokatim.service u
+  rinis (20:18) dhe /api/health + /api/public/voice/status OK; issue-t e
+  Glitchtip 5/9 u shënuan resolved.
+- Left open: mbyllja e procesit të vjetër zgjati ~45s (TimeoutStopUSec=45s +
+  abort) — vlen hetuar shkaku i stop-it jo-graceful. Punë e pa-commituar nga
+  sesioni i mëparshëm: auth.py/_send_verification_reminder + i18n.
+
 ## 2026-08-15 — Whisper STT: lease GPU në arbitrin qendror të flotës (openclaw-knowledge D-083) (Cursor / Fable 5)
 - Done: modeli Whisper STT është qiramarrës GPU interaktiv (~1.6 GB VRAM kur rezident).
   E regjistrova te arbitri i përbashkët `~/scripts/gpu_arbiter.py` si `interactive`

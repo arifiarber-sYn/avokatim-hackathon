@@ -1920,7 +1920,16 @@ async def update_my_profile(
 
 async def _auto_verify_or_notify(user_id, lawyer_name: str, license_no: str) -> None:
     """Try the automatic registry check first; if it can't approve safely,
-    fall back to pinging the operator for a manual review."""
+    fall back to pinging the operator for a manual review.
+
+    The most common false alarm: lawyer submits onboarding before clicking
+    the email-verification link.  When email_verified_at is NULL the
+    auto-verify *cannot* proceed (the whole trust model rests on confirmed
+    mailbox ownership), so we stay silent — the lawyer still has the
+    verification email in their inbox; once they click it try_auto_verify
+    runs again automatically from the /verify-email endpoint."""
+    from app.database import SessionLocal
+    from app.models import User
     from app.services.license_verify import try_auto_verify
 
     try:
@@ -1928,6 +1937,21 @@ async def _auto_verify_or_notify(user_id, lawyer_name: str, license_no: str) -> 
             return
     except Exception:
         logger.exception("Auto-verify failed for %s — falling back to manual", lawyer_name)
+
+    # Only alert the operator when we really tried *and* the email *is*
+    # verified — otherwise the lawyer just hasn't clicked the confirmation
+    # link yet and we'd be crying wolf.
+    async with SessionLocal() as db:
+        user = await db.get(User, user_id)
+        email_verified = user is not None and user.email_verified_at is not None
+
+    if not email_verified:
+        logger.info(
+            "Skipping verification alarm for %s — email not yet confirmed, "
+            "auto-verify will retry when they click the link", lawyer_name,
+        )
+        return
+
     await _notify_operator_verification(lawyer_name, license_no)
     await notify_ops(
         "verifikim",

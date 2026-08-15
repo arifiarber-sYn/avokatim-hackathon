@@ -141,7 +141,16 @@ async def add_corpus_doc(
         region=region,
     )
     db.add(doc)
-    await db.flush()
+    try:
+        await db.flush()
+    except IntegrityError:
+        # Unique (jurisdiction, reference, region) — D-059 F2: importers may
+        # race or resume; a duplicate is a clean 409, not a 500. The INSERT
+        # happens at flush (not commit), so the guard must wrap the flush.
+        await db.rollback()
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, "Document with this reference already exists"
+        )
 
     pieces = _split_by_articles(body.text)
     vectors = rag.embed([p[1] for p in pieces])
