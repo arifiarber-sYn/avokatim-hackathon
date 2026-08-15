@@ -22,6 +22,9 @@
   qwen3.8:27b me RAG real; (b) sizing i kontekstit (endpoint-i OpenAI i Ollama-s s'pranon `num_ctx`
   në body → mund të duhet variant Modelfile me `num_ctx` më të madh si `qwen3.8:27b-agent`);
   (c) pastaj `PROFILES["DE"].llm_provider="local"`. NUK preka punën e pakommit-uar të agjentit tjetër.
+- Follow-up (auditim, po atë ditë): `jurisdictions.py` kishte ende një koment që thoshte
+  "gemma3:27b stays installed and validated" — u përditësua në qwen3.8:27b + gate item 3 REOPENED.
+  (Referencat në `docs/pitch/*` mbeten për vendim wording nga pronari.)
 
 ## 2026-08-10 — ops_roster_health: green kur vetë-riparon + hiq edas-acestep (D-070) (Cursor / Fable 5)
 - Done: `ops_roster_health.py` del me kod jo-zero VETËM për probleme të PAZGJIDHURA (vetë-riparimi

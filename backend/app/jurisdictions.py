@@ -112,9 +112,9 @@ PROFILES: dict[str, JurisdictionProfile] = {
         notary_enabled=False,
         corpus_fallback_language="de",
         # TEMPORARY (owner request 2026-08-01): DeepSeek for the full-feature
-        # demo — the local model (Ollama gemma3:27b, D-037 phase 5) stays
-        # installed and validated; set back to "local" before public launch
-        # (DE-LAUNCH-GATE item 3 requires it).
+        # demo. Local DE model migrated gemma3:27b -> qwen3.8:27b (D-082);
+        # DE-LAUNCH-GATE item 3 is REOPENED for formal re-validation before
+        # setting this back to "local" for public launch.
         llm_provider=None,
         cities=(
             "Berlin", "Hamburg", "München", "Köln", "Frankfurt am Main",
