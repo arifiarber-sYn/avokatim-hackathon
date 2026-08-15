@@ -10,6 +10,18 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-15 — Whisper STT: lease GPU në arbitrin qendror të flotës (openclaw-knowledge D-083) (Cursor / Fable 5)
+- Done: modeli Whisper STT është qiramarrës GPU interaktiv (~1.6 GB VRAM kur rezident).
+  E regjistrova te arbitri i përbashkët `~/scripts/gpu_arbiter.py` si `interactive`
+  (prioriteti më i lartë) për KOHËZGJATJEN e modelit rezident CUDA: `acquire` kur ngarkohet
+  CUDA te `_load_whisper`, `release` kur cikli idle i shkarkon (`_idle_unload_loop`) te
+  `backend/app/services/voice.py`. Helper i ri: `backend/app/services/gpu_lease.py`.
+- Verified: `py_compile` OK. Kostoja mbahet jashtë hot-path-it të transkriptimit (lidhur me
+  rezidencën, jo per-thirrje). Best-effort & këshillues: çdo dështim (arbitër mungon/gabim)
+  gëlltitet — STT s'varet e s'prishet nga kjo shtresë. Arbitri: flock + prioritete
+  interactive<music<batch (recetë `~/scripts/GPU-ARBITER.md`).
+- Left open / next: asgjë — integrimi hyn në fuqi në restart-in e ardhshëm të backend-it.
+
 ## 2026-08-15 — DE local LLM: gemma3:27b → qwen3.8:27b (openclaw-knowledge D-082) (Cursor / Opus 4.8)
 - Done: konsolidimi fleet-wide i modeleve (openclaw-knowledge D-082) fshiu `gemma3:27b`; migrova
   baseline-in lokal DE te **`qwen3.8:27b`** (`backend/.env: LOCAL_LLM_MODEL`), shtova

@@ -13,8 +13,9 @@ import asyncio
 import io
 import logging
 import tempfile
+import threading
+import time
 import wave
-from functools import lru_cache
 from pathlib import Path
 
 from app.config import settings
@@ -55,12 +56,26 @@ def tts_enabled() -> bool:
     return bool(tts_languages())
 
 
-@lru_cache(maxsize=2)
-def _whisper_model(which: str):
-    """Lazy singletons (sq fine-tune + stock multilingual) — loading takes
-    seconds, so it happens on the first transcription, not at boot. GPU
-    first (8x faster than CPU int8, ~1.6 GB VRAM per turbo model), CPU
-    fallback if CUDA is absent or broken."""
+# Model cache policy (2026-08-10, replaces a plain lru_cache):
+# - A CPU fallback is NOT sticky. After a kernel update the user session can
+#   come up before akmod-nvidia finishes the module, so the first load lands
+#   on CPU; with lru_cache that slow fallback lived until the next restart.
+#   Now CUDA is retried on the next call after a cooldown.
+# - Idle unload: a resident CUDA model holds ~1.6 GB VRAM; drop it after 30
+#   minutes of quiet so co-tenant GPU apps (ACE-Step, Ollama) get it back.
+_MODEL_IDLE_SECONDS = 30 * 60
+_CUDA_RETRY_SECONDS = 10 * 60
+
+_models: dict[str, dict] = {}  # which -> {model, cpu_fallback, next_cuda_retry}
+_models_guard = threading.Lock()
+_models_last_used = time.monotonic()
+_idle_unload_task: asyncio.Task | None = None
+
+
+def _load_whisper(which: str) -> tuple[object, bool]:
+    """Load one model (sq fine-tune or stock multilingual). GPU first
+    (8x faster than CPU int8, ~1.6 GB VRAM per turbo model), CPU fallback
+    if CUDA is absent or broken. Returns (model, is_cpu_fallback)."""
     from faster_whisper import WhisperModel
 
     if which == "sq":
@@ -73,19 +88,70 @@ def _whisper_model(which: str):
         try:
             model = WhisperModel(source, device="cuda", compute_type="float16", **kwargs)
             logger.info("Loaded Whisper model %s on CUDA", source)
-            return model
+            # Register as interactive GPU holder for the model's resident lifetime
+            # (fleet arbiter, openclaw-knowledge D-083). Best-effort; released on unload.
+            from app.services import gpu_lease
+            gpu_lease.acquire()
+            return model, False
         except Exception:
             if settings.voice_stt_device == "cuda":
                 raise
             logger.exception("CUDA Whisper failed, falling back to CPU")
     logger.info("Loading Whisper model %s on CPU", source)
-    return WhisperModel(
+    model = WhisperModel(
         source,
         device="cpu",
         compute_type="int8",
         cpu_threads=settings.voice_stt_threads,
         **kwargs,
     )
+    # Only a fallback (worth retrying CUDA) when the config wanted a GPU.
+    return model, settings.voice_stt_device in ("auto", "cuda")
+
+
+def _whisper_model(which: str):
+    """Lazy singletons — loading takes seconds, so it happens on the first
+    transcription, not at boot."""
+    global _models_last_used
+    now = time.monotonic()
+    with _models_guard:
+        entry = _models.get(which)
+        if entry is not None and entry["cpu_fallback"] and now >= entry["next_cuda_retry"]:
+            # CPU fallback is not sticky: drop it and try CUDA again.
+            logger.info("Retrying CUDA for Whisper model %r", which)
+            _models.pop(which)
+            entry = None
+        if entry is None:
+            model, cpu_fallback = _load_whisper(which)
+            entry = {
+                "model": model,
+                "cpu_fallback": cpu_fallback,
+                "next_cuda_retry": now + _CUDA_RETRY_SECONDS,
+            }
+            _models[which] = entry
+        _models_last_used = now
+        return entry["model"]
+
+
+async def _idle_unload_loop() -> None:
+    """Background task: free the Whisper models after a quiet period.
+    An in-flight transcription keeps its local reference, so clearing the
+    cache mid-decode is safe — VRAM frees when the last reference dies."""
+    while True:
+        await asyncio.sleep(60)
+        with _models_guard:
+            if _models and time.monotonic() - _models_last_used > _MODEL_IDLE_SECONDS:
+                logger.info("Unloading %d idle Whisper model(s)", len(_models))
+                _models.clear()
+                # VRAM freed → release the fleet GPU lease (D-083). Best-effort.
+                from app.services import gpu_lease
+                gpu_lease.release()
+
+
+def _ensure_idle_unload_task() -> None:
+    global _idle_unload_task
+    if _idle_unload_task is None or _idle_unload_task.done():
+        _idle_unload_task = asyncio.get_running_loop().create_task(_idle_unload_loop())
 
 
 def _transcribe_sync(audio_bytes: bytes, language: str | None) -> dict:
@@ -123,6 +189,7 @@ async def transcribe(audio_bytes: bytes, language: str | None = None) -> dict:
     """audio_bytes: any container ffmpeg/PyAV understands (webm/opus, wav, mp4)."""
     if not stt_enabled():
         raise RuntimeError("STT model not installed (data/models/whisper-sq-ct2)")
+    _ensure_idle_unload_task()
     async with _stt_lock:
         return await asyncio.to_thread(_transcribe_sync, audio_bytes, language)
 
