@@ -312,6 +312,10 @@ _SQ = {
     "wa_error": "Diçka shkoi keq gjatë postimit — provo përsëri më vonë ose posto direkt te {url}/posto-rastin",
     "wa_quota": "Ke arritur kufirin ditor të pyetjeve falas. Provo nesër, ose vazhdo në {url}/ava",
     "wa_unavailable": "Ava nuk është e disponueshme për momentin. Provo përsëri më vonë ose shkruaj në {url}/ava",
+    "lawyer_verify_reminder_subject": "AvokatIM — Kujtesë: konfirmo email-in për provën 365-ditore",
+    "lawyer_verify_reminder_body": (
+        "Regjistrimi yt është pothuajse i plotë — mungon vetëm konfirmimi i email-it.\n\nKonfirmo këtu:\n{url}\n\n💡 Nëse nuk e sheh email-in, kontrollo dosjen Spam/Junk ose Promotions — Gmail ndonjëherë i fsheh aty.\n\nLinku vlen 3 ditë. Prova jote 365-ditore nis sapo të konfirmosh.\n\n— AvokatIM"
+    ),
 }
 
 _SR = {
@@ -601,6 +605,10 @@ _SR = {
     "wa_error": "Nešto je pošlo naopako pri objavljivanju — pokušaj kasnije ili objavi direktno na {url}/posto-rastin",
     "wa_quota": "Dostigao si dnevni limit besplatnih pitanja. Pokušaj sutra ili nastavi na {url}/ava",
     "wa_unavailable": "Ava trenutno nije dostupna. Pokušaj kasnije ili piši na {url}/ava",
+    "lawyer_verify_reminder_subject": "AvokatIM — Podsetnik: potvrdite e-poštu za 365-dnevnu probu",
+    "lawyer_verify_reminder_body": (
+        "Registracija je skoro gotova — nedostaje samo potvrda e-pošte.\n\nPotvrdi ovde:\n{url}\n\n💡 Ako ne vidiš e-poruku, proveri Spam/Junk ili Promotions folder — Gmail ponekad sakrije poruke tamo.\n\nLink važi 3 dana. Tvoja 365-dnevna proba počinje čim potvrdiš.\n\n— AvokatIM"
+    ),
 }
 
 _TR = {
@@ -892,6 +900,10 @@ _TR = {
     "wa_error": "Gönderim sırasında bir şeyler ters gitti — daha sonra tekrar dene veya doğrudan şuradan gönder: {url}/posto-rastin",
     "wa_quota": "Günlük ücretsiz soru sınırına ulaştın. Yarın dene veya {url}/ava adresinden devam et",
     "wa_unavailable": "Ava şu anda kullanılamıyor. Daha sonra tekrar dene veya {url}/ava adresine yaz",
+    "lawyer_verify_reminder_subject": "AvokatIM — Hatırlatma: 365 günlük deneme için e-postanızı doğrulayın",
+    "lawyer_verify_reminder_body": (
+        "Kaydınız neredeyse tamam — sadece e-posta doğrulaması kaldı.\n\nBuradan doğrulayın:\n{url}\n\n💡 E-postayı görmüyorsanız, Spam/Junk veya Promotions klasörünü kontrol edin — Gmail bazen oraya saklar.\n\nBağlantı 3 gün geçerlidir. Doğruladığınız anda 365 günlük denemeniz başlar.\n\n— AvokatIM"
+    ),
 }
 
 _BS = {
@@ -1181,6 +1193,10 @@ _BS = {
     "wa_error": "Nešto je pošlo naopako pri objavljivanju — pokušaj kasnije ili objavi direktno na {url}/posto-rastin",
     "wa_quota": "Dostigao si dnevni limit besplatnih pitanja. Pokušaj sutra ili nastavi na {url}/ava",
     "wa_unavailable": "Ava trenutno nije dostupna. Pokušaj kasnije ili piši na {url}/ava",
+    "lawyer_verify_reminder_subject": "AvokatIM — Podsjetnik: potvrdite e-poštu za 365-dnevnu probu",
+    "lawyer_verify_reminder_body": (
+        "Registracija je skoro gotova — nedostaje samo potvrda e-pošte.\n\nPotvrdi ovdje:\n{url}\n\n💡 Ako ne vidiš e-poruku, provjeri Spam/Junk ili Promotions folder — Gmail ponekad sakrije poruke tamo.\n\nLink važi 3 dana. Tvoja 365-dnevna proba počinje čim potvrdiš.\n\n— AvokatIM"
+    ),
 }
 
 _EN = {
@@ -1471,6 +1487,10 @@ _EN = {
     "wa_error": "Something went wrong while posting — try again later or post directly at {url}/posto-rastin",
     "wa_quota": "You've reached the daily limit of free questions. Try tomorrow, or continue at {url}/ava",
     "wa_unavailable": "Ava is unavailable right now. Try again later or write at {url}/ava",
+    "lawyer_verify_reminder_subject": "AvokatIM — Reminder: confirm your email for the 365-day trial",
+    "lawyer_verify_reminder_body": (
+        "Your registration is almost complete — just confirm your email.\n\nConfirm here:\n{url}\n\n💡 Can't find the email? Check your Spam/Junk or Promotions folder — Gmail sometimes hides it there.\n\nLink valid for 3 days. Your 365-day trial starts as soon as you confirm.\n\n— AvokatIM"
+    ),
 }
 
 _ZH = {
@@ -1658,6 +1678,10 @@ _ZH = {
     "wa_error": "发布时出了点问题——请稍后重试，或直接在 {url}/posto-rastin 发布",
     "wa_quota": "你已达到今日免费提问上限。明天再试，或前往 {url}/ava 继续",
     "wa_unavailable": "Ava 暂时不可用。请稍后重试，或在 {url}/ava 提问",
+    "lawyer_verify_reminder_subject": "AvokatIM — 提醒：确认电子邮件以激活365天试用",
+    "lawyer_verify_reminder_body": (
+        "您的注册即将完成——只需确认电子邮件。\n\n在此确认：\n{url}\n\n💡 找不到邮件？请检查垃圾邮件或促销文件夹——Gmail有时会将其隐藏在那里。\n\n链接有效期为3天。确认后，365天试用立即开始。\n\n— AvokatIM"
+    ),
 }
 
 _DE = {
@@ -1949,6 +1973,10 @@ _DE = {
     "wa_error": "Etwas ist beim Einstellen schiefgelaufen — versuch es später erneut oder stelle den Fall direkt ein: {url}/posto-rastin",
     "wa_quota": "Du hast das tägliche Limit kostenloser Fragen erreicht. Versuch es morgen, oder mach weiter auf {url}/ava",
     "wa_unavailable": "Ava ist im Moment nicht verfügbar. Versuch es später erneut oder schreibe auf {url}/ava",
+    "lawyer_verify_reminder_subject": "AvokatIM — Erinnerung: E-Mail für die 365-Tage-Testversion bestätigen",
+    "lawyer_verify_reminder_body": (
+        "Deine Registrierung ist fast abgeschlossen — bestätige nur noch deine E-Mail.\n\nHier bestätigen:\n{url}\n\n💡 Findest du die E-Mail nicht? Schau im Spam-/Junk- oder Werbeordner nach — Gmail versteckt sie manchmal dort.\n\nLink 3 Tage gültig. Deine 365-Tage-Testversion startet, sobald du bestätigst.\n\n— AvokatIM"
+    ),
 }
 
 CATALOG: dict[str, dict[str, str]] = {

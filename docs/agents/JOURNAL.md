@@ -10,6 +10,14 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-15 — Committed: verification reminder (2h nudge) — work i mbetur (sesioni Cursor D-082)
+- Done: `_send_verification_reminder` (auth.py) + çelësat i18n — 2h pas
+  regjistrimit dërgon NJË kujtesë me token të ri nëse emaili s'u konfirmua
+  (Gmail spam-folder false negatives). Ishte LIVE në prodhim nga pema e
+  punës, pa commit — u sigurua në historik nga Halim.
+- Verified: sintaksë OK. U rinis avokatim.service me këtë kod LIVE tashmë.
+- Left open: asnjë.
+
 ## 2026-08-15 — Fix: auto-verify NameError + corpus duplicate -> 409 (Halim)
 - Done: (1) `app/api/marketplace.py` — `_auto_verify_or_notify` thirrte
   `try_auto_verify` pa import; çdo onboarding submit dështonte me NameError dhe

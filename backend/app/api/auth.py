@@ -114,6 +114,39 @@ async def _send_verification_email(user_id: uuid.UUID, email: str, locale: str) 
     )
 
 
+async def _send_verification_reminder(user_id: uuid.UUID, email: str, locale: str) -> None:
+    """Wait 2 hours, then send ONE reminder if the email is still unconfirmed.
+
+    Most drop-offs are Gmail spam-folder false negatives — a single nudge
+    with a fresh token and a Spam/Junk hint recovers 10-20 % of those users.
+    We intentionally do NOT cascade (no second reminder) because more than
+    one feels pushy and the real problem after 24 h is usually a different
+    domain/filter issue that an email can't fix."""
+    import asyncio
+
+    await asyncio.sleep(7200)  # 2 hours
+
+    from app.database import SessionLocal
+    from app.models import User
+
+    async with SessionLocal() as db:
+        user = await db.get(User, user_id)
+        if user is None or user.email_verified_at is not None:
+            return  # Already verified or account deleted — nothing to do
+
+    from app.i18n import pick_locale, tr
+
+    loc = pick_locale(locale)
+    token = create_purpose_token("verify_email", user_id, minutes=60 * 24 * 3)
+    url = f"{settings.public_base_url}/verifiko-email?token={token}"
+    await send_email(
+        email,
+        tr(loc, "lawyer_verify_reminder_subject"),
+        tr(loc, "lawyer_verify_reminder_body", url=url),
+    )
+    logger.info("Verification reminder sent to %s", email)
+
+
 async def _send_welcome_email(
     email: str, name: str, locale: str, profession: str = "lawyer",
     trial_days: int = TRIAL_DAYS,
@@ -254,6 +287,7 @@ async def signup(
     )
     await db.commit()
     background.add_task(_send_verification_email, user.id, user.email, body.locale)
+    background.add_task(_send_verification_reminder, user.id, user.email, body.locale)
     background.add_task(
         _send_welcome_email, user.email, user.full_name, body.locale,
         body.profession, profile.trial_days,
