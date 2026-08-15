@@ -30,6 +30,9 @@ class LocalProvider(LLMProvider):
                     "messages": [{"role": m.role, "content": m.content} for m in messages],
                     "temperature": temperature,
                     "max_tokens": max_tokens or 4096,
+                    # qwen3.8:27b eshte model "thinking" (D-082); low e mban latencen e
+                    # parashikueshme pa e prishur cilesine RAG. gemma3 (jo-thinking) e injoronte.
+                    "reasoning_effort": "low",
                 },
             )
         resp.raise_for_status()
@@ -59,6 +62,7 @@ class LocalProvider(LLMProvider):
                     "messages": [{"role": m.role, "content": m.content} for m in messages],
                     "temperature": temperature,
                     "max_tokens": max_tokens or 4096,
+                    "reasoning_effort": "low",
                     "stream": True,
                 },
             ) as resp:

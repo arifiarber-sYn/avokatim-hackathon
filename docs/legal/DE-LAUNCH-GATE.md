@@ -27,14 +27,19 @@ rastit + shablloni Deckungsanfrage, eksporti DATEV EXTF. Verifikuar E2E me
    aktual në makinën e pronarit mjafton vetëm për beta të mbyllur.
 2. **Përfaqësues në BE sipas GDPR Art. 27** — i detyrueshëm për ofrues
    jashtë BE-së që përpunojnë të dhëna të banorëve të BE-së.
-3. **LLM lokal për kërkesat DE** — infrastruktura ✅ **GATI (D-037)**:
-   `gemma3:27b` në Ollama është instaluar, testuar dhe validuar
-   (kundër qwen3:14b për cilësi gjermanishteje; gemma3 fitoi: pa
-   "thinking", latencë e parashikueshme, citim korrekt me RAG).
-   **⚠️ PËRKOHËSISHT në DeepSeek** (kërkesa e pronarit 2026-08-01, për
-   demonstrimin e plotë të funksioneve). PARA lansimit publik kthe
-   `PROFILES["DE"].llm_provider = "local"` në `backend/app/jurisdictions.py`
-   — vetëm atëherë asnjë kërkesë qytetari DE s'del nga makina.
+3. **LLM lokal për kërkesat DE** — ⚠️ **RIHAPUR: kërkon RI-VALIDIM (D-082, 2026-08-15)**.
+   Baseline-i i vjetër `gemma3:27b` u **fshi** në konsolidimin fleet-wide të modeleve
+   (openclaw-knowledge D-082). Modeli i ri lokal = **`qwen3.8:27b`**
+   (`backend/.env: LOCAL_LLM_MODEL=qwen3.8:27b`; `backend/app/llm/local.py` shton
+   `reasoning_effort=low` sepse qwen3.8 është model "thinking"). Validim informal i mëparshëm:
+   shootout-i DE i D-081 (pa përgjigje boshe, dallim korrekt Mieter/Vermieter § 573c BGB,
+   citim korrekt "Art. 17 DSGVO", latencë 1.7–3.5s). **⚠️ PËRKOHËSISHT në DeepSeek**
+   (kërkesa e pronarit 2026-08-01). **PARA lansimit publik DE, ri-validim formal:**
+   (a) rikonfirmo cilësinë gjermanishte të `qwen3.8:27b` me RAG real; (b) verifiko madhësinë
+   e kontekstit — endpoint-i OpenAI-compat i Ollama-s NUK pranon `num_ctx` në body, pra nëse
+   RAG-u kalon ~4K tokena duhet një variant Modelfile me `num_ctx` më të madh (p.sh. si
+   `qwen3.8:27b-agent`, ctx 40K); (c) pastaj kthe `PROFILES["DE"].llm_provider = "local"` në
+   `backend/app/jurisdictions.py` — vetëm atëherë asnjë kërkesë qytetari DE s'del nga makina.
 4. **Rishikim ligjor nga avokat gjerman** i AGB-ve, Datenschutzerklärung
    dhe Impressum (draftet janë në `frontend/src/lib/legal.ts` dhe
    `frontend/src/app/impressum/page.tsx`). Plotëso adresën fizike te

@@ -10,6 +10,19 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-15 — DE local LLM: gemma3:27b → qwen3.8:27b (openclaw-knowledge D-082) (Cursor / Opus 4.8)
+- Done: konsolidimi fleet-wide i modeleve (openclaw-knowledge D-082) fshiu `gemma3:27b`; migrova
+  baseline-in lokal DE te **`qwen3.8:27b`** (`backend/.env: LOCAL_LLM_MODEL`), shtova
+  `reasoning_effort=low` në `backend/app/llm/local.py` (qwen3.8 është "thinking"; gemma3 nuk ishte),
+  dhe **rihapa item 3 të `docs/legal/DE-LAUNCH-GATE.md`** për ri-validim formal.
+- Verified: PA dëm runtime — AvokatIM live përdor `LLM_PROVIDER=deepseek`; profili DE mbetet
+  `llm_provider=None` (demo), pra modeli lokal s'thirret aktualisht. Validim informal i qwen3.8 për
+  gjermanisht: shootout-i DE i D-081 (pa përgjigje boshe, citim korrekt Art. 17 DSGVO).
+- Left open / next: PARA lansimit publik DE — (a) ri-validim formal i cilësisë gjermanishte të
+  qwen3.8:27b me RAG real; (b) sizing i kontekstit (endpoint-i OpenAI i Ollama-s s'pranon `num_ctx`
+  në body → mund të duhet variant Modelfile me `num_ctx` më të madh si `qwen3.8:27b-agent`);
+  (c) pastaj `PROFILES["DE"].llm_provider="local"`. NUK preka punën e pakommit-uar të agjentit tjetër.
+
 ## 2026-08-10 — ops_roster_health: green kur vetë-riparon + hiq edas-acestep (D-070) (Cursor / Fable 5)
 - Done: `ops_roster_health.py` del me kod jo-zero VETËM për probleme të PAZGJIDHURA (vetë-riparimi
   s'është më "error"); shtova riverifikim pas restart-it (`repaired_all`) + rreshtat "u vetë-riparuan"/
