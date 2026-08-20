@@ -1,3 +1,8 @@
+## 2026-08-20 — Test alignment with ops_roster_health new signature (Halim, fable5-watch)
+- Done: përditësuar `backend/tests/test_ops_roster_health.py` me firmën e re — `check()` kthen 4 vlera (problems, repairs, ok, unresolved) dhe `build_report()` pranon argumentin `unresolved` (ndryshim i D-070: projektet e vetë-shëruara nuk janë më error).
+- Verified: 5/5 teste kalojnë (më parë 4 dështonin, para-ekzistues — auditimi i outreach-it G1-G3/O1-O7 i Fable 5).
+- Left open: asnjë; bounce-i i testit x@example.com (RFC 2606) injorohet.
+
 # JOURNAL — chronological work log
 
 > Append one entry per session/task, newest at the top. Keep entries short:
