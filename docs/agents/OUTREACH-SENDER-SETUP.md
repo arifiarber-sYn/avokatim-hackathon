@@ -1,8 +1,14 @@
 # OUTREACH-SENDER-SETUP — dërguesi i dedikuar për cold outreach (D-069)
 
-> STATUS: **LIVE (2026-08-05).** Domain `mail.avokatiim.ai` i krijuar në Resend,
-> DKIM+SPF+DMARC në Cloudflare, i verifikuar; fushatat në mode `resend`.
-> Çelësat: `OUTREACH_RESEND_KEY`/`OUTREACH_FROM` te `infrastructure.env`;
+> STATUS: **LIVE (2026-08-05; i RIKTHYER 2026-08-20).** Domain `mail.avokatiim.ai`
+> i krijuar në Resend, DKIM+SPF+DMARC në Cloudflare, i verifikuar; fushatat në
+> mode `resend`.
+> Çelësat: `OUTREACH_RESEND_KEY`/`OUTREACH_FROM` te
+> `~/.securevault/secrets/infrastructure.env` (rruga kanonike D-077 — shtegu i
+> vjetër `workspace/secrets` U HOQ; auditimi O1 i 2026-08-20 kapi që
+> `outreach_sender.py` lexonte ende shtegun e vjetër → binte HESHTUR në Gmail
+> personal; u rregullua + tani modi `smtp` është FAIL-CLOSED për outreach të
+> ftohtë — refuzon pa `ALLOW_SMTP_FALLBACK=1` eksplicit).
 > Cloudflare token te `~/.cloudflared/cert.pem` (vegla `~/scripts/cloudflare_dns.py`).
 > Hapat e mëposhtëm mbahen për referencë/rollback ose për një domain të ri.
 
@@ -28,7 +34,7 @@ opt-out (STOP → `data/de_suppress.txt`) punojnë PA ndryshim.
    - API Keys → Create → *Full access*. (Çelësi aktual `RESEND_API_KEY` te
      `infrastructure.env` është I PAVLEFSHËM — provuar 2026-08-05; ai i
      OpsHub-it është send-only dhe s'menaxhon dot domain-e.)
-   - Shtoje te `~/.openclaw/workspace/secrets/infrastructure.env`:
+   - Shtoje te `~/.securevault/secrets/infrastructure.env`:
      ```
      OUTREACH_RESEND_KEY=re_...
      ```

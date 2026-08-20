@@ -62,3 +62,20 @@ def test_harvester_albanian_score_ranks_diaspora_first():
     assert harvest.albanian_score("Arta", "Krasniqi") >= 2
     assert harvest.albanian_score("Liridon", "Berisha") >= 2
     assert harvest.albanian_score("Thomas", "Müller") == 0
+
+
+def test_pending_rows_in_batch_dedup():
+    """O4 (audit 2026-08-20): a duplicate row inside one harvested batch must
+    not double-send — the XK 'Vuksani' incident, now covered on DE too."""
+    rows = [
+        {"email": "a@example.de", "nachname": "Eins"},
+        {"email": "A@Example.DE", "nachname": "Eins-Dublikat"},  # in-batch dup
+        {"email": "b@example.de", "nachname": "Zwei"},
+        {"email": "c@example.de", "nachname": "Gesendet"},
+        {"email": "d@example.de", "nachname": "Unterdrueckt"},
+        {"email": "", "nachname": "OhneAdresse"},
+    ]
+    out = campaign.pending_rows(rows, sent={"c@example.de"},
+                                suppress={"d@example.de"})
+    assert [r["email"].lower() for r in out] == ["a@example.de", "b@example.de"]
+    assert out[0]["nachname"] == "Eins"  # the first occurrence wins

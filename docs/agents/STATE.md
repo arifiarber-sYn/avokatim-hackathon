@@ -309,23 +309,27 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   notifies the lawyer; `pending_payment` holds the slot; Stripe error or no
   key ⇒ free flow unchanged. Migrations `c3a3e4c5a37f`, `8fc9637a45d9`,
   `e0c562b27017`.
-- **Automated professional outreach** (2026-07-14): `avokatim-outreach.timer`
+- **Automated professional outreach** (2026-07-14; cap lowered 60→**25**/day
+  per D-069, docs synced by the 2026-08-20 audit O7): `avokatim-outreach.timer`
   (systemd user unit, daily 09:30, `Persistent=true` → catches up after a
-  reboot) runs `backend/scripts/oak_outreach_campaign.py`: 30 personalized
-  emails/day, same-day guard against double batches, dedup via
-  `data/oak_outreach_log.csv` (now with `audience` column), registered
-  users/citizens auto-suppressed from the DB. Phase 1 lawyers
-  (`data/oak_registry.csv`), then automatically phase 2 notaries
+  reboot) runs `backend/scripts/oak_outreach_campaign.py`: up to 25
+  personalized emails/day via the dedicated Resend sender
+  (`mail.avokatiim.ai`, warm-up capped; SMTP fallback is FAIL-CLOSED for cold
+  mail since 2026-08-20 — O1), same-day guard against double batches, dedup
+  via `data/oak_outreach_log.csv` (now with `audience` column) plus in-batch
+  dedup, registered users/citizens auto-suppressed from the DB. Phase 1
+  lawyers (`data/oak_registry.csv`), then automatically phase 2 notaries
   (`data/notaries.json`) with a notary letter. Output → `data/outreach.log`.
-- **German lawyer outreach — PAUSED** (built 2026-08-05 as D-061, paused the
-  same day by D-062): `scrape_de_lawyers.py` (harvest from anwaltauskunft.de
-  → `data/de_lawyers.csv`) and `de_outreach_campaign.py` (15 German
-  "Gründungspartner" letters/day) are ready, but `avokatim-outreach-de.timer`
-  is **disabled** — in Germany we target companies, not 39 €/month
-  subscribers. Re-enable only on owner decision:
-  `systemctl --user enable --now avokatim-outreach-de.timer`. Opt-outs stay
-  auto-handled (`optout` class → `data/de_suppress.txt`, read by BOTH
-  campaigns).
+- **German lawyer outreach (Track B) — PAUSED, units removed** (built
+  2026-08-05 as D-061, paused the same day by D-062; systemd units DELETED by
+  the 2026-08-20 audit O3 to prevent accidental re-activation):
+  `scrape_de_lawyers.py` (harvest from anwaltauskunft.de →
+  `data/de_lawyers.csv`) and `de_outreach_campaign.py` (15 German
+  "Gründungspartner" letters/day, in-batch dedup since 2026-08-20) remain in
+  the repo, double-gated: real sends need `DE_TRACK_B_ENABLE=1` AND
+  re-creating the timer — owner decision only. In Germany we target
+  companies, not 39 €/month subscribers. Opt-outs stay auto-handled (`optout`
+  class → `data/de_suppress.txt`, read by BOTH campaigns).
 - **German company outreach — Track A, the primary DE channel** (2026-08-05,
   D-062): ~12 researched buyer candidates (insurers ADVOCARD/ROLAND/ARAG,
   no-AI vendors Haufe-Advolux/Actaport, consolidators Septeo/WK, publishers,

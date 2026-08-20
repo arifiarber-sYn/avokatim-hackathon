@@ -211,6 +211,21 @@ def area_line(row: dict) -> str:
     )
 
 
+def pending_rows(rows: list[dict], sent: set[str], suppress: set[str]) -> list[dict]:
+    """Filter out already-sent/suppressed addresses AND duplicates within the
+    source list itself (in-batch dedup — same fix as the XK campaign's 2026-07
+    'Vuksani' double-send incident; audit 2026-08-20, O4)."""
+    seen_in_batch: set[str] = set()
+    out: list[dict] = []
+    for r in rows:
+        addr = (r.get("email") or "").lower()
+        if not addr or addr in sent or addr in suppress or addr in seen_in_batch:
+            continue
+        seen_in_batch.add(addr)
+        out.append(r)
+    return out
+
+
 def _kill_switch_active() -> bool:
     """True when halim_guard says autonomy is halted (exit code 1)."""
     if not HALIM_GUARD.exists():
@@ -255,9 +270,7 @@ def main() -> None:
     sent = {r["email"].lower() for r in log_rows}
     suppress = {s.lower() for s in SUPPRESS} | file_suppressions() | registered_emails()
 
-    pending = [r for r in load_lawyers()
-               if r["email"].lower() not in sent
-               and r["email"].lower() not in suppress]
+    pending = pending_rows(load_lawyers(), sent, suppress)
 
     if not pending:
         print("campaign complete — every harvested lawyer has been contacted")

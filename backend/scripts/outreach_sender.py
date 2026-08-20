@@ -12,9 +12,13 @@ MODES (picked automatically):
             OUTREACH_FROM are configured AND the domain is verified.
             Enforces the warm-up cap (see warmup_cap()).
 - smtp    — fallback: the current Gmail SMTP path (settings.smtp_*).
+            FAIL-CLOSED (audit 2026-08-20, O1): cold sends in this mode are
+            REFUSED unless ALLOW_SMTP_FALLBACK=1 is set explicitly — the
+            personal Gmail must never silently carry cold outreach again.
 
 Config, read from the environment first and then from
-~/.openclaw/workspace/secrets/infrastructure.env:
+~/.securevault/secrets/infrastructure.env (canonical vault path since D-077;
+the old workspace/secrets symlink was removed):
     OUTREACH_RESEND_KEY=re_...          full-access or sending key
     OUTREACH_FROM=Arbër Arifi <arber@mail.avokatiim.ai>
     OUTREACH_REPLY_TO=arifi.arber@gmail.com     (default)
@@ -42,7 +46,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from app.config import settings  # noqa: E402
 
-INFRA_ENV = Path.home() / ".openclaw" / "workspace" / "secrets" / "infrastructure.env"
+INFRA_ENV = Path.home() / ".securevault" / "secrets" / "infrastructure.env"
 RESEND_API = "https://api.resend.com"
 
 # Warm-up schedule for a fresh sending domain: (max age in days, daily cap).
@@ -138,7 +142,16 @@ class Sender:
                 payload["headers"] = {"List-Unsubscribe": list_unsubscribe}
             _api("/emails", payload)
             return
-        # SMTP fallback — identical to the campaigns' historic path.
+        # SMTP fallback — identical to the campaigns' historic path, but
+        # FAIL-CLOSED for cold outreach (audit 2026-08-20, O1): the personal
+        # Gmail carries the platform's transactional mail; a blacklist event
+        # there breaks everything. Explicit opt-in only.
+        if os.environ.get("ALLOW_SMTP_FALLBACK") != "1":
+            raise SystemExit(
+                "REFUZUAR (fail-closed, O1): modi 'smtp' = Gmail personal — "
+                "outreach i ftohtë s'dërgohet këtu. Rregullo Resend-in "
+                "(OUTREACH_RESEND_KEY/OUTREACH_FROM te infrastructure.env) ose "
+                "vendos ALLOW_SMTP_FALLBACK=1 me vetëdije.")
         if self._smtp is None:
             self._smtp = smtplib.SMTP(settings.smtp_host, settings.smtp_port,
                                       timeout=30)

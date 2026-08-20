@@ -10,6 +10,29 @@
 > - Left open / next: ...
 > ```
 
+## 2026-08-20 — Forcimi mbrojtës i outreach-it: auditimi G1–G3/O1–O7 (Cursor/Fable 5)
+- Done: **O1 shkaku rrënjësor** — `outreach_sender.py` lexonte
+  `workspace/secrets/infrastructure.env` (shteg i HEQUR nga D-077) → Resend
+  s'gjendej kurrë dhe cold outreach binte HESHTUR në Gmail-in personal që nga
+  5 gushti; u rregullua te `~/.securevault/secrets/` → **mode=resend live**
+  (cap 25). Plus FAIL-CLOSED: modi `smtp` refuzon dërgim të ftohtë pa
+  `ALLOW_SMTP_FALLBACK=1`. **O4** — `pending_rows()` me dedup brenda batch-it
+  te `de_outreach_campaign.py` (fix-i Vuksani i XK, tani edhe DE) + test.
+  **O3** — njësitë `avokatim-outreach-de.{timer,service}` U FSHINË (ishin
+  disabled; skripti mbetet me portën `DE_TRACK_B_ENABLE=1`). **O7** — STATE/
+  ROADMAP sync (30→25/ditë, statusi real i dërguesit). **G2** — klasa hardline
+  `mail-adhoc` te `~/scripts/halim_guard.py` (s-nail/mailx/msmtp/sendmail
+  bllokohen mekanikisht). **G1/O2** — verifikuar pa veprim (heartbeat një
+  shteg; ledger + List-Unsubscribe në vend). **G3** — PO/JO e vjetruar e
+  korsisë personale → D-070 te playbook-et e workspace.
+- Verified: outreach tests 16/16; suita e plotë backend 351 pass (4 dështime
+  PARA-EKZISTUESE te `test_ops_roster_health.py` — të paprekura nga kjo punë,
+  "too many values to unpack": skripti ndryshoi firmën, testi jo); `Sender().mode
+  == "resend"` live; fail-closed i provuar (refuzim pa override).
+- Left open: 4 testet e roster-health duan rregullim (pronari i asaj vegle);
+  shënim ndershmërie — gjatë provës së override-it u dërgua 1 email test real
+  te `x@example.com` (RFC 2606, pa marrës real; bounce kthehet në inbox).
+
 ## 2026-08-15 — Committed: verification reminder (2h nudge) — work i mbetur (sesioni Cursor D-082)
 - Done: `_send_verification_reminder` (auth.py) + çelësat i18n — 2h pas
   regjistrimit dërgon NJË kujtesë me token të ri nëse emaili s'u konfirmua

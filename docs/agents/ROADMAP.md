@@ -131,8 +131,9 @@ P3 — office differentiation:
 - [ ] Public API tokens for integrations.
 
 Growth operations (running):
-- [x] Automated outreach ✅ (2026-07-14): `avokatim-outreach.timer`, 30
-      emails/day to OAK lawyers, auto-switches to ONK notaries when done.
+- [x] Automated outreach ✅ (2026-07-14): `avokatim-outreach.timer`, up to 25
+      emails/day (D-069 cap, dedicated Resend sender) to OAK lawyers,
+      auto-switches to ONK notaries when done.
 - [x] Notaries as second paying profession ✅ (2026-07-13): signup choice,
       `/per-noteret`, ONK verification, adapted dashboard, no marketplace.
 - [x] Self-hosted analytics ✅ (2026-07-13): Umami at stats.avokatiim.ai.
