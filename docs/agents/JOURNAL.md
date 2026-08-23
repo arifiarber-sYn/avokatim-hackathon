@@ -7,6 +7,12 @@
 - Verified: 5/5 teste kalojnë (më parë 4 dështonin, para-ekzistues — auditimi i outreach-it G1-G3/O1-O7 i Fable 5).
 - Left open: asnjë; bounce-i i testit x@example.com (RFC 2606) injorohet.
 
+## 2026-08-23 — DE launch-gate item 3 follow-up: corpus chunking fix (Halim, iniciativa 13:30)
+- Done: rregulluar `backend/app/services/rag.py::chunk_text` — paragrafët e vetëm më të gjatë se CHUNK_SIZE (1200) tani ndahen përmes `_split_paragraph` (kufij fjalish me regex të sigurt për shkurtesat gjermane "Art. 1"/"Abs. 2"/"z. B.", pastaj hard-cap në CHUNK_SIZE për fjali gjigante). Ky ishte shkaku i max prompt 15.3K tokena në eval-in e mëngjesit: korpusi DE ka paragrafë ligjorë gjigantë që s'ndaheshin kurrë.
+- Done: 3 teste të reja në `tests/test_rag_chunking.py` (paragraf gjigant ndahet; fjali >CHUNK_SIZE pa kufij ndahet hard me ruajtje të plotësisë; shkurtesat nuk priten).
+- Verified: `pytest tests/ -q` → 358 passed (para-ekzistuese + të reja), 15s.
+- Left open / next: (1) ri-indeksimi i korpusit DE ekzistues (chunk-et e vjetra në DB mbeten gjigantë — duhet re-chunk + ri-embedding i dokumenteve DE); (2) latenca p95 19.3s vs ≤5s — GPU e lirë ose kriter i rishikuar; pastaj ri-ekzekuto `eval_de_quality.py`. DE mbetet në DeepSeek deri atëherë.
+
 # JOURNAL — chronological work log
 
 > Append one entry per session/task, newest at the top. Keep entries short:

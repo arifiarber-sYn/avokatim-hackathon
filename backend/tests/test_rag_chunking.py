@@ -9,6 +9,33 @@ def test_chunk_text_splits_long_text():
     assert all(len(c) <= 2500 for c in chunks)
 
 
+def test_chunk_text_splits_giant_paragraph():
+    # German legal paragraphs are often multi-kilobyte single paragraphs —
+    # they must be split, never kept as one oversized chunk (DE launch-gate item 3).
+    text = "§ 1\n" + "Satz. " * 300  # ~1800 chars, one paragraph, no blank lines
+    chunks = chunk_text(text)
+    assert len(chunks) > 1
+    assert all(len(c) <= 2500 for c in chunks)
+    assert "Satz" in chunks[0]
+
+
+def test_chunk_text_hard_caps_oversized_sentence():
+    # A single sentence longer than CHUNK_SIZE (no sentence boundary to split
+    # on) still gets hard-capped at CHUNK_SIZE instead of staying one blob.
+    text = "X" * 3000  # no spaces, no punctuation — worst case
+    chunks = chunk_text(text)
+    assert all(len(c) <= 2500 for c in chunks)
+    assert "".join(chunks) == text
+
+
+def test_chunk_text_keeps_abbreviations_intact():
+    # "Art. 1", "Abs. 2", "z. B." must not be split mid-abbreviation.
+    text = "Gemäß Art. 1 Abs. 2 gilt dies, z. B. für Mieter. " * 100
+    chunks = chunk_text(text)
+    assert all(len(c) <= 2500 for c in chunks)
+    assert any("Art. 1 Abs. 2" in c for c in chunks)
+
+
 def test_split_by_articles_albanian():
     text = "Hyrje e ligjit.\n\nNeni 1\nDispozita e parë.\n\nNeni 2\nDispozita e dytë."
     pieces = _split_by_articles(text)

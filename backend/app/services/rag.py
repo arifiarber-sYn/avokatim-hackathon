@@ -43,12 +43,60 @@ def embed(texts: list[str]) -> list[list[float]] | None:
     return [v.tolist() for v in model.encode(texts, normalize_embeddings=True)]
 
 
+# German sentences start with a capital letter, so this splits after .!?
+# only before an uppercase letter — never inside abbreviations like "Art. 1",
+# "Abs. 2", "Nr. 5", "z. B." (those are followed by digits/lowercase).
+_SENT_BOUNDARY = re.compile(r"(?<=[.!?])\s+(?=[A-ZÄÖÜ])")
+
+
+def _split_paragraph(p: str) -> list[str]:
+    """Split one oversized paragraph into ~CHUNK_SIZE pieces.
+
+    German legal texts (BGB sections, judgment "Gründe") routinely contain
+    multi-kilobyte single paragraphs. Paragraph boundaries alone are not
+    enough: split on sentence boundaries first, then hard-cap at CHUNK_SIZE
+    for sentences that are themselves oversized (DE launch-gate item 3,
+    2026-08-23: max prompt 15.3K tokens vs 13.1K budget).
+    """
+    pieces: list[str] = []
+    current = ""
+    for sentence in _SENT_BOUNDARY.split(p):
+        sentence = sentence.strip()
+        if not sentence:
+            continue
+        if len(current) + len(sentence) + 1 > CHUNK_SIZE and current:
+            pieces.append(current)
+            current = sentence
+        else:
+            current = f"{current} {sentence}" if current else sentence
+        while len(current) > CHUNK_SIZE:  # one enormous sentence
+            cut = current.rfind(" ", 0, CHUNK_SIZE)
+            if cut < CHUNK_SIZE // 2:  # no usable word boundary — hard cut
+                cut = CHUNK_SIZE
+            pieces.append(current[:cut].strip())
+            current = current[cut:].strip()
+    if current:
+        pieces.append(current)
+    return pieces
+
+
 def chunk_text(text: str) -> list[str]:
-    """Split on paragraph boundaries into ~CHUNK_SIZE character chunks."""
+    """Split on paragraph boundaries into ~CHUNK_SIZE character chunks.
+
+    Paragraphs longer than CHUNK_SIZE (common in German legal prose) are
+    split further via ``_split_paragraph`` so no single chunk exceeds the
+    embedding/LLM context budget.
+    """
     paragraphs = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
     chunks: list[str] = []
     current = ""
     for p in paragraphs:
+        if len(p) > CHUNK_SIZE:
+            if current:
+                chunks.append(current)
+                current = ""
+            chunks.extend(_split_paragraph(p))
+            continue
         if len(current) + len(p) + 2 > CHUNK_SIZE and current:
             chunks.append(current)
             current = current[-CHUNK_OVERLAP:] + "\n\n" + p
