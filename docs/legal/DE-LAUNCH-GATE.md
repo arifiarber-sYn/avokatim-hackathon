@@ -34,12 +34,15 @@ rastit + shablloni Deckungsanfrage, eksporti DATEV EXTF. Verifikuar E2E me
    `reasoning_effort=low` sepse qwen3.8 është model "thinking"). Validim informal i mëparshëm:
    shootout-i DE i D-081 (pa përgjigje boshe, dallim korrekt Mieter/Vermieter § 573c BGB,
    citim korrekt "Art. 17 DSGVO", latencë 1.7–3.5s). **⚠️ PËRKOHËSISHT në DeepSeek**
-   (kërkesa e pronarit 2026-08-01). **PARA lansimit publik DE, ri-validim formal:**
-   (a) rikonfirmo cilësinë gjermanishte të `qwen3.8:27b` me RAG real; (b) verifiko madhësinë
-   e kontekstit — endpoint-i OpenAI-compat i Ollama-s NUK pranon `num_ctx` në body, pra nëse
-   RAG-u kalon ~4K tokena duhet një variant Modelfile me `num_ctx` më të madh (p.sh. si
-   `qwen3.8:27b-agent`, ctx 40K); (c) pastaj kthe `PROFILES["DE"].llm_provider = "local"` në
-   `backend/app/jurisdictions.py` — vetëm atëherë asnjë kërkesë qytetari DE s'del nga makina.
+   (kërkesa e pronarit 2026-08-01).
+   **RI-VALIDIMI FORMAL I EKZEKUTUAR 2026-08-23 (P-07, `backend/scripts/eval_de_quality.py`):**
+   kriteret e cilësisë (a) KALOJAAN me `qwen3.8:27b` — 20/20 jo-bosh, 19/20 citim ref+§,
+   20/20 gjermanisht e pastër, 0 statute të shpikura — por **kriteret infrastrukturore
+   DËSHTOJNË**: p95 latencë 19.3s (kërkohet ≤5s) dhe prompt max 15.3K tokena > 80% e ctx
+   16384 të shërbyer (chunk-e gjigantë në korpus). Varianti `qwen3.8:27b-agent` (ctx 98K)
+   s'është praktik në këtë makinë (VRAM e pamjaftueshme → CPU offload). **DE QËNDRON NË
+   DeepSeek** derisa: (1) të rregullohet chunk-ing-u i korpusit DE, (2) të zgjidhet latenca
+   (GPU e lirë/dedikuar ose kriter i rishikuar), (3) të ri-ekzekutohet eval-i. Detaje: JOURNAL 2026-08-23.
 4. **Rishikim ligjor nga avokat gjerman** i AGB-ve, Datenschutzerklärung
    dhe Impressum (draftet janë në `frontend/src/lib/legal.ts` dhe
    `frontend/src/app/impressum/page.tsx`). Plotëso adresën fizike te

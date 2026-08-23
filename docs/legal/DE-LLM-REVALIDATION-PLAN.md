@@ -1,6 +1,13 @@
 # DE LLM re-validation plan — launch-gate item 3 (D-082)
 
-> **Status:** plan gati për ekzekutim (propozim P-07, 2026-08-18).
+> **Status: EKZEKUTUAR 2026-08-23 — VERDIKT: FAIL (item 3 mbetet i hapur).**
+> Rezultatet: `backend/scripts/eval_de_quality.py` + `backend/data/eval_de_quality_2026-08-23.json`.
+> Kriteret e cilësisë (a) kaluan; latenca (p95 19.3s vs ≤5s) dhe madhësia e kontekstit
+> (max 15.3K vs ≤13.1K tokena me ctx 16384) dështuan; `qwen3.8:27b-agent` (ctx 98K)
+> jopraktik në këtë makinë (VRAM → CPU offload). DE qëndron në DeepSeek.
+> Hapat e nevojshëm para ri-validimi: rregullimi i chunk-ing-ut të korpusit DE
+> (paragrafë gjigantë), zgjidhja e latencës (GPU e lirë ose kriter i rishikuar).
+> Detaje: docs/agents/JOURNAL.md 2026-08-23, docs/legal/DE-LAUNCH-GATE.md item 3.
 > **Target:** `PROFILES["DE"].llm_provider` → `"local"` (tani `None` = DeepSeek,
 > përkohësisht, kërkesë e pronarit 2026-08-01). Para lansimit publik DE, item 3
 > i DE-LAUNCH-GATE.md kërkon ri-validim formal të modelit lokal të ri
