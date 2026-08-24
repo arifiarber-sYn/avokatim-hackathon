@@ -3000,3 +3000,8 @@
   Caddy HTTPS), start/stop scripts, README.
 - Verified: backend tests passing; stack running; UI functional at :3000.
 - Left open: git repo initialized but no commits (fixed in next session).
+
+## 2026-08-24 — DE launch-gate item 3: corpus re-index capability + eval acts re-chunked (Halim, iniciativa 13:30)
+- Done: `scripts/import_de_laws.py` mori `--force` (re-index): fshin dokumentin ekzistues sipas reference-s (DELETE /api/corpus/{id}, 404 tolerant) dhe e ri-importon — ri-chunk me `chunk_text` të rregulluar (19d203f). Gjithashtu: mbështetje për `--slug` të përsëritur; statistika reindex në përmbledhje.
+- Verified: 5 aktet e eval-it u ri-indeksuan me `--force` (BGB 2686 chunks, ZPO 1138, StGB 652, KSchG 40, BUrlG 19); 0 chunk gjigantë (>2400) mbetur (më parë 123 te këto 5 akte; max tani 2395 chars). DB e verifikuar pas xhirimit.
+- Left open: ri-indeksimi i pjesës tjetër të korpusit DE (aktet e tjera + Landesrecht + Rechtsprechung, ~18.8k chunk gjigantë) si batch i ardhshëm; latenca p95 19.3s vs ≤5s mbetet problemi dominues (kërkon GPU të lirë/dedikuar ose kriter të rishikuar); pastaj ri-ekzekutim i `eval_de_quality.py`.

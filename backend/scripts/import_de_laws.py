@@ -13,6 +13,12 @@ Resumable like the GZK importer: (reference, "de") pairs already in the
 corpus are skipped. Import goes through the local corpus API so chunking
 (§-aware splitter) and local embeddings happen exactly like every other
 corpus document.
+
+Re-index (launch-gate item 3 follow-up): pass --force to DELETE the existing
+doc by reference first, then re-import it — needed to re-chunk docs that were
+indexed before chunk_text split oversized German legal paragraphs (giant
+chunks blew up the RAG prompt past the LLM context budget).
+    .venv/bin/python scripts/import_de_laws.py --slug bgb --force
 """
 import asyncio
 import io
@@ -162,9 +168,9 @@ def parse_gii_xml(data: bytes) -> tuple[str, str, str]:
     return title, reference, text
 
 
-async def import_slugs(slugs: list[str]) -> None:
+async def import_slugs(slugs: list[str], force: bool = False) -> None:
     token = await _api_token()
-    stats = {"ok": 0, "skip": 0, "fail": 0}
+    stats = {"ok": 0, "skip": 0, "fail": 0, "reindex": 0}
     async with httpx.AsyncClient(
         timeout=180, headers={"User-Agent": "AvokatIM corpus sync (contact: info@avokatiim.ai)"},
         follow_redirects=True,
@@ -174,7 +180,7 @@ async def import_slugs(slugs: list[str]) -> None:
         toc = await _load_toc(web)
         print(f"gii-toc: {len(toc)} acts on the portal", flush=True)
         existing = {
-            d.get("reference")
+            d.get("reference"): d.get("id")
             for d in (await api.get(f"{API}/corpus?jurisdiction_code=DE")).json()
         }
 
@@ -196,8 +202,22 @@ async def import_slugs(slugs: list[str]) -> None:
                 continue
             reference = reference or slug.upper()
             if reference in existing:
-                stats["skip"] += 1
-                continue
+                if not force:
+                    stats["skip"] += 1
+                    continue
+                # Re-index: drop the old doc (with its giant chunks) first, so
+                # the POST below re-chunks with the current chunk_text.
+                doc_id = existing[reference]
+                r = await api.delete(f"{API}/corpus/{doc_id}")
+                if r.status_code not in (204, 404):  # 404 = already gone, fine
+                    stats["fail"] += 1
+                    print(f"[{i}/{total}] ERR  {slug} delete old doc: "
+                          f"{r.status_code} {r.text[:150]}", flush=True)
+                    continue
+                stats["reindex"] += 1
+                print(f"[{i}/{total}] DEL {reference} (old doc removed, re-importing)",
+                      flush=True)
+                existing.pop(reference, None)
             if len(text) < MIN_CHARS:
                 print(f"[{i}/{total}] FAIL {slug}: only {len(text)} chars", flush=True)
                 stats["fail"] += 1
@@ -222,7 +242,7 @@ async def import_slugs(slugs: list[str]) -> None:
                 })
             if resp.status_code == 201:
                 stats["ok"] += 1
-                existing.add(reference)
+                existing[reference] = resp.json()["id"]
                 print(f"[{i}/{total}] OK   {reference} {title[:60]} "
                       f"({resp.json()['chunk_count']} chunks)", flush=True)
             else:
@@ -231,12 +251,21 @@ async def import_slugs(slugs: list[str]) -> None:
                       f"{resp.text[:150]}", flush=True)
             await asyncio.sleep(DOC_DELAY)
 
-    print(f"\nDE: ok={stats['ok']} skip={stats['skip']} fail={stats['fail']}")
+    print(f"\nDE: ok={stats['ok']} skip={stats['skip']} "
+          f"reindex={stats['reindex']} fail={stats['fail']}")
 
 
 if __name__ == "__main__":
+    force = "--force" in sys.argv
     if "--slug" in sys.argv:
-        wanted = [sys.argv[sys.argv.index("--slug") + 1].lower()]
+        # Support repeated --slug bgb --slug zpo ... (single --slug kept for
+        # backward compatibility).
+        wanted = []
+        args = sys.argv[1:]
+        while "--slug" in args:
+            idx = args.index("--slug")
+            wanted.append(args[idx + 1].lower())
+            args = args[idx + 2:]
     else:
         wanted = CORE_SLUGS
-    asyncio.run(import_slugs(wanted))
+    asyncio.run(import_slugs(wanted, force=force))
