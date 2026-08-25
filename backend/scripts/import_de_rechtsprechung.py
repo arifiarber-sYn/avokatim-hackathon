@@ -33,7 +33,7 @@ import httpx
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from corpus_common import api_token, existing_references  # noqa: E402
+from corpus_common import api_token, existing_reference_ids, existing_references  # noqa: E402
 
 API = "http://127.0.0.1:8000/api"
 RII = "https://www.rechtsprechung-im-internet.de"
@@ -147,7 +147,8 @@ def parse_rii_xml(data: bytes) -> dict:
     return {"title": title, "reference": az, "ecli": ecli, "text": text}
 
 
-async def import_decisions(courts: list[str], years: int, limit: int | None) -> None:
+async def import_decisions(courts: list[str], years: int, limit: int | None,
+                          force: bool = False) -> None:
     since = date.today() - timedelta(days=365 * years)
     token = await api_token()
     stats = {"ok": 0, "skip": 0, "fail": 0}
@@ -171,11 +172,38 @@ async def import_decisions(courts: list[str], years: int, limit: int | None) -> 
             items = items[:limit]
 
         existing = await existing_references("DE")
+        existing_ids = await existing_reference_ids("DE") if force else {}
 
         total = len(items)
         for i, item in enumerate(items, 1):
             if item["az"] in existing:
-                stats["skip"] += 1
+                if not force:
+                    stats["skip"] += 1
+                    continue
+                # Re-index: drop the old doc (with its giant chunks) first, so
+                # the POST below re-chunks with the current chunk_text.
+                doc_id = existing_ids.get(item["az"])
+                if doc_id:
+                    r = await api.delete(f"{API}/corpus/{doc_id}")
+                    if r.status_code not in (204, 404):
+                        stats["fail"] += 1
+                        print(f"[{i}/{total}] ERR  {item['az']} delete old doc: "
+                              f"{r.status_code} {r.text[:150]}", flush=True)
+                        continue
+                    existing.discard(item["az"])
+                    existing_ids.pop(item["az"], None)
+                    print(f"[{i}/{total}] DEL {item['az']} (old doc removed, re-importing)",
+                          flush=True)
+                else:
+                    # reference exists but no id resolved — treat as new
+                    existing.discard(item["az"])
+            try:
+                r = await web.get(item["url"])
+                r.raise_for_status()
+                parsed = parse_rii_xml(r.content)
+            except Exception as exc:  # noqa: BLE001 — log and continue the batch
+                print(f"[{i}/{total}] FAIL {item['az']}: {exc}", flush=True)
+                stats["fail"] += 1
                 continue
             try:
                 r = await web.get(item["url"])
@@ -246,4 +274,5 @@ if __name__ == "__main__":
         [c.strip() for c in str(courts_arg).split(",") if c.strip()],
         years_arg,
         int(limit_arg) if limit_arg else None,
+        force="--force" in sys.argv,
     ))

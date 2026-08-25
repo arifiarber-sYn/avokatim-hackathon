@@ -39,3 +39,18 @@ async def existing_references(jurisdiction_code: str) -> set[str]:
             )
         )
         return {r for (r,) in rows}
+
+
+async def existing_reference_ids(jurisdiction_code: str) -> dict[str, str]:
+    """reference -> doc id for one jurisdiction (for --force re-index:
+    DELETE the old doc before re-importing, so chunking runs fresh)."""
+    async with SessionLocal() as db:
+        rows = await db.execute(
+            select(LegalCorpusDoc.reference, LegalCorpusDoc.id)
+            .join(Jurisdiction, Jurisdiction.id == LegalCorpusDoc.jurisdiction_id)
+            .where(
+                Jurisdiction.code == jurisdiction_code,
+                LegalCorpusDoc.reference.isnot(None),
+            )
+        )
+        return {ref: str(doc_id) for (ref, doc_id) in rows}
