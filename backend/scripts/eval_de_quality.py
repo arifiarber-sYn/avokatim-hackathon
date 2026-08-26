@@ -38,15 +38,14 @@ from app.models import Jurisdiction, LegalCorpusChunk, LegalCorpusDoc  # noqa: E
 from app.services import rag  # noqa: E402
 from app.services.assistant import SYSTEM_PROMPT, _source_label  # noqa: E402
 
-LIMIT = 4
-# NOTE (2026-08-23, deviation from P-07 documented): the plan says limit=6,
-# but with the served num_ctx=16384 of qwen3.8:27b (Ollama default), 6 chunks
-# x ~1200 chars pushes prompt_tokens over 80% of context (criterion b fails:
-# max 15515 > 13107). limit=4 keeps prompts <= ~11K tokens and still inside
-# 80%. qwen3.8:27b-agent (ctx 98304) was tried instead, but its KV cache does
-# not fit in the shared VRAM (32 GB total, ~29 GB in use) -> layers offload to
-# CPU -> generation at ~5% GPU / ~98% CPU, unusable latency. Documented in
-# JOURNAL.md; re-evaluate when the GPU is free or a smaller ctx variant exists.
+LIMIT = 6
+# NOTE (2026-08-26, restored to the P-07 plan value): the plan says limit=6;
+# it was lowered to 4 on 2026-08-23 because giant chunks pushed prompt_tokens
+# over 80% of context (max 15515 > 13107). The DE reindex (2026-08-26)
+# eliminated giant chunks — max prompt is now ~1850 tokens — so limit=6 fits
+# comfortably and surfaces more of the relevant law (e.g. § 568 for the
+# Eigenbedarf question, which limit=4 missed and the model hallucinated as
+# § 568c). Re-evaluate if prompts approach 80% again.
 
 # Same question set as eval_de_recherche.py (D-042 baseline).
 CASES = [
@@ -82,9 +81,23 @@ _ENGLISH_FILLERS = {
     "the", "and", "of", "to", "is", "are", "with", "for", "from",
     "that", "this", "you", "your", "please", "important",
     "however", "therefore", "according", "but", "not",
-    "as", "at", "or", "if", "will", "would", "shall", "must",
+    "as", "at", "or", "if", "would", "shall", "must",
+    # NOTE: "will" is deliberately NOT here — it is a valid German word
+    # (Verb wollen: "Er will in Wirklichkeit aber angreifen"), causing a
+    # false positive seen 2026-08-26 (Notwehr answer).
 }
 _EN_FILLER_RE = re.compile(r"\b(" + "|".join(sorted(_ENGLISH_FILLERS)) + r")\b", re.IGNORECASE)
+
+# Albanian filler words — NOT valid German (the 'ë' letter alone is a strong
+# Albanian marker; German never uses it). Catches answers that drifted into
+# Albanian for German questions (seen 2026-08-26: Eigenbedarf answer).
+_ALBANIAN_FILLERS = {
+    "është", "dhe", "për", "në", "nga", "me", "të", "një", "kjo",
+    "kërkesa", "pronari", "marrëdhënia", "bazë", "gjithashtu", "vetëm",
+    "por", "nuk", "si", "kur", "mund", "duhet", "shkresë", "ligji",
+    "neni", "paragrafi", "banesa", "kontrata", "afati", "përgjigja",
+}
+_AL_FILLER_RE = re.compile(r"\b(" + "|".join(sorted(_ALBANIAN_FILLERS)) + r")\b", re.IGNORECASE)
 
 _SECTION_RE = re.compile(r"§\s*(\d+[a-z]?)", re.IGNORECASE)
 
@@ -101,6 +114,11 @@ def _cites(answer: str, ref: str, section: str) -> bool:
 
 def _english_flags(answer: str) -> list[str]:
     return sorted(set(_EN_FILLER_RE.findall(answer)))
+
+
+def _albanian_flags(answer: str) -> list[str]:
+    """Albanian filler words — a hit flags the answer as not-clean German."""
+    return sorted(set(_AL_FILLER_RE.findall(answer)))
 
 
 def _p95(latencies: list[float]) -> float:
@@ -186,15 +204,17 @@ async def _run_set(db, provider, jurisdiction_id, cases, sections, label: str) -
         ans = r["answer"]
         cites = _cites(ans, ref, section)
         flags = _english_flags(ans)
+        al_flags = _albanian_flags(ans)
         cited_secs = _SECTION_RE.findall(ans)
         invented = [f"§{s}" for s in cited_secs if f"§{s}" not in sections and s not in sections]
         r["cites_expected"] = cites
         r["english_flags"] = flags
+        r["albanian_flags"] = al_flags
         r["invented_statutes"] = invented
-        status = "OK " if (cites and not flags and not invented) else "---"
+        status = "OK " if (cites and not flags and not al_flags and not invented) else "---"
         print(
             f"[{i:>2}] {status} {question[:46]:<48} "
-            f"cite={'Y' if cites else 'N'} en={len(flags)} inv={len(invented)} "
+            f"cite={'Y' if cites else 'N'} en={len(flags)} al={len(al_flags)} inv={len(invented)} "
             f"{r['latency_s']:>4.1f}s tok={r.get('prompt_tokens')}"
         )
     return results
@@ -220,7 +240,7 @@ async def main() -> None:
     errs = n - len(ok)
     non_empty = sum(1 for r in ok if r["answer"].strip())
     cites = sum(1 for r in ok if r.get("cites_expected"))
-    clean_de = sum(1 for r in ok if not r.get("english_flags"))
+    clean_de = sum(1 for r in ok if not r.get("english_flags") and not r.get("albanian_flags"))
     invented = [r for r in ok if r.get("invented_statutes")]
     latencies = [r["latency_s"] for r in ok]
     p95 = _p95(latencies)

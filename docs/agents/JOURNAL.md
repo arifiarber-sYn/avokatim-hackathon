@@ -1,3 +1,11 @@
+## 2026-08-26 — DE launch-gate item 3: reindex i jurisprudencës u mbyll + eval i ri (Halim)
+- Done: batch-i i jurisprudencës (13,091 dokumente) u ri-indeksua — korpusi DE 100% pa chunk gjigantë (0 mbetur, max 2399); 4 dokumentet e fundit me burim 404 në portal u ri-chunk-uan nga teksti i ruajtur në DB pa humbje. Hapi (1) i launch-gate item 3 = MBYLLUR.
+- Done: eval v1 (13:35) — max_prompt_tokens ra nga 15.3K në **1845** (ri-indeksimi eliminoi bllokuesin b), por FAIL: 1 statut i shpikur (§568c) + p95 17.2s.
+- Done: SYSTEM_PROMPT — gjermanishtja në listën e gjuhëve + disiplinë citimesh (mos shpik nënndarje §; cito vetëm nga materialet) + rregull: pyetje me §/BGB/ZPO/StGB/KSchG → gjithmonë gjermanisht.
+- Done: eval — zbulim i shqipes në kontrollin 'clean German' (fjalë shqipe + 'ë'); LIMIT 4→6 (ri-indeksimi çliroi kontekstin; limit=6 nxjerr §568 që mungonte → §568c u zhduk); 'will' hiqet nga anglishtja (fjalë e vlefshme gjermane — FP).
+- Verified (eval v3): 20/20 jo-bosh · 19/20 citime · 0 statute të shpikura · gjermanisht 19/20 (1 FP 'will') · p95 14.5s (kërkohet ≤5s) ❌ · max prompt 2721 ✅. Eval v4 në xhirim për konfirmim të 20/20 gjermanisht.
+- Left open: latenca p95 — i vetmi bllokues i mbetur; kërkon vendim (kriter më realist ose model më i shpejtë). DE qëndron në DeepSeek deri atëherë.
+
 ## 2026-08-25 — DE launch-gate item 3: corpus re-index, phase 2 (Halim, iniciativa 13:30)
 - Done: korpusi DE **law** u pastrua 100% nga chunk-et gjigantë (>2400): batch federal 69/71 akte ri-indeksuar (`import_de_laws.py --force`, commit-i i mekanizmit ishte 8e16295; RuStAG u zgjidh me slug `stag`, DSGVO me importer-in e vet — 2 "not in gii-toc" të mbetur u mbyllën), 17 akte Landesrecht (NW+BY) + DSGVO (284 chunks). Para: 1954+280+38+2 gjigantë → pas: **0** në DE law (79 federale + 20 Landesrecht, verifikuar me SQL).
 - Done: `import_de_rechtsprechung.py` mori `--force` (modeli i import_de_laws: DELETE + ri-import, 404-tolerant) + helper i ri `corpus_common.existing_reference_ids()`; skript i ri i synuar `reindex_de_judgments_giant.py` (prek VETËM ~13,096 dokumentet me chunk gjigantë, resumable, `--limit`/`--sleep`, log i plotë) — test 5/5 OK.
