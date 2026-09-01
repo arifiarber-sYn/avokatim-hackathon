@@ -162,3 +162,33 @@ class User(Base, TimestampMixin):
     )
 
     tenant: Mapped[Tenant] = relationship(back_populates="users", foreign_keys=[tenant_id])
+
+
+class ApiToken(Base, TimestampMixin):
+    """Personal access token for external integrations (public API).
+
+    The plaintext token (`avk_<40 hex>`) is shown ONCE at creation and only
+    its SHA-256 is stored. It authenticates as the creating user (same
+    permissions, same tenant RLS scoping in deps.py); `scope="read"` tokens
+    are rejected on any non-GET request.
+    """
+
+    __tablename__ = "api_tokens"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    tenant_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), index=True
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(120))
+    # sha256 hex of the full plaintext token — unique lookup key
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    # first characters of the plaintext ("avk_ab12cd34…") for identification
+    prefix: Mapped[str] = mapped_column(String(16))
+    scope: Mapped[str] = mapped_column(String(16), default="read")  # read | read_write
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    user: Mapped[User] = relationship()

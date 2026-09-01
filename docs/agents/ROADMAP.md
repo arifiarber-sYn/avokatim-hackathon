@@ -122,13 +122,16 @@ P2 — demand growth:
 - [x] Transparent pricing ✅ (2026-07-12): consult fee on public profiles.
 
 P3 — office differentiation:
-- [ ] Passive time capture (suggest entries from activity).
+- [x] Passive time capture ✅ (D-032): activity → time-entry suggestions,
+      suggest→accept (`services/time_capture.py`).
 - [x] Voice input for Ava ✅ (2026-07-13): faster-whisper STT + Piper sq TTS,
       SOS hands-free audio counseling + evidence recording.
 - [x] Agentic intake triage ✅ (2026-07-13): Ava-intake `structure-case`
       prefills the citizen case form; deep research + clause assist + document
       AI summaries on the lawyer side.
-- [ ] Public API tokens for integrations.
+- [x] Public API tokens for integrations ✅ (2026-09-01, D-066): personal
+      access tokens (`avk_`, SHA-256 stored, shown once, read/read_write
+      scope) in Settings → Siguria; authenticate as the creating user.
 
 Growth operations (running):
 - [x] Automated outreach ✅ (2026-07-14): `avokatim-outreach.timer`, up to 25
@@ -156,11 +159,15 @@ Growth operations (running):
       engine, NRW + Bayern corpus (20 acts / ~2,900 chunks) via
       `import_de_landesrecht.py`, region-aware retrieval + Ava Bundesland
       picker.
-- [ ] Landesrecht rollout: remaining 14 Länder. Blocker: their portals
+- [x] Landesrecht Brandenburg + Sachsen ✅ (2026-09-01): both run classic
+      server-rendered portals (BRAVORS slugs / REVOSAX sitemap ids) — new
+      `bravors` + `revosax` adapters in `import_de_landesrecht.py`,
+      9 + 10 curated acts imported → 4/16 Länder covered (BY, NW, BB, SN).
+- [ ] Landesrecht rollout: remaining 12 Länder. Blocker: their portals
       (landesrecht-bw.de, gesetze.berlin.de, hessenrecht…) are juris SPAs
       with token-authenticated internal APIs — needs a headless-browser
       adapter or a juris data agreement (see LESSONS #1). Priority by
-      population: BW, NI, HE, RP, SN…
+      population: BW, NI, HE, RP…
 - [x] Exact calendar-month deadline arithmetic (§ 222 ZPO, §§ 187–188 BGB):
       `day_type="months"` in the engine, DE month rules converted (D-036).
 - [ ] DE deepening: BRAV scraper when the portal stabilizes, German outreach
@@ -175,14 +182,13 @@ Growth operations (running):
       draft email ready (`docs/legal/BEA-KSW-REGISTRATION.md`); owner sends
       the BRAK email, module (`services/bea/`, Java sidecar around the
       KSW-Toolkit) starts once test access is granted.
-- [ ] GKG court-fee table for a full Prozesskostenrechner (optional D-037
-      leftover; RA-MICRO standard).
-- [ ] Retrieval quality: hybrid search (pgvector + Postgres full-text/BM25)
-      or a stronger embedding model (e.g. multilingual-e5) with full
-      re-embed — colloquial German questions sometimes miss the right §
-      (e.g. DSGVO Art. 15) even though it's in the corpus.
-- [ ] DE case law (BGH/BAG/BVerfG via rechtsprechung-im-internet.de) — see
-      proposal in JOURNAL 2026-08-01c.
+- [x] GKG court-fee table for a full Prozesskostenrechner ✅ (2026-08-01,
+      D-040): GKG table as data + § 91 ZPO risk model, /rvg public page.
+- [x] Retrieval quality: hybrid search ✅ (2026-08-01, D-042): RRF over
+      dense cosine + 2 FTS legs (tsvector GIN); extended to matter
+      documents 2026-09-01 (`document_chunks.tsv`, same RRF recipe).
+- [x] DE case law ✅ (2026-08-01, D-042): BGH/BAG/BVerfG via
+      rechtsprechung-im-internet.de, judgment citations in Ava answers.
 ## DE advancement wave (2026-08-01 market analysis — owner request)
 
 > Grounding: Wolters Kluwer Benchmark 2026 (63% of German firms already use
@@ -196,34 +202,27 @@ Growth operations (running):
 > advocado charges lawyers a 33.92% infrastructure fee (we charge 0%).
 
 Tier A — differentiators we can build now (no external dependency):
-- [ ] **Online-Verfahren assistant**: from a matter (or citizen case),
-      generate the Klageschrift for payment claims ≤ €10k / Fluggastrechte
-      in the format the pilot courts accept, prefill service.justiz.de
-      inputs, prepare for XJustiz structured filing when the lawyer input
-      system ships. Brand-new procedure (4/2026) — no incumbent owns it yet.
-- [ ] **Prozesskostenrechner** = RVG (done) + GKG court-fee table + cost
-      risk per instance (who pays what if you win/lose). Public page → SEO
-      magnet ("Was kostet ein Prozess?"); internal: quote per matter.
-- [ ] **Recherche depth**: hybrid BM25+vector retrieval, case-law corpus
-      (BGH/BAG/BVerfG via rechtsprechung-im-internet.de) with citation in
-      Ava answers. Research is the #1 AI use case in DE firms (90.9%).
-- [ ] **Back-office agents** (the 49.5% billable-time pain): email→Akte
-      routing with suggested filing, incoming Bescheid/Urteil scan →
-      deadline suggestion into the Fristen engine, invoice chasing
-      (Mahnung) drafts. Extends the existing activity→time-entry suggester.
-- [ ] **BRAK KI-Leitfaden compliance pack**: per-office AI-usage register,
-      human-review checkpoints on AI drafts, output logging, DSGVO
-      processing-record template. Sell compliance as a feature ("BRAK-
-      Leitfaden-konform"), it neutralizes the #1 adoption blocker.
+- [x] **Online-Verfahren assistant** ✅ (2026-08-01, D-041): Klageschrift
+      for payment claims ≤ €10k / Fluggastrechte, pilot courts as data,
+      service.justiz.de prefill, RDG-safe citizen side.
+- [x] **Prozesskostenrechner** ✅ (2026-08-01, D-040): GKG table as data +
+      § 91 ZPO cost risk per instance, public page + per-matter quote.
+- [x] **Recherche depth** ✅ (2026-08-01, D-042): hybrid RRF retrieval +
+      BGH/BAG/BVerfG case-law corpus with judgment citations.
+- [x] **Back-office agents** ✅ (2026-08-01, D-043): email→Akte suggestions,
+      Bescheid/Urteil → deadline suggestion, Mahnung drafts — all
+      suggest→accept, never auto.
+- [x] **BRAK KI-Leitfaden compliance pack** ✅ (2026-08-01, D-044):
+      AI-usage register, human-review gate, output logging, DSGVO
+      processing-record template ("BRAK-Leitfaden-konform").
 
 Tier B — growth channels:
-- [ ] Marketplace positioning vs advocado/anwalt.de: "0% commission, flat
-      subscription" front and center on /per-avokatet DE; Rechtstipps-style
-      content pages generated from our corpus (with lawyer review workflow)
-      to chase anwalt.de's SEO moat.
-- [ ] Rechtsschutzversicherung deepening: per-insurer Deckungsanfrage
-      submission formats (ARAG, Allianz, HUK…), coverage-status tracking on
-      the case, insurer as acquisition channel.
+- [x] Marketplace positioning vs advocado/anwalt.de ✅ (2026-08-01/02,
+      D-045/D-048/D-049): "0% commission" on both hosts, static Ratgeber /
+      udhëzues content pages per country.
+- [x] Rechtsschutzversicherung deepening ✅ (2026-08-01, D-045): insurer
+      list as data (ARAG, Allianz, HUK…), Deckungsanfrage template,
+      coverage-status tracking on the case.
 - [ ] beA (waiting on BRAK KSW access — guide ready) + XJustiz export:
       together they complete the e-filing story the Online-Verfahren opens.
 

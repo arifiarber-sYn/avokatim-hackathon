@@ -62,9 +62,10 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   **Landesrecht** (D-035): nullable `region` column (Bundesland code, NULL =
   federal) on holidays/corpus docs/tenants; 16-Länder registry + city→Land
   map in the DE profile; `import_de_landesrecht.py` (adapter per portal)
-  loaded **NRW + Bayern, 20 acts / ~2,900 chunks**; `search_corpus(region=…)`
+  loaded **NW + BY + BB + SN, 39 acts** (BB via BRAVORS slugs, SN via
+  REVOSAX sitemap ids, both added 2026-09-01); `search_corpus(region=…)`
   = federal + that Land; public Ava has a Bundesland dropdown, citations
-  show the Land. Remaining 14 Länder blocked on juris SPAs (LESSONS #1).
+  show the Land. Remaining 12 Länder blocked on juris SPAs (LESSONS #1).
   **Federal case law** (2026-08-01, D-042): `import_de_rechtsprechung.py`
   (rii-toc.xml, BMJV portal) imports BGH/BAG/BVerfG decisions of the last
   5 years as `doc_type="judgment"`, `reference`=Aktenzeichen, sections
@@ -77,7 +78,10 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   3 legs (pgvector cosine, plainto AND, rare-word prefix OR with df ≤ 2%);
   judgments capped at limit//3 slots. Eval `scripts/eval_de_recherche.py`:
   §-citation queries 1/6 → 5/6; known limit: German compounds
-  (Kündigungsschutzklage) still need better embeddings.
+  (Kündigungsschutzklage) still need better embeddings. Extended to
+  matter documents 2026-09-01: `document_chunks.tsv` ('simple' config —
+  multilingual case files, no language column) + GIN, populated at index
+  time, `search_matter_documents` = RRF over cosine + plainto legs.
   **XK case law** (2026-08-01, D-050): `import_xk_judgments.py` scrapes the
   KGJK publication portal (gjyqesori-rks.org/aktgjykimet/, stateless GET
   filters, 290k+ decisions, Supreme 21k) — Albanian PDFs → pypdf →
@@ -558,6 +562,13 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   (`components/error-reporter.tsx`), Umami product events via
   `lib/analytics.ts` (ava_ask, agent_run, case_posted, pwa_install,
   passkey_added, ava_voice_convo).
+- **Public API tokens** (2026-09-01, D-066): personal access tokens for
+  integrations — `api_tokens` table (SHA-256 only, plaintext shown once,
+  `avk_` prefix), scope `read` (GET/HEAD/OPTIONS) / `read_write` enforced
+  centrally in `deps.py`, same tenant/RLS path as JWTs, max 10 active per
+  user, create/revoke audit-logged; UI in Settings → Siguria
+  (`ApiTokensSection`, keys `apiTok*` ×7). Endpoints `/api/api-tokens`
+  (GET/POST/DELETE).
 - **Assistant actions with approval** (2026-08-02, D-053): under each
   panel answer (matter in scope) the lawyer can extract deadlines
   (`POST /assistant/actions/extract-deadlines` → proposals → existing
@@ -1129,10 +1140,11 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 - **XK (Kosovo): active** — deadline rules, holidays, templates seeded;
   litigation cost calculator (D-047), Albanian public guides /udhezues
   (D-048), Supreme Court case law in the corpus via
-  `import_xk_judgments.py` (D-050, first 150 imported, resumable).
+  `import_xk_judgments.py` (D-050, 2,532 judgments in the corpus as of
+  2026-09-01, resumable/nightly).
 - **DE (Germany): active** (2026-08-01, D-034) — profile in
-  `app/jurisdictions.py`, seed data in `seeds/germany.py`, 99-act corpus
-  (78 federal laws + DSGVO + 20 Landesrecht acts NW/BY, D-035) + federal
+  `app/jurisdictions.py`, seed data in `seeds/germany.py`, 118-act corpus
+  (78 federal laws + DSGVO + 39 Landesrecht acts NW/BY/BB/SN, D-035) + federal
   case law BGH/BAG/BVerfG (D-042, importing), hybrid retrieval,
   host `de.avokatiim.ai`. Market parity D-037: RVG engine, ZUGFeRD
   e-invoices, Rechtsschutz flow, DATEV export, local LLM (gemma3:27b);

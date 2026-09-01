@@ -67,3 +67,52 @@ def test_judgment_headings_do_not_split_mid_sentence():
     pieces = _split_by_articles(text)
     assert len(pieces) == 1
     assert pieces[0][0].startswith("§ 573")
+
+
+# --- Hybrid fusion for matter documents (extends D-042 to case files) ------
+
+class _Chunk:
+    def __init__(self, cid):
+        self.id = cid
+
+
+class _MatterDoc:
+    """Matter Document stand-in: deliberately has NO doc_type attribute —
+    fusion without a judgment cap must never touch it."""
+
+    def __init__(self, name):
+        self.filename = name
+
+
+def test_rrf_fuse_without_cap_never_reads_doc_type():
+    from app.services.rag import _rrf_fuse
+
+    a, b, c = _Chunk("a"), _Chunk("b"), _Chunk("c")
+    doc = _MatterDoc("kontrata.pdf")
+    vec = [(a, doc), (b, doc)]
+    fts = [(b, doc), (c, doc)]
+    out = _rrf_fuse([vec, fts], limit=3)  # no max_judgments
+    ids = [chunk.id for chunk, _ in out]
+    # b appears in both legs -> highest RRF score
+    assert ids[0] == "b"
+    assert set(ids) == {"a", "b", "c"}
+
+
+def test_rrf_fuse_single_leg_still_ranks():
+    from app.services.rag import _rrf_fuse
+
+    doc = _MatterDoc("prova.pdf")
+    vec = [(_Chunk(i), doc) for i in range(5)]
+    out = _rrf_fuse([vec, []], limit=3)
+    assert [chunk.id for chunk, _ in out] == [0, 1, 2]
+
+
+def test_index_document_chunks_sets_simple_tsv():
+    # The tsv expression must use the language-neutral 'simple' config
+    # (matter documents are multilingual with no language column).
+    import inspect
+
+    from app.services import rag
+
+    src = inspect.getsource(rag.index_document_chunks)
+    assert 'to_tsvector("simple"' in src

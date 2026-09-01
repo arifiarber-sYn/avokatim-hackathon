@@ -1,3 +1,43 @@
+## 2026-09-01 — Vala e avancimeve DE+XK: hibrid për dokumentet, API tokens, Landesrecht BB+SN (Cursor / Fable 5)
+- Kërkesa: zbatimi i planit "Avancimet AvokatIM DE+XK" (7 faza). Auditimi
+  fillestar zbuloi se Fazat 2–5 dhe shumica e 6–7 ishin **tashmë të zbatuara**
+  më 01–02.08 (D-040…D-050) — ROADMAP-i s'i kishte shënuar kutitë (burimi i
+  konfuzionit). U verifikuan me teste (39/39) + faqet live, dhe ROADMAP-i u
+  saktësua me data + D-numra që kjo të mos përsëritet.
+- Done (Faza 1, boshllëku real): retrieval-i hibrid u shtri te **dokumentet e
+  lëndëve** — migrimi `e4f5a6b7c8d9` (`document_chunks.tsv` 'simple' + GIN,
+  backfill), populimi te `index_document_chunks`, `search_matter_documents`
+  tani RRF mbi këmbën kosinus + plainto FTS (recetë si D-042, pa cap
+  judgments). Teste të reja te `test_rag_chunking.py`.
+- Done (Faza 6, boshllëku real): **Public API tokens** (D-066) — modeli
+  `ApiToken` (hash-only, shown-once), migrimi `f5a6b7c8d9e0`, router
+  `/api/api-tokens`, dega `avk_` te `deps.py` (scope read = vetëm
+  GET/HEAD/OPTIONS, enforcim qendror; RLS + tenant checks si JWT; 2FA nuk
+  aplikohet për qasje makine), max 10 aktivë/user, audit log në krijim e
+  revokim. UI: `ApiTokensSection` te Settings → Siguria, çelësat `apiTok*`
+  në të 7 gjuhët. Smoke live: create 201 → GET 200 → POST 403 (read-only) →
+  pas revokimit 401.
+- Done (Faza 7, boshllëku real): **Landesrecht BB + SN** — dy portale
+  klasike server-rendered (jo juris SPA): adapterë të rinj `bravors`
+  (bravors.brandenburg.de/gesetze/{slug}; markup i çrregullt — h3/h4/h6,
+  me/pa anchor; rregulli i qëndrueshëm: çdo h3–h6 që nis me &sect;) dhe
+  `revosax` (revosax.sachsen.de/vorschrift_gesamt/{id}.html; id-të nga
+  sitemap.xml, seksionet nga atributi title i <section>). Importuar 9 akte
+  BB + 10 SN (police, ndërtim, shkollë, kita, dyqane, festa, DS, komunal,
+  shtyp, rrugë) → **4/16 Länder live (BY, NW, BB, SN)**; 12 të mbetura
+  juris SPA (LESSONS #1, pa ndryshim). Kërkimi verifikuar live: pyetja
+  saksone e orarit të dyqaneve kthen SächsLadÖffG § 3.
+- Verified: pytest 370→389 (para valës 370, tani me testet e reja) — suita e
+  plotë 370/370 para docs; `full_simulation.py` 187 PASS / 1 FAIL (citimet e
+  Ava-s publike — luhatje LLM, riprova direkte ktheu 956 karaktere + 6 citime
+  të sakta); health OK; frontend build + restart + asset 200; backend restart.
+- Docs: ROADMAP kutitë e vjetruara u mbyllën me data (Tier A/B, hybrid, GKG,
+  case law, time capture, API tokens, Landesrecht 4/16); STATE (Landesrecht
+  39 akte, hibrid matter-docs, XK 2,532 vendime, D-066); DECISIONS D-066.
+- Left open: (a) 12 Länder juris SPA — kërkojnë adapter headless ose
+  marrëveshje juris; (b) hapat e pronarit të pandryshuar: porta DE 1–4, beA
+  email, sipgate/openlegaldata/Outlook sideload (D-059).
+
 ## 2026-09-01 — Roster-health: sYn pa emulator + mbrojtja e .env.bak (Cursor / Fable 5)
 - Done: u formalizua ndryshimi i gjetur i pa-commit-uar në `scripts/ops_roster_health.py`
   — `syn-emulator.service` doli nga lista e monitorimit të sYn (shërbimi u

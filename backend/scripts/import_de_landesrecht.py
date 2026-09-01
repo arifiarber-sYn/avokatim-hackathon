@@ -9,11 +9,17 @@ hours, holidays, data protection, municipal, press). Statutory texts are
 official works free of copyright (§ 5 UrhG).
 
 Adapters:
-  bayern — gesetze-bayern.de   /Content/Document/{slug}/true  (whole act)
-  nrw    — recht.nrw.de        /lrgv/gesetz/{slug}/           (whole act)
+  bayern  — gesetze-bayern.de       /Content/Document/{slug}/true    (whole act)
+  nrw     — recht.nrw.de            /lrgv/gesetz/{slug}/             (whole act)
+  bravors — bravors.brandenburg.de  /gesetze/{slug}                  (whole act)
+  revosax — revosax.sachsen.de      /vorschrift_gesamt/{id}.html     (whole act)
 
 NRW slugs are version-dated (they change when the act is amended); the list
 below is current as of 2026-08. Re-check the URL when re-running for updates.
+REVOSAX ids come from https://www.revosax.sachsen.de/sitemap.xml (stable per
+act); BRAVORS slugs are the lowercased official abbreviations. Both verified
+2026-09-01. The remaining 12 Länder run juris SPAs with token-authenticated
+internal APIs — those need a headless-browser adapter or a juris agreement.
 
     cd backend && .venv/bin/python scripts/import_de_landesrecht.py
     ... --region NW            # one Land only
@@ -137,6 +143,72 @@ async def fetch_nrw(web: httpx.AsyncClient, slugs: list[str]) -> tuple[str, str]
     return None
 
 
+# ---------- Brandenburg (bravors.brandenburg.de) ----------
+
+# Body sections: markup varies wildly per act — h3/h4/h6, align="center" or
+# class="paragraph_bez", named anchors present or absent. The stable rule:
+# a norm heading is any h3–h6 whose text starts with &sect;. Chapter
+# headings ("Kapitel 4<br/>Zwang") and the TOC's <p><a href="#N"> links
+# never match.
+_BRAVORS_HEAD_RE = re.compile(
+    r'<h(?P<lvl>[3-6])[^>]*>\s*(?:<a name="[^"]*"[^>]*></a>)?\s*'
+    r'(?P<head>&sect;.*?)</h(?P=lvl)>',
+    re.S,
+)
+
+
+async def fetch_bravors(web: httpx.AsyncClient, slugs: list[str]) -> tuple[str, str] | None:
+    for slug in slugs:
+        url = f"https://bravors.brandenburg.de/gesetze/{slug}"
+        r = await web.get(url)
+        # unknown slugs 302-redirect to the search page
+        if r.status_code != 200 or "&sect;" not in r.text:
+            continue
+        blocks = []
+        heads = list(_BRAVORS_HEAD_RE.finditer(r.text))
+        for i, m in enumerate(heads):
+            end = heads[i + 1].start() if i + 1 < len(heads) else len(r.text)
+            body = _strip_tags(r.text[m.end():end])
+            if not body:
+                continue
+            heading = " ".join(_strip_tags(m.group("head")).split())
+            blocks.append(f"{heading}\n{body}")
+        if blocks:
+            return url, "\n\n".join(blocks)
+    return None
+
+
+# ---------- Sachsen (revosax.sachsen.de) ----------
+
+# The whole-act page wraps every norm in
+# <section ... title="§ 1  Zweck des Gesetzes"> — the title attribute is the
+# cleanest heading source; Abschnitt/Anlage sections come along naturally.
+_REVOSAX_SECTION_RE = re.compile(r'<section[^>]*\btitle="(?P<title>[^"]+)"[^>]*>')
+
+
+async def fetch_revosax(web: httpx.AsyncClient, ids: list[str]) -> tuple[str, str] | None:
+    for vid in ids:
+        url = f"https://www.revosax.sachsen.de/vorschrift_gesamt/{vid}.html"
+        r = await web.get(url)
+        if r.status_code != 200 or "<section" not in r.text:
+            continue
+        blocks = []
+        heads = list(_REVOSAX_SECTION_RE.finditer(r.text))
+        for i, m in enumerate(heads):
+            end = heads[i + 1].start() if i + 1 < len(heads) else len(r.text)
+            segment = re.split(r"</section>", r.text[m.end():end])[0]
+            body = _strip_tags(segment)
+            if not body:
+                continue
+            heading = html_mod.unescape(" ".join(m.group("title").split()))
+            # the heading repeats as the first lines of the body — keep both,
+            # chunking uses the heading line for `section` detection
+            blocks.append(f"{heading}\n{body}")
+        if blocks:
+            return url, "\n\n".join(blocks)
+    return None
+
+
 # ---------- curated acts ----------
 # (region, reference, title, adapter, slug candidates)
 ACTS = [
@@ -181,9 +253,36 @@ ACTS = [
     ("BY", "BayPrG", "Bayerisches Pressegesetz", "bayern", ["BayPrG"]),
     ("BY", "LStVG", "Landesstraf- und Verordnungsgesetz (öffentliche Sicherheit und Ordnung)", "bayern",
      ["BayLStVG", "LStVG"]),
+    # Brandenburg — bravors.brandenburg.de (lowercased abbreviations, verified 2026-09-01)
+    ("BB", "BbgPolG", "Brandenburgisches Polizeigesetz", "bravors", ["bbgpolg"]),
+    ("BB", "BbgBO", "Brandenburgische Bauordnung", "bravors", ["bbgbo"]),
+    ("BB", "BbgSchulG", "Gesetz über die Schulen im Land Brandenburg (Brandenburgisches Schulgesetz)", "bravors",
+     ["bbgschulg"]),
+    ("BB", "KitaG Bbg", "Kindertagesstättengesetz (Brandenburg)", "bravors", ["kitag"]),
+    ("BB", "BbgDSG", "Brandenburgisches Datenschutzgesetz", "bravors", ["bbgdsg"]),
+    ("BB", "BbgKVerf", "Kommunalverfassung des Landes Brandenburg", "bravors", ["bbgkverf"]),
+    ("BB", "BbgPG", "Pressegesetz des Landes Brandenburg (Landespressegesetz)", "bravors", ["bbgpg"]),
+    ("BB", "BbgLöG", "Brandenburgisches Ladenöffnungsgesetz", "bravors", ["bbgloeg"]),
+    ("BB", "BbgStrG", "Brandenburgisches Straßengesetz", "bravors", ["bbgstrg"]),
+    # Sachsen — revosax.sachsen.de (stable sitemap ids, verified 2026-09-01)
+    ("SN", "SächsPVDG", "Sächsisches Polizeivollzugsdienstgesetz", "revosax", ["18193"]),
+    ("SN", "SächsBO", "Sächsische Bauordnung", "revosax", ["1779"]),
+    ("SN", "SächsSchulG", "Sächsisches Schulgesetz", "revosax", ["4192"]),
+    ("SN", "SächsKitaG", "Gesetz über Kindertagesbetreuung (Sachsen)", "revosax", ["1079"]),
+    ("SN", "SächsLadÖffG", "Sächsisches Ladenöffnungsgesetz", "revosax", ["11548"]),
+    ("SN", "SächsSFG", "Gesetz über Sonn- und Feiertage im Freistaat Sachsen", "revosax", ["3997"]),
+    ("SN", "SächsDSUG", "Sächsisches Datenschutz-Umsetzungsgesetz", "revosax", ["18195"]),
+    ("SN", "SächsGemO", "Sächsische Gemeindeordnung", "revosax", ["2754"]),
+    ("SN", "SächsPresseG", "Sächsisches Pressegesetz", "revosax", ["4197"]),
+    ("SN", "SächsStrG", "Sächsisches Straßengesetz", "revosax", ["4785"]),
 ]
 
-FETCHERS = {"bayern": fetch_bayern, "nrw": fetch_nrw}
+FETCHERS = {
+    "bayern": fetch_bayern,
+    "nrw": fetch_nrw,
+    "bravors": fetch_bravors,
+    "revosax": fetch_revosax,
+}
 
 
 async def _api_token() -> str:

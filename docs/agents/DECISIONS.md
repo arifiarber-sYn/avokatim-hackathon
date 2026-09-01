@@ -1760,3 +1760,31 @@
   all with no new paid dependency (DeepSeek reused). Money-real (TotoTrading)
   and frozen (BoraLaw) projects remain observe-only. Tests:
   `backend/tests/test_ops_roster_health.py`.
+
+## D-066: Public API tokens — act-as-user, hash-only storage, verb-level read scope (2026-09-01)
+
+- Context: ROADMAP P3 "Public API tokens for integrations" was the last open
+  office-differentiation item (XK + DE alike). Integrations (Zapier-style
+  scripts, practice tooling, future partners) need stable machine credentials
+  that don't expire like session JWTs and can be revoked one by one.
+- Decision:
+  1. **Personal access tokens, not tenant service accounts**: a token
+     authenticates as the user who created it (same permissions, same RLS
+     tenant pinning in `deps.py`). No parallel permission system to audit.
+  2. **Format & storage**: `avk_` + 40 hex; only the SHA-256 lands in
+     `api_tokens.token_hash` (unique index); plaintext is returned exactly
+     once at creation; a 12-char display prefix identifies tokens in the UI.
+  3. **Scopes as HTTP verbs**: `read` allows GET/HEAD/OPTIONS only,
+     `read_write` everything — enforced centrally in `deps.py`, not
+     per-endpoint, so it cannot drift.
+  4. **Same Authorization header** (`Bearer avk_…`): the `avk_` prefix
+     routes to the token path before any JWT decode; 2FA firm policy does
+     not apply (machine access created inside an authenticated session),
+     tenant suspension/trial checks do. `last_used_at` refreshes at most
+     every 5 min (committed before the RLS `SET LOCAL`, which is
+     transaction-scoped). Max 10 active tokens per user; create/revoke are
+     audit-logged (rule 8).
+- Consequences: any external tool can integrate with a revocable, scoped
+  credential; a leaked DB dump reveals no usable tokens; UI lives in
+  Settings → Siguria in all 7 languages. Tests: `tests/test_api_tokens.py`;
+  live smoke verified create → 200 read → 403 write → 401 after revoke.

@@ -127,6 +127,9 @@ async def index_document_chunks(db: AsyncSession, document: Document) -> int:
                 seq=i,
                 text=text,
                 embedding=vectors[i] if vectors else None,
+                # 'simple' config: matter documents are multilingual and carry
+                # no language column — exact words only, no stemming.
+                tsv=func.to_tsvector("simple", text),
             )
         )
     return len(chunks)
@@ -348,22 +351,36 @@ def _rrf_fuse(rankings: list[list], limit: int, k: int = 60, max_judgments: int 
 async def search_matter_documents(
     db: AsyncSession, matter_id: uuid.UUID, query: str, limit: int = 6
 ) -> list[dict]:
-    vectors = embed([query])
+    """Hybrid search over a matter's documents (same recipe as the corpus,
+    D-042): dense cosine + a full-text leg over the 'simple' config, fused
+    with Reciprocal Rank Fusion. No judgment cap — these are case files."""
     base = (
         select(DocumentChunk, Document)
         .join(Document, Document.id == DocumentChunk.document_id)
         .where(Document.matter_id == matter_id, Document.is_latest.is_(True))
     )
+    fetch_n = max(limit * 4, 12)
+    vec_rows: list = []
+    vectors = embed([query])
     if vectors:
         stmt = (
             base.where(DocumentChunk.embedding.isnot(None))
             .order_by(DocumentChunk.embedding.cosine_distance(vectors[0]))
-            .limit(limit)
+            .limit(fetch_n)
         )
-        rows = (await db.execute(stmt)).all()
+        vec_rows = (await db.execute(stmt)).all()
+
+    ts_query = func.plainto_tsquery("simple", query)
+    fts_stmt = (
+        base.where(DocumentChunk.tsv.isnot(None), DocumentChunk.tsv.op("@@")(ts_query))
+        .order_by(func.ts_rank(DocumentChunk.tsv, ts_query).desc())
+        .limit(fetch_n)
+    )
+    fts_rows = (await db.execute(fts_stmt)).all()
+
+    if vec_rows or fts_rows:
+        rows = _rrf_fuse([vec_rows, fts_rows], limit)
     else:
-        rows = []
-    if not rows:
         rows = _score_rows((await db.execute(base.limit(2000))).all(), query, limit)
 
     return [

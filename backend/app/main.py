@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import (
     admin_tools,
     aml,
+    api_tokens,
     assistant,
     auth,
     billing,
@@ -119,6 +120,7 @@ app.include_router(collab.router, prefix=api_prefix)
 app.include_router(calendar_feed.router, prefix=api_prefix)
 app.include_router(intake.public_router, prefix=api_prefix)
 app.include_router(push.router, prefix=api_prefix)
+app.include_router(api_tokens.router, prefix=api_prefix)
 app.include_router(firm.router, prefix=api_prefix)
 app.include_router(exports.router, prefix=api_prefix)
 app.include_router(imports.router, prefix=api_prefix)

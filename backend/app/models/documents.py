@@ -2,8 +2,8 @@ import uuid
 from datetime import datetime
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, Text
+from sqlalchemy.dialects.postgresql import TSVECTOR, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.config import settings
@@ -77,6 +77,9 @@ class DocumentChunk(Base):
     """Chunked document text with embeddings for semantic search across a matter."""
 
     __tablename__ = "document_chunks"
+    __table_args__ = (
+        Index("ix_document_chunks_tsv", "tsv", postgresql_using="gin"),
+    )
 
     id: Mapped[uuid.UUID] = uuid_pk()
     document_id: Mapped[uuid.UUID] = mapped_column(
@@ -85,5 +88,8 @@ class DocumentChunk(Base):
     seq: Mapped[int] = mapped_column(Integer)
     text: Mapped[str] = mapped_column(Text)
     embedding: Mapped[list[float] | None] = mapped_column(Vector(settings.embedding_dim))
+    # 'simple' config: matter documents are multilingual with no language
+    # column — exact-word FTS everywhere, vector leg covers paraphrases.
+    tsv = mapped_column(TSVECTOR, nullable=True)
 
     document: Mapped[Document] = relationship(back_populates="chunks")

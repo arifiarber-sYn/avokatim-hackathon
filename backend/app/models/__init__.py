@@ -1,5 +1,5 @@
 from app.models.base import Base
-from app.models.tenancy import Tenant, User
+from app.models.tenancy import ApiToken, Tenant, User
 from app.models.jurisdiction import (
     DeadlineRule,
     DocumentTemplate,
@@ -80,6 +80,7 @@ __all__ = [
     "Task",
     "Conversation",
     "Message",
+    "ApiToken",
     "AuditLog",
     "MatterMessage",
     "PushSubscription",

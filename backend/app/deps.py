@@ -1,18 +1,73 @@
 """FastAPI dependencies: current user, tenant scoping."""
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import jwt as pyjwt
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db, scope_session_to_tenant
-from app.models import Tenant, User
+from app.models import ApiToken, Tenant, User
 from app.security import decode_token
+from app.services import api_tokens as api_token_svc
 
 bearer = HTTPBearer(auto_error=False)
+
+# last_used_at is refreshed at most this often (avoids a write per request)
+_LAST_USED_REFRESH = timedelta(minutes=5)
+
+
+async def _user_from_api_token(
+    request: Request, credential: str, db: AsyncSession
+) -> User:
+    """Resolve an `avk_...` personal access token to its creating user.
+
+    Same tenant checks and RLS pinning as the JWT path; 2FA policy does not
+    apply (machine access, created inside an authenticated session) and
+    read-scope tokens are rejected on any mutating verb.
+    """
+    token = (
+        await db.execute(
+            select(ApiToken).where(
+                ApiToken.token_hash == api_token_svc.hash_token(credential)
+            )
+        )
+    ).scalar_one_or_none()
+    if token is None or token.revoked_at is not None:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid or revoked API token")
+    if not api_token_svc.scope_allows(token.scope, request.method):
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, "This API token is read-only"
+        )
+    user = await db.get(User, token.user_id)
+    if user is None or not user.is_active:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "User not found or inactive")
+
+    now = datetime.now(UTC)
+    if token.last_used_at is None or now - token.last_used_at > _LAST_USED_REFRESH:
+        token.last_used_at = now
+        # Commit BEFORE the RLS SET LOCAL below — committing later would end
+        # the transaction that carries the tenant scoping.
+        await db.commit()
+
+    if not user.is_superadmin:
+        await scope_session_to_tenant(db, user.tenant_id)
+    tenant = await db.get(Tenant, user.tenant_id)
+    if tenant is not None and not user.is_superadmin:
+        if tenant.status == "suspended":
+            raise HTTPException(
+                status.HTTP_403_FORBIDDEN, "Tenant suspended — contact the platform operator"
+            )
+        if (
+            tenant.plan == "trial"
+            and tenant.trial_ends_at is not None
+            and tenant.trial_ends_at < now
+        ):
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "Trial expired")
+    return user
 
 
 async def get_current_user(
@@ -22,6 +77,8 @@ async def get_current_user(
 ) -> User:
     if creds is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not authenticated")
+    if api_token_svc.is_api_token(creds.credentials):
+        return await _user_from_api_token(request, creds.credentials, db)
     try:
         payload = decode_token(creds.credentials)
     except pyjwt.PyJWTError:

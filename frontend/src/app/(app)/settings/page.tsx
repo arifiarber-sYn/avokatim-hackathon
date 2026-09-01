@@ -112,6 +112,7 @@ export default function SettingsPage() {
           <SettingsGroup id="siguria" title={groupLabels.siguria}>
             <TwoFASection />
             <PasskeySection />
+            <ApiTokensSection />
             <PortalSection />
             {isAdmin && <SubscriptionSection />}
             {isAdmin && <ComplianceSection />}
@@ -1428,6 +1429,132 @@ function PasskeySection() {
       <Button onClick={add} disabled={busy} variant="secondary">
         {busy ? t.loading : t.pkAdd}
       </Button>
+      <ErrorNote message={error} />
+    </Card>
+  );
+}
+
+/** Public API tokens (ROADMAP P3): personal access tokens for external
+ * integrations. The plaintext is shown exactly once, on creation. */
+function ApiTokensSection() {
+  const { t } = useI18n();
+  type Row = {
+    id: string;
+    name: string;
+    prefix: string;
+    scope: string;
+    created_at: string;
+    last_used_at: string | null;
+    revoked_at: string | null;
+  };
+  const [rows, setRows] = useState<Row[]>([]);
+  const [name, setName] = useState("");
+  const [scope, setScope] = useState("read");
+  const [fresh, setFresh] = useState(""); // plaintext, shown once
+  const [copied, setCopied] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  const load = () => {
+    apiGet<Row[]>("/api-tokens").then(setRows).catch(() => {});
+  };
+  useEffect(load, []);
+
+  async function create(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError("");
+    setFresh("");
+    setCopied(false);
+    try {
+      const r = await apiPost<Row & { token: string }>("/api-tokens", { name, scope });
+      setFresh(r.token);
+      setName("");
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function revoke(id: string) {
+    await apiDelete(`/api-tokens/${id}`).catch(() => {});
+    load();
+  }
+
+  return (
+    <Card className="p-5 space-y-3">
+      <h2 className="font-semibold">🔌 {t.apiTokT}</h2>
+      <p className="text-sm text-slate-500">{t.apiTokHint}</p>
+      {fresh && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 space-y-2">
+          <p className="text-xs font-medium text-amber-800">{t.apiTokOnce}</p>
+          <div className="flex items-center gap-2">
+            <code className="text-xs bg-white border border-amber-200 rounded px-2 py-1 break-all flex-1">
+              {fresh}
+            </code>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                navigator.clipboard?.writeText(fresh);
+                setCopied(true);
+              }}
+            >
+              {copied ? t.copied : t.copyText}
+            </Button>
+          </div>
+        </div>
+      )}
+      {rows.length === 0 && <p className="text-sm text-slate-400">{t.apiTokNone}</p>}
+      {rows.map((r) => (
+        <div key={r.id} className="flex items-center justify-between gap-3 text-sm">
+          <span className={`truncate ${r.revoked_at ? "text-slate-400 line-through" : "text-slate-700"}`}>
+            {r.name}
+            <code className="text-xs text-slate-400 ml-2">{r.prefix}…</code>
+            <span className="text-xs text-slate-400 ml-2">
+              {r.scope === "read_write" ? t.apiTokScopeRW : t.apiTokScopeRead}
+            </span>
+            {r.last_used_at && !r.revoked_at && (
+              <span className="text-xs text-slate-400 ml-2">
+                {t.apiTokLastUsed}: {new Date(r.last_used_at).toLocaleDateString()}
+              </span>
+            )}
+            {r.revoked_at && (
+              <span className="text-xs text-rose-400 ml-2">{t.apiTokRevoked}</span>
+            )}
+          </span>
+          {!r.revoked_at && (
+            <button
+              onClick={() => revoke(r.id)}
+              className="text-xs text-rose-600 hover:underline py-1 shrink-0"
+            >
+              {t.apiTokRevoke}
+            </button>
+          )}
+        </div>
+      ))}
+      <form onSubmit={create} className="flex gap-2 items-end flex-wrap">
+        <div className="w-48">
+          <Label>{t.apiTokName}</Label>
+          <Input value={name} onChange={(e) => setName(e.target.value)} required maxLength={120} />
+        </div>
+        <div>
+          <Label>{t.apiTokScope}</Label>
+          <select
+            value={scope}
+            onChange={(e) => setScope(e.target.value)}
+            className="block w-40 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          >
+            <option value="read">{t.apiTokScopeRead}</option>
+            <option value="read_write">{t.apiTokScopeRW}</option>
+          </select>
+        </div>
+        <Button type="submit" disabled={busy}>
+          {busy ? t.loading : t.apiTokCreate}
+        </Button>
+      </form>
       <ErrorNote message={error} />
     </Card>
   );
