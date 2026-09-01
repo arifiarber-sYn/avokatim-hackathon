@@ -20,7 +20,7 @@
 #   git commit --no-verify
 
 CODE_PATTERN="${CODE_PATTERN:-\.(py|go|rs|ts|tsx|js|jsx|dart|swift|kt|java|rb|php|html|css|sql|sh)$}"
-DOCS_DIR="${DOCS_DIR:-docs/agent/}"
+DOCS_DIR="${DOCS_DIR:-docs/agents/}"
 LINT_CMD="${LINT_CMD:-}"
 
 cd "$(git rev-parse --show-toplevel)" || exit 1

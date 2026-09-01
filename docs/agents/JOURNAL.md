@@ -1,3 +1,24 @@
+## 2026-09-01 — Roster-health: sYn pa emulator + mbrojtja e .env.bak (Cursor / Fable 5)
+- Done: u formalizua ndryshimi i gjetur i pa-commit-uar në `scripts/ops_roster_health.py`
+  — `syn-emulator.service` doli nga lista e monitorimit të sYn (shërbimi u
+  çaktivizua më 2026-08-30 me vendim të Kllosha-s; testet e sYn bëhen në
+  telefona realë), përndryshe roster-health do të raportonte sYn "down" çdo 6h.
+  sYn mbetet në roster me `services: []` (vetëm vend-mbajtës, pa kontroll aktiv).
+- Done: `backend/.env.bak-health-20260831` (backup i .env me sekrete, krijuar
+  nga puna e mirëmbajtjes 31.08) NUK ishte i git-ignoruar — rrezik commit-i
+  aksidental. U shtuan `backend/.env.bak*` + `.env.bak*` te `.gitignore`.
+- Done: u rregullua porta e pre-commit-it (`scripts/git-hooks/pre-commit` +
+  kopja e instaluar në `.git/hooks/`): `DOCS_DIR` default ishte ende
+  `docs/agent/` (njëjës, i vjetruar nga D-066) → bllokonte commit-e me docs
+  legjitime te `docs/agents/` dhe i shtynte agjentët drejt `--no-verify`
+  (siç ndodhi te 4f23726). Tani default = `docs/agents/`.
+- Verified: `pytest tests/test_ops_roster_health.py` 5/5 OK; `ops_roster_health.py
+  --status` → të gjitha projektet aktive; `git check-ignore` konfirmon backup-in
+  të ignoruar; commit-i kaloi portën normalisht (pa `--no-verify`). Vërejtje
+  anësore për vëzhgim: disku 38% i lirë (nga 68% më 05.08) dhe 2 failed units
+  kozmetike (drkonqi-coredump-pickup, halim-drill).
+- Left open: asgjë për këtë temë.
+
 ## 2026-09-01 — fix(watchdog): cron_run_receipts table (OpenClaw 2026.8.1 rename) (Halim)
 - Done: `backend/scripts/ops_watchdog.py` kërkonte tabelën e vjetër `cron_run_logs` në `~/.openclaw/state/openclaw.sqlite`; pas update-it të OpenClaw 2026.8.1 tabela u riemërua `cron_run_receipts` (skemë e re: status, error_text, started_at_ms, finished_at_ms) → çdo xhirim i watchdog-ut hidhte `no such table: cron_run_logs`, të cilin e trajtonte si alarm → dërgoi 8 email të rreme "[WATCHDOG] posta ka ngecur" (31.08–01.09, ~çdo 3h) ndërsa triage-i punonte normalisht (xhirime çdo 2 min, të gjitha OK, job 2609be05).
 - Done: query i `check_cron_errors()` u përditësua te `cron_run_receipts` (status, error_text, started_at_ms); testet `tests/test_ops_mail_reliability.py` u përditësuan me skemën e re. Verified: 11/11 teste kalojnë; `ops_watchdog.py --status` → findings OK.

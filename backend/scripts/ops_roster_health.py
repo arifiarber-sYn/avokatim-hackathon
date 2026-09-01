@@ -70,7 +70,7 @@ PROJECTS: dict[str, dict] = {
         "repairable": False,  # real money — observe only
     },
     "sYn": {
-        "services": ["syn-emulator.service"],
+        "services": [],  # syn-emulator.service U HOQ 2026-08-30 (vendim Kllosha, STATE.md) — testet në telefona
         "url": None,
         "repairable": False,
     },

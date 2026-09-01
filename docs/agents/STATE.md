@@ -374,7 +374,9 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   `avokatim-roster-health` (6h, `--repair` safe projects) and `halim-heartbeat`
   (30m); `ops_watchdog.py` now alarms on stale heartbeat (>70m) as an external
   failsafe for the scheduler; morning report shows a projects-health block.
-  Tests: `tests/test_ops_roster_health.py`.
+  Tests: `tests/test_ops_roster_health.py`. Since 2026-08-30 sYn has no active
+  checks in the roster (`syn-emulator.service` disabled by owner decision —
+  device testing moved to real phones); entry kept as a placeholder.
 - **Halim manages the full mailbox** (2026-08-05, D-064):
   `arifi.arber@gmail.com` is the owner's single personal + operational
   account. `backend/scripts/ops_mailbox.py` adds the write side to triage's
