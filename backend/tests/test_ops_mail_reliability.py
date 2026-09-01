@@ -182,11 +182,11 @@ def test_watchdog_flags_cron_error_streak(tmp_path, monkeypatch):
     db_path = tmp_path / "openclaw.sqlite"
     db = sqlite3.connect(db_path)
     db.execute("CREATE TABLE cron_jobs (job_id TEXT, name TEXT)")
-    db.execute("CREATE TABLE cron_run_logs (job_id TEXT, status TEXT, error TEXT, run_at_ms INTEGER)")
+    db.execute("CREATE TABLE cron_run_receipts (job_id TEXT, status TEXT, error_text TEXT, started_at_ms INTEGER)")
     db.execute("INSERT INTO cron_jobs VALUES ('j1', ?)", (watchdog.TRIAGE_JOB_NAME,))
     now_ms = int(datetime.now(UTC).timestamp() * 1000)
     for i in range(watchdog.ERROR_STREAK):
-        db.execute("INSERT INTO cron_run_logs VALUES ('j1', 'error', 'model idle timeout', ?)",
+        db.execute("INSERT INTO cron_run_receipts VALUES ('j1', 'error', 'model idle timeout', ?)",
                    (now_ms - i * 600_000,))
     db.commit(); db.close()
     monkeypatch.setattr(watchdog, "OPENCLAW_DB", db_path)
@@ -198,13 +198,13 @@ def test_watchdog_quiet_after_recovery(tmp_path, monkeypatch):
     db_path = tmp_path / "openclaw.sqlite"
     db = sqlite3.connect(db_path)
     db.execute("CREATE TABLE cron_jobs (job_id TEXT, name TEXT)")
-    db.execute("CREATE TABLE cron_run_logs (job_id TEXT, status TEXT, error TEXT, run_at_ms INTEGER)")
+    db.execute("CREATE TABLE cron_run_receipts (job_id TEXT, status TEXT, error_text TEXT, started_at_ms INTEGER)")
     db.execute("INSERT INTO cron_jobs VALUES ('j1', ?)", (watchdog.TRIAGE_JOB_NAME,))
     now_ms = int(datetime.now(UTC).timestamp() * 1000)
     # newest run OK, older ones failed — streak broken, no alarm
-    db.execute("INSERT INTO cron_run_logs VALUES ('j1', 'ok', NULL, ?)", (now_ms,))
+    db.execute("INSERT INTO cron_run_receipts VALUES ('j1', 'ok', NULL, ?)", (now_ms,))
     for i in range(1, watchdog.ERROR_STREAK + 1):
-        db.execute("INSERT INTO cron_run_logs VALUES ('j1', 'error', 'x', ?)",
+        db.execute("INSERT INTO cron_run_receipts VALUES ('j1', 'error', 'x', ?)",
                    (now_ms - i * 600_000,))
     db.commit(); db.close()
     monkeypatch.setattr(watchdog, "OPENCLAW_DB", db_path)

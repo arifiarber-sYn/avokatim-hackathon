@@ -162,8 +162,8 @@ def check_cron_errors() -> str | None:
         if not job:
             return f"cron job '{TRIAGE_JOB_NAME}' nuk ekziston më në OpenClaw!"
         rows = db.execute(
-            "SELECT status, error, run_at_ms FROM cron_run_logs "
-            "WHERE job_id = ? ORDER BY run_at_ms DESC LIMIT ?",
+            "SELECT status, error_text, started_at_ms FROM cron_run_receipts "
+            "WHERE job_id = ? ORDER BY started_at_ms DESC LIMIT ?",
             (job[0], ERROR_STREAK),
         ).fetchall()
     finally:

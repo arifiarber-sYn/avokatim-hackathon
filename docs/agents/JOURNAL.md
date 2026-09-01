@@ -1,3 +1,9 @@
+## 2026-09-01 — fix(watchdog): cron_run_receipts table (OpenClaw 2026.8.1 rename) (Halim)
+- Done: `backend/scripts/ops_watchdog.py` kërkonte tabelën e vjetër `cron_run_logs` në `~/.openclaw/state/openclaw.sqlite`; pas update-it të OpenClaw 2026.8.1 tabela u riemërua `cron_run_receipts` (skemë e re: status, error_text, started_at_ms, finished_at_ms) → çdo xhirim i watchdog-ut hidhte `no such table: cron_run_logs`, të cilin e trajtonte si alarm → dërgoi 8 email të rreme "[WATCHDOG] posta ka ngecur" (31.08–01.09, ~çdo 3h) ndërsa triage-i punonte normalisht (xhirime çdo 2 min, të gjitha OK, job 2609be05).
+- Done: query i `check_cron_errors()` u përditësua te `cron_run_receipts` (status, error_text, started_at_ms); testet `tests/test_ops_mail_reliability.py` u përditësuan me skemën e re. Verified: 11/11 teste kalojnë; `ops_watchdog.py --status` → findings OK.
+- Done: inbox i pastruar — 14 të palexuar: 8 alarme të rreme WATCHDOG + 2 DMARC + 1 newsletter + 1 OAK auto-verifikim (Elvira Heta Vata, pa veprim) u arkivuan; Brave Search API billing update + Kling AI rinovim (8 shtator, visa *7294) u shënuan të lexuar (informuese).
+- Left open: asnjë; watchdog tani alarmon vetëm për gjendje reale.
+
 ## 2026-08-26 — DE launch-gate item 3: reindex i jurisprudencës u mbyll + eval i ri (Halim)
 - Done: batch-i i jurisprudencës (13,091 dokumente) u ri-indeksua — korpusi DE 100% pa chunk gjigantë (0 mbetur, max 2399); 4 dokumentet e fundit me burim 404 në portal u ri-chunk-uan nga teksti i ruajtur në DB pa humbje. Hapi (1) i launch-gate item 3 = MBYLLUR.
 - Done: eval v1 (13:35) — max_prompt_tokens ra nga 15.3K në **1845** (ri-indeksimi eliminoi bllokuesin b), por FAIL: 1 statut i shpikur (§568c) + p95 17.2s.
