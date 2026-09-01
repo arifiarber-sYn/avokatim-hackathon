@@ -25,8 +25,13 @@ rastit + shablloni Deckungsanfrage, eksporti DATEV EXTF. Verifikuar E2E me
 1. **Server në BE për të dhënat e qytetarëve gjermanë** — GDPR Art. 3(2);
    "Serverstandort Deutschland/EU" është edhe argument shitjeje. Hostimi
    aktual në makinën e pronarit mjafton vetëm për beta të mbyllur.
+   → **Plani i gatshëm për vendim**: `docs/legal/EU-SERVER-PLAN.md`
+   (2026-09-01) — rekomandimi Hetzner GEX44 184 €/muaj, plan migrimi
+   6-hapësh me rollback; zgjidh njëherësh edhe latencën e item 3.
 2. **Përfaqësues në BE sipas GDPR Art. 27** — i detyrueshëm për ofrues
    jashtë BE-së që përpunojnë të dhëna të banorëve të BE-së.
+   → Krahasimi i ofruesve te `docs/legal/EU-SERVER-PLAN.md`:
+   rekomandimi Prighter "Growth" 35 €/muaj (420 €/vit).
 3. **LLM lokal për kërkesat DE** — ⚠️ **RIHAPUR: kërkon RI-VALIDIM (D-082, 2026-08-15)**.
    Baseline-i i vjetër `gemma3:27b` u **fshi** në konsolidimin fleet-wide të modeleve
    (openclaw-knowledge D-082). Modeli i ri lokal = **`qwen3.8:27b`**
@@ -43,6 +48,17 @@ rastit + shablloni Deckungsanfrage, eksporti DATEV EXTF. Verifikuar E2E me
    s'është praktik në këtë makinë (VRAM e pamjaftueshme → CPU offload). **DE QËNDRON NË
    DeepSeek** derisa: (1) të rregullohet chunk-ing-u i korpusit DE, (2) të zgjidhet latenca
    (GPU e lirë/dedikuar ose kriter i rishikuar), (3) të ri-ekzekutohet eval-i. Detaje: JOURNAL 2026-08-23.
+   **Përditësim 2026-08-26**: (1) U MBYLL — riindeksimi eliminoi chunk-et gjigantë,
+   prompt-i maksimal ra nga 15.3K në ~1.850 tokena.
+   **Matje e re 2026-09-01 (`scripts/eval_de_ttft.py`)**: përvoja e produktit është
+   streaming, ndaj u mat latenca e token-it të parë (TTFT) mbi të njëjtat 20 pyetje
+   me warmup (modeli aktual `qwen3-abliterated:30b-a3b`): **TTFT p50 = 2.47s,
+   p95 = 6.64s** (17/20 nën 5s; outliers nga GPU e përbashkët e kësaj makine) —
+   kundrejt p95 12.7s të metrikës së vjetër "përgjigje e plotë".
+   **Vendimi i mbetur për pronarin**: (a) rikuadro kriterin 5 si TTFT streaming
+   (≤5s p95) dhe ri-mat në server GPU të dedikuar — pritet të kalojë pa outliers,
+   shih `EU-SERVER-PLAN.md` (itemi 1 dhe 3 mbyllen bashkë); ose (b) GPU e dedikuar
+   në këtë makinë. Deri atëherë DE mbetet në DeepSeek me pseudonimizim.
 4. **Rishikim ligjor nga avokat gjerman** i AGB-ve, Datenschutzerklärung
    dhe Impressum (draftet janë në `frontend/src/lib/legal.ts` dhe
    `frontend/src/app/impressum/page.tsx`). Plotëso adresën fizike te

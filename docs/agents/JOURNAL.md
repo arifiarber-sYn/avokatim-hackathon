@@ -1,3 +1,27 @@
+## 2026-09-01 — Porta DE itemet 1–3: matja TTFT me streaming + plani i serverit BE (Cursor / Fable 5)
+- Konteksti: pas valës së avancimeve, nga plani mbetën vetëm hapat e pronarit.
+  Dy prej tyre përgatiten dot pa vendim: të dhënat për kriterin e latencës
+  (item 3) dhe krahasimi i ofruesve BE (itemet 1–2, premtuar në plan).
+- Done: **`scripts/eval_de_ttft.py`** — eval i ri i latencës streaming
+  (time-to-first-token) mbi të njëjtat 20 pyetje + ndërtim prompti si
+  `eval_de_quality.py` (importon CASES/CITATION_CASES prej tij), me warmup
+  (cold-start-i i modelit është veti deploy-i, jo e pyetjes). Rezultati me
+  `qwen3-abliterated:30b-a3b`: **TTFT p50 2.47s / p95 6.64s** (17/20 nën 5s;
+  outliers 11.5s/6.4s nga GPU e përbashkët), full-response p95 12.71s.
+  JSON te `data/eval_de_ttft_2026-09-01.json`. Gate doc item 3 u përditësua
+  me matjen + vendimin e mbetur (a: rikuadrim kriteri si TTFT + ri-matje në
+  server të dedikuar; b: GPU e dedikuar këtu).
+- Done: **`docs/legal/EU-SERVER-PLAN.md`** — dokument vendimmarrës për
+  itemet 1–2 (çmime të verifikuara në ueb 01.09): Hetzner GEX44 184 €/muaj
+  (rekomandim; modeli DE 18 GB futet në 20 GB VRAM me ctx 16K — prompt max
+  ~1.850 tokena pas riindeksimit) vs GEX130/131; Art. 27: Prighter Growth
+  35 €/muaj (rekomandim) vs Engage/rep4eu/DataRep; plan migrimi 6-hapësh
+  (provizionim → stack → provë restore → eval → cutover me tunel → rollback);
+  kosto totale 219 €/muaj. Itemet 1+3 mbyllen bashkë (GPU e dedikuar heq
+  outliers-at). Gate doc itemet 1–2 tani referojnë planin.
+- Done: H-15 te `hapa-kllosha.md` (PKM e Halimit) — PO/JO për GEX44+Prighter.
+- Left open: vendimi i pronarit (H-15); pas PO-së migrimi kryhet nga agjenti.
+
 ## 2026-09-01 — Vala e avancimeve DE+XK: hibrid për dokumentet, API tokens, Landesrecht BB+SN (Cursor / Fable 5)
 - Kërkesa: zbatimi i planit "Avancimet AvokatIM DE+XK" (7 faza). Auditimi
   fillestar zbuloi se Fazat 2–5 dhe shumica e 6–7 ishin **tashmë të zbatuara**
