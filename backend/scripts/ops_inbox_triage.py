@@ -20,6 +20,7 @@ State (last UID per mailbox) lives in data/ops/inbox_state.json so restarts
 and reboots never re-report old mail. Exit code is always 0 with valid JSON;
 errors are reported inside the JSON ("error" key) to keep the cron quiet.
 """
+import csv
 import email
 import email.header
 import email.utils
@@ -33,6 +34,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.config import PROJECT_DIR, settings  # noqa: E402
+# Lidhja mekanike me lëndët e firmës (alias +token@) — i njëjti burim i vërtete
+# si hygiene/mailbox (2026-09-07, VENDIM I HALIMIT: "human" vetëm me lidhje).
+from scripts.ops_mailbox import _is_matter_alias  # noqa: E402
 
 STATE_FILE = PROJECT_DIR / "data" / "ops" / "inbox_state.json"
 MAX_SNIPPET = 1200
@@ -159,8 +163,34 @@ def _record_company_reply(domain: str) -> None:
         f.write(f"{domain}\n")
 
 
+def _outreach_contacts() -> set[str]:
+    """Adresat që fushatat TONA i kanë kontaktuar të parat (oak/de outreach).
+
+    Lidhje mekanike me firmën: ne u shkruam të parët, përgjigja e tyre është
+    biznes i AvokatIM (parity-a D-070 e ruajtur). Fail-open: pa ledger = set
+    bosh (dërguesi mbetet "unknown" = draft-only — ana e sigurt).
+    """
+    contacts: set[str] = set()
+    for name in ("oak_outreach_log.csv", "de_outreach_log.csv"):
+        p = PROJECT_DIR / "data" / name
+        try:
+            with p.open(encoding="utf-8") as f:
+                rows = csv.reader(f)
+                header = next(rows, None)
+                idx = 0
+                if header and "email" in header:
+                    idx = header.index("email")
+                for row in rows:
+                    if row and "@" in (row[idx] if idx < len(row) else ""):
+                        contacts.add(row[idx].strip().lower())
+        except OSError:
+            continue
+    return contacts
+
+
 def _classify(from_addr: str, subject: str, body: str = "",
-              company_domains: dict[str, str] | None = None) -> str:
+              company_domains: dict[str, str] | None = None,
+              firm_linked: bool = False) -> str:
     if BOUNCE_FROM_RE.search(from_addr) or BOUNCE_FROM_RE.search(subject):
         return "bounce"
     addr = email.utils.parseaddr(from_addr)[1].lower()
@@ -178,7 +208,17 @@ def _classify(from_addr: str, subject: str, body: str = "",
     head = f"{subject}\n{body}".strip()
     if OPTOUT_RE.search(head) and len(head) <= 80:
         return "optout"
-    return "human"
+    # 2026-09-07 (VENDIM I HALIMIT, incidenti Solar72): "human" — dhe bashkë me
+    # të korsia autonome e përgjigjes — VETËM kur maili lidhet MEKANIKISHT me
+    # firmën: (a) alias lënde +token@ (_is_matter_alias), ose (b) dërgues që
+    # fushatat tona e kontaktuan të parat (ledger-ët e outreach-it). Gjithçka
+    # tjetër është "unknown" = draft-për-miratim, KURRË dërgim autonom.
+    # Defaulti i vjetër ("human" për çdo të panjohur) i dha korsinë autonome
+    # partnerëve privatë të Kllosha-s (Rene/Oliver, Solar72) — 5 dërgime pa
+    # PO, 05–07.09.
+    if firm_linked:
+        return "human"
+    return "unknown"
 
 
 def _record_optout(addr: str) -> bool:
@@ -230,12 +270,16 @@ def run() -> dict:
         # Track A M&A replies first — highest-value mail in the box.
         "company": [],
         "human": [],
+        # dërgues pa lidhje mekanike me firmën (2026-09-07): draft-only, kurrë
+        # përgjigje autonome — i sjellë me të njëjtat fusha si "human"
+        "unknown": [],
         "system_count": 0,
         "bounce_count": 0,
         "optout_count": 0,
         "optouts": [],
     }
     company_domains = _company_domains()
+    outreach_contacts = _outreach_contacts()
 
     imap = imaplib.IMAP4_SSL(host, port)
     try:
@@ -278,8 +322,13 @@ def run() -> dict:
             from_h = _decode(msg.get("From"))
             subject = _decode(msg.get("Subject"))
             snippet = _body_snippet(msg)
-            kind = _classify(from_h, subject, snippet, company_domains)
-            if kind == "human" and len(report["human"]) >= MAX_HUMAN_PER_RUN:
+            sender_addr = email.utils.parseaddr(from_h)[1].lower()
+            kind = _classify(from_h, subject, snippet, company_domains,
+                             firm_linked=_is_matter_alias(msg)
+                             or sender_addr in outreach_contacts)
+            if (kind in ("human", "unknown")
+                    and len(report["human"]) + len(report["unknown"])
+                    >= MAX_HUMAN_PER_RUN):
                 report["truncated"] = True
                 report["truncated_at_uid"] = uid
                 break
@@ -314,7 +363,9 @@ def run() -> dict:
                 if _record_optout(addr):
                     report["optouts"].append(addr)
             else:
-                report["human"].append({
+                # "human" (i lidhur me lëndë) te human; "unknown" te bucket-i
+                # i vet — draft-only (VENDIM I HALIMIT 2026-09-07).
+                report["human" if kind == "human" else "unknown"].append({
                     "uid": uid,
                     "from": from_h,
                     "reply_to": email.utils.parseaddr(

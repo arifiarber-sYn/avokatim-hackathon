@@ -23,7 +23,11 @@ harvest = importlib.import_module("scripts.scrape_de_lawyers")
                          "Ich haette Fragen zur Migration aus RA-MICRO.", "human"),
 ])
 def test_optout_classifier(subject, body, expected):
-    assert triage._classify("kanzlei@example.de", subject, body) == expected
+    # 2026-09-07 (incidenti Solar72): "human" kërkon lidhje mekanike me firmën
+    # — kancelaria DE është në ledger-in e outreach-it tonë (ne i shkruam të
+    # parët), prandaj firm_linked=True. Optout-i fiton pavarësisht lidhjes.
+    assert triage._classify("kanzlei@example.de", subject, body,
+                            firm_linked=True) == expected
 
 
 def test_optout_ledger_dedup(tmp_path, monkeypatch):

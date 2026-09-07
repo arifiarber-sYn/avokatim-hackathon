@@ -25,8 +25,11 @@ def test_company_class_beats_human_and_optout():
     assert triage._classify(
         "legal@roland-rechtsschutz.de", "STOP", "", DOMAINS,
     ) == "company"
-    # Non-target senders keep the old behavior
-    assert triage._classify("someone@example.de", "Frage", "Hallo", DOMAINS) == "human"
+    # Non-target sender PA lidhje mekanike me firmën = "unknown" (draft-only,
+    # 2026-09-07 incidenti Solar72); me lidhje (outreach/lëndë) = "human".
+    assert triage._classify("someone@example.de", "Frage", "Hallo", DOMAINS) == "unknown"
+    assert triage._classify("someone@example.de", "Frage", "Hallo", DOMAINS,
+                            firm_linked=True) == "human"
     assert triage._classify("someone@example.de", "STOP", "", DOMAINS) == "optout"
 
 

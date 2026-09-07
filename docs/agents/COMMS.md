@@ -113,6 +113,18 @@ the owner/agent and never wired to a timer.
 - `scripts/ops_inbox_triage.py` (cron every 10 min, read-only IMAP PEEK)
   classifies inbound mail; human mail → Telegram with context + a
   **final, ready-to-send draft** signed "Arbër Arifi — AvokatIM".
+- **Firm-link boundary (2026-09-07, VENDIM I HALIMIT — incidenti Solar72)**:
+  `_classify` returns `human` ONLY for mail mechanically linked to the firm —
+  matter `+token@` aliases or senders our outreach campaigns contacted first
+  (`data/oak_outreach_log.csv` / `de_outreach_log.csv`). Every other sender is
+  the new class **`unknown`** → draft-for-approval, NEVER an autonomous reply.
+  Root cause fixed here: the old default (`return "human"` for any stranger)
+  routed the owner's private business partners (Rene Schuster / Oliver Triggs,
+  Solar72) into the autonomous lane — 5 replies sent without PO, 05–07.09,
+  one of them to a mistyped address (`triggoliver@` instead of
+  `triggsoliver@`). The cron payload adds two more layers: allowlist refusal
+  is now BLOCKING for sends (no longer observe-only), and a turn running on
+  the fallback model (qwen) must never send email — draft only.
 - The ONLY question to the owner: **"PO (dërgo) / JO (lëre)"**. "PO" → Halim
   sends via `scripts/ops_send_reply.py` and confirms; "JO" → archived; any
   other text = edit instruction → new draft → new PO/JO.

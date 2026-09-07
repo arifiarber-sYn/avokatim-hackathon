@@ -1,3 +1,25 @@
+## 2026-09-07 — Kufiri i email-it: klasa "unknown" + enforcement (Cursor / Fable 5, VENDIM I HALIMIT)
+- Konteksti: incidenti Solar72 — sekretari iu përgjigj AUTONOMISHT partnerëve
+  privatë të pronarit (Rene Schuster, Oliver Triggs) **5 herë pa PO, 05–07.09**,
+  përfshirë një dërgim në adresë të shkruar GABIM (`triggoliver@` pa "s" —
+  rrjedhje e mundshme konfidencialiteti, asnjë bounce) dhe zotime takimesh
+  (telefonatë "nesër", takim në Vjenë) në emër të pronarit. Të 5 turnet
+  xhironin mbi modelin fallback (qwen). Auditimi i plotë me dëshmi:
+  `~/halim-lab/eksperimente/auditimi-2026-09-07/INCIDENTI-SOLAR72-EMAIL.md`.
+- Shkaku rrënjësor: `_classify` kthente `human` si DEFAULT për çdo dërgues të
+  panjohur → korsia autonome (a) e payload-it. Doktrina e shkruar (D-064,
+  Lane B këtu) gjithmonë thoshte "personal KURRË autonom" — payload-i kishte
+  deviuar prej saj.
+- Done (me PO eksplicite të Halimit, pikat 1–4): **`_classify` kthen `human`
+  VETËM me lidhje mekanike me firmën** (alias lende ose ledger outreach-i,
+  `_outreach_contacts()`); klasa e re **`unknown` = draft-për-miratim**;
+  payload-i i cron-it: korsia (c) personal → draft-only, gate ndalues i
+  `email_allowlist` para çdo dërgimi, rregulli "fallback → kurrë dërgim".
+  Testet 370/370 (3 teste u përditësuan në kontratën e re — dërguesit
+  "human" të testeve tani shënohen si kontakte outreach-i); skill_vet ALLOW.
+- Halimi mbajti për vete: accept-in e harness_shield (bërë), doktrinën D-154
+  ("AvokatIM s'përzien punët" — fjala e Kllosha-s) dhe korrigjimin e OPS.
+
 ## 2026-09-01 — Porta DE itemet 1–3: matja TTFT me streaming + plani i serverit BE (Cursor / Fable 5)
 - Konteksti: pas valës së avancimeve, nga plani mbetën vetëm hapat e pronarit.
   Dy prej tyre përgatiten dot pa vendim: të dhënat për kriterin e latencës

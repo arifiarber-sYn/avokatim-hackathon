@@ -41,13 +41,17 @@ COMPANY_DOMAINS = {"stp.one": "Septeo", "advocard.de": "ADVOCARD"}
 
 
 def test_parity_xk_lawyer_reply_is_human():
-    kind = triage._classify(
+    # 2026-09-07 (incidenti Solar72): "human" kërkon lidhje MEKANIKE me firmën
+    # — avokati XK është në ledger-in e outreach-it tonë (ne i shkruam të
+    # parët), prandaj firm_linked=True. Pa lidhje = "unknown" (draft-only).
+    args = (
         "Av. Katarina Vuksani <katarinavuksani@hotmail.com>",
         "Re: AvokatIM — zyra juaj digjitale",
         "Faleminderit, por s'po mundem me e hap faqen nga telefoni. Si të regjistrohem?",
         COMPANY_DOMAINS,
     )
-    assert kind == "human"
+    assert triage._classify(*args, firm_linked=True) == "human"
+    assert triage._classify(*args) == "unknown"
 
 
 def test_parity_de_company_reply_is_company_never_human():
@@ -118,11 +122,17 @@ def inbox_env(tmp_path, monkeypatch):
     monkeypatch.setattr(triage.settings, "imap_host", "imap.test", raising=False)
     monkeypatch.setattr(triage.settings, "imap_user", "ops@test", raising=False)
     monkeypatch.setattr(triage.settings, "imap_password", "x", raising=False)
+    # Testet s'lexojnë ledger-ët REALË të outreach-it (izolim); çdo test që
+    # do dërgues "human" i shton vetë te kontaktet.
+    monkeypatch.setattr(triage, "_outreach_contacts", lambda: set())
 
 
 def test_capped_run_does_not_lose_backlog(inbox_env, monkeypatch):
     # 15 human mails arrive after UID 100 while the pipeline was down.
+    # (dërguesit shënohen si kontakte outreach-i → mbeten "human" si më parë)
     messages = {100 + i: _mail(f"person{i}@ex.com", f"Pyetje {i}") for i in range(1, 16)}
+    monkeypatch.setattr(triage, "_outreach_contacts",
+                        lambda: {f"person{i}@ex.com" for i in range(1, 16)})
     monkeypatch.setattr(triage.imaplib, "IMAP4_SSL", lambda *a, **k: FakeIMAP(messages))
     triage._save_state({"last_uid": 100})
 
@@ -142,6 +152,8 @@ def test_uncapped_run_advances_normally(inbox_env, monkeypatch):
     # First subject carries a raw 8-bit char — a malformed header must be
     # tolerated, not crash the run (found by this very test).
     messages = {201: _mail("a@ex.com", "Një pyetje"), 202: _mail("b@ex.com", "Dy")}
+    monkeypatch.setattr(triage, "_outreach_contacts",
+                        lambda: {"a@ex.com", "b@ex.com"})
     monkeypatch.setattr(triage.imaplib, "IMAP4_SSL", lambda *a, **k: FakeIMAP(messages))
     triage._save_state({"last_uid": 200})
     report = triage.run()
