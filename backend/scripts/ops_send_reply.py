@@ -90,7 +90,29 @@ def main() -> dict:
             "attachments": len(args.attach)}
 
 
+# --- Ops send-reply guard hook (Halim D-139, 2026-08-18) ---
+# Before sending, run the shared guard check. If it returns allow:false,
+# abort with a clear message and do NOT send.
+# Entity: sekretari | Domain: email_avokatim (korsia AvokatIM) / email_personal
+def _guard_check(action: str, domain: str = "email_avokatim") -> None:
+    import os
+    import subprocess
+    guard = os.path.expanduser("~/scripts/halim_guard.py")
+    if not os.path.exists(guard):
+        return  # guard not installed; proceed
+    r = subprocess.run(
+        [sys.executable, guard, "check",
+         "--entity", "sekretari",
+         "--domain", domain,
+         "--action", action],
+        capture_output=True, text=True, timeout=10
+    )
+    if r.returncode != 0:
+        sys.exit(f"GUARD BLOCKED: {r.stderr.strip() or r.stdout.strip()}")
+
+
 if __name__ == "__main__":
+    _guard_check("send_reply")  # SystemExit before any SMTP work if blocked
     try:
         result = main()
     except Exception as exc:

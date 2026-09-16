@@ -1,7 +1,7 @@
 #!/bin/sh
 # AgentStandard v1.1 — pre-commit gate: docs ship in the SAME commit as code.
 #
-# Blocks the commit when staged changes touch code but neither docs/agent/
+# Blocks the commit when staged changes touch code but neither docs/agents/
 # nor AGENTS.md is staged. Agent-agnostic by design: Cursor, Claude Code,
 # Codex or a human — everyone who commits passes through this gate
 # (STANDARD.md §1.6: a prose-only rule gets violated sooner or later).
@@ -12,7 +12,7 @@
 #
 # Per-project tuning (edit here or export before committing):
 #   CODE_PATTERN — extended regex for paths that count as "code"
-#   DOCS_DIR     — the agent docs directory (default docs/agent/)
+#   DOCS_DIR     — the agent docs directory (default docs/agents/)
 #   LINT_CMD     — optional project verify script (e.g. OpsHub's
 #                  verify-docs.ts); non-zero exit blocks the commit
 #

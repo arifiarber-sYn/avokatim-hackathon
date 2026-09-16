@@ -1,3 +1,33 @@
+## 2026-09-16 — Pastrim/optimizim i workspace-it + formalizimi i guard-hook-ut të postës (Cursor / Fable 5)
+- Konteksti: kërkesë e pronarit për pastrim/optimizim të workspace-it në Cursor.
+  Gjendja e gjetur: 2 skedarë të Halimit pezull në git që prej ~2 javësh,
+  cache Python-i të shpërndarë, komente të vjetruara `docs/agent/` (njëjës)
+  te pre-commit, pa `.cursorindexingignore`.
+- Done — formalizimi i punës pezull të Halimit (korsia e postës):
+  - **`ops_inbox_check.py`** (i ri, i pa-track-uar deri sot): sensor read-only
+    i inbox-it me kursor `last_uid` — u commit-ua siç ishte. KUJDES: docstring-u
+    referon `ops_inbox_ack.py` që ENDE NUK EKZISTON (avancimi i kursorit) —
+    hap i ardhshëm i Halimit, jo i imi.
+  - **`ops_send_reply.py`**: hook-u i guard-it (Halim D-139) ishte KOD I VDEKUR —
+    `_guard_check` definohej pas bllokut `__main__` dhe s'thirrej kurrë. U lidh
+    si hap i parë para çdo pune SMTP. Verifikuar live: guard-i kthen
+    `allow:true` për sekretari/email_avokatim/send_reply (rrjedha s'bllokohet),
+    dhe suppression-i i test-marrësve refuzon si më parë.
+- Done — pastrim/optimizim:
+  - `.pytest_cache` (rrënjë + backend) dhe të gjitha `__pycache__` në pemën e
+    repos (jashtë .venv/data/node_modules) u fshinë; `git gc` → .git 12M→4.5M.
+  - **`.cursorindexingignore`** (i ri): përjashton nga indeksi semantik i
+    Cursor-it arkivin e vjetruar `docs/agent/` (njëjës — burim konteksti të
+    ndenjur për agjentët; docs/agents/ është e vërteta), `package-lock.json`
+    dhe log-et. `docs/agent/` NUK u fshi — është arkiv i qëllimshëm (header-i
+    i vet e shënon DEPRECATED).
+  - pre-commit (burim + kopja e instaluar u sinkronizuan): komentet thoshin
+    ende `docs/agent/`; kodi ishte i saktë (`docs/agents/`) që më 01.09.
+  - Dosja e Cursor-it `~/.cursor/projects/home-kllosha-BoraLaw` = 6.8M
+    (kryesisht transkripte agjentësh që duhen ruajtur) — asgjë për të fshirë.
+- Verifikimi: 370/370 teste, health OK, dërgim provë me marrës testi → refuzim
+  i pastër pas kalimit të guard-it.
+
 ## 2026-09-07 — Kufiri i email-it: klasa "unknown" + enforcement (Cursor / Fable 5, VENDIM I HALIMIT)
 - Konteksti: incidenti Solar72 — sekretari iu përgjigj AUTONOMISHT partnerëve
   privatë të pronarit (Rene Schuster, Oliver Triggs) **5 herë pa PO, 05–07.09**,
