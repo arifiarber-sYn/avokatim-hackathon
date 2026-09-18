@@ -18,7 +18,11 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   clickable ✓/≈ badges → source modal (`GET /corpus/chunk/{id}`,
   `/corpus/doc/{id}/first-chunk`), golden-set eval gate
   (`scripts/eval_citations.py`, `eval/golden_{xk,de}.jsonl`, gate ≥95%,
-  playbook row in AGENTS.md §4). (2) **Lawyer value**: 3 expert workflows
+  playbook row in AGENTS.md §4; baseline 2026-09-18: **DE 100% PASS,
+  XK ~73% FAIL** — remaining failures are real model hallucinations the
+  verifier correctly catches, e.g. old-Yugoslav LMD article numbering;
+  follow-up in ROADMAP. Statute abbreviations resolve via
+  `XK_STATUTE_REFS` in seeds; corpus hits are capped at 12k chars/hit). (2) **Lawyer value**: 3 expert workflows
   on the matter page (appeal/compliance/evidence, data-driven in
   `seeds/workflow_defs.py`, SSE `POST /matters/{id}/workflows/{kind}`,
   saved as matter note + audit), "Pyet lëndën" full-matter mode

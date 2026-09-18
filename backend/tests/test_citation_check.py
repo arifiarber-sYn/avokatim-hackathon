@@ -125,9 +125,11 @@ class _Row:
 
 
 class _Doc:
-    def __init__(self, title):
+    def __init__(self, title, doc_type="law", reference=None):
         self.id = uuid.uuid4()
         self.title = title
+        self.doc_type = doc_type
+        self.reference = reference
 
 
 class FakeDB:
@@ -261,3 +263,30 @@ async def test_verify_fabricated_quote_downgrades_to_unverified():
     results = await verify_citations(db, uuid.uuid4(), text)
     assert results[0]["status"] == "unverified"
     assert "note" in results[0]
+
+
+def test_doc_rank_prefers_base_act_over_amendment_and_judgment():
+    from types import SimpleNamespace
+
+    from app.services.citation_check import _doc_rank
+
+    base = SimpleNamespace(title="Kodi i Procedurës Penale", doc_type="code")
+    amendment = SimpleNamespace(
+        title="Ligji për Ndryshimin dhe Plotësimin e Kodit të Procedurës Penale",
+        doc_type="law",
+    )
+    judgment = SimpleNamespace(
+        title="Gjykata Supreme — KPPP. nr.284/23", doc_type="judgment"
+    )
+    ranked = sorted([judgment, amendment, base], key=_doc_rank)
+    assert ranked[0] is base
+    assert ranked[-1] is judgment
+
+
+def test_statute_alias_map_shape():
+    from app.seeds.kosovo import XK_STATUTE_REFS
+
+    assert XK_STATUTE_REFS["KPP"][0] == "08/L-032"
+    assert XK_STATUTE_REFS["KPRK"] == ["06/L-074"]
+    for refs in XK_STATUTE_REFS.values():
+        assert refs and all("/" in r or r.startswith("2004") for r in refs)

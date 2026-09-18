@@ -91,3 +91,24 @@
   `AVOKATIM_SIM_BASE_URL` for a test instance). All three harnesses
   (full/de/notary) go through the guard; regression tests in
   `tests/test_sim_guard.py`.
+
+## #6 — Long-running evals/scripts: systemd-run, and never restart `avokatim` while they run (2026-09-18)
+
+Two ways an hour-long eval died silently during the advancement wave:
+
+1. **Detached child processes of an agent shell get killed** when the shell
+   session recycles — `nohup`/`setsid`/`disown` were not enough. Launch
+   anything long-running as a transient unit instead:
+   `systemd-run --user --unit=<name> --collect --working-directory=... sh -c '...'`.
+2. **`systemctl --user restart avokatim` restarts the containers too**
+   (Postgres 5433 included), killing every open DB connection. Worse: if the
+   backend's graceful stop exceeds the stop-timeout, systemd SIGABRTs it,
+   which fires `OnFailure=halim-incident@…` (D-086) — Halim's responder may
+   then restart the stack AGAIN minutes later while investigating. Rule:
+   no `avokatim` restarts while an eval/simulation is running, and expect a
+   possible second restart from the incident responder after any ungraceful
+   stop.
+
+Also: scripts that loop over many DB-touching cases should open a FRESH
+session per case (see `scripts/eval_citations.py`) so one killed connection
+doesn't poison the remaining cases with PendingRollbackError.

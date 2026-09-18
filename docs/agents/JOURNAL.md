@@ -80,10 +80,35 @@
     endpoint-e të reja `GET /small-claims/meta`,
     `POST /small-claims/generate` (rate-limited); ×7 gjuhë; testuar
     end-to-end në browser.
-- Verifikimi: pytest **390/390** (20 teste të reja: verifier v2, workflows,
-  MCP, padia e vogël), isolation_check ALL PASS, saas_check ALL PASS,
-  build frontend OK + asset 200, health OK; full_simulation dhe eval gate
-  XK+DE në vazhdim në fund të sesionit (rezultatet shënohen kur mbyllen).
+- Verifikimi: pytest **397/397** (27 teste të reja: verifier v2, workflows,
+  MCP, padia e vogël, renditja e dokumenteve), isolation_check ALL PASS,
+  saas_check ALL PASS, **full_simulation 188/188 PASS**, build frontend OK +
+  asset 200, health OK; workflow "appeal" i provuar live me tenant provizor
+  (SSE plan→step→result→done, nota u ruajt).
+- **Rezultatet e eval gate-it** (4 runs; DE 1 run):
+  - **DE: PASS 79/79 = 100%.**
+  - **XK: FAIL ~65–73%** (3 runs të plota; gate 95%). Gjatë runs u gjetën
+    dhe u rregulluan 3 defekte reale: (1) `_find_docs("KPP")` kapte një
+    AKTGJYKIM ("KPPP. nr.284/23") në vend të kodit → alias map
+    `XK_STATUTE_REFS` në seeds (KPP→08/L-032/04/L-123, KP/KPRK→06/L-074,
+    LPK, LMD, LP, LKA, LFK, LSHT) + renditje bazë > amendament > aktgjykim
+    (`_doc_rank`); (2) rasti #12 dështonte me DeepSeek 400 — chunks
+    patologjikë të ligjeve të buxhetit (deri 1.6M karaktere tabela anekse)
+    e hidhnin prompt-in në 2M tokena → cap mbrojtës 12k karaktere/hit në
+    `rag.search_corpus`; (3) prompt-i i Ava-s u shtrëngua: thonjëza vetëm
+    për tekst të kopjuar nga materialet, cito kodet AKTUALE (06/L-074,
+    08/L-032), jo kodet e UNMIK-ut.
+  - Dështimet e mbetura XK janë halucinacione reale që gate-i i kap saktë:
+    modeli citon numërimin e LMD-së së VJETËR jugosllave (p.sh. "neni 173/
+    174" të ligjit '78 me tekst që në 04/L-077 i takon nenit 154/155) dhe
+    raundi i riparimit s'i heq gjithmonë. Follow-up në ROADMAP: riparimi të
+    marrë edhe tekstet burimore të neneve, jo vetëm listën e dështimeve.
+- Mësime operacionale (LESSONS): (1) evals të gjata NIS me `systemd-run
+  --user` — proceset e shkëputura nga sesioni i agjentit vriten heshtazi;
+  (2) `systemctl --user restart avokatim` NDAL edhe kontejnerët (Postgres!)
+  dhe, kur stop-i kalon timeout-in (SIGABRT), ndez responder-in e
+  incidenteve të Halimit që mund ta rindezë stack-un sërish më vonë — mos
+  planifiko restart me eval/simulim në vazhdim.
 - Vendime të hapura për pronarin: (a) PO për draft-et Lane B; (b) dublikata
   Buzuku; (c) ndezja default e riparimit të citimeve pas shqyrtimit të
   latencës.

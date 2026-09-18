@@ -288,7 +288,11 @@ Tier C — strategic (6+ months):
 > Open follow-ups: (a) Lane B re-activation drafts await the owner's PO
 > (data/reaktivizimi-lane-b-2026-09-18.md, 24 dormant accounts);
 > (b) Buzuku duplicate profile — owner to pick which to keep;
-> (c) citation-repair default-on decision after latency review (D-058).
+> (c) citation-repair default-on decision after latency review (D-067);
+> (d) XK eval gate is at ~73% vs the 95% target (DE: 100%) — next
+> iteration: repair round should receive the source article texts of
+> the failed citations (not just the list), and/or retrieval-anchored
+> citation instructions, then re-run `eval_citations.py --jur XK`.
 
 Deliberately NOT adopted: model fine-tuning (Luminance/Harvey Tenet lesson —
 grounding + verification deliver more trust per euro at our scale), contract

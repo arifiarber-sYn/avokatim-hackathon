@@ -257,9 +257,14 @@ async def search_corpus(
         # fall back to word-overlap scoring.
         rows = _score_rows((await db.execute(scope.limit(2000))).all(), query, limit)
 
+    # Defensive per-hit cap: a few corpus chunks are pathological (budget
+    # appropriation laws carry 1.6M-char annex tables in one "article") and
+    # one such hit used to blow the provider's context window (2M tokens →
+    # DeepSeek 400, eval case #12). 12k chars ≈ 4-5k tokens keeps the legal
+    # substance and the prompt bounded.
     return [
         {
-            "text": chunk.text,
+            "text": chunk.text[:12_000],
             "section": chunk.section,
             "doc_title": doc.title,
             "reference": doc.reference,

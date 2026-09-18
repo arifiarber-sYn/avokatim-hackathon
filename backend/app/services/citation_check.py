@@ -283,12 +283,48 @@ def extract_citations(text: str) -> list[dict]:
     return found[:MAX_CITATIONS]
 
 
+# Rank base acts above amendments ("për ndryshimin/plotësimin e ...") and
+# judgments: an article lives in the base code, not in the amending law or
+# in a decision whose file number happens to contain the abbreviation.
+_AMENDMENT_MARKERS = ("ndryshimin", "plotësimin", "plotesimin")
+
+
+def _doc_rank(doc: LegalCorpusDoc) -> tuple[int, int]:
+    title = (doc.title or "").lower()
+    is_amendment = any(m in title for m in _AMENDMENT_MARKERS)
+    is_statute = (doc.doc_type or "") in ("code", "law", "regulation")
+    return (0 if is_statute and not is_amendment else 1 if is_statute else 2, 0)
+
+
 async def _find_docs(
     db: AsyncSession, jurisdiction_id: uuid.UUID, code: str
 ) -> list[LegalCorpusDoc]:
     """Corpus docs whose reference or title mentions the cited code/number.
-    Multi-word lookups (named laws) retry with a shortened phrase — the
-    citation may carry trailing words that are not part of the title."""
+
+    Order of attempts:
+    1. Statute-abbreviation alias map (XK_STATUTE_REFS): "KPP" -> the actual
+       procedure code by gazette reference — never a judgment whose file
+       number contains the letters (the KPPP.nr.284/23 lesson).
+    2. Exact-ish reference/title LIKE lookup; multi-word lookups (named laws)
+       retry with a shortened phrase. Results are ranked base act >
+       amendment > judgment."""
+    from app.seeds.kosovo import XK_STATUTE_REFS
+
+    refs = XK_STATUTE_REFS.get(code.strip().upper())
+    if refs:
+        rows = await db.execute(
+            select(LegalCorpusDoc).where(
+                LegalCorpusDoc.jurisdiction_id == jurisdiction_id,
+                LegalCorpusDoc.reference.in_(refs),
+            )
+        )
+        docs = sorted(
+            rows.scalars(),
+            key=lambda d: (_doc_rank(d), refs.index(d.reference)),
+        )
+        if docs:
+            return docs[:5]
+
     words = code.split()
     attempts = [code]
     if len(words) > 2:
@@ -305,11 +341,11 @@ async def _find_docs(
                     func.lower(LegalCorpusDoc.title).like(needle),
                 ),
             )
-            .limit(5)
+            .limit(15)
         )
-        docs = list(rows.scalars())
+        docs = sorted(rows.scalars(), key=_doc_rank)
         if docs:
-            return docs
+            return docs[:5]
     return []
 
 

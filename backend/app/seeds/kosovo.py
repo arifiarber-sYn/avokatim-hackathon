@@ -1477,3 +1477,21 @@ XK_BASIC_COURTS: dict[str, tuple[str, str | None]] = {
 # Small-claims threshold: LPK neni 485.1 — money claims up to 500 EUR run
 # under Kreu XXVIII (nenet 484–491, procedurë e thjeshtuar).
 XK_SMALL_CLAIM_LIMIT_EUR = 500
+
+
+# Official-gazette references for the statute abbreviations Ava commonly
+# cites (verifier v2 doc lookup, D-067). An abbreviation like "KPP" must
+# resolve to the actual code, never to a judgment whose file number happens
+# to contain the letters. Consolidated/base act first, predecessor second.
+XK_STATUTE_REFS: dict[str, list[str]] = {
+    "KPP": ["08/L-032", "04/L-123"],       # Kodi i Procedurës Penale
+    "KPPK": ["08/L-032", "04/L-123"],
+    "KP": ["06/L-074"],                    # Kodi Penal
+    "KPRK": ["06/L-074"],
+    "LPK": ["03/L-006"],                   # Procedura Kontestimore
+    "LMD": ["04/L-077"],                   # Marrëdhëniet e Detyrimeve
+    "LP": ["03/L-212"],                    # Ligji i Punës
+    "LKA": ["08/L-182"],                   # Konfliktet Administrative
+    "LFK": ["2004/32"],                    # Ligji për Familjen
+    "LSHT": ["06/L-016"],                  # Shoqëritë Tregtare
+}
