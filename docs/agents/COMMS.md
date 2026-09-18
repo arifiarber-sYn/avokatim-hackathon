@@ -66,6 +66,15 @@ log. Log `data/outreach.log`. Both letters end with a mobile P.S. (open
 avokatiim.ai directly in Chrome/Safari, not inside the mail app) — the
 Vuksani lesson (D-063).
 
+**Demo one-off (XK, 2026-09-18, owner PO 14:10/15:27):** "Si funksionon
+AvokatIM në 4 hapa" — HTML me 3 ilustrime inline (CID) + tekst, sq — te
+avokatët me profil të dukshëm në Treg, 2 valë (23 + 7 = **30 ok / 0 fail**),
+tag `demo-2026-09-18`. Skripti `backend/scripts/send_demo_email.py`
+(halim_guard + `_is_test_recipient` + dedup për tag); ledger
+`data/ops/demo_email_sent.csv` — kontrolloje para çdo ri-dërgimi, bashkë me
+`data/reactivation_sent.csv` (mbivendosje marrësish të mundshme të njëjtën
+ditë). Evidenca: `data/evidence/demo-2026-09-18/`.
+
 **Re-activation one-off (XK, 2026-09-18, owner PO):** 23 personal emails to
 active 0-matter accounts (subject "{office} — llogaria juaj në AvokatIM ju
 pret", 15-minute live-demo offer, sq), sent via `services/notifications.

@@ -1,3 +1,20 @@
+## 2026-09-18 — Mbyllje administrative: fushata e demo-email-it (sesion paralel) u dokumentua dhe u commit-ua
+- Sesioni paralel i pasdites (PO i Klloshës 14:10 dhe 15:27) dërgoi email-in
+  "Si funksionon AvokatIM në 4 hapa — një demonstrim i shkurtër" (HTML me 3
+  ilustrime inline CID + alternativë tekst, sq) te avokatët me profil të
+  dukshëm në Treg, në dy valë: 15:00 → 23 ok; pastaj 7 ok te të mbeturit
+  (`_build_existing_lawyers.py`, përjashtime: Kllosha, Valtida Shukriu, kushdo
+  tashmë `ok` në ledger). Total **30 ok / 0 fail**, tag `demo-2026-09-18`.
+- Siguria e skriptit `send_demo_email.py`: kontroll halim_guard para SMTP-së,
+  refuzim i marrësve test (`_is_test_recipient`), dedup për tag në ledger-in
+  `data/ops/demo_email_sent.csv`, ledger-row për çdo marrës. Evidenca e plotë
+  (HTML/PNG mockups, listat, rezultatet JSON) te `data/evidence/demo-2026-09-18/`.
+- Ai sesion i la 3 skriptet ndihmëse të pa-commit-uara dhe pa JOURNAL/COMMS —
+  u mbyllën këtu (rreshti COMMS u shtua; skriptet u commit-uan). Kujdes për
+  dërgime të ardhshme: disa marrës morën të njëjtën ditë edhe email-in e
+  ri-aktivizimit — kontrollo TË DY ledger-ët para çdo dërgimi të ri
+  (`data/reactivation_sent.csv` + `data/ops/demo_email_sent.csv`).
+
 ## 2026-09-18 — PO i pronarit: fushata Lane B u dërgua; Buzuku u zgjidh; riparimi me grounding burimor (+13pp në gate-in XK)
 - Pronari dha PO ("po vazhdo") për tri vendimet e hapura të auditimit.
 - **Fushata e ri-aktivizimit (Lane B)**: 23 email-e personale u dërguan me
