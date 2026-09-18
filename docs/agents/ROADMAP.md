@@ -285,14 +285,19 @@ Tier C — strategic (6+ months):
         the marketplace.
 
 > Status 2026-09-18: all 10 implemented in one session (see JOURNAL).
-> Open follow-ups: (a) Lane B re-activation drafts await the owner's PO
-> (data/reaktivizimi-lane-b-2026-09-18.md, 24 dormant accounts);
-> (b) Buzuku duplicate profile — owner to pick which to keep;
-> (c) citation-repair default-on decision after latency review (D-067);
-> (d) XK eval gate is at ~73% vs the 95% target (DE: 100%) — next
-> iteration: repair round should receive the source article texts of
-> the failed citations (not just the list), and/or retrieval-anchored
-> citation instructions, then re-run `eval_citations.py --jur XK`.
+> Follow-ups closed the same day with the owner's PO ("po vazhdo"):
+> (a) Lane B re-activation campaign SENT — 23 emails (log
+> `data/reactivation_sent.csv`), Halim briefed via notify_ops;
+> (b) Buzuku duplicate resolved — kept the verified account
+> (av.labinotbuzuku@gmail.com), suspended the unverified one;
+> (c) citation repair stays OFF by default (24–117s extra/case) but is
+> now source-grounded: `_repair_sources` feeds the model the REAL text
+> of each failed article + where the quoted passage actually lives;
+> (d) XK gate improved 73.1% → **82.8%** (grounded repair + inflected
+> law-name aliases `XK_STATUTE_NAME_REFS`/`_norm_law_name`); DE 100%.
+> Still open: reach ≥95% on XK — highest-leverage next step is
+> retrieval-anchored citations (the model may only cite articles the
+> RAG context actually returned).
 
 Deliberately NOT adopted: model fine-tuning (Luminance/Harvey Tenet lesson —
 grounding + verification deliver more trust per euro at our scale), contract

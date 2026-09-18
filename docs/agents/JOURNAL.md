@@ -1,3 +1,32 @@
+## 2026-09-18 — PO i pronarit: fushata Lane B u dërgua; Buzuku u zgjidh; riparimi me grounding burimor (+13pp në gate-in XK)
+- Pronari dha PO ("po vazhdo") për tri vendimet e hapura të auditimit.
+- **Fushata e ri-aktivizimit (Lane B)**: 23 email-e personale u dërguan me
+  `send_email` te llogaritë aktive me 0 lëndë (jo-test, pas pezullimit të
+  dublikatës) — log dedup `data/reactivation_sent.csv`; Halimi u njoftua me
+  `notify_ops` (përgjigjet trajtohen si Lane B normale). Llogaritë >36 ditë
+  nuk kapen nga sekuenca automatike 3/7/30, s'ka dërgim të dyfishtë.
+- **Dublikata "Avokatura Buzuku"**: u mbajt `e202a0af` (av.labinotbuzuku@gmail.com —
+  email i verifikuar, 7 veprime auditimi); `e3f008dc` (buzukulabinot@gmail.com,
+  i pa-verifikuar, 1 veprim) u pezullua me shënim te `billing_notes`.
+- **Riparimi i citimeve me grounding burimor** (`_repair_sources` te
+  `citation_check.py`): raundi i riparimit tani merr TEKSTIN REAL të nenit të
+  cituar (chunk-u i seksionit) + "citati gjendet në të vërtetë te neni X"
+  (kërkim me fjalë të rralla + `_quote_coverage` ≥0.6 mbi doc-ët e ligjit) —
+  modeli korrigjon numrin në vend që ta fshijë pohimin.
+- **Aliaset e emrave të lakuar** (`XK_STATUTE_NAME_REFS` + `_norm_law_name`):
+  "nenit 71 të Ligjit të Punës" / "Kodit të Procedurës Penale të Kosovës" tani
+  zgjidhen te ligji i saktë (normalizim: diakritikë, lakime ligjit/kodit→ligj/kod,
+  stopwords; prova me prefikse zvogëluese + riparashtim i kokës "ligj" që
+  regex-i i ekstraktimit ia heq). +2 teste (399 pytest total, të gjitha kalojnë).
+- **Gate-i XK (run 5 → 6)**: 73.1% → 81.8% (grounding) → **82.8%** (aliaset;
+  24/29 ✓+≈, 3 law_found, 2 unverified). #18 (Ligji i Punës) tani 4/4 ✓.
+  Mbetjet janë halucinacione të vërteta të modelit (p.sh. #3: neni 371/374 LMD
+  me numërim të vjetër jugosllav — neni ekziston, përmbajtja e cituar jo) që
+  verifikuesi i kap saktë. DE mbetet 100% PASS. Riparimi mbetet OFF by default
+  (latencë 24–117s shtesë/rast); gate-i 95% për XK mbetet i hapur si synim —
+  hapi tjetër me leverage: citime të ankoruara në retrieval (modeli lejohet të
+  citojë vetëm nenet që i ktheu RAG-u).
+
 ## 2026-09-18 — Njoftimet e rasteve provë u bllokuan në të dyja rrugët (Halim, PO i Klloshës)
 - Konteksti: ankesa e Av. Valtida Shukriu (18.09 11:32) — 5 email-e "Rast i ri"
   brenda 2 orëve për 0 raste në Treg. Diagnoza (raporti

@@ -160,11 +160,68 @@ def _rare_words(quote: str, k: int = 3) -> list[str]:
 REPAIR_PROMPT = (
     "Ti je redaktori i verifikimit të citimeve. Përgjigja e mëposhtme përmban "
     "citime që NUK u verifikuan dot kundër korpusit tonë ligjor. Ri-shkruaje "
-    "përgjigjen duke i KORRIGJUAR citimet e gabuara (nëse e di referencën e "
-    "saktë) ose duke i HEQUR pohimet që mbështeten vetëm në to. MOS shto "
-    "citime të reja, mos ndrysho asgjë tjetër në përmbajtje, ruaj gjuhën dhe "
+    "përgjigjen duke i KORRIGJUAR citimet e gabuara (kur BURIMET REALE më "
+    "poshtë tregojnë nenin e saktë, përdore atë numër) ose duke i HEQUR "
+    "pohimet dhe thonjëzat që mbështeten vetëm në to. MOS shto citime të "
+    "reja, mos ndrysho asgjë tjetër në përmbajtje, ruaj gjuhën dhe "
     "formatimin. Kthe VETËM përgjigjen e korrigjuar, pa koment shtesë."
 )
+
+
+async def _repair_sources(
+    db: AsyncSession,
+    jurisdiction_id: uuid.UUID,
+    answer: str,
+    bad: list[dict],
+) -> str:
+    """Ground truth for the repair round: for every failed citation, the REAL
+    text of the cited article, and — when a quoted passage actually lives in
+    a different article of the same law — where it was found. This is what
+    lets the model fix a wrong article number instead of just deleting the
+    claim (old-numbering hallucinations, eval case #11)."""
+    bad_cites = {c["cite"] for c in bad}
+    citations = [c for c in extract_citations(answer) if c["cite"] in bad_cites]
+    quotes_by_cite = _attribute_quotes(answer, citations)
+    parts: list[str] = []
+    for c in citations:
+        docs = await _find_docs(db, jurisdiction_id, c["code"])
+        if not docs:
+            continue
+        doc_ids = [d.id for d in docs]
+        if c.get("section"):
+            prefixes = ["§ ", "§", "art. ", "art.", "neni ", "nenin ", "neni"]
+            chunk_id = await _section_in_doc(db, doc_ids, prefixes, c["section"])
+            if chunk_id is not None:
+                chunk = await db.get(LegalCorpusChunk, chunk_id)
+                if chunk is not None:
+                    parts.append(
+                        f"TEKSTI REAL i '{c['cite']}' ({docs[0].title}):\n"
+                        f"{chunk.text[:700]}"
+                    )
+        for quote in quotes_by_cite.get(c["cite"], [])[:3]:
+            words = _rare_words(quote)
+            if not words:
+                continue
+            conds = [
+                func.lower(LegalCorpusChunk.text).like(f"%{w.lower()}%")
+                for w in words
+            ]
+            rows = await db.execute(
+                select(LegalCorpusChunk)
+                .where(LegalCorpusChunk.doc_id.in_(doc_ids), *conds)
+                .limit(5)
+            )
+            best, best_cov = None, 0.0
+            for cand in rows.scalars():
+                cov = _quote_coverage(quote, cand.text)
+                if cov > best_cov:
+                    best, best_cov = cand, cov
+            if best is not None and best_cov >= 0.6 and best.section:
+                parts.append(
+                    f"Citati «{quote[:160]}» gjendet në të vërtetë te "
+                    f"'{best.section}' i {docs[0].title} (mbulimi {best_cov:.2f})."
+                )
+    return "\n\n".join(parts)
 
 
 async def repair_citations(
@@ -189,6 +246,14 @@ async def repair_citations(
             f"- {c['cite']}" + (f" ({c['note']})" if c.get("note") else "")
             for c in bad
         )
+        sources = ""
+        if jurisdiction_id is not None:
+            try:
+                sources = await _repair_sources(db, jurisdiction_id, answer, bad)
+            except Exception:
+                logger.exception("repair source grounding failed")
+        if sources:
+            listing += f"\n\nBURIMET REALE:\n{sources}"
         provider = get_provider(provider_name)
         result = await provider.chat(
             [
@@ -288,6 +353,28 @@ def extract_citations(text: str) -> list[dict]:
 # in a decision whose file number happens to contain the abbreviation.
 _AMENDMENT_MARKERS = ("ndryshimin", "plotësimin", "plotesimin")
 
+_LAW_STOPWORDS = {
+    "i", "e", "te", "se", "per", "ne", "nr", "të", "së", "për",
+    "kosoves", "kosovës", "republikes", "republikës", "republika",
+}
+_DIACRITICS = str.maketrans("ëçÿ", "ecy")
+
+
+def _norm_law_name(name: str) -> str:
+    """Normalize an inflected Albanian law name for the name-alias lookup:
+    'Ligjit të Punës' and 'Ligji i Punës' both become 'ligj punes'."""
+    s = name.lower().translate(_DIACRITICS)
+    words = []
+    for w in re.findall(r"[a-z0-9/\-]+", s):
+        if w in _LAW_STOPWORDS:
+            continue
+        if w in ("ligjit", "ligji", "ligjin"):
+            w = "ligj"
+        elif w in ("kodit", "kodi", "kodin"):
+            w = "kod"
+        words.append(w)
+    return " ".join(words)
+
 
 def _doc_rank(doc: LegalCorpusDoc) -> tuple[int, int]:
     title = (doc.title or "").lower()
@@ -308,9 +395,20 @@ async def _find_docs(
     2. Exact-ish reference/title LIKE lookup; multi-word lookups (named laws)
        retry with a shortened phrase. Results are ranked base act >
        amendment > judgment."""
-    from app.seeds.kosovo import XK_STATUTE_REFS
+    from app.seeds.kosovo import XK_STATUTE_NAME_REFS, XK_STATUTE_REFS
 
     refs = XK_STATUTE_REFS.get(code.strip().upper())
+    if not refs and " " in code.strip():
+        # The extraction regex may capture trailing sentence words after the
+        # law name ("Ligjit të Punës pushimi vjetor…") and may have stripped
+        # the inflected head ("Ligjit") — retry with shrinking prefixes, with
+        # and without the "ligj" head word.
+        tokens = _norm_law_name(code).split()
+        if tokens and tokens[0] not in ("ligj", "kod"):
+            tokens.insert(0, "ligj")
+        while len(tokens) >= 2 and not refs:
+            refs = XK_STATUTE_NAME_REFS.get(" ".join(tokens))
+            tokens.pop()
     if refs:
         rows = await db.execute(
             select(LegalCorpusDoc).where(

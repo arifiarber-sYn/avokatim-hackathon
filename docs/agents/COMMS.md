@@ -66,6 +66,14 @@ log. Log `data/outreach.log`. Both letters end with a mobile P.S. (open
 avokatiim.ai directly in Chrome/Safari, not inside the mail app) — the
 Vuksani lesson (D-063).
 
+**Re-activation one-off (XK, 2026-09-18, owner PO):** 23 personal emails to
+active 0-matter accounts (subject "{office} — llogaria juaj në AvokatIM ju
+pret", 15-minute live-demo offer, sq), sent via `services/notifications.
+send_email` with 2s spacing. Dedup log `data/reactivation_sent.csv` — check
+it before ANY repeat send. Replies are normal Lane B traffic (Halim briefed
+via notify_ops). Accounts older than 36 days are outside the automatic
+activation sequence, so no double-touch.
+
 **Sending identity (D-069):** both campaigns now send through
 `backend/scripts/outreach_sender.py` — Resend API from `mail.avokatiim.ai`
 once the domain is verified (setup: `OUTREACH-SENDER-SETUP.md`), with the

@@ -1495,3 +1495,27 @@ XK_STATUTE_REFS: dict[str, list[str]] = {
     "LFK": ["2004/32"],                    # Ligji për Familjen
     "LSHT": ["06/L-016"],                  # Shoqëritë Tregtare
 }
+
+# Same map keyed by NORMALIZED law names (see citation_check._norm_law_name:
+# lowercase, diacritics stripped, inflections ligjit/kodit -> ligj/kod,
+# connector/stop words dropped). Covers the inflected named citations Ava
+# writes ("neni 71 i Ligjit të Punës") that a LIKE lookup cannot match
+# against the corpus title ("Ligji i Punës").
+XK_STATUTE_NAME_REFS: dict[str, list[str]] = {
+    "kod procedures penale": ["08/L-032", "04/L-123"],
+    "kod penal": ["06/L-074"],
+    "ligj pune": ["03/L-212"],
+    "ligj punes": ["03/L-212"],
+    "ligj marredheniet detyrimeve": ["04/L-077"],
+    "ligj marredhenieve detyrimeve": ["04/L-077"],
+    "ligj proceduren kontestimore": ["03/L-006"],
+    "ligj procedures kontestimore": ["03/L-006"],
+    "ligj familjen": ["2004/32"],
+    "ligj familjes": ["2004/32"],
+    "ligj konfliktet administrative": ["08/L-182"],
+    "ligj konflikteve administrative": ["08/L-182"],
+    "ligj shoqerite tregtare": ["06/L-016"],
+    "ligj shoqerive tregtare": ["06/L-016"],
+    "ligj trashegimine": ["2004/26"],
+    "ligj trashegimise": ["2004/26"],
+}

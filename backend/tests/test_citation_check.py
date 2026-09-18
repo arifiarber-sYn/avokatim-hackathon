@@ -290,3 +290,25 @@ def test_statute_alias_map_shape():
     assert XK_STATUTE_REFS["KPRK"] == ["06/L-074"]
     for refs in XK_STATUTE_REFS.values():
         assert refs and all("/" in r or r.startswith("2004") for r in refs)
+
+
+def test_norm_law_name_inflections():
+    from app.services.citation_check import _norm_law_name
+
+    assert _norm_law_name("Ligjit të Punës") == "ligj punes"
+    assert _norm_law_name("Ligji i Punës") == "ligj punes"
+    assert (
+        _norm_law_name("Kodit të Procedurës Penale të Kosovës")
+        == "kod procedures penale"
+    )
+    assert _norm_law_name("Ligjit për Marrëdhëniet e Detyrimeve") == (
+        "ligj marredheniet detyrimeve"
+    )
+
+
+def test_statute_name_alias_map_normalized_keys():
+    from app.seeds.kosovo import XK_STATUTE_NAME_REFS
+    from app.services.citation_check import _norm_law_name
+
+    for key in XK_STATUTE_NAME_REFS:
+        assert key == _norm_law_name(key), key

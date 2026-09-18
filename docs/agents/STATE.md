@@ -18,10 +18,12 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   clickable ✓/≈ badges → source modal (`GET /corpus/chunk/{id}`,
   `/corpus/doc/{id}/first-chunk`), golden-set eval gate
   (`scripts/eval_citations.py`, `eval/golden_{xk,de}.jsonl`, gate ≥95%,
-  playbook row in AGENTS.md §4; baseline 2026-09-18: **DE 100% PASS,
-  XK ~73% FAIL** — remaining failures are real model hallucinations the
-  verifier correctly catches, e.g. old-Yugoslav LMD article numbering;
-  follow-up in ROADMAP. Statute abbreviations resolve via
+  playbook row in AGENTS.md §4; 2026-09-18: **DE 100% PASS, XK 82.8%**
+  (up from 73% after source-grounded repair `_repair_sources` +
+  inflected law-name aliases `XK_STATUTE_NAME_REFS`/`_norm_law_name`) —
+  remaining failures are real model hallucinations the verifier
+  correctly catches, e.g. old-Yugoslav LMD article numbering; ≥95% XK
+  still open, see ROADMAP. Statute abbreviations resolve via
   `XK_STATUTE_REFS` in seeds; corpus hits are capped at 12k chars/hit). (2) **Lawyer value**: 3 expert workflows
   on the matter page (appeal/compliance/evidence, data-driven in
   `seeds/workflow_defs.py`, SSE `POST /matters/{id}/workflows/{kind}`,
@@ -1142,8 +1144,11 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
     disk without a `daemon-reload`.
   - **DE corpus embedding backlog**: 2,830 of 283,942 chunks lack
     embeddings (XK is 100% embedded).
-  - **Tenant hygiene**: "Avokatura Buzuku" duplicated (2026-08-19) — owner
-    still to pick which profile to keep. ~~Test tenants inflate stats~~
+  - **Tenant hygiene**: ~~"Avokatura Buzuku" duplicated~~ resolved
+    2026-09-18 with owner PO: kept the verified account
+    (av.labinotbuzuku@gmail.com, tenant e202a0af), suspended the
+    unverified duplicate (e3f008dc, note in billing_notes).
+    ~~Test tenants inflate stats~~
     fixed 2026-09-18: `tenants.is_test` flag (migration `c8d9e0f1a2b3`),
     9 tenants marked, excluded from the activation email sequence and
     flagged in `/platform` tenants list.
@@ -1152,9 +1157,10 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
     the OAK outreach campaign completed (all ~1,590 contacts exhausted).
     Countermeasures shipped 2026-09-18: activation email sequence day
     3/7/30 for 0-matter tenants (`_check_activation_sequence`, COMMS.md),
-    onboarding checklist on the dashboard, and 24 personal Lane B
-    re-activation drafts in `data/reaktivizimi-lane-b-2026-09-18.md`
-    (nothing sends without the owner's PO).
+    onboarding checklist on the dashboard, and the Lane B re-activation
+    campaign — SENT 2026-09-18 with the owner's PO: 23 personal emails
+    to 0-matter accounts (dedup log `data/reactivation_sent.csv`,
+    drafts `data/reaktivizimi-lane-b-2026-09-18.md`, Halim briefed).
   - Verification tooling drift fixed during the audit: `saas_check.py` now
     sends `accept_tos` and refreshes its token after change-password
     (password change revokes prior sessions). ALL PASS again;
