@@ -199,6 +199,7 @@ analytics https://stats.avokatiim.ai (self-hosted Umami container)
 | Notary E2E | notary/booking changes | `.venv/bin/python scripts/notary_simulation.py` |
 | Tenant isolation | auth/tenancy/permissions changes | `.venv/bin/python scripts/isolation_check.py` |
 | SaaS lifecycle | signup/trial/billing/invite changes | `.venv/bin/python scripts/saas_check.py` |
+| Citation eval gate | BEFORE any LLM model/prompt/RAG change ships | `.venv/bin/python scripts/eval_citations.py` (pass-rate ≥95% per jurisdiction; slow — run detached, e.g. `systemd-run --user`) |
 
 Simulations create throwaway tenants and clean up after themselves; their email
 addresses are suppressed (`_is_test_recipient` in `services/notifications.py`) —

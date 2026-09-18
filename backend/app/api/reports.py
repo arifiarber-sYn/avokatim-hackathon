@@ -8,7 +8,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.matters import restricted_visibility_filter
 from app.database import get_db
 from app.deps import get_current_user
-from app.models import Deadline, IntakeRequest, Invoice, InvoiceItem, Matter, TimeEntry, User
+from app.models import (
+    Conversation,
+    Deadline,
+    Document,
+    IntakeRequest,
+    Invoice,
+    InvoiceItem,
+    Matter,
+    TimeEntry,
+    User,
+)
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -191,6 +201,19 @@ async def dashboard(
         for m in months
     ]
 
+    # Onboarding checklist (audit 2026-09-18, adv. #3): what the office has
+    # actually tried — the dashboard shows the missing steps as a checklist
+    docs_count = (
+        await db.execute(
+            select(func.count(Document.id)).where(Document.tenant_id == tenant)
+        )
+    ).scalar_one()
+    conv_count = (
+        await db.execute(
+            select(func.count(Conversation.id)).where(Conversation.tenant_id == tenant)
+        )
+    ).scalar_one()
+
     return {
         "matters_by_status": matters_by_status,
         "deadlines_next_7_days": deadlines_7d,
@@ -201,6 +224,11 @@ async def dashboard(
         "today_agenda": today_agenda,
         "ar_aging": aging,
         "monthly_trend": monthly_trend,
+        "onboarding": {
+            "has_matter": bool(sum(matters_by_status.values())),
+            "has_document": docs_count > 0,
+            "has_assistant": conv_count > 0,
+        },
     }
 
 

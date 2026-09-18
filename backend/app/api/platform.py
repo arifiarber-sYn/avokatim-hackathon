@@ -36,6 +36,7 @@ class TenantRow(BaseModel):
     plan_price_eur: float
     billing_notes: str | None
     created_at: str
+    is_test: bool = False
 
 
 class TenantUpdate(BaseModel):
@@ -80,6 +81,7 @@ async def list_tenants(
             plan_price_eur=float(t.plan_price_eur or 0),
             billing_notes=t.billing_notes,
             created_at=t.created_at.isoformat(),
+            is_test=t.is_test,
         )
         for t in tenants
     ]

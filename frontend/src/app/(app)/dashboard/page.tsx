@@ -37,6 +37,7 @@ interface Dashboard {
   today_agenda: AgendaItem[];
   ar_aging: Record<string, number>;
   monthly_trend: TrendPoint[];
+  onboarding?: { has_matter: boolean; has_document: boolean; has_assistant: boolean };
 }
 
 interface Deadline {
@@ -279,6 +280,42 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-bold">{t.dashboard}</h1>
 
       <PageIntro k="dashboard" title={t.dashIntroT} body={t.dashIntro} />
+
+      {/* Onboarding checklist (audit 2026-09-18, adv. #3): shown until the
+          office has tried the three core actions */}
+      {data.onboarding &&
+        !(data.onboarding.has_matter && data.onboarding.has_document && data.onboarding.has_assistant) && (
+        <Card className="p-5 border-indigo-200 bg-indigo-50/50">
+          <h2 className="font-semibold text-indigo-900">{t.obcTitle}</h2>
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            {[
+              { done: data.onboarding.has_matter, label: t.obcMatter, href: "/matters" },
+              { done: data.onboarding.has_document, label: t.obcDocument, href: "/matters" },
+              { done: data.onboarding.has_assistant, label: t.obcAssistant, href: "/assistant" },
+            ].map((step) => (
+              <Link
+                key={step.label}
+                href={step.href}
+                className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm transition ${
+                  step.done
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    : "border-indigo-200 bg-white text-indigo-900 hover:border-indigo-400"
+                }`}
+              >
+                <span
+                  className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold ${
+                    step.done ? "bg-emerald-600 text-white" : "border border-indigo-300 text-indigo-400"
+                  }`}
+                >
+                  {step.done ? "✓" : ""}
+                </span>
+                {step.label}
+              </Link>
+            ))}
+          </div>
+        </Card>
+      )}
+
       <BriefingCard />
 
       <WhatsNewCard />

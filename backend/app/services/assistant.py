@@ -185,18 +185,29 @@ async def _build_ask_messages(
     language: str | None = None,
     style: str | None = None,
     region: str | None = None,
+    matter_scope: str = "search",
 ) -> tuple[list[ChatMessage], list[dict]]:
-    """Shared RAG prompt assembly for ask_bora and ask_bora_stream."""
+    """Shared RAG prompt assembly for ask_bora and ask_bora_stream.
+    matter_scope="full" is the "ask the matter" mode (audit 2026-09-18):
+    the context is EVERY document of the matter (budgeted), not the top-k
+    hits of the question — for questions like "what did we promise in the
+    last submission?" that top-k retrieval misses."""
     context_blocks: list[str] = []
     citations: list[dict] = []
     search_text = retrieval_query or question
 
     if matter_id:
         context_blocks.append(await build_matter_context(db, matter_id))
-        doc_hits = await rag.search_matter_documents(db, matter_id, search_text, limit=10)
+        if matter_scope == "full":
+            doc_hits = await rag.matter_documents_full(db, matter_id)
+        else:
+            doc_hits = await rag.search_matter_documents(db, matter_id, search_text, limit=10)
         for hit in doc_hits:
             context_blocks.append(f"[Nga dokumenti '{hit['doc_title']}']\n{hit['text']}")
-            citations.append({"type": "document", "title": hit["doc_title"]})
+            citations.append({
+                "type": "document", "title": hit["doc_title"],
+                "document_id": hit.get("document_id"),
+            })
 
     if jurisdiction_id:
         law_hits = await rag.search_corpus(
@@ -263,6 +274,7 @@ async def ask_bora_stream(
     language: str | None = None,
     style: str | None = None,
     region: str | None = None,
+    matter_scope: str = "search",
 ):
     """Streaming variant: returns (citations, chunk_iterator). Chunks are
     ("thinking"|"delta", text) — thinking tokens are shown live but not saved."""
@@ -275,6 +287,7 @@ async def ask_bora_stream(
         language=language,
         style=style,
         region=region,
+        matter_scope=matter_scope,
     )
     provider = get_provider(provider_name)
     return citations, provider.chat_stream(messages)

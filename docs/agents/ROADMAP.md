@@ -249,40 +249,46 @@ Tier C — strategic (6+ months):
 > 97.5% citation pass-rate on its golden set). Priorities 1–3 are audit
 > findings, 4–10 are advancement adaptations.
 
-1. [ ] Security patches: pip (aiohttp≥3.14.3, cryptography≥50, pypdf≥6.15,
+1. [x] (2026-09-18) Security patches: pip (aiohttp≥3.14.3, cryptography≥50, pypdf≥6.15,
        setuptools≥83, torch≥2.13) + `npm audit fix` (Next.js advisories,
        1 critical) — AND fix the silent `ops_notify` 400 in
        `scripts/security_scan.sh` so the weekly scan alerts again.
-2. [ ] RLS migration for the 5 uncovered tenant tables (isolation_check
+2. [x] (2026-09-18) RLS migration for the 5 uncovered tenant tables (isolation_check
        FAIL): email_suggestions, deadline_suggestions, notifications,
        passkey_credentials, api_tokens.
-3. [ ] XK re-activation campaign: 27+ dormant signups → guided onboarding
+3. [x] (2026-09-18, product part) XK re-activation campaign: 27+ dormant signups → guided onboarding
        (day 3/7/30 emails via Lane B with owner PO), interview the one real
        user (Av. Driton N. Sejdiu).
-4. [ ] **Citation verifier v2** (Protégé lesson; model code
+4. [x] (2026-09-18) **Citation verifier v2** (Protégé lesson; model code
        `HagaDosja/.../verifier.py`): upgrade `citation_check.py` from
        "law exists" to quote-level fuzzy verification with block+repair
        loop before the answer reaches the lawyer.
-5. [ ] **Golden-set eval gate** (model `HagaDosja/.../eval.py` +
+5. [x] (2026-09-18) **Golden-set eval gate** (model `HagaDosja/.../eval.py` +
        `golden.jsonl`): XK+DE golden set, citation pass-rate ≥95% as a
        release gate for any model/prompt change (keeps D-003 swaps safe).
-6. [ ] **Expert workflows on the matter page** (Vincent / AVOKATI W1–W5):
+6. [x] (2026-09-18) **Expert workflows on the matter page** (Vincent / AVOKATI W1–W5):
        first three — appeal-grounds builder (XK), filing compliance check,
        evidence map — scripted flows with attached verification report.
-7. [ ] **Nightly AI Auditor over the caseload** (Eve): extend
+7. [x] (2026-09-18) **Nightly AI Auditor over the caseload** (Eve): extend
        `proactive.py` with a file-quality audit (matters without opposing
        party / documents / deadlines, unsent invoices) into the morning
        briefing.
-8. [ ] **AvokatIM MCP server** (Eudia; model `HagaDosja/.../mcp_server.py`):
+8. [x] (2026-09-18) **AvokatIM MCP server** (Eudia; model `HagaDosja/.../mcp_server.py`):
        platform tools (search corpus, read matter, deadlines, draft) over
        existing api_tokens auth.
-9. [ ] **"Ask the matter" + clickable citations** (Harvey agentic Vault):
+9. [x] (2026-09-18) **"Ask the matter" + clickable citations** (Harvey agentic Vault):
        one-click QA over all documents of a matter with citations that
        deep-link to the corpus/document source (today's ✓/≈/? badges link
        nowhere).
-10. [ ] **Small-claims citizen flow** (Garfield): draft → fee calculator →
+10. [x] (2026-09-18) **Small-claims citizen flow** (Garfield): draft → fee calculator →
         filing guidance for XK small claims — unique differentiator, feeds
         the marketplace.
+
+> Status 2026-09-18: all 10 implemented in one session (see JOURNAL).
+> Open follow-ups: (a) Lane B re-activation drafts await the owner's PO
+> (data/reaktivizimi-lane-b-2026-09-18.md, 24 dormant accounts);
+> (b) Buzuku duplicate profile — owner to pick which to keep;
+> (c) citation-repair default-on decision after latency review (D-058).
 
 Deliberately NOT adopted: model fine-tuning (Luminance/Harvey Tenet lesson —
 grounding + verification deliver more trust per euro at our scale), contract

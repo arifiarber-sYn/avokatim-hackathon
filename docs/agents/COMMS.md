@@ -37,6 +37,7 @@ recipients** (`_is_test_recipient`).
 | Monthly subscription invoice / overdue / trial ending | `platform_invoice_*`, `platform_overdue_*`, `trial_ending_*` | `services/platform_billing.py` |
 | Deadline reminders | `reminder_*` | `services/notifications.py` |
 | Team invite | (invite email) | `api/team.py` |
+| Activation sequence: day 3 / 7 / 30 after signup while the tenant still has **0 matters** (skips `is_test` tenants; Redis-deduped one-shot per stage) | `onboard3_*`, `onboard7_*`, `onboard30_*` | `services/notifications.py` (`_check_activation_sequence`) |
 
 ### Citizens
 

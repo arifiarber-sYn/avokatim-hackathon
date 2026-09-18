@@ -8,6 +8,8 @@ import pytest
 
 from app.services.citation_check import (
     MAX_CITATIONS,
+    _attribute_quotes,
+    _quote_coverage,
     extract_citations,
     verify_citations,
 )
@@ -52,6 +54,26 @@ def test_extracts_albanian_articles():
     assert any("322" in k and "lmd" in k for k in cites)
 
 
+def test_inflected_ligjit_is_not_a_code():
+    """Eval finding 2026-09-18: 'neni 34 të Ligjit për Familjen' must not
+    yield the useless code 'Ligjit' — it resolves to the title fragment."""
+    cites = extract_citations("Sipas nenit 34 të Ligjit për Familjen e Kosovës…")
+    assert cites, "named-law citation must be extracted"
+    assert cites[0]["code"].lower().startswith("për familjen")
+    # and a lone inflected 'ligjit' with no name resolves to nothing at all
+    assert all(
+        c["code"].lower() != "ligjit"
+        for c in extract_citations("Kjo rregullohet me nenin 5 të ligjit përkatës.")
+    )
+
+
+def test_uppercase_codes_still_extracted():
+    cites = extract_citations("Sipas nenit 176 të LPK-së dhe nenit 12 të LMD.")
+    codes = {c["code"] for c in cites}
+    assert "LPK" in codes
+    assert "LMD" in codes
+
+
 def test_extracts_albanian_law_numbers():
     cites = extract_citations("E rregulluar me Ligji Nr. 03/L-006 për procedurën.")
     law = next(c for c in cites if c["kind"] == "law")
@@ -81,9 +103,10 @@ def test_plain_text_has_no_citations():
 
 
 class _Row:
-    def __init__(self, docs=None, first=None):
+    def __init__(self, docs=None, first=None, rows=None):
         self._docs = docs or []
         self._first = first
+        self._rows = rows or []
 
     def scalars(self):
         docs = self._docs
@@ -97,6 +120,9 @@ class _Row:
     def first(self):
         return self._first
 
+    def all(self):  # quote-verification chunk fetch (v2)
+        return self._rows
+
 
 class _Doc:
     def __init__(self, title):
@@ -106,18 +132,23 @@ class _Doc:
 
 class FakeDB:
     """First execute() per citation looks up docs; the second (if any)
-    checks the section. Behavior is scripted per test."""
+    checks the section; further chunk queries (v2) feed quote matching.
+    Behavior is scripted per test."""
 
-    def __init__(self, doc_hits, section_hit):
+    def __init__(self, doc_hits, section_hit, chunk_rows=None):
         self.doc_hits = doc_hits  # dict code-fragment -> [docs]
         self.section_hit = section_hit
+        self.chunk_rows = chunk_rows or []  # [(chunk_id, text)] for quotes
         self.calls = 0
 
     async def execute(self, stmt):
         self.calls += 1
         text = str(stmt.compile(compile_kwargs={"literal_binds": True})).lower()
         if "legal_corpus_chunks" in text:
-            return _Row(first=("x",) if self.section_hit else None)
+            return _Row(
+                first=(uuid.uuid4(),) if self.section_hit else None,
+                rows=self.chunk_rows,
+            )
         for frag, docs in self.doc_hits.items():
             if frag.lower() in text:
                 return _Row(docs=docs)
@@ -128,14 +159,15 @@ class FakeDB:
 async def test_verify_statute_full_match():
     db = FakeDB({"bgb": [_Doc("Bürgerliches Gesetzbuch")]}, section_hit=True)
     results = await verify_citations(db, uuid.uuid4(), "Nach § 573 BGB gilt...")
-    assert results == [
-        {
-            "cite": "§ 573 BGB",
-            "kind": "statute",
-            "status": "verified",
-            "source_title": "Bürgerliches Gesetzbuch",
-        }
-    ]
+    assert len(results) == 1
+    r = results[0]
+    assert r["cite"] == "§ 573 BGB"
+    assert r["kind"] == "statute"
+    assert r["status"] == "verified"
+    assert r["source_title"] == "Bürgerliches Gesetzbuch"
+    # v2: results carry the source ids for clickable citations
+    assert r["doc_id"]
+    assert r["chunk_id"]
 
 
 @pytest.mark.anyio
@@ -164,3 +196,68 @@ async def test_verify_case_number_by_reference():
 async def test_no_jurisdiction_returns_empty():
     db = FakeDB({}, section_hit=False)
     assert await verify_citations(db, None, "Nach § 573 BGB...") == []
+
+
+# ---------- v2: quote-level verification ----------
+
+_LAW_TEXT = (
+    "Kontrata e qirasë mund të zgjidhet vetëm për shkaqe të arsyeshme të "
+    "parashikuara me ligj dhe me njoftim paraprak me shkrim prej tridhjetë "
+    "ditësh dërguar qiramarrësit në adresën e deklaruar."
+)
+
+
+def test_quote_coverage_exact_and_noise():
+    assert _quote_coverage(_LAW_TEXT, "para " + _LAW_TEXT + " pas") == 1.0
+    # markdown/typographic noise must not break the match (whole words only —
+    # markdown never splits inside a word)
+    noisy = _LAW_TEXT.replace(" ligj ", " **ligj** ").replace(
+        " njoftim ", " _njoftim_ "
+    )
+    assert _quote_coverage(_LAW_TEXT, noisy) > 0.85
+
+
+def test_quote_coverage_fabricated_is_low():
+    fake = (
+        "Qiradhënësi mund ta zgjidhë kontratën në çdo kohë pa njoftim dhe "
+        "pa arsyetim sipas dëshirës së tij të lirë plotësisht"
+    )
+    assert _quote_coverage(fake, _LAW_TEXT) < 0.3
+
+
+def test_attribute_quotes_same_sentence_only():
+    text = (
+        'Sipas nenit 176 të LPK, "ankesa paraqitet brenda pesëmbëdhjetë '
+        'ditësh nga dita e dorëzimit të aktgjykimit" — kjo është baza.\n'
+        'Një paragraf tjetër me "citat që nuk i takon askujt sepse është '
+        'shumë larg dhe në rresht tjetër fare".'
+    )
+    cites = extract_citations(text)
+    attributed = _attribute_quotes(text, cites)
+    all_quotes = [q for qs in attributed.values() for q in qs]
+    assert any("pesëmbëdhjetë" in q for q in all_quotes)
+    assert not any("nuk i takon askujt" in q for q in all_quotes)
+
+
+@pytest.mark.anyio
+async def test_verify_quote_found_stays_verified():
+    quote = "ankesa paraqitet brenda pesëmbëdhjetë ditësh nga dita e dorëzimit"
+    chunk = (uuid.uuid4(), f"Neni 176. {quote} të aktgjykimit tek palët.")
+    db = FakeDB({"lpk": [_Doc("Ligji i procedurës kontestimore")]},
+                section_hit=True, chunk_rows=[chunk])
+    text = f'Sipas nenit 176 të LPK, "{quote}".'
+    results = await verify_citations(db, uuid.uuid4(), text)
+    assert results[0]["status"] == "verified"
+    assert results[0]["chunk_id"]
+
+
+@pytest.mark.anyio
+async def test_verify_fabricated_quote_downgrades_to_unverified():
+    chunk = (uuid.uuid4(), _LAW_TEXT)
+    db = FakeDB({"lpk": [_Doc("Ligji i procedurës kontestimore")]},
+                section_hit=True, chunk_rows=[chunk])
+    text = ('Sipas nenit 176 të LPK, "gjykata vendos sipas bindjes së lirë '
+            'pa asnjë kufizim procedural dhe pa afat fare".')
+    results = await verify_citations(db, uuid.uuid4(), text)
+    assert results[0]["status"] == "unverified"
+    assert "note" in results[0]

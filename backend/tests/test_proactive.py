@@ -21,3 +21,17 @@ def test_briefing_hour_default():
 def test_caselaw_threshold_sane():
     # Cosine distance: 0 = identical; anything above ~0.6 is noise
     assert 0.2 <= _CASELAW_MAX_DISTANCE <= 0.6
+
+
+def test_file_quality_audit_exists_and_is_wired():
+    """Advancement #7 (audit 2026-09-18): the nightly file-quality audit is
+    part of the proactive layer and runs in the reminder loop."""
+    import inspect
+
+    from app.services import notifications, proactive
+
+    assert inspect.iscoroutinefunction(proactive.run_file_quality_audit)
+    assert inspect.iscoroutinefunction(proactive._file_quality_findings)
+    # wired into the nightly monitors block
+    src = inspect.getsource(notifications)
+    assert "run_file_quality_audit" in src

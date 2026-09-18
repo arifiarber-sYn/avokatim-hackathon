@@ -59,6 +59,12 @@ class Settings(BaseSettings):
     # ...and everything that stays local gets the external default as a
     # transparent safety net if the local server errors out.
     llm_local_fallback: bool = True
+    # Citation verifier v2 (audit 2026-09-18, Protégé lesson): when an
+    # answer's citations fail quote-level verification, run ONE bounded
+    # repair round through the provider and re-verify. Off by default until
+    # the owner confirms the added latency is acceptable on XK/DeepSeek
+    # (plan decision c); flip with CITATION_REPAIR_ENABLED=true.
+    citation_repair_enabled: bool = False
 
     # RAG / embeddings
     embedding_model: str = "paraphrase-multilingual-MiniLM-L12-v2"

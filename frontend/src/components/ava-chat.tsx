@@ -179,6 +179,14 @@ export default function AvaChat({ variant = "page" }: { variant?: "page" | "pane
               next[next.length - 1] = { role: "assistant", content: answer, citations };
               return next;
             });
+          } else if (event.type === "citation_fix") {
+            // Verifier v2 repaired unverifiable citations — swap the text
+            answer = event.text as string;
+            setMessages((prev) => {
+              const next = [...prev];
+              next[next.length - 1] = { role: "assistant", content: answer, citations };
+              return next;
+            });
           } else if (event.type === "citation_check") {
             checks = (event.citations as CitationCheck[]) || [];
           } else if (event.type === "error") {

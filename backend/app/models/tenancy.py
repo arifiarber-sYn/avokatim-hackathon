@@ -38,6 +38,9 @@ class Tenant(Base, TimestampMixin):
     # Country the office operates in (D-034): scopes the directory,
     # marketplace and public stats; see app/jurisdictions.py for the profile
     country: Mapped[str] = mapped_column(String(8), default="XK", server_default="XK", index=True)
+    # Internal/test account (audit 2026-09-18): excluded from growth stats
+    # and lifecycle emails; set by the platform admin, never by signup.
+    is_test: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     # Sub-national unit the office sits in (DE: Bundesland code NW/BY/…) —
     # selects the regional holiday calendar for deadline math; NULL = none
     region: Mapped[str | None] = mapped_column(String(8))

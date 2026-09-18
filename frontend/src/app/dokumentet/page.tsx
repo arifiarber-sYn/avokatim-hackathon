@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
+import { clientCountry } from "@/lib/country";
 import PublicShell from "@/components/public-shell";
 import PageIntro from "@/components/page-intro";
 import { Button, Card, ErrorNote, Input, Label, Spinner, Textarea } from "@/components/ui";
@@ -83,6 +84,15 @@ export default function CitizenDocsPage() {
           <Spinner />
         ) : !picked ? (
           <div className="space-y-5">
+            {clientCountry() === "XK" && (
+              <Link
+                href="/dokumentet/padia-e-vogel"
+                className="block bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl p-4 hover:shadow-md transition"
+              >
+                <p className="font-semibold">{t.scEntryTitle}</p>
+                <p className="text-xs text-indigo-100 mt-1">{t.scEntrySub}</p>
+              </Link>
+            )}
             <p className="text-sm font-semibold text-slate-600">{t.cdPick}</p>
             {CATEGORY_ORDER.filter((cat) => templates.some((tpl) => tpl.category === cat)).map(
               (cat) => {

@@ -405,3 +405,122 @@ async def citizen_generate_document(
         media_type="application/pdf",
         headers={"Content-Disposition": f'attachment; filename="{code}-avokatim.pdf"'},
     )
+
+
+# ---------- small-claims wizard (XK: LPK nenet 484-491, <= 500 EUR) ----------
+
+# Guided document tool, NOT representation (UPL-safe): structured questions ->
+# formal small-claims lawsuit PDF + court fee (UA 03/2025) + competent Basic
+# Court by municipality. Data lives in seeds (XK_SMALL_CLAIM_TEMPLATE,
+# XK_BASIC_COURTS); this endpoint only validates, computes and renders.
+
+
+def _require_xk(request: Request) -> None:
+    if country_from_request(request) != "XK":
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Not available")
+
+
+@router.get("/small-claims/meta")
+async def small_claims_meta(request: Request):
+    """Wizard metadata: threshold, fee, municipalities, plain-language fields."""
+    _require_xk(request)
+    from decimal import Decimal
+
+    from app.seeds.citizen_docs import XK_SMALL_CLAIM_TEMPLATE
+    from app.seeds.kosovo import (
+        XK_BASIC_COURTS,
+        XK_COURT_FEE_TABLE,
+        XK_SMALL_CLAIM_LIMIT_EUR,
+    )
+    from app.services.xk_cost_risk import court_fee_first_instance
+
+    return {
+        "limit_eur": XK_SMALL_CLAIM_LIMIT_EUR,
+        "court_fee_eur": float(
+            court_fee_first_instance(Decimal(XK_SMALL_CLAIM_LIMIT_EUR))
+        ),
+        "municipalities": sorted(XK_BASIC_COURTS),
+        "courts": {
+            city: {"seat": seat, "branch": branch}
+            for city, (seat, branch) in XK_BASIC_COURTS.items()
+        },
+        "name": XK_SMALL_CLAIM_TEMPLATE["name"],
+        "fields": XK_SMALL_CLAIM_TEMPLATE["fields"],
+        "legal_basis": [
+            "Nenet 484\u2013491 t\u00eb Ligjit Nr. 03/L-006 p\u00ebr Procedur\u00ebn Kontestimore",
+            XK_COURT_FEE_TABLE["legal_basis"],
+        ],
+    }
+
+
+class SmallClaimIn(BaseModel):
+    values: dict[str, str] = Field(default_factory=dict)
+    city: str = Field(min_length=2, max_length=64)
+
+
+@router.post("/small-claims/generate")
+async def small_claims_generate(body: SmallClaimIn, request: Request) -> Response:
+    """Deterministic render (no LLM) of the small-claims lawsuit as PDF."""
+    _require_xk(request)
+    await _rate_limit("public_small_claim", _ip(request), limit=20, window_seconds=3600)
+    from decimal import Decimal, InvalidOperation
+
+    from app.seeds.citizen_docs import XK_SMALL_CLAIM_TEMPLATE
+    from app.seeds.kosovo import XK_BASIC_COURTS, XK_SMALL_CLAIM_LIMIT_EUR
+    from app.services.xk_cost_risk import court_fee_first_instance
+
+    tpl = XK_SMALL_CLAIM_TEMPLATE
+    values: dict[str, str] = {}
+    for field in tpl["fields"]:
+        value = (body.values.get(field["key"]) or "").strip()
+        if not value:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, f"Missing field: {field['key']}"
+            )
+        values[field["key"]] = value[:4000]
+    try:
+        amount = Decimal(values["claim_amount"].replace(",", "."))
+    except InvalidOperation:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid amount") from None
+    if amount <= 0 or amount > XK_SMALL_CLAIM_LIMIT_EUR:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            f"Small claims cover money claims up to {XK_SMALL_CLAIM_LIMIT_EUR} EUR "
+            "(LPK neni 485.1)",
+        )
+    court = XK_BASIC_COURTS.get(body.city)
+    if court is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown municipality")
+    seat, branch = court
+    values["claim_amount"] = f"{amount:.2f}".rstrip("0").rstrip(".")
+    values["city"] = body.city
+    values["court_name"] = seat
+    values["court_branch_line"] = f"Dega n\u00eb {branch}\n" if branch else ""
+    values["court_fee"] = f"{court_fee_first_instance(amount):.2f}"
+    values["date"] = datetime.now().strftime("%d.%m.%Y")
+    text = Template(tpl["body_sq"]).render(**values)
+
+    from weasyprint import HTML
+
+    footer = (
+        "Gjeneruar me AvokatIM ({ts}) \u2014 vegl\u00eb dokumenti informuese, "
+        "jo k\u00ebshill\u00eb ligjore dhe jo p\u00ebrfaq\u00ebsim. Rishikoje "
+        "dhe verifiko gjykat\u00ebn kompetente para dor\u00ebzimit."
+    ).format(ts=datetime.now().strftime("%d.%m.%Y %H:%M"))
+    doc_html = f"""<html><head><meta charset="utf-8"><style>
+      @page {{ size: A4; margin: 2.5cm; }}
+      body {{ font-family: serif; font-size: 12pt; color: #111; }}
+      pre {{ white-space: pre-wrap; font-family: inherit; line-height: 1.6; }}
+      footer {{ font-size: 8pt; color: #999; margin-top: 2em; }}
+    </style></head><body>
+      <pre>{html.escape(text)}</pre>
+      <footer>{footer}</footer>
+    </body></html>"""
+    pdf = HTML(string=doc_html).write_pdf()
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": 'attachment; filename="padia-vlere-vogel-avokatim.pdf"'
+        },
+    )

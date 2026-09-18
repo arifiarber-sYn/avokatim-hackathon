@@ -11,6 +11,25 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
 ## What exists and works
 
+- **Advancement wave 2026-09-18** (all 10 items of the audit backlog, D-067):
+  (1) **Trust layer**: citation verifier v2 (quote-level fuzzy match →
+  verified/approx/law_found/unverified with doc/chunk IDs), optional
+  one-round repair (`citation_repair_enabled`, default off — latency),
+  clickable ✓/≈ badges → source modal (`GET /corpus/chunk/{id}`,
+  `/corpus/doc/{id}/first-chunk`), golden-set eval gate
+  (`scripts/eval_citations.py`, `eval/golden_{xk,de}.jsonl`, gate ≥95%,
+  playbook row in AGENTS.md §4). (2) **Lawyer value**: 3 expert workflows
+  on the matter page (appeal/compliance/evidence, data-driven in
+  `seeds/workflow_defs.py`, SSE `POST /matters/{id}/workflows/{kind}`,
+  saved as matter note + audit), "Pyet lëndën" full-matter mode
+  (`matter_mode=full` → `rag.matter_documents_full`), nightly file-quality
+  audit in `proactive.py` (findings feed the morning briefing), MCP server
+  `scripts/mcp_server.py` (stdio, 6 tools over api_tokens; read-only except
+  drafto_memo). (3) **Growth**: activation sequence 3/7/30 + dashboard
+  onboarding checklist + `tenants.is_test` hygiene flag; public
+  small-claims wizard `/dokumentet/padia-e-vogel` (LPK 484–491, ≤500 €,
+  court fee UA 03/2025, competent Basic Court via `XK_BASIC_COURTS`,
+  PDF via `POST /public/tools/small-claims/generate`, CTA → marketplace).
 - **German-market parity wave** (2026-08-04, D-059): (1) local
   **pseudonymization** before external LLMs (`llm/pseudonymize.py`,
   wrapper in `get_provider()`, flag `llm_pseudonymize` default on; regex
@@ -1119,11 +1138,19 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
     disk without a `daemon-reload`.
   - **DE corpus embedding backlog**: 2,830 of 283,942 chunks lack
     embeddings (XK is 100% embedded).
-  - **Tenant hygiene**: "Avokatura Buzuku" duplicated (2026-08-19); test
-    tenants (Test Office, maka, yopmail) still count in growth stats.
+  - **Tenant hygiene**: "Avokatura Buzuku" duplicated (2026-08-19) — owner
+    still to pick which profile to keep. ~~Test tenants inflate stats~~
+    fixed 2026-09-18: `tenants.is_test` flag (migration `c8d9e0f1a2b3`),
+    9 tenants marked, excluded from the activation email sequence and
+    flagged in `/platform` tenants list.
   - **XK activation crisis**: 33 signups → 1 real recurring user
     (Av. Driton N. Sejdiu); public traffic fell 160→33 visitors/week after
     the OAK outreach campaign completed (all ~1,590 contacts exhausted).
+    Countermeasures shipped 2026-09-18: activation email sequence day
+    3/7/30 for 0-matter tenants (`_check_activation_sequence`, COMMS.md),
+    onboarding checklist on the dashboard, and 24 personal Lane B
+    re-activation drafts in `data/reaktivizimi-lane-b-2026-09-18.md`
+    (nothing sends without the owner's PO).
   - Verification tooling drift fixed during the audit: `saas_check.py` now
     sends `accept_tos` and refreshes its token after change-password
     (password change revokes prior sessions). ALL PASS again;

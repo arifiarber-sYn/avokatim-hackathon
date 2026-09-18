@@ -1,4 +1,4 @@
-"""Citation verification for Ava's answers (D-059 F6).
+"""Citation verification for Ava's answers (D-059 F6; v2 audit 2026-09-18).
 
 LLM answers cite laws (\"§ 573 BGB\", \"neni 176 i LPK\") and case law
 (\"BGH, VIII ZR 285/18\"). This module extracts those citations with regex
@@ -16,6 +16,14 @@ Verification levels:
 
 A citation that only fails the section check still names the law, so it is
 reported as level \"law\" (the law exists, the exact section wasn't found).
+
+v2 (Protégé lesson, adapted from the HagaDosja AVOKATI verifier): when the
+answer QUOTES text next to a citation (\"...\" brenda së njëjtës fjali), the
+quote itself is verified against the matched doc's chunks with word 5-gram
+shingle coverage. Statuses gain \"approx\" (quote found approximately) and
+results carry doc_id/chunk_id so the UI can deep-link to the source. A
+single repair round (api/assistant.py) can then ask the model to correct or
+drop citations whose quotes were not found.
 """
 
 from __future__ import annotations
@@ -56,8 +64,14 @@ _DE_CASE_RE = re.compile(
 _XK_ARTICLE_RE = re.compile(
     r"nen(?:i|it|in)\s+(?P<xk_sec>\d+[a-z]?)"
     r"(?:\s*(?:par\.|paragrafi)\s*\d+)?"
-    r"(?:\s+(?:i|të|te|i\s+Ligjit|të\s+Ligjit))?\s+"
-    r"(?P<xk_code>(?:[A-Z]{2,6}\b|Ligj\w*\s+[Nn]r\.?\s*[\d/L\-]+|Kod\w*\s+[A-Za-zë ]{3,40}))",
+    r"(?:\s+(?:i|të|te))?\s+"
+    # bare code must be REAL uppercase (LPK, LMD, KPP…) — scoped (?-i:) so
+    # words like "Ligjit" never pass as a code (eval finding 2026-09-18)
+    r"(?P<xk_code>(?-i:[A-ZËÇ]{2,6})(?=[-\s.,;)]|$)"
+    r"|Ligj\w*\s+[Nn]r\.?\s*[\d/L\-]+"
+    # named law: "neni 34 i Ligjit për Familjen" / "të Ligjit të Punës"
+    r"|Ligj\w*\s+(?:për|e|i|të)\s+\w[\wë]*(?:\s+(?-i:[A-ZËÇa-zëç])[\wë]*){0,3}"
+    r"|Kod\w*\s+[A-Za-zë ]{3,40})",
     re.IGNORECASE,
 )
 _XK_LAW_RE = re.compile(r"(?P<xk_law>Ligji\s+[Nn]r\.?\s*\d{2}/L-\d{1,4})")
@@ -70,6 +84,135 @@ _CODE_STOPWORDS = {
     "Abs", "Satz", "Nr", "Nummer", "Alt", "Var", "Halbs", "Rn", "Ziff",
     "UND", "ODER", "DER", "DES", "DIE",
 }
+
+# --- Quoted passages next to a citation (v2). 25–400 chars, straight or
+# typographic quotes (sq/de use „…" and «…» too).
+_QUOTE_RE = re.compile(r'[„"“«]([^"”»„]{25,400})["”»]')
+# A quote belongs to a citation only within the same sentence-ish span:
+# ≤300 chars apart, no newline between them (either order).
+_QUOTE_MAX_GAP = 300
+
+# Shingle thresholds (HagaDosja-calibrated)
+_QUOTE_VERIFIED = 0.85
+_QUOTE_APPROX = 0.70
+# How many candidate chunks we fetch per citation for quote matching
+_QUOTE_CHUNK_LIMIT = 40
+
+
+def _norm_text(s: str) -> str:
+    """Normalize for quote matching: strip markdown, unify quotes/dashes,
+    lowercase, collapse whitespace."""
+    s = re.sub(r"[*_`#>\[\]]", " ", s)
+    for a, b in (("„", '"'), ("“", '"'), ("”", '"'), ("«", '"'), ("»", '"'),
+                 ("’", "'"), ("‘", "'"), ("–", "-"), ("—", "-")):
+        s = s.replace(a, b)
+    return re.sub(r"\s+", " ", s).strip().lower()
+
+
+def _quote_coverage(quote: str, text: str) -> float:
+    """Share of the quote found in text — word 5-gram shingle coverage
+    (robust to markdown, redactions and ellipses)."""
+    q_tokens = _norm_text(quote).split()
+    t = " " + _norm_text(text) + " "
+    if not q_tokens or not t.strip():
+        return 0.0
+    if " ".join(q_tokens) in t:
+        return 1.0
+    n = 5
+    if len(q_tokens) < n:
+        from difflib import SequenceMatcher
+
+        return SequenceMatcher(None, " ".join(q_tokens), t).ratio()
+    shingles = [" ".join(q_tokens[i:i + n]) for i in range(len(q_tokens) - n + 1)]
+    return sum(1 for s in shingles if s in t) / len(shingles)
+
+
+def _attribute_quotes(text: str, citations: list[dict]) -> dict[str, list[str]]:
+    """Map citation cite-string -> quotes appearing in the same sentence.
+    Each quote is attributed to the nearest citation (before or after).
+    Positions come from extraction (`pos`) — the rendered cite string is
+    normalized and may not literally appear in the answer text."""
+    positions: list[tuple[int, dict]] = [
+        (c["pos"], c) for c in citations if c.get("pos", -1) >= 0
+    ]
+    out: dict[str, list[str]] = {}
+    for qm in _QUOTE_RE.finditer(text):
+        best: tuple[int, dict] | None = None
+        for pos, c in positions:
+            gap_text = (
+                text[qm.end():pos] if pos >= qm.end() else text[pos:qm.start()]
+            )
+            gap = len(gap_text)
+            if gap <= _QUOTE_MAX_GAP and "\n" not in gap_text:
+                if best is None or gap < best[0]:
+                    best = (gap, c)
+        if best is not None:
+            out.setdefault(best[1]["cite"], []).append(qm.group(1))
+    return out
+
+
+def _rare_words(quote: str, k: int = 3) -> list[str]:
+    words = [w for w in re.findall(r"[a-zA-ZëçäöüßĐđŠšŽžĆć]{5,}", _norm_text(quote))]
+    # longest words are the rarest bet without a frequency table
+    return sorted(set(words), key=len, reverse=True)[:k]
+
+
+REPAIR_PROMPT = (
+    "Ti je redaktori i verifikimit të citimeve. Përgjigja e mëposhtme përmban "
+    "citime që NUK u verifikuan dot kundër korpusit tonë ligjor. Ri-shkruaje "
+    "përgjigjen duke i KORRIGJUAR citimet e gabuara (nëse e di referencën e "
+    "saktë) ose duke i HEQUR pohimet që mbështeten vetëm në to. MOS shto "
+    "citime të reja, mos ndrysho asgjë tjetër në përmbajtje, ruaj gjuhën dhe "
+    "formatimin. Kthe VETËM përgjigjen e korrigjuar, pa koment shtesë."
+)
+
+
+async def repair_citations(
+    db: AsyncSession,
+    jurisdiction_id: uuid.UUID | None,
+    answer: str,
+    checked: list[dict],
+    provider_name: str | None = None,
+) -> tuple[str, list[dict]] | None:
+    """One bounded repair round (v2): when citations are unverified, ask the
+    model to correct or drop them, then re-verify. Returns (new_answer,
+    new_checked) only when the repair genuinely improved things; None
+    otherwise. Never raises."""
+    from app.llm import get_provider
+    from app.llm.base import ChatMessage
+
+    bad = [c for c in checked if c["status"] == "unverified"]
+    if not bad:
+        return None
+    try:
+        listing = "\n".join(
+            f"- {c['cite']}" + (f" ({c['note']})" if c.get("note") else "")
+            for c in bad
+        )
+        provider = get_provider(provider_name)
+        result = await provider.chat(
+            [
+                ChatMessage(role="system", content=REPAIR_PROMPT),
+                ChatMessage(
+                    role="user",
+                    content=f"CITIMET E PAVERIFIKUARA:\n{listing}\n\n"
+                            f"PËRGJIGJA:\n{answer}",
+                ),
+            ],
+            temperature=0.0,
+        )
+        revised = (result.content or "").strip()
+        if not revised or len(revised) < len(answer) * 0.3:
+            return None  # the model gutted the answer — keep the original
+        new_checked = await verify_citations(db, jurisdiction_id, revised)
+        n_bad_before = len(bad)
+        n_bad_after = sum(1 for c in new_checked if c["status"] == "unverified")
+        if n_bad_after < n_bad_before:
+            return revised, new_checked
+        return None
+    except Exception:
+        logger.exception("citation repair round failed")
+        return None
 
 
 def extract_citations(text: str) -> list[dict]:
@@ -95,6 +238,7 @@ def extract_citations(text: str) -> list[dict]:
             "cite": f"{prefix} {section} {code}",
             "code": code,
             "section": section.split()[0] if section else "",
+            "pos": m.start(),
         })
 
     for m in _DE_CASE_RE.finditer(text):
@@ -104,17 +248,25 @@ def extract_citations(text: str) -> list[dict]:
         letters = case_no.split()[1]
         if not any(ch.isupper() for ch in letters):
             continue
-        _add({"kind": "case", "cite": case_no, "code": case_no, "section": ""})
+        _add({"kind": "case", "cite": case_no, "code": case_no, "section": "",
+              "pos": m.start()})
 
     for m in _XK_ARTICLE_RE.finditer(text):
         code = re.sub(r"\s+", " ", m.group("xk_code").strip())
         section = m.group("xk_sec")
         law_no = _XK_LAW_NO_RE.search(code)
+        lookup = law_no.group(0) if law_no else code
+        # Named law ("Ligjit për Familjen"): look up by the title fragment
+        # after the inflected "Ligji/Ligjit" word — corpus titles start with
+        # "Ligji", the citation may inflect it.
+        if not law_no and re.match(r"(?i)ligj\w*\s+(?:për|e|i|të)\s", code):
+            lookup = re.sub(r"(?i)^ligj\w*\s+", "", code)
         _add({
             "kind": "statute",
             "cite": f"neni {section} {code}",
-            "code": law_no.group(0) if law_no else code,
+            "code": lookup,
             "section": section,
+            "pos": m.start(),
         })
 
     for m in _XK_LAW_RE.finditer(text):
@@ -125,6 +277,7 @@ def extract_citations(text: str) -> list[dict]:
             "cite": law,
             "code": law_no.group(0) if law_no else law,
             "section": "",
+            "pos": m.start(),
         })
 
     return found[:MAX_CITATIONS]
@@ -133,27 +286,38 @@ def extract_citations(text: str) -> list[dict]:
 async def _find_docs(
     db: AsyncSession, jurisdiction_id: uuid.UUID, code: str
 ) -> list[LegalCorpusDoc]:
-    """Corpus docs whose reference or title mentions the cited code/number."""
-    needle = f"%{code.lower()}%"
-    rows = await db.execute(
-        select(LegalCorpusDoc)
-        .where(
-            LegalCorpusDoc.jurisdiction_id == jurisdiction_id,
-            or_(
-                func.lower(func.coalesce(LegalCorpusDoc.reference, "")).like(needle),
-                func.lower(LegalCorpusDoc.title).like(needle),
-            ),
+    """Corpus docs whose reference or title mentions the cited code/number.
+    Multi-word lookups (named laws) retry with a shortened phrase — the
+    citation may carry trailing words that are not part of the title."""
+    words = code.split()
+    attempts = [code]
+    if len(words) > 2:
+        attempts.append(" ".join(words[:3]))
+        attempts.append(" ".join(words[:2]))
+    for attempt in attempts:
+        needle = f"%{attempt.lower()}%"
+        rows = await db.execute(
+            select(LegalCorpusDoc)
+            .where(
+                LegalCorpusDoc.jurisdiction_id == jurisdiction_id,
+                or_(
+                    func.lower(func.coalesce(LegalCorpusDoc.reference, "")).like(needle),
+                    func.lower(LegalCorpusDoc.title).like(needle),
+                ),
+            )
+            .limit(5)
         )
-        .limit(5)
-    )
-    return list(rows.scalars())
+        docs = list(rows.scalars())
+        if docs:
+            return docs
+    return []
 
 
 async def _section_in_doc(
     db: AsyncSession, doc_ids: list[uuid.UUID], kind_prefixes: list[str], section: str
-) -> bool:
-    """Does any chunk of these docs mention the cited section? Checks the
-    chunk's `section` label first, then the text itself."""
+) -> uuid.UUID | None:
+    """The id of a chunk of these docs mentioning the cited section (or None).
+    Checks the chunk's `section` label first, then the text itself."""
     conditions = []
     for prefix in kind_prefixes:
         token = f"{prefix}{section}".lower()
@@ -166,17 +330,73 @@ async def _section_in_doc(
         .where(LegalCorpusChunk.doc_id.in_(doc_ids), or_(*conditions))
         .limit(1)
     )
-    return row.first() is not None
+    first = row.first()
+    return first[0] if first else None
+
+
+async def _verify_quotes(
+    db: AsyncSession, doc_ids: list[uuid.UUID], quotes: list[str]
+) -> tuple[str, uuid.UUID | None, float]:
+    """Verify quoted passages against the chunks of the matched docs.
+    Returns (status, best_chunk_id, worst_coverage) where status is
+    verified|approx|unverified — the WORST quote decides (one fabricated
+    quote poisons the citation)."""
+    worst_status, worst_cov = "verified", 1.0
+    best_chunk: uuid.UUID | None = None
+    for quote in quotes[:5]:  # bound the DB work per citation
+        conditions = [
+            func.lower(LegalCorpusChunk.text).like(f"%{w}%") for w in _rare_words(quote)
+        ]
+        stmt = (
+            select(LegalCorpusChunk.id, LegalCorpusChunk.text)
+            .where(LegalCorpusChunk.doc_id.in_(doc_ids))
+            .limit(_QUOTE_CHUNK_LIMIT)
+        )
+        if conditions:
+            stmt = stmt.where(or_(*conditions))
+        rows = (await db.execute(stmt)).all()
+        if not rows:
+            # fall back to the first chunks of the doc (short laws)
+            rows = (
+                await db.execute(
+                    select(LegalCorpusChunk.id, LegalCorpusChunk.text)
+                    .where(LegalCorpusChunk.doc_id.in_(doc_ids))
+                    .order_by(LegalCorpusChunk.seq)
+                    .limit(_QUOTE_CHUNK_LIMIT)
+                )
+            ).all()
+        best_q, best_q_chunk = 0.0, None
+        for chunk_id, text in rows:
+            cov = _quote_coverage(quote, text)
+            if cov > best_q:
+                best_q, best_q_chunk = cov, chunk_id
+                if best_q > 0.95:
+                    break
+        if best_q < worst_cov:
+            worst_cov = best_q
+        if best_chunk is None and best_q >= _QUOTE_APPROX:
+            best_chunk = best_q_chunk
+    if worst_cov >= _QUOTE_VERIFIED:
+        return "verified", best_chunk, worst_cov
+    if worst_cov >= _QUOTE_APPROX:
+        return "approx", best_chunk, worst_cov
+    return "unverified", best_chunk, worst_cov
 
 
 async def verify_citations(
     db: AsyncSession, jurisdiction_id: uuid.UUID | None, answer: str
 ) -> list[dict]:
     """Extract + verify. Each result:
-    {cite, kind, status: verified|law_found|unverified, source_title?}."""
+    {cite, kind, status: verified|approx|law_found|unverified,
+     source_title?, doc_id?, chunk_id?, note?}.
+
+    v2: quotes attributed to a citation are verified against the source
+    chunks; a quote that is not found downgrades the citation to
+    unverified even when the law itself exists (fabricated-quote guard)."""
     citations = extract_citations(answer)
     if not citations or jurisdiction_id is None:
         return []
+    quotes_by_cite = _attribute_quotes(answer, citations)
 
     results: list[dict] = []
     for c in citations:
@@ -189,18 +409,36 @@ async def verify_citations(
             results.append({"cite": c["cite"], "kind": c["kind"], "status": "unverified"})
             continue
         source_title = docs[0].title
-        if c["kind"] in ("case", "law") or not c["section"]:
-            results.append({
-                "cite": c["cite"], "kind": c["kind"],
-                "status": "verified", "source_title": source_title,
-            })
-            continue
-        # Statute with section: require the section inside the matched law
-        prefixes = ["§ ", "§", "art. ", "art.", "artikel ", "neni ", "nenin ", "neni"]
-        ok = await _section_in_doc(db, [d.id for d in docs], prefixes, c["section"])
-        results.append({
+        doc_ids = [d.id for d in docs]
+        base: dict = {
             "cite": c["cite"], "kind": c["kind"],
-            "status": "verified" if ok else "law_found",
-            "source_title": source_title,
-        })
+            "source_title": source_title, "doc_id": str(docs[0].id),
+        }
+        try:
+            if c["kind"] in ("case", "law") or not c["section"]:
+                base["status"] = "verified"
+            else:
+                # Statute with section: require the section inside the law
+                prefixes = ["§ ", "§", "art. ", "art.", "artikel ",
+                            "neni ", "nenin ", "neni"]
+                chunk_id = await _section_in_doc(db, doc_ids, prefixes, c["section"])
+                base["status"] = "verified" if chunk_id else "law_found"
+                if chunk_id:
+                    base["chunk_id"] = str(chunk_id)
+
+            # v2: verify quoted text (the worst quote decides)
+            quotes = quotes_by_cite.get(c["cite"], [])
+            if quotes and base["status"] in ("verified", "law_found"):
+                q_status, q_chunk, cov = await _verify_quotes(db, doc_ids, quotes)
+                if q_status == "unverified":
+                    base["status"] = "unverified"
+                    base["note"] = f"cituar tekst që s'u gjet në burim ({cov:.2f})"
+                elif q_status == "approx":
+                    base["status"] = "approx"
+                    base["note"] = f"citati u gjet përafërsisht ({cov:.2f})"
+                if q_chunk is not None:
+                    base["chunk_id"] = str(q_chunk)
+        except Exception:
+            logger.exception("citation quote check failed for %s", c["cite"])
+        results.append(base)
     return results

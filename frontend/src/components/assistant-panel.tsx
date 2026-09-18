@@ -22,6 +22,7 @@ import { Matter, Message } from "@/lib/types";
 import { Button, ErrorNote, Textarea } from "@/components/ui";
 import { MicButton, SpeakButton, useVoiceAvailable } from "@/components/voice-controls";
 import CitationChecks, { CitationCheck } from "@/components/citation-checks";
+import CitationSourceModal from "@/components/citation-source-modal";
 import { IconChat } from "@/components/icons";
 
 const MATTER_ROUTE = /^\/matters\/([0-9a-f-]{16,})/i;
@@ -71,6 +72,10 @@ export default function AssistantPanel() {
   const [notice, setNotice] = useState("");
   // Per-message citation verification results (D-059 F6)
   const [checks, setChecks] = useState<Record<string, CitationCheck[]>>({});
+  // Clickable citations (audit 2026-09-18): badge → source modal
+  const [sourceCitation, setSourceCitation] = useState<CitationCheck | null>(null);
+  // "Ask the matter": context = ALL matter documents, not top-k search hits
+  const [fullMatter, setFullMatter] = useState(false);
   // Ava Agent mode (D-054): goal → visible plan → step-by-step execution
   const [agentMode, setAgentMode] = useState(false);
   const [agentSteps, setAgentSteps] = useState<AgentStep[]>([]);
@@ -241,6 +246,8 @@ export default function AssistantPanel() {
           conversation_id: conversationId,
           provider,
           locale,
+          // "ask the matter" (audit 2026-09-18): context = ALL documents
+          matter_mode: fullMatter && matterId ? "full" : null,
         },
         (ev) => {
           if (ev.type === "meta") {
@@ -258,6 +265,14 @@ export default function AssistantPanel() {
             }
           } else if (ev.type === "delta") {
             streamed += ev.text as string;
+            const text = streamed;
+            setMessages((prev) => [
+              ...prev.filter((m) => m.id !== "streaming"),
+              { id: "streaming", role: "assistant", content: text, citations: [], created_at: new Date().toISOString() },
+            ]);
+          } else if (ev.type === "citation_fix") {
+            // Verifier v2 repaired unverifiable citations — swap the text
+            streamed = ev.text as string;
             const text = streamed;
             setMessages((prev) => [
               ...prev.filter((m) => m.id !== "streaming"),
@@ -438,6 +453,25 @@ export default function AssistantPanel() {
             />
             🔎 {t.deepResearch}
           </label>
+          {/* "Ask the matter" (audit 2026-09-18): context = ALL documents */}
+          {matterId && (
+            <label
+              className={`inline-flex items-center gap-1.5 text-[11px] rounded-full border px-2.5 py-0.5 cursor-pointer select-none ${
+                fullMatter
+                  ? "bg-emerald-50 border-emerald-300 text-emerald-800"
+                  : "border-slate-200 text-slate-500 hover:bg-slate-50"
+              }`}
+              title={t.apFullMatterHint}
+            >
+              <input
+                type="checkbox"
+                checked={fullMatter}
+                onChange={(e) => setFullMatter(e.target.checked)}
+                className="accent-emerald-600 h-3 w-3"
+              />
+              📁 {t.apFullMatter}
+            </label>
+          )}
           {/* Ava Agent (D-054): only with a matter in scope */}
           {matterId && (
             <label
@@ -494,7 +528,9 @@ export default function AssistantPanel() {
                     </div>
                   )}
                 </div>
-                {m.role === "assistant" && <CitationChecks checks={checks[m.id]} />}
+                {m.role === "assistant" && (
+                  <CitationChecks checks={checks[m.id]} onOpenSource={setSourceCitation} />
+                )}
                 {m.role === "assistant" && m.id !== "streaming" && m.content && (
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <SpeakButton text={m.content} locale={locale} serverTts={voice.tts} />
@@ -711,6 +747,7 @@ export default function AssistantPanel() {
           </div>
         </form>
       </div>
+      <CitationSourceModal citation={sourceCitation} onClose={() => setSourceCitation(null)} />
     </>
   );
 }

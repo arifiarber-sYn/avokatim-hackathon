@@ -733,3 +733,99 @@ CITIZEN_DOC_TEMPLATES: list[dict] = [
         ),
     },
 ]
+
+
+# ---------------------------------------------------------------------------
+# Small-claims lawsuit (padia e vlerës së vogël) — guided public flow.
+# Kept OUT of CITIZEN_DOC_TEMPLATES: it has its own wizard UI, a value cap
+# (LPK neni 485.1: <= 500 EUR) and computed fields (competent court from the
+# municipality via XK_BASIC_COURTS, court fee via UA 03/2025). Document tool,
+# not representation and not legal advice.
+XK_SMALL_CLAIM_TEMPLATE: dict = {
+    "code": "padia_vlere_vogel",
+    "name": {
+        "sq": "Padi për kontest të vlerës së vogël (deri 500 €)",
+        "sr": "Tužba u sporu male vrednosti (do 500 €)",
+        "tr": "Küçük değerli uyuşmazlık davası (500 €'ya kadar)",
+        "bs": "Tužba u sporu male vrijednosti (do 500 €)",
+        "en": "Small-claims lawsuit (up to €500)",
+        "zh": "小额诉讼起诉状（最高500欧元）",
+    },
+    "fields": [
+        {"key": "sender_name", "type": "text", "label": {
+            "sq": "Emri dhe mbiemri yt (paditësi)", "sr": "Vaše ime i prezime (tužilac)",
+            "tr": "Adınız ve soyadınız (davacı)", "bs": "Vaše ime i prezime (tužilac)",
+            "en": "Your full name (plaintiff)", "zh": "您的全名（原告）"}},
+        {"key": "sender_address", "type": "text", "label": {
+            "sq": "Adresa jote e plotë", "sr": "Vaša puna adresa",
+            "tr": "Tam adresiniz", "bs": "Vaša puna adresa",
+            "en": "Your full address", "zh": "您的完整地址"}},
+        {"key": "sender_phone", "type": "text", "label": {
+            "sq": "Telefoni / email-i yt", "sr": "Vaš telefon / imejl",
+            "tr": "Telefonunuz / e-postanız", "bs": "Vaš telefon / e-mail",
+            "en": "Your phone / email", "zh": "您的电话/电子邮件"}},
+        {"key": "defendant_name", "type": "text", "label": {
+            "sq": "Emri i të paditurit (personi ose firma që të detyrohet)",
+            "sr": "Ime tuženog (osoba ili firma koja vam duguje)",
+            "tr": "Davalının adı (size borçlu olan kişi veya şirket)",
+            "bs": "Ime tuženog (osoba ili firma koja vam duguje)",
+            "en": "Defendant's name (the person or business that owes you)",
+            "zh": "被告姓名（欠您钱的个人或公司）"}},
+        {"key": "defendant_address", "type": "text", "label": {
+            "sq": "Adresa e të paditurit", "sr": "Adresa tuženog",
+            "tr": "Davalının adresi", "bs": "Adresa tuženog",
+            "en": "Defendant's address", "zh": "被告地址"}},
+        {"key": "claim_amount", "type": "text", "label": {
+            "sq": "Shuma që kërkon në euro (maksimumi 500)",
+            "sr": "Iznos koji tražite u evrima (najviše 500)",
+            "tr": "Talep ettiğiniz tutar, euro (en fazla 500)",
+            "bs": "Iznos koji tražite u evrima (najviše 500)",
+            "en": "Amount you claim in euros (max 500)",
+            "zh": "您要求的金额（欧元，最高500）"}},
+        {"key": "claim_basis", "type": "textarea", "label": {
+            "sq": "Çfarë ndodhi? (kur, ku, çfarë u premtua dhe çfarë nuk u përmbush)",
+            "sr": "Šta se dogodilo? (kada, gde, šta je obećano a nije ispunjeno)",
+            "tr": "Ne oldu? (ne zaman, nerede, ne söz verildi ve ne yerine getirilmedi)",
+            "bs": "Šta se dogodilo? (kada, gdje, šta je obećano a nije ispunjeno)",
+            "en": "What happened? (when, where, what was promised and not fulfilled)",
+            "zh": "发生了什么？（何时、何地、承诺了什么、未履行什么）"}},
+        {"key": "evidence", "type": "textarea", "label": {
+            "sq": "Provat që i ke (fatura, kontrata, foto, mesazhe, dëshmitarë...)",
+            "sr": "Dokazi koje imate (računi, ugovori, fotografije, poruke, svedoci...)",
+            "tr": "Elinizdeki kanıtlar (faturalar, sözleşmeler, fotoğraflar, mesajlar, tanıklar...)",
+            "bs": "Dokazi koje imate (računi, ugovori, fotografije, poruke, svjedoci...)",
+            "en": "Evidence you have (invoices, contracts, photos, messages, witnesses...)",
+            "zh": "您拥有的证据（发票、合同、照片、信息、证人等）"}},
+        # "city" is picked from XK_BASIC_COURTS municipalities in the wizard;
+        # court_name/court_branch/court_fee are computed server-side.
+    ],
+    "body_sq": (
+        "GJYKATA THEMELORE NË {{ court_name | upper }}\n"
+        "{{ court_branch_line }}"
+        "Departamenti i Përgjithshëm\n\n"
+        "PADITËSI: {{ sender_name }}, {{ sender_address }}, "
+        "kontakt: {{ sender_phone }}\n"
+        "I PADITURI: {{ defendant_name }}, {{ defendant_address }}\n\n"
+        "P A D I\n"
+        "për kontest të vlerës së vogël\n"
+        "(nenet 484–491 të Ligjit Nr. 03/L-006 për Procedurën Kontestimore)\n\n"
+        "Vlera e kontestit: {{ claim_amount }} €\n\n"
+        "I. GJENDJA FAKTIKE\n\n"
+        "{{ claim_basis }}\n\n"
+        "Përkundër kërkesave të paditësit, i padituri nuk e ka përmbushur "
+        "detyrimin deri në ditën e paraqitjes së kësaj padie.\n\n"
+        "II. KËRKESËPADIA\n\n"
+        "Paditësi i propozon Gjykatës që, pas administrimit të provave, të "
+        "APROVOHET kërkesëpadia dhe të DETYROHET i padituri që paditësit t'ia "
+        "paguajë shumën prej {{ claim_amount }} €, me kamatë ligjore nga dita "
+        "e paraqitjes së padisë deri në pagesën definitive, si dhe t'ia "
+        "kompensojë shpenzimet e procedurës, të gjitha brenda 7 ditësh nga "
+        "dita e plotfuqishmërisë së aktgjykimit.\n\n"
+        "III. PROVAT\n\n"
+        "{{ evidence }}\n\n"
+        "Taksa gjyqësore: {{ court_fee }} € "
+        "(UA Nr. 03/2025 i KGJK-së për Unifikimin e Taksave Gjyqësore).\n\n"
+        "{{ city }}, më {{ date }}\n\n"
+        "Paditësi:\n\n_____________________\n{{ sender_name }}"
+    ),
+}

@@ -1420,3 +1420,60 @@ XK_COST_RISK_INSTANCES = [
         "hearings": 0,
     },
 ]
+
+
+# Basic Courts of Kosovo (Ligji Nr. 06/L-054 për Gjykatat): municipality ->
+# competent Basic Court (+ branch where one exists). Used by the public
+# small-claims flow to point the citizen at the right filing desk. DATA,
+# informative only — the tool always tells the user to confirm with the court.
+# Format: municipality: (court seat, branch or None).
+XK_BASIC_COURTS: dict[str, tuple[str, str | None]] = {
+    # Gjykata Themelore e Prishtinës
+    "Prishtinë": ("Prishtinë", None),
+    "Fushë Kosovë": ("Prishtinë", None),
+    "Obiliq": ("Prishtinë", None),
+    "Podujevë": ("Prishtinë", "Podujevë"),
+    "Lipjan": ("Prishtinë", "Lipjan"),
+    "Drenas (Gllogoc)": ("Prishtinë", "Drenas"),
+    "Graçanicë": ("Prishtinë", "Graçanicë"),
+    # Gjykata Themelore e Gjilanit
+    "Gjilan": ("Gjilan", None),
+    "Kamenicë": ("Gjilan", "Kamenicë"),
+    "Viti": ("Gjilan", "Viti"),
+    "Novobërdë": ("Gjilan", "Novobërdë"),
+    "Ranillug": ("Gjilan", "Kamenicë"),
+    "Partesh": ("Gjilan", "Viti"),
+    "Kllokot": ("Gjilan", "Viti"),
+    # Gjykata Themelore e Prizrenit
+    "Prizren": ("Prizren", None),
+    "Suharekë": ("Prizren", "Suharekë"),
+    "Dragash": ("Prizren", "Dragash"),
+    "Mamushë": ("Prizren", None),
+    # Gjykata Themelore e Gjakovës
+    "Gjakovë": ("Gjakovë", None),
+    "Rahovec": ("Gjakovë", "Rahovec"),
+    "Malishevë": ("Gjakovë", "Malishevë"),
+    # Gjykata Themelore e Pejës
+    "Pejë": ("Pejë", None),
+    "Istog": ("Pejë", "Istog"),
+    "Klinë": ("Pejë", "Klinë"),
+    "Deçan": ("Pejë", "Deçan"),
+    "Junik": ("Pejë", "Deçan"),
+    # Gjykata Themelore e Ferizajt
+    "Ferizaj": ("Ferizaj", None),
+    "Shtime": ("Ferizaj", None),
+    "Kaçanik": ("Ferizaj", "Kaçanik"),
+    "Hani i Elezit": ("Ferizaj", "Kaçanik"),
+    "Shtërpcë": ("Ferizaj", "Shtërpcë"),
+    # Gjykata Themelore e Mitrovicës
+    "Mitrovicë": ("Mitrovicë", None),
+    "Vushtrri": ("Mitrovicë", "Vushtrri"),
+    "Skenderaj": ("Mitrovicë", "Skenderaj"),
+    "Zveçan": ("Mitrovicë", None),
+    "Zubin Potok": ("Mitrovicë", "Zubin Potok"),
+    "Leposaviq": ("Mitrovicë", "Leposaviq"),
+}
+
+# Small-claims threshold: LPK neni 485.1 — money claims up to 500 EUR run
+# under Kreu XXVIII (nenet 484–491, procedurë e thjeshtuar).
+XK_SMALL_CLAIM_LIMIT_EUR = 500

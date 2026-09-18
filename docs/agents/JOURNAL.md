@@ -1,3 +1,68 @@
+## 2026-09-18 — Zbatimi i avancimeve, Fazat 2–4: besimi, vlera, rritja (Cursor / Fable 5)
+- Vazhdimi i planit "Zbatimi i 10 avancimeve" — u mbyllën 8 avancimet e mbetura
+  (4–10 + pjesa produkt e #3). Vendimi arkitekturor: **D-067** (shtresa e besimit).
+- **Faza 2 — besimi i Ava-s**:
+  - Verifier v2 (`services/citation_check.py`): verifikim në nivel citati —
+    citatet e thonjëzuara i atribuohen citimit (fjali e njëjtë + `pos` nga
+    regex) dhe krahasohen fuzzy (difflib ≥0.85 pas normalizimit) me chunk-ët
+    burimorë → statuse verified/approx/law_found/unverified me
+    doc_id/chunk_id. Regex-i shqip u shtrëngua ("Ligjit" i lakuar s'kapet më
+    si kod; emrat e ligjeve kërkohen me fallback shkurtimi të query-t).
+  - Raund riparimi (`repair_citations` + SSE `citation_fix`): 1 re-prompt
+    përmes `app/llm/` kur ka unverified; OFF by default
+    (`citation_repair_enabled`) — latenca në DeepSeek XK ~2–4 min/rast.
+  - Citime të klikueshme: badge-t ✓/≈ hapin modal burimi
+    (`citation-source-modal.tsx`; `GET /corpus/chunk/{id}` +
+    `/corpus/doc/{id}/first-chunk`); `GET /corpus/search` i ri (hibrid, edhe
+    për MCP).
+  - "Pyet lëndën": `matter_mode=full` në assistant → `matter_documents_full`
+    (gjithë dokumentet e lëndës brenda buxhetit të karaktereve), toggle në
+    panelin e assistant-it të lëndës.
+  - Eval gate: `scripts/eval_citations.py` + `eval/golden_xk.jsonl` /
+    `golden_de.jsonl` (20+20 pyetje), gate (verified+approx)/total ≥95%;
+    rresht i ri në playbook-un e AGENTS.md §4. Mësim operacional: eval-i
+    duhet nisur me `systemd-run --user` (proceset e shkëputura nga sesioni
+    i agjentit vriteshin heshturazi) dhe me sesion të ri DB për rast (një
+    lidhje e vrarë mos t'i helmojë rastet e mbetura).
+- **Faza 3 — vlera për avokatin**:
+  - 3 workflows ekspert si DATA (`seeds/workflow_defs.py`, XK): W-Ankesa,
+    W-Konformiteti, W-Provat; `services/workflows.py` + SSE
+    `POST /matters/{id}/workflows/{kind}`; rezultati me raport verifikimi
+    citimesh, ruhet si Matter note + audit log; 3 butona në faqen e lëndës.
+  - AI Auditor natën: `run_file_quality_audit` në `proactive.py` (lëndë pa
+    palë kundërshtare / pa dokumente / fatura draft >7 ditë / pa aktivitet
+    >30 ditë) — gjetjet në briefing-un e mëngjesit + notification center.
+  - MCP server (`scripts/mcp_server.py`, stdio): 6 vegla mbi api_tokens
+    (kerko_korpusin, lexo_lenden, lista_e_lendeve, afatet_e_lendes,
+    kerko_dokumentet, drafto_memo — vetëm drafto_memo shkruan, kërkon
+    read_write); i regjistruar në `~/.cursor/mcp.json`; smoke test OK pas
+    restart-it të backend-it.
+- **Faza 4 — rritja**:
+  - Sekuenca e aktivizimit 3/7/30 (`_check_activation_sequence`): email për
+    tenant-ët me 0 lëndë, ×7 gjuhë në i18n.py, dedup me Redis, suppression
+    i test-marrësve, rresht në COMMS.md.
+  - Checklist onboarding-u në dashboard (obc*: krijo lëndën / ngarko
+    dokument / provo Ava-n) mbi `reports/dashboard.onboarding`.
+  - Higjiena: kolona `tenants.is_test` (migrimi `c8d9e0f1a2b3`), 9 tenant-ë
+    prove të shënjuar, të përjashtuar nga sekuenca + të dukshëm në
+    /platform. Draft-et Lane B: 24 llogari të fjetura →
+    `data/reaktivizimi-lane-b-2026-09-18.md` — **asgjë s'dërgohet pa PO**.
+  - Padia e vogël (`/dokumentet/padia-e-vogel`): wizard 3-hapësh → padi
+    zyrtare PDF (template si data `XK_SMALL_CLAIM_TEMPLATE`, LPK 484–491,
+    kufiri 500 € i verifikuar në korpus — neni 485.1), taksa 60 €
+    (UA 03/2025), gjykata kompetente sipas komunës (`XK_BASIC_COURTS`,
+    37 komuna → 7 gjykata + degët), udhëzim dorëzimi + CTA marketplace;
+    endpoint-e të reja `GET /small-claims/meta`,
+    `POST /small-claims/generate` (rate-limited); ×7 gjuhë; testuar
+    end-to-end në browser.
+- Verifikimi: pytest **390/390** (20 teste të reja: verifier v2, workflows,
+  MCP, padia e vogël), isolation_check ALL PASS, saas_check ALL PASS,
+  build frontend OK + asset 200, health OK; full_simulation dhe eval gate
+  XK+DE në vazhdim në fund të sesionit (rezultatet shënohen kur mbyllen).
+- Vendime të hapura për pronarin: (a) PO për draft-et Lane B; (b) dublikata
+  Buzuku; (c) ndezja default e riparimit të citimeve pas shqyrtimit të
+  latencës.
+
 ## 2026-09-18 — Zbatimi i avancimeve, Faza 1: siguria (Cursor / Fable 5)
 - Konteksti: pronari miratoi zbatimin e 10 avancimeve nga auditimi i sotëm
   (plani "Zbatimi i 10 avancimeve"). Kjo është Faza 1 (avancimet 1–2).

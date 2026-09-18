@@ -38,3 +38,4 @@ pip-audit>=2.10
 
 # data migration importer (D-059 F3): XLSX exports from RA-MICRO/Advoware
 openpyxl>=3.1
+mcp>=2.2  # MCP server (scripts/mcp_server.py, audit 2026-09-18 #8)

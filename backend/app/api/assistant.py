@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.api.matters import get_owned_matter
+from app.config import settings
 from app.database import SessionLocal, get_db
 from app.deps import get_current_user
 from app.llm import LOCAL_PINNED, list_providers
@@ -338,6 +339,7 @@ async def ask_stream(body: AskRequest, user: User = Depends(get_current_user)):
                     language=body.locale,
                     style=await _office_style(db, user),
                     region=await _office_region(db, user),
+                    matter_scope=body.matter_mode or "search",
                 )
                 async for kind, text in chunks:
                     if kind == "thinking":
@@ -351,14 +353,20 @@ async def ask_stream(body: AskRequest, user: User = Depends(get_current_user)):
                 yield _sse({"type": "error", "detail": str(exc)})
                 return
 
-            # Citation verification (D-059 F6) — after the stream, off the
-            # critical path: which cited §§/nene/case numbers exist in our
-            # indexed corpus?
-            checked = await _checked_citations(db, jurisdiction_id, "".join(parts))
+            # Citation verification (D-059 F6, v2 quote-level) — after the
+            # stream, off the critical path: do the cited §§/nene/case
+            # numbers AND the quoted passages exist in our indexed corpus?
+            final_text = "".join(parts)
+            checked = await _checked_citations(db, jurisdiction_id, final_text)
+            final_text, checked, fix_event = await _maybe_repair(
+                db, jurisdiction_id, final_text, checked, provider_name
+            )
+            if fix_event:
+                yield _sse(fix_event)
             if checked:
                 yield _sse({"type": "citation_check", "citations": checked})
 
-            reply = await _save_exchange(db, user, body, conversation, "".join(parts), citations)
+            reply = await _save_exchange(db, user, body, conversation, final_text, citations)
             yield _sse(
                 {
                     "type": "done",
@@ -383,6 +391,26 @@ async def _checked_citations(db, jurisdiction_id, answer: str) -> list[dict]:
     except Exception:
         logger.exception("citation verification failed")
         return []
+
+
+async def _maybe_repair(
+    db, jurisdiction_id, answer: str, checked: list[dict], provider_name: str | None
+) -> tuple[str, list[dict], dict | None]:
+    """Citation repair round (v2, flag-gated): when quote-level verification
+    failed, one bounded LLM pass corrects or drops the bad citations. Returns
+    (text, checked, sse_event_or_None); on any failure the original answer
+    stands — repair never degrades the flow."""
+    from app.services.citation_check import repair_citations
+
+    if not settings.citation_repair_enabled:
+        return answer, checked, None
+    if not any(c["status"] == "unverified" for c in checked):
+        return answer, checked, None
+    fixed = await repair_citations(db, jurisdiction_id, answer, checked, provider_name)
+    if not fixed:
+        return answer, checked, None
+    revised, new_checked = fixed
+    return revised, new_checked, {"type": "citation_fix", "text": revised}
 
 
 @router.post("/deep-research")
@@ -427,12 +455,18 @@ async def deep_research(body: AskRequest, user: User = Depends(get_current_user)
                 yield _sse({"type": "error", "detail": str(exc)})
                 return
 
-            checked = await _checked_citations(db, jurisdiction_id, "".join(parts))
+            final_text = "".join(parts)
+            checked = await _checked_citations(db, jurisdiction_id, final_text)
+            final_text, checked, fix_event = await _maybe_repair(
+                db, jurisdiction_id, final_text, checked, provider_name
+            )
+            if fix_event:
+                yield _sse(fix_event)
             if checked:
                 yield _sse({"type": "citation_check", "citations": checked})
 
             reply = await _save_exchange(
-                db, user, body, conversation, "".join(parts), citations
+                db, user, body, conversation, final_text, citations
             )
             yield _sse(
                 {

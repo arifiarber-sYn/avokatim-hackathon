@@ -179,6 +179,68 @@ async def _check_deadline_reminders(redis: aioredis.Redis) -> None:
             logger.info("Reminder sent for deadline %s (%s days)", deadline.id, days_left)
 
 
+async def _check_activation_sequence(redis: aioredis.Redis) -> None:
+    """Activation emails at day 3/7/30 for offices that signed up but never
+    created a matter (audit 2026-09-18, advancement #3 — the XK activation
+    crisis: 33 signups → 1 recurring user). One email per stage, redis-deduped,
+    sent to the tenant's first user; test recipients are suppressed by
+    send_email as everywhere."""
+    now = datetime.now(UTC)
+    # stage -> (not before, not after): a 3-day window so a downtime never
+    # skips a stage silently
+    stages = {
+        "3": (timedelta(days=3), timedelta(days=6)),
+        "7": (timedelta(days=7), timedelta(days=10)),
+        "30": (timedelta(days=30), timedelta(days=35)),
+    }
+    async with SessionLocal() as db:
+        with_matters = select(Matter.tenant_id).distinct()
+        tenants = (
+            await db.execute(
+                select(Tenant).where(
+                    Tenant.status == "active",
+                    Tenant.is_test.is_(False),
+                    Tenant.created_at <= now - timedelta(days=3),
+                    Tenant.created_at >= now - timedelta(days=36),
+                    Tenant.id.not_in(with_matters),
+                )
+            )
+        ).scalars().all()
+        for tenant in tenants:
+            age = now - tenant.created_at
+            for stage, (lo, hi) in stages.items():
+                if not (lo <= age <= hi):
+                    continue
+                key = f"onboardseq:{tenant.id}:{stage}"
+                if not await redis.set(key, "1", nx=True, ex=45 * 86400):
+                    continue
+                user = (
+                    await db.execute(
+                        select(User)
+                        .where(User.tenant_id == tenant.id, User.is_active.is_(True))
+                        .order_by(User.created_at)
+                        .limit(1)
+                    )
+                ).scalar_one_or_none()
+                if user is None or not user.email:
+                    continue
+                loc = pick_locale(user.locale, tenant.default_locale)
+                sent = await send_email(
+                    user.email,
+                    tr(loc, f"onboard{stage}_subject"),
+                    tr(
+                        loc, f"onboard{stage}_body",
+                        name=user.full_name or "",
+                        base_url=settings.public_base_url,
+                    ),
+                )
+                if sent:
+                    logger.info(
+                        "Activation email day-%s sent to %s (%s)",
+                        stage, user.email, tenant.name,
+                    )
+
+
 async def _check_onboarding_nudges() -> None:
     """One-shot onboarding reminders (the gap seen with the first real signups):
     - lawyer signed up >1h ago and public profile still not visible -> 1 email
@@ -372,6 +434,10 @@ async def reminder_loop() -> None:
             except Exception as exc:
                 logger.warning("Onboarding nudge check failed: %s", exc)
             try:
+                await _check_activation_sequence(redis)
+            except Exception as exc:
+                logger.warning("Activation sequence check failed: %s", exc)
+            try:
                 await _check_review_requests()
             except Exception as exc:
                 logger.warning("Review request check failed: %s", exc)
@@ -395,6 +461,7 @@ async def reminder_loop() -> None:
             try:
                 await proactive.run_caselaw_monitor(redis)
                 await proactive.run_deadline_audit(redis)
+                await proactive.run_file_quality_audit(redis)
                 last_proactive_day = today
             except Exception as exc:
                 logger.warning("Proactive monitors failed: %s", exc)

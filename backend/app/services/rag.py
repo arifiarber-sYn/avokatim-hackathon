@@ -387,3 +387,41 @@ async def search_matter_documents(
         {"text": chunk.text, "doc_title": doc.filename, "document_id": str(doc.id)}
         for chunk, doc in rows
     ]
+
+
+async def matter_documents_full(
+    db: AsyncSession, matter_id: uuid.UUID, char_budget: int = 48_000
+) -> list[dict]:
+    """The FULL text of a matter's documents ("ask the matter" mode, audit
+    2026-09-18 — Harvey Vault at solo scale): every latest-version document,
+    chunks in order, within a character budget split evenly across documents
+    (each document gets at least its head — the lead of a filing carries the
+    parties/claims, so even truncated docs stay useful)."""
+    rows = (
+        await db.execute(
+            select(DocumentChunk, Document)
+            .join(Document, Document.id == DocumentChunk.document_id)
+            .where(Document.matter_id == matter_id, Document.is_latest.is_(True))
+            .order_by(Document.created_at, DocumentChunk.seq)
+        )
+    ).all()
+    docs: dict[str, dict] = {}
+    for chunk, doc in rows:
+        entry = docs.setdefault(
+            str(doc.id), {"doc_title": doc.filename, "document_id": str(doc.id), "parts": []}
+        )
+        entry["parts"].append(chunk.text)
+    if not docs:
+        return []
+    per_doc = max(char_budget // len(docs), 2_000)
+    out = []
+    for entry in docs.values():
+        text = "\n".join(entry["parts"])
+        if len(text) > per_doc:
+            text = text[:per_doc] + "\n[…dokumenti i shkurtuar…]"
+        out.append({
+            "doc_title": entry["doc_title"],
+            "document_id": entry["document_id"],
+            "text": text,
+        })
+    return out

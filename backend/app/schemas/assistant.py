@@ -12,6 +12,9 @@ class AskRequest(BaseModel):
     # UI locale — selects the corpus language for citations (official gazette
     # texts exist in sq/sr/tr/bs/en; Albanian is always the fallback)
     locale: str | None = Field(default=None, max_length=8)
+    # "ask the matter" (audit 2026-09-18): "full" = context is ALL documents
+    # of the matter (budgeted), not the top-k hits of the question
+    matter_mode: str | None = Field(default=None, pattern="^(search|full)$")
 
 
 class MessageOut(BaseModel):

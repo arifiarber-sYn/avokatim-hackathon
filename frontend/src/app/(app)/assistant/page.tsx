@@ -6,6 +6,7 @@ import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
 import { MicButton, SpeakButton, useVoiceAvailable } from "@/components/voice-controls";
 import CitationChecks, { CitationCheck } from "@/components/citation-checks";
+import CitationSourceModal from "@/components/citation-source-modal";
 import { Conversation, Matter, Message } from "@/lib/types";
 import { Button, Card, ErrorNote, Select, Textarea } from "@/components/ui";
 
@@ -33,6 +34,8 @@ export default function AssistantPage() {
   const [mode, setMode] = useState<"legal" | "office">("legal");
   // Per-message citation verification results (D-059 F6)
   const [checks, setChecks] = useState<Record<string, CitationCheck[]>>({});
+  // Clickable citations (audit 2026-09-18): badge → source modal
+  const [sourceCitation, setSourceCitation] = useState<CitationCheck | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -103,6 +106,14 @@ export default function AssistantPage() {
             }
           } else if (ev.type === "delta") {
             streamed += ev.text as string;
+            const text = streamed;
+            setMessages((prev) => [
+              ...prev.filter((m) => m.id !== "streaming"),
+              { id: "streaming", role: "assistant", content: text, citations: [], created_at: new Date().toISOString() },
+            ]);
+          } else if (ev.type === "citation_fix") {
+            // Verifier v2 repaired unverifiable citations — swap the text
+            streamed = ev.text as string;
             const text = streamed;
             setMessages((prev) => [
               ...prev.filter((m) => m.id !== "streaming"),
@@ -308,7 +319,9 @@ export default function AssistantPage() {
                     </div>
                   )}
                 </div>
-                {m.role === "assistant" && <CitationChecks checks={checks[m.id]} />}
+                {m.role === "assistant" && (
+                  <CitationChecks checks={checks[m.id]} onOpenSource={setSourceCitation} />
+                )}
                 {m.role === "assistant" && m.id !== "streaming" && m.content && (
                   <SpeakButton text={m.content} locale={locale} serverTts={voice.tts} />
                 )}
@@ -361,6 +374,7 @@ export default function AssistantPage() {
       </Card>
       </div>
       )}
+      <CitationSourceModal citation={sourceCitation} onClose={() => setSourceCitation(null)} />
     </div>
   );
 }

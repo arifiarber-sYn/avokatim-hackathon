@@ -64,6 +64,36 @@ _SQ = {
         "Pyetje? Përgjigjemi te {contact_url}\n\n— Ekipi i AvokatIM"
     ),
     "lawyer_profile_nudge_subject": "AvokatIM — Profili yt publik ende s'është aktiv",
+    # Activation sequence 3/7/30 (audit 2026-09-18, adv. #3): tenants that
+    # signed up but created no matter yet
+    "onboard3_subject": "AvokatIM — 3 hapa të shpejtë për të nisur",
+    "onboard3_body": (
+        "Përshëndetje {name},\n\nPo e shohim që ende s'ke krijuar lëndën e parë. "
+        "Tri hapa që zgjasin 5 minuta:\n\n"
+        "1. Krijo lëndën e parë: {base_url}/matters\n"
+        "2. Ngarko një dokument — Ava e lexon dhe propozon afatet vetë\n"
+        "3. Pyete Ava-n një pyetje ligjore: {base_url}/assistant\n\n"
+        "Nëse diçka të pengon, përgjigju këtij email-i — të ndihmojmë personalisht.\n\n— Ekipi i AvokatIM"
+    ),
+    "onboard7_subject": "AvokatIM — Zyra jote digjitale po të pret",
+    "onboard7_body": (
+        "Përshëndetje {name},\n\nNjë javë nga regjistrimi — llogaria jote është "
+        "gati, por ende e pashfrytëzuar. Çka po humb:\n\n"
+        "• Motori i afateve: llogarit afatet e LPK/KPP automatikisht, me bazë ligjore\n"
+        "• Ava: përgjigje me citime nga ligjet e Kosovës dhe praktika gjyqësore\n"
+        "• Tregu i rasteve: qytetarët postojnë raste çdo javë — avokatët e verifikuar i marrin\n\n"
+        "Provo me një lëndë reale: {base_url}/matters\n\n"
+        "Përgjigju këtij email-i nëse do një tur 15-minutësh — ta tregojmë live.\n\n— Ekipi i AvokatIM"
+    ),
+    "onboard30_subject": "AvokatIM — Llogaria jote është ende aktive (viti i parë falas)",
+    "onboard30_body": (
+        "Përshëndetje {name},\n\nNjë muaj nga regjistrimi. Llogaria jote mbetet "
+        "aktive dhe viti i parë është falas — pa kartelë, pa detyrime.\n\n"
+        "Avokatët që e përdorin AvokatIM raportojnë kursim disa orësh në javë "
+        "(afatet, shkresat, faturimi). Nëse platforma s'të duket e dobishme, "
+        "na e thuaj pse — përgjigjja jote e përmirëson produktin për gjithë "
+        "avokatët e Kosovës.\n\nHyr: {base_url}/login\n\n— Ekipi i AvokatIM"
+    ),
     "lawyer_profile_nudge_body": (
         "Qytetarët nuk mund të të gjejnë në drejtori dhe nuk merr raste nga tregu.\n\n"
         "Aktivizimi zgjat 2 minuta:\n{url}\n\n— AvokatIM"
@@ -372,6 +402,32 @@ _SR = {
         "Pitanja? Odgovaramo na {contact_url}\n\n— Tim AvokatIM"
     ),
     "lawyer_profile_nudge_subject": "AvokatIM — Vaš javni profil još nije aktivan",
+    "onboard3_subject": "AvokatIM — 3 brza koraka za početak",
+    "onboard3_body": (
+        "Poštovani {name},\n\nVidimo da još niste kreirali prvi predmet. "
+        "Tri koraka koja traju 5 minuta:\n\n"
+        "1. Kreirajte prvi predmet: {base_url}/matters\n"
+        "2. Otpremite dokument — Ava ga čita i sama predlaže rokove\n"
+        "3. Postavite Avi pravno pitanje: {base_url}/assistant\n\n"
+        "Ako vas nešto sprečava, odgovorite na ovaj email — pomoći ćemo lično.\n\n— Tim AvokatIM"
+    ),
+    "onboard7_subject": "AvokatIM — Vaša digitalna kancelarija vas čeka",
+    "onboard7_body": (
+        "Poštovani {name},\n\nNedelju dana od registracije — nalog je spreman, "
+        "ali još neiskorišćen. Šta propuštate:\n\n"
+        "• Motor rokova: automatski računa procesne rokove, sa pravnim osnovom\n"
+        "• Ava: odgovori sa citatima iz zakona Kosova i sudske prakse\n"
+        "• Tržište predmeta: građani objavljuju predmete svake nedelje\n\n"
+        "Probajte sa stvarnim predmetom: {base_url}/matters\n\n"
+        "Odgovorite na ovaj email za tur od 15 minuta.\n\n— Tim AvokatIM"
+    ),
+    "onboard30_subject": "AvokatIM — Vaš nalog je i dalje aktivan (prva godina besplatna)",
+    "onboard30_body": (
+        "Poštovani {name},\n\nMesec dana od registracije. Vaš nalog ostaje "
+        "aktivan i prva godina je besplatna — bez kartice, bez obaveza.\n\n"
+        "Ako vam platforma ne deluje korisno, recite nam zašto — vaš odgovor "
+        "poboljšava proizvod.\n\nPrijava: {base_url}/login\n\n— Tim AvokatIM"
+    ),
     "lawyer_profile_nudge_body": (
         "Građani ne mogu da vas pronađu u imeniku i ne dobijate predmete sa tržišta.\n\n"
         "Aktivacija traje 2 minuta:\n{url}\n\n— AvokatIM"
@@ -665,6 +721,32 @@ _TR = {
         "Sorular? {contact_url} adresinden yanıtlıyoruz\n\n— AvokatIM Ekibi"
     ),
     "lawyer_profile_nudge_subject": "AvokatIM — Herkese açık profiliniz hâlâ etkin değil",
+    "onboard3_subject": "AvokatIM — Başlamak için 3 hızlı adım",
+    "onboard3_body": (
+        "Merhaba {name},\n\nHenüz ilk dosyanızı oluşturmadığınızı görüyoruz. "
+        "5 dakika süren üç adım:\n\n"
+        "1. İlk dosyayı oluşturun: {base_url}/matters\n"
+        "2. Bir belge yükleyin — Ava okur ve süreleri kendisi önerir\n"
+        "3. Ava'ya hukuki bir soru sorun: {base_url}/assistant\n\n"
+        "Bir engel varsa bu e-postayı yanıtlayın — kişisel olarak yardım ederiz.\n\n— AvokatIM Ekibi"
+    ),
+    "onboard7_subject": "AvokatIM — Dijital ofisiniz sizi bekliyor",
+    "onboard7_body": (
+        "Merhaba {name},\n\nKayıttan bir hafta geçti — hesabınız hazır ama "
+        "hâlâ kullanılmadı. Kaçırdıklarınız:\n\n"
+        "• Süre motoru: usul sürelerini yasal dayanağıyla otomatik hesaplar\n"
+        "• Ava: Kosova yasalarından ve içtihattan alıntılı yanıtlar\n"
+        "• Dava pazarı: vatandaşlar her hafta dava yayınlıyor\n\n"
+        "Gerçek bir dosyayla deneyin: {base_url}/matters\n\n"
+        "15 dakikalık tur için bu e-postayı yanıtlayın.\n\n— AvokatIM Ekibi"
+    ),
+    "onboard30_subject": "AvokatIM — Hesabınız hâlâ etkin (ilk yıl ücretsiz)",
+    "onboard30_body": (
+        "Merhaba {name},\n\nKayıttan bir ay geçti. Hesabınız etkin ve ilk yıl "
+        "ücretsiz — kart yok, taahhüt yok.\n\n"
+        "Platform yararlı görünmüyorsa nedenini söyleyin — yanıtınız ürünü "
+        "iyileştirir.\n\nGiriş: {base_url}/login\n\n— AvokatIM Ekibi"
+    ),
     "lawyer_profile_nudge_body": (
         "Vatandaşlar sizi rehberde bulamıyor ve pazar yerinden dosya almıyorsunuz.\n\n"
         "Etkinleştirme 2 dakika sürer:\n{url}\n\n— AvokatIM"
@@ -960,6 +1042,32 @@ _BS = {
         "Pitanja? Odgovaramo na {contact_url}\n\n— Tim AvokatIM"
     ),
     "lawyer_profile_nudge_subject": "AvokatIM — Vaš javni profil još nije aktivan",
+    "onboard3_subject": "AvokatIM — 3 brza koraka za početak",
+    "onboard3_body": (
+        "Poštovani {name},\n\nVidimo da još niste kreirali prvi predmet. "
+        "Tri koraka koja traju 5 minuta:\n\n"
+        "1. Kreirajte prvi predmet: {base_url}/matters\n"
+        "2. Otpremite dokument — Ava ga čita i sama predlaže rokove\n"
+        "3. Postavite Avi pravno pitanje: {base_url}/assistant\n\n"
+        "Ako vas nešto sprečava, odgovorite na ovaj email — pomoći ćemo lično.\n\n— Tim AvokatIM"
+    ),
+    "onboard7_subject": "AvokatIM — Vaša digitalna kancelarija vas čeka",
+    "onboard7_body": (
+        "Poštovani {name},\n\nNedelju dana od registracije — nalog je spreman, "
+        "ali još neiskorišćen. Šta propuštate:\n\n"
+        "• Motor rokova: automatski računa procesne rokove, sa pravnim osnovom\n"
+        "• Ava: odgovori sa citatima iz zakona Kosova i sudske prakse\n"
+        "• Tržište predmeta: građani objavljuju predmete svake nedelje\n\n"
+        "Probajte sa stvarnim predmetom: {base_url}/matters\n\n"
+        "Odgovorite na ovaj email za tur od 15 minuta.\n\n— Tim AvokatIM"
+    ),
+    "onboard30_subject": "AvokatIM — Vaš nalog je i dalje aktivan (prva godina besplatna)",
+    "onboard30_body": (
+        "Poštovani {name},\n\nMesec dana od registracije. Vaš nalog ostaje "
+        "aktivan i prva godina je besplatna — bez kartice, bez obaveza.\n\n"
+        "Ako vam platforma ne deluje korisno, recite nam zašto — vaš odgovor "
+        "poboljšava proizvod.\n\nPrijava: {base_url}/login\n\n— Tim AvokatIM"
+    ),
     "lawyer_profile_nudge_body": (
         "Građani vas ne mogu pronaći u imeniku i ne dobijate predmete s tržišta.\n\n"
         "Aktivacija traje 2 minute:\n{url}\n\n— AvokatIM"
@@ -1253,6 +1361,32 @@ _EN = {
         "Questions? We answer at {contact_url}\n\n— The AvokatIM team"
     ),
     "lawyer_profile_nudge_subject": "AvokatIM — Your public profile is still not active",
+    "onboard3_subject": "AvokatIM — 3 quick steps to get started",
+    "onboard3_body": (
+        "Hello {name},\n\nWe noticed you haven't created your first matter yet. "
+        "Three steps that take 5 minutes:\n\n"
+        "1. Create your first matter: {base_url}/matters\n"
+        "2. Upload a document — Ava reads it and proposes deadlines itself\n"
+        "3. Ask Ava a legal question: {base_url}/assistant\n\n"
+        "If something is in your way, reply to this email — we'll help personally.\n\n— The AvokatIM team"
+    ),
+    "onboard7_subject": "AvokatIM — Your digital office is waiting",
+    "onboard7_body": (
+        "Hello {name},\n\nOne week since signup — your account is ready but "
+        "still unused. What you're missing:\n\n"
+        "• The deadline engine: computes procedural deadlines automatically, with legal basis\n"
+        "• Ava: answers with citations from Kosovo law and case law\n"
+        "• The case marketplace: citizens post cases every week\n\n"
+        "Try it with a real matter: {base_url}/matters\n\n"
+        "Reply to this email for a 15-minute tour.\n\n— The AvokatIM team"
+    ),
+    "onboard30_subject": "AvokatIM — Your account is still active (first year free)",
+    "onboard30_body": (
+        "Hello {name},\n\nA month since signup. Your account remains active and "
+        "the first year is free — no card, no commitment.\n\n"
+        "If the platform doesn't seem useful, tell us why — your reply improves "
+        "the product.\n\nLog in: {base_url}/login\n\n— The AvokatIM team"
+    ),
     "lawyer_profile_nudge_body": (
         "Citizens cannot find you in the directory and you receive no cases from the marketplace.\n\n"
         "Activation takes 2 minutes:\n{url}\n\n— AvokatIM"
@@ -1527,6 +1661,29 @@ _ZH = {
         "有问题？请访问 {contact_url}\n\n— AvokatIM 团队"
     ),
     "lawyer_profile_nudge_subject": "AvokatIM — 您的公开资料尚未激活",
+    "onboard3_subject": "AvokatIM — 三个快速步骤开始使用",
+    "onboard3_body": (
+        "您好 {name}，\n\n我们注意到您还没有创建第一个案件。三个只需5分钟的步骤：\n\n"
+        "1. 创建第一个案件：{base_url}/matters\n"
+        "2. 上传文件 — Ava 会阅读并自动建议期限\n"
+        "3. 向 Ava 提一个法律问题：{base_url}/assistant\n\n"
+        "如有困难请回复此邮件 — 我们将亲自帮助您。\n\n— AvokatIM 团队"
+    ),
+    "onboard7_subject": "AvokatIM — 您的数字办公室在等您",
+    "onboard7_body": (
+        "您好 {name}，\n\n注册已一周 — 账户已就绪但尚未使用。您错过的功能：\n\n"
+        "• 期限引擎：自动计算程序期限，附法律依据\n"
+        "• Ava：引用科索沃法律和判例的回答\n"
+        "• 案件市场：公民每周发布案件\n\n"
+        "用真实案件试试：{base_url}/matters\n\n"
+        "回复此邮件可预约15分钟演示。\n\n— AvokatIM 团队"
+    ),
+    "onboard30_subject": "AvokatIM — 您的账户仍然有效（首年免费）",
+    "onboard30_body": (
+        "您好 {name}，\n\n注册已一个月。您的账户仍然有效，首年免费 — 无需银行卡，无义务。\n\n"
+        "如果平台对您没有帮助，请告诉我们原因 — 您的反馈会改进产品。\n\n"
+        "登录：{base_url}/login\n\n— AvokatIM 团队"
+    ),
     "lawyer_profile_nudge_body": "公民无法在目录中找到您，您也无法从市场接收案件。\n\n激活只需2分钟：\n{url}\n\n— AvokatIM",
     "citizen_verify_reminder_subject": "AvokatIM — 提醒：确认您的电子邮箱",
     "citizen_verify_reminder_body": "您的账户已就绪，但电子邮箱尚未确认——未确认前无法发布案件。\n\n请在此确认：\n{url}\n\n链接有效期为3天。\n\n— AvokatIM",
@@ -1738,6 +1895,32 @@ _DE = {
         "Fragen? Wir antworten unter {contact_url}\n\n— Das Ava Legal-Team"
     ),
     "lawyer_profile_nudge_subject": "Ava Legal — Ihr öffentliches Profil ist noch nicht aktiv",
+    "onboard3_subject": "Ava Legal — 3 schnelle Schritte zum Start",
+    "onboard3_body": (
+        "Guten Tag {name},\n\nSie haben noch keine erste Akte angelegt. "
+        "Drei Schritte, die 5 Minuten dauern:\n\n"
+        "1. Erste Akte anlegen: {base_url}/matters\n"
+        "2. Ein Dokument hochladen — Ava liest es und schlägt Fristen selbst vor\n"
+        "3. Ava eine Rechtsfrage stellen: {base_url}/assistant\n\n"
+        "Wenn etwas im Weg ist, antworten Sie auf diese E-Mail — wir helfen persönlich.\n\n— Das Ava-Legal-Team"
+    ),
+    "onboard7_subject": "Ava Legal — Ihre digitale Kanzlei wartet",
+    "onboard7_body": (
+        "Guten Tag {name},\n\nEine Woche seit der Registrierung — Ihr Konto ist "
+        "bereit, aber noch ungenutzt. Was Ihnen entgeht:\n\n"
+        "• Fristenmotor: berechnet ZPO/ArbGG-Fristen automatisch, mit Rechtsgrundlage\n"
+        "• Ava: Antworten mit Zitaten aus Bundesrecht und Rechtsprechung\n"
+        "• RVG-Abrechnung, ZUGFeRD/XRechnung, DATEV-Export\n\n"
+        "Testen Sie es mit einer echten Akte: {base_url}/matters\n\n"
+        "Antworten Sie für eine 15-minütige Tour.\n\n— Das Ava-Legal-Team"
+    ),
+    "onboard30_subject": "Ava Legal — Ihr Konto ist weiterhin aktiv (3 Monate kostenlos)",
+    "onboard30_body": (
+        "Guten Tag {name},\n\nEin Monat seit der Registrierung. Ihr Konto bleibt "
+        "aktiv — ohne Karte, ohne Verpflichtung.\n\n"
+        "Wenn die Plattform nicht nützlich erscheint, sagen Sie uns warum — Ihre "
+        "Antwort verbessert das Produkt.\n\nAnmelden: {base_url}/login\n\n— Das Ava-Legal-Team"
+    ),
     "lawyer_profile_nudge_body": (
         "Bürger können Sie im Verzeichnis nicht finden und Sie erhalten keine Fälle aus dem Marktplatz.\n\n"
         "Die Aktivierung dauert 2 Minuten:\n{url}\n\n— Ava Legal"

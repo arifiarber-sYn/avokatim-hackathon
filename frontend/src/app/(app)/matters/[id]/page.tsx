@@ -1567,6 +1567,8 @@ function MatterAI({ matterId }: { matterId: string }) {
   const [copiedText, setCopiedText] = useState(false);
   const [prepStep, setPrepStep] = useState("");
   const [copiedDraft, setCopiedDraft] = useState(false);
+  // Expert workflows (audit 2026-09-18): result saved as a matter note
+  const [wfSaved, setWfSaved] = useState(false);
   // Zivilgerichtliches Online-Verfahren (DE matters, D-041)
   const [ovOpen, setOvOpen] = useState(false);
   const [ovValue, setOvValue] = useState("");
@@ -1668,6 +1670,48 @@ function MatterAI({ matterId }: { matterId: string }) {
     setSentToPortal(true);
   }
 
+  /** Expert workflows (audit 2026-09-18): fixed litigation routines run
+   * step by step; the combined result is saved server-side as a matter
+   * note with a citation-verification report. */
+  async function runWorkflow(kind: "appeal" | "compliance" | "evidence") {
+    setBusy(true);
+    setError("");
+    setOutput("");
+    setIsDraft(false);
+    setWfSaved(false);
+    try {
+      await apiStream(
+        `/matters/${matterId}/workflows/${kind}?locale=${locale}`,
+        {},
+        (event) => {
+          if (event.type === "step" && event.status === "running") {
+            setPrepStep(String(event.label || ""));
+          } else if (event.type === "result") {
+            setOutput((prev) => prev + (prev ? "\n\n" : "") + (event.content as string));
+          } else if (event.type === "citation_check") {
+            const checks = event.citations as { cite: string; status: string }[];
+            const icon: Record<string, string> = {
+              verified: "✓", approx: "≈", law_found: "§", unverified: "?",
+            };
+            setOutput((prev) =>
+              prev + "\n\n" + t.ccTitle + " " +
+              checks.map((c) => `${icon[c.status] || "?"} ${c.cite}`).join(" · ")
+            );
+          } else if (event.type === "done") {
+            setWfSaved(true);
+          } else if (event.type === "error") {
+            setError(String(event.detail || t.error));
+          }
+        }
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.error);
+    } finally {
+      setBusy(false);
+      setPrepStep("");
+    }
+  }
+
   async function copyDraft() {
     await navigator.clipboard.writeText(output);
     setCopiedText(true);
@@ -1688,6 +1732,19 @@ function MatterAI({ matterId }: { matterId: string }) {
             ⚖ {t.ovCheckBtn}
           </Button>
         )}
+      </div>
+      {/* Expert workflows (audit 2026-09-18) */}
+      <div className="flex gap-2 flex-wrap">
+        <Button onClick={() => runWorkflow("appeal")} disabled={busy} variant="secondary">
+          ⚖️ {t.wfAppeal}
+        </Button>
+        <Button onClick={() => runWorkflow("compliance")} disabled={busy} variant="secondary">
+          📋 {t.wfCompliance}
+        </Button>
+        <Button onClick={() => runWorkflow("evidence")} disabled={busy} variant="secondary">
+          🧾 {t.wfEvidence}
+        </Button>
+        {wfSaved && <span className="text-xs text-emerald-700 self-center">✓ {t.wfSaved}</span>}
       </div>
       <ErrorNote message={error} />
       {ovOpen && (

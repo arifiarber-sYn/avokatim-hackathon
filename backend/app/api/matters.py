@@ -333,6 +333,67 @@ async def add_note(
     return note
 
 
+# ---------- Expert workflows (audit 2026-09-18, advancement #6) ----------
+
+
+@router.post("/{matter_id}/workflows/{kind}")
+async def run_workflow(
+    matter_id: uuid.UUID,
+    kind: str,
+    user: User = Depends(get_current_user),
+    locale: str | None = None,
+    provider: str | None = None,
+):
+    """SSE: run one expert workflow (appeal | compliance | evidence) on the
+    matter. Definitions are jurisdiction data (seeds/workflow_defs.py); the
+    combined result is saved as a MatterNote with a citation-verification
+    report attached."""
+    from fastapi.responses import StreamingResponse
+
+    from app.database import SessionLocal
+    from app.services.workflows import WORKFLOW_KINDS, workflow_stream
+
+    if kind not in WORKFLOW_KINDS:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Unknown workflow")
+
+    async def event_stream():
+        from app.api.assistant import _effective_provider
+
+        async with SessionLocal() as db:
+            try:
+                matter = await get_owned_matter(db, user, matter_id)
+            except HTTPException as exc:
+                yield _sse({"type": "error", "detail": exc.detail})
+                return
+            # Respect the tenant's external-AI kill switch (D-060)
+            provider_name = await _effective_provider(db, user, provider)
+            try:
+                async for event in workflow_stream(
+                    db,
+                    matter=matter,
+                    kind=kind,
+                    user=user,
+                    provider_name=provider_name,
+                    language=locale,
+                ):
+                    yield _sse(event)
+            except Exception as exc:
+                await db.rollback()
+                yield _sse({"type": "error", "detail": str(exc)})
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+def _sse(event: dict) -> str:
+    import json
+
+    return f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+
+
 # ---------- Zivilgerichtliches Online-Verfahren (DE, D-041) ----------
 
 

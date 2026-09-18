@@ -1788,3 +1788,35 @@
   credential; a leaked DB dump reveals no usable tokens; UI lives in
   Settings → Siguria in all 7 languages. Tests: `tests/test_api_tokens.py`;
   live smoke verified create → 200 read → 403 write → 401 after revoke.
+
+## D-067: Trust layer for Ava — quote-level citation verification + repair round + golden-set release gate (2026-09-18)
+
+- Context: the 2026-09-18 full audit compared AvokatIM with the top-10 legal-AI
+  platforms. The single clearest lesson (Lexis+ Protégé, AVOKATI project's
+  97.5% pass-rate) is that verification of citations, not model size, is what
+  makes lawyers trust an assistant. AvokatIM only checked "law exists" and had
+  no regression gate for prompt/model changes (risky given D-003 swappability).
+- Decision (three layers, all shipped together):
+  1. **Verifier v2** (`services/citation_check.py`): beyond law existence,
+     quoted passages are attributed to their citation (same-sentence
+     heuristic + regex `pos`) and fuzzy-matched (difflib, ≥0.85 after
+     normalization) against the source chunks → statuses
+     `verified / approx / law_found / unverified`, each with
+     `doc_id`/`chunk_id` so the UI can deep-link the source.
+  2. **One repair round** (`repair_citations`, off by default via
+     `citation_repair_enabled`): when a stream finishes with `unverified`
+     citations, a single re-prompt through `app/llm/` corrects or removes
+     them, then re-verifies; the SSE event `citation_fix` replaces the
+     text in the UI. Hard cap of 1 round for cost/latency; fallback is the
+     ⚠ badge exactly as before.
+  3. **Golden-set eval gate** (`scripts/eval_citations.py` +
+     `eval/golden_xk.jsonl`, `eval/golden_de.jsonl`, 20 questions each):
+     (verified+approx)/total ≥ 95% per jurisdiction, run against the
+     production answer path before ANY model or prompt change ships.
+     Registered in AGENTS.md §4 verification playbook.
+- Consequences: Ava's citations become clickable evidence instead of claims;
+  provider swaps (D-003) are guarded by a measurable gate; repair adds
+  ~1–4 min on DeepSeek XK, so it stays opt-in until latency is acceptable
+  (owner decision pending). Tests: `tests/test_citation_check.py` (quote
+  coverage, attribution, downgrade); eval runs live as `avokatim-eval`
+  systemd unit.
