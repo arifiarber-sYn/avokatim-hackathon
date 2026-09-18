@@ -753,8 +753,11 @@ async def citizen_create_case(
             + (f", i drejtuar te '{directed_tenant.name}'" if directed_tenant else "")
             + f". Cilësia: {quality_flag or 'ok'}.",
         )
-    if directed_tenant is None:
-        # Demand->supply matching: alert lawyers whose profile fits the case
+    if directed_tenant is None and not _is_test_recipient(citizen.email):
+        # Demand->supply matching: alert lawyers whose profile fits the case.
+        # Test/simulation citizens never fan out to real lawyers (2026-09-18:
+        # full_simulation.py posted synthetic cases on prod and alerted 12-14
+        # real lawyers, then deleted the cases — reports/avokatim-rrjedha-emails).
         background.add_task(
             _notify_matching_lawyers, case.id, body.category, body.city, case.country
         )
@@ -934,6 +937,17 @@ async def _notify_matching_lawyers(
 
     async with SessionLocal() as db:
         case = await db.get(CaseRequest, case_id)
+        if case is None:
+            logger.info("Case %s gone before lawyer fan-out — nothing to alert", case_id)
+            return
+        # Defence in depth: never alert real lawyers for a test citizen's case,
+        # even if a future caller forgets the gate at the request level.
+        citizen = await db.get(CitizenUser, case.citizen_id)
+        if citizen is None or _is_test_recipient(citizen.email):
+            logger.info(
+                "Skip lawyer fan-out for test/deleted citizen on case %s", case_id
+            )
+            return
         rows = (
             await db.execute(
                 select(User, LawyerProfile)
@@ -1007,6 +1021,16 @@ async def _notify_on_duty_lawyers(
     from app.services.push import send_push_to_user
 
     async with SessionLocal() as db:
+        case = await db.get(CaseRequest, case_id)
+        if case is None:
+            logger.info("SOS %s gone before duty fan-out — nothing to alert", case_id)
+            return
+        # Defence in depth: same reason as the matching fan-out — a test
+        # citizen's "emergency" must never ring a real duty lawyer.
+        citizen = await db.get(CitizenUser, case.citizen_id)
+        if citizen is None or _is_test_recipient(citizen.email):
+            logger.info("Skip duty-lawyer fan-out for test/deleted citizen on SOS %s", case_id)
+            return
         rows = (
             await db.execute(
                 select(User, LawyerProfile)
@@ -1084,8 +1108,8 @@ async def citizen_sos(
         details={"city": body.city}, ip_address=_ip(request),
     )
     await db.commit()
-    background.add_task(_notify_on_duty_lawyers, case.id, body.city, case.country)
     if not _is_test_recipient(citizen.email):
+        background.add_task(_notify_on_duty_lawyers, case.id, body.city, case.country)
         background.add_task(
             notify_ops, "sos",
             f"SOS nga qytetari ({body.city or 'qytet i panjohur'}): "

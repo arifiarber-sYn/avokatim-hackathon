@@ -1,4 +1,29 @@
-## 2026-09-18 — Zbatimi i avancimeve, Fazat 2–4: besimi, vlera, rritja (Cursor / Fable 5)
+## 2026-09-18 — Njoftimet e rasteve provë u bllokuan në të dyja rrugët (Halim, PO i Klloshës)
+- Konteksti: ankesa e Av. Valtida Shukriu (18.09 11:32) — 5 email-e "Rast i ri"
+  brenda 2 orëve për 0 raste në Treg. Diagnoza (raporti
+  `avokatim-rrjedha-emails-2026-09-18.md`) nxori shkakun: `full_simulation.py`
+  xhironte mbi API-n live dhe `citizen_create_case`/`citizen_sos` njoftonin
+  12–14 avokatë REALË për raste sintetike që fshiheshin menjëherë (69 njoftime
+  më 18.09; i njëjti model më 01.09).
+- Zbatimi (3 shtresa): (1) porta në kërkesë — `_is_test_recipient(citizen.email)`
+  para fan-out-it të matching-ut dhe të SOS-it; (2) mbrojtje në thellësi brenda
+  `_notify_matching_lawyers` / `_notify_on_duty_lawyers` (rast i fshirë ose
+  qytetar test → log + kthim pa njoftim); (3) `scripts/sim_guard.py` — harness-i
+  refuzon bazën e prodhimit pa `--allow-prod` (mjedis prove me
+  `AVOKATIM_SIM_BASE_URL`); i njëjti portë edhe te `de_/notary_simulation.py`.
+- Provat: `full_simulation.py --allow-prod` mbi prodhim → 188 PASS / 0 FAIL,
+  **0 njoftime të reja** (2342 → 2342; 69 → 69 për "përputhet me profilin"),
+  ndërsa `audit_logs` regjistroi 3 raste + 2 SOS të sim-it; testi i portës së
+  thellë (thirrje direkte e `_notify_*`) → delta 0; pytest 395 testet (1 dështim
+  flaky i `test_voice`, kalon në riprovim); `/api/health` 200, frontend 200.
+- Watchdog-u i postës (`avokatim-watchdog`): audituar — nuk prek fare
+  kontejnerë/DB (as `pg_isready`); ndalja e `avokatim-db` vinte nga ExecStop i
+  `avokatim.service` (`docker compose stop` ndal TË GJITHË stakun). U riaktivizua
+  pasi u provua; shënimi te docstring-u i skriptit.
+- Përgjigjja për avokaten u dërgua nga `ops_send_reply.py` (In-Reply-To i
+  mesazhit të saj), audituar te `halim_guard`.
+
+
 - Vazhdimi i planit "Zbatimi i 10 avancimeve" — u mbyllën 8 avancimet e mbetura
   (4–10 + pjesa produkt e #3). Vendimi arkitekturor: **D-067** (shtresa e besimit).
 - **Faza 2 — besimi i Ava-s**:

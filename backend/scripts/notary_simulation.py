@@ -11,12 +11,16 @@ import io
 import sys
 import time
 import uuid
+from pathlib import Path
 
 import httpx
 
 sys.path.insert(0, ".")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-BASE = "http://127.0.0.1:8000/api"
+import sim_guard  # noqa: E402
+
+BASE = sim_guard.resolve_base()
 SUFFIX = uuid.uuid4().hex[:6]
 PW = "simulimi-noteri-pw-01"
 
@@ -196,6 +200,7 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
+    sim_guard.assert_target_allowed(BASE, script="notary_simulation.py")
     try:
         asyncio.run(main())
     finally:

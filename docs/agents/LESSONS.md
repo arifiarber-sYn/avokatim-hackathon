@@ -69,3 +69,25 @@
   Verify with `curl -s http://127.0.0.1:3000/<page> | rg -o '/_next/[^"]+' | head -1`
   and confirm that asset returns 200. If `systemctl` warns "unit file
   changed on disk", run `systemctl --user daemon-reload` first.
+
+## #5 — Test/simulation identities must be gated on the marketplace fan-out (2026-09-18)
+
+- **Symptom**: ~14 real lawyers received "AvokatIM — Rast i ri që përputhet
+  me profilin tënd" (email + push, some SMS) for cases that never appeared in
+  Treg; one lawyer got 5 mails in 2 hours (69 notifications on 2026-09-18; the
+  same pattern on 2026-09-01). `case_requests` held 2 rows — the marketplace
+  looked empty because the cases were deleted seconds after creation.
+- **Cause**: `full_simulation.py` runs against the LIVE API
+  (`127.0.0.1:8000`) and posts synthetic cases as
+  `qytetari.sim.<hex>@gmail.com`. `citizen_create_case` / `citizen_sos` fanned
+  out to real lawyers with no test check — `_is_test_recipient` was applied
+  only to the citizen's own `notify_ops`. The harness then deleted the cases
+  (`ON DELETE CASCADE`), so the mails pointed at nothing.
+- **Rule**: gate the test identity at three levels — (1) request level
+  (`_is_test_recipient(citizen.email)` before BOTH fan-outs), (2) inside
+  `_notify_matching_lawyers` / `_notify_on_duty_lawyers`, so a future caller
+  cannot forget it, (3) the harness itself: `scripts/sim_guard.py` refuses the
+  production base URL unless `--allow-prod` is passed (use
+  `AVOKATIM_SIM_BASE_URL` for a test instance). All three harnesses
+  (full/de/notary) go through the guard; regression tests in
+  `tests/test_sim_guard.py`.

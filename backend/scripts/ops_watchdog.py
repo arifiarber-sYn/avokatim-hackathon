@@ -24,6 +24,14 @@ still works when the LLM is down).
 Usage:
     python scripts/ops_watchdog.py            # check + alarm if needed
     python scripts/ops_watchdog.py --status   # print findings, never alarm
+
+SAFETY (audited 2026-09-18, after the avokatim-db "watchdog kills the DB"
+alarm): this script is read-only with respect to services. It never starts,
+stops or restarts containers and never probes Postgres with pg_isready; its
+whole footprint is an IMAP read, a read-only sqlite open of OpenClaw's run log
+and the Telegram/email alarm (see reports in ~/openclaw-knowledge). The
+avokatim-db stop that caused the outage came from avokatim.service's ExecStop
+(`docker compose stop` stops every container of the project).
 """
 import email.utils
 import imaplib

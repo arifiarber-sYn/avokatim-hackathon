@@ -1207,3 +1207,19 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
   beA pending BRAK registration. SOS + notary off; public launch gated by
   `docs/legal/DE-LAUNCH-GATE.md`.
 - GB, CN, INTL: schema-ready, no data yet.
+
+## Notification fan-out gate (2026-09-18)
+
+- Test/simulation citizens (`qytetari.sim.*`, all `_is_test_recipient`
+  patterns) **never** trigger the lawyer fan-out: the gate sits at the request
+  level (`citizen_create_case`, `citizen_sos`) **and** inside
+  `_notify_matching_lawyers` / `_notify_on_duty_lawyers` (defence in depth for
+  future callers). A case that no longer exists aborts the fan-out too.
+- The simulation harnesses (`full_simulation.py`, `de_simulation.py`,
+  `notary_simulation.py`) refuse the production base URL unless `--allow-prod`
+  is passed explicitly; point them at a test instance with
+  `AVOKATIM_SIM_BASE_URL`. Regression tests: `tests/test_sim_guard.py`.
+- Free watchdog note: `scripts/ops_watchdog.py` never manages containers/DB
+  (`avokatim-db` stops come from `avokatim.service`'s `docker compose stop`).
+- Evidence: `data/evidence/fixnotify-20260918-115804/` (before/after counts,
+  sim run log, layer-2 proof, diff, watchdog audit).

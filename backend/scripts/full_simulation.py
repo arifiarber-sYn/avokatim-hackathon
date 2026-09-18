@@ -2,6 +2,9 @@
 from BOTH sides: the firm (lawyer/admin) and the client (a company).
 Prints PASS/FAIL for what works and GAP for probes of missing features.
 Run against the live backend:  .venv/bin/python scripts/full_simulation.py
+
+PRODUCTION GATE: refuses to run against the production API unless --allow-prod
+is passed; point it at a test instance with AVOKATIM_SIM_BASE_URL (sim_guard.py).
 Cleans up the throwaway tenant at the end (keeps nothing).
 """
 import asyncio
@@ -11,12 +14,16 @@ import sys
 import time
 import uuid
 from datetime import date
+from pathlib import Path
 
 import httpx
 
 sys.path.insert(0, ".")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-BASE = "http://127.0.0.1:8000/api"
+import sim_guard  # noqa: E402
+
+BASE = sim_guard.resolve_base()
 SUFFIX = uuid.uuid4().hex[:6]
 PW_FIRM = "simulimi-zyra-pw-01"
 PW_CLIENT = "simulimi-klient-pw-01"
@@ -1235,6 +1242,7 @@ async def main() -> None:
 
 
 async def run() -> None:
+    sim_guard.assert_target_allowed(BASE, script="full_simulation.py")
     try:
         await main()
     finally:
