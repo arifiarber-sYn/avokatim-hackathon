@@ -238,6 +238,56 @@ Tier C — strategic (6+ months):
 - [ ] CN seeds; INTL (arbitration etc.).
 - [ ] Per-jurisdiction template/document language handling.
 
+## Advancement backlog from the 2026-09-18 full audit (top-10 leaders + HagaDosja AVOKATI)
+
+> Grounding: full-system audit 2026-09-18 (JOURNAL entry of that date; full
+> report in the owner's canvas). Compared AvokatIM per-platform against the
+> top-10 legal-AI leaders (Harvey, Legora, CoCounsel, Lexis+ Protégé,
+> Vincent, Luminance, Eve, Supio, Eudia, Garfield — research base
+> `~/HagaDosja/AI-Avokati/Hulumtimi/`, refreshed via web 18.09) and against
+> the finished AVOKATI platform (`~/HagaDosja/AI-Avokati/platforma/`,
+> 97.5% citation pass-rate on its golden set). Priorities 1–3 are audit
+> findings, 4–10 are advancement adaptations.
+
+1. [ ] Security patches: pip (aiohttp≥3.14.3, cryptography≥50, pypdf≥6.15,
+       setuptools≥83, torch≥2.13) + `npm audit fix` (Next.js advisories,
+       1 critical) — AND fix the silent `ops_notify` 400 in
+       `scripts/security_scan.sh` so the weekly scan alerts again.
+2. [ ] RLS migration for the 5 uncovered tenant tables (isolation_check
+       FAIL): email_suggestions, deadline_suggestions, notifications,
+       passkey_credentials, api_tokens.
+3. [ ] XK re-activation campaign: 27+ dormant signups → guided onboarding
+       (day 3/7/30 emails via Lane B with owner PO), interview the one real
+       user (Av. Driton N. Sejdiu).
+4. [ ] **Citation verifier v2** (Protégé lesson; model code
+       `HagaDosja/.../verifier.py`): upgrade `citation_check.py` from
+       "law exists" to quote-level fuzzy verification with block+repair
+       loop before the answer reaches the lawyer.
+5. [ ] **Golden-set eval gate** (model `HagaDosja/.../eval.py` +
+       `golden.jsonl`): XK+DE golden set, citation pass-rate ≥95% as a
+       release gate for any model/prompt change (keeps D-003 swaps safe).
+6. [ ] **Expert workflows on the matter page** (Vincent / AVOKATI W1–W5):
+       first three — appeal-grounds builder (XK), filing compliance check,
+       evidence map — scripted flows with attached verification report.
+7. [ ] **Nightly AI Auditor over the caseload** (Eve): extend
+       `proactive.py` with a file-quality audit (matters without opposing
+       party / documents / deadlines, unsent invoices) into the morning
+       briefing.
+8. [ ] **AvokatIM MCP server** (Eudia; model `HagaDosja/.../mcp_server.py`):
+       platform tools (search corpus, read matter, deadlines, draft) over
+       existing api_tokens auth.
+9. [ ] **"Ask the matter" + clickable citations** (Harvey agentic Vault):
+       one-click QA over all documents of a matter with citations that
+       deep-link to the corpus/document source (today's ✓/≈/? badges link
+       nowhere).
+10. [ ] **Small-claims citizen flow** (Garfield): draft → fee calculator →
+        filing guidance for XK small claims — unique differentiator, feeds
+        the marketplace.
+
+Deliberately NOT adopted: model fine-tuning (Luminance/Harvey Tenet lesson —
+grounding + verification deliver more trust per euro at our scale), contract
+intelligence (little M&A demand in XK; revisit for DE).
+
 ## Phase 5 — Courtroom assistance (long-term goal)
 
 - [ ] Hearing preparation packs: chronology, arguments, counterargument prediction

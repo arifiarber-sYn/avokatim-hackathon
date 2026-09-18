@@ -30,6 +30,7 @@ async def main() -> None:
         r = await c.post(f"{BASE}/auth/signup", json={
             "practice_name": f"SaaSTest {SUFFIX}", "full_name": "Saas Test",
             "email": f"saas.{SUFFIX}@gmail.com", "password": PW,
+            "accept_tos": True,
         })
         check("signup 201", r.status_code == 201, f"({r.status_code})")
         token = r.json()["access_token"]
@@ -38,6 +39,7 @@ async def main() -> None:
         r = await c.post(f"{BASE}/auth/signup", json={
             "practice_name": "Dup", "full_name": "Dup",
             "email": f"saas.{SUFFIX}@gmail.com", "password": PW,
+            "accept_tos": True,
         })
         check("duplicate email 409", r.status_code == 409, f"({r.status_code})")
 
@@ -68,6 +70,9 @@ async def main() -> None:
             "email": f"saas.{SUFFIX}@gmail.com", "password": PW + "x",
         })
         check("login with new password", r.status_code == 200, f"({r.status_code})")
+        # password change revokes prior sessions — continue with the fresh token
+        token = r.json()["access_token"]
+        h = {"Authorization": f"Bearer {token}"}
 
         # --- rate limiting: 5 failures then 429 ---
         rl_email = f"rl.{SUFFIX}@gmail.com"

@@ -1,3 +1,42 @@
+## 2026-09-18 — Auditim i plotë i sistemit + krahasim me top-10 + analiza HagaDosja (Cursor / Fable 5)
+- Kërkesa e pronarit: auditim i plotë, gjetja e boshllëqeve, krahasim me liderët
+  e fushës (top-10 AI-juridikë + praktik-menaxhimi) dhe analiza e platformës
+  AVOKATI (~/HagaDosja/AI-Avokati) për adaptime. Raporti i plotë: canvas
+  `auditimi-avokatim-2026-09-18` (dosja e Cursor-it) — përmbledhje këtu.
+- Gjetjet kryesore (read-only, asnjë ndryshim produkt-kodi):
+  - **KRITIKE — vulnerabilitete të papatchuara**: skanimi javor 14.09 gjeti
+    20 vulns pip (aiohttp/cryptography/pypdf/setuptools/torch/pip) + 5 npm
+    (1 critical, vargu i advisory-ve Next.js). Dhe **alarmi dështoi në heshtje**
+    (ops_notify 400 te hook-u i Halimit) — raporti mbeti vetëm në log.
+  - **KRITIKE — aktivizimi XK**: 33 tenant-ë, vetëm 1 përdorues real
+    (Avokat D. Sejdiu); trafiku publik 160→33 vizitorë/javë pas fundit të
+    fushatës OAK (1,590 kontakte, campaign complete, konvertim ~2%).
+  - **E rëndësishme — RLS mungon në 5 tabela** (isolation_check FAIL):
+    email_suggestions, deadline_suggestions, notifications,
+    passkey_credentials, api_tokens — duhet migrim me politika RLS.
+  - **E rëndësishme — avokatim-watchdog.service failed** (dështime
+    intermitente exit 1 pa gjurmë; manualisht kalon; njësia ka edhe ndryshim
+    në disk pa daemon-reload).
+  - Të vogla: 2,830 chunks DE pa embeddings (backlog i batch-it të natës);
+    dublikatë tenant-i "Avokatura Buzuku" ×2 + tenant-ë prove në prodhim;
+    STATE.md i pasinkronizuar (header 05.08).
+- Verifikimi kundër stack-ut live: pytest **370/370**, full_simulation
+  **188/188 PASS** (886s), saas_check **ALL PASS pas riparimit** (shih më
+  poshtë), health OK, backup i sotëm 943 MB, DB në head, 0 orphan records.
+- **Fix i vetëm i bërë (veglat e verifikimit, jo produkti)**: `saas_check.py`
+  kishte 2 drift-e — (1) signup pa `accept_tos` (kërkohet që kur u shtua ToS
+  gate) dhe (2) vazhdonte me token-in e vjetër pas change-password, por
+  ndryshimi i fjalëkalimit tani revokon sesionet e vjetra. U shtuan
+  `accept_tos: True` + rifreskimi i token-it pas ri-login-it.
+- Krahasimi top-10 (Harvey/Legora/CoCounsel/Protégé/Vincent/Luminance/Eve/
+  Supio/Eudia/Garfield, rifreskuar me web 18.09) + adaptimet nga AVOKATI
+  (verifier me bllokim citimesh 97.5% pass-rate, golden-set eval, workflows
+  W1–W5, MCP server, citime të klikueshme): backlog i bashkuar me 10 avancime
+  të prioritizuara — regjistruar në ROADMAP (seksioni i ri 2026-09-18).
+- Left open (vendime/punë të propozuara, JO të nisura): patch-et e sigurisë,
+  migrimi RLS, fushata e ri-aktivizimit XK (kërkon PO për Lane B), verifier
+  v2 + eval gate + workflows (zbatimi pas zgjedhjes së pronarit).
+
 ## 2026-09-16 — Pastrim/optimizim i workspace-it + formalizimi i guard-hook-ut të postës (Cursor / Fable 5)
 - Konteksti: kërkesë e pronarit për pastrim/optimizim të workspace-it në Cursor.
   Gjendja e gjetur: 2 skedarë të Halimit pezull në git që prej ~2 javësh,

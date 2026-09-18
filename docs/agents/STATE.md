@@ -3,7 +3,7 @@
 > Update this file whenever the state changes (new module, dependency, behavior,
 > known issue). Keep it a snapshot, not a history — history lives in JOURNAL.md.
 
-**Last updated:** 2026-08-05
+**Last updated:** 2026-09-18
 
 ## Status: live in production at https://avokatiim.ai (Kosovo) + https://de.avokatiim.ai (Germany, D-034) — lawyer office + citizen marketplace + notary profession + growth ops (automated outreach, analytics); first real signups arriving (first outreach conversion 2026-07-13)
 
@@ -1103,6 +1103,31 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
 ## Known issues / caveats
 
+- **From the 2026-09-18 full audit** (details: JOURNAL 2026-09-18, backlog
+  in ROADMAP "Advancement backlog"):
+  - **Unpatched dependency vulns** — weekly scan of 14.09 found 20 pip
+    vulns (aiohttp, cryptography, pypdf, setuptools, torch, pip) and 5 npm
+    (1 critical; Next.js advisory batch). The scan's `ops_notify` alert
+    fails silently with HTTP 400 (`scripts/security_scan.sh`), so findings
+    reach no one — fix the hook first.
+  - **RLS missing on 5 tenant tables** (`isolation_check.py` FAIL):
+    email_suggestions, deadline_suggestions, notifications,
+    passkey_credentials, api_tokens. App-layer filtering exists;
+    defense-in-depth does not. Needs an Alembic migration.
+  - **avokatim-watchdog.service intermittently fails** (exit 1 with no
+    logged cause; passes when run manually) and its unit file changed on
+    disk without a `daemon-reload`.
+  - **DE corpus embedding backlog**: 2,830 of 283,942 chunks lack
+    embeddings (XK is 100% embedded).
+  - **Tenant hygiene**: "Avokatura Buzuku" duplicated (2026-08-19); test
+    tenants (Test Office, maka, yopmail) still count in growth stats.
+  - **XK activation crisis**: 33 signups → 1 real recurring user
+    (Av. Driton N. Sejdiu); public traffic fell 160→33 visitors/week after
+    the OAK outreach campaign completed (all ~1,590 contacts exhausted).
+  - Verification tooling drift fixed during the audit: `saas_check.py` now
+    sends `accept_tos` and refreshes its token after change-password
+    (password change revokes prior sessions). ALL PASS again;
+    full_simulation 188/188, pytest 370/370.
 - **Frontend restart discipline** (incident 2026-08-01): after `npm run
   build` you MUST `systemctl --user restart avokatim-frontend` — restarting
   `avokatim` (backend-only unit) leaves the old `next-server` serving 404
