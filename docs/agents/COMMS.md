@@ -75,6 +75,19 @@ tag `demo-2026-09-18`. Skripti `backend/scripts/send_demo_email.py`
 `data/reactivation_sent.csv` (mbivendosje marrësish të mundshme të njëjtën
 ditë). Evidenca: `data/evidence/demo-2026-09-18/`.
 
+**Activation one-off — segment #1 (XK, 2026-09-18, owner PO 15:50):** "Profili
+juaj në AvokatIM — një hap larg dukshmërisë" — email i SHKURTËR veprues te
+avokatët e DUKSHËM por të PAVERIFIKUAR (`lawyer_profiles.is_visible = true
+AND verification_status <> 'verified'`), me ftesë për të plotësuar profilin
+(`/settings#public-profile`). Marrësit nga DB (jo nga lista e fushatës) +
+përjashtimet e pronarit (adresa e tij, Valtida Shukriu): **7 dërguar / 0
+dështime**, tag `paverifikuar-2026-09-18`. Skripti
+`backend/scripts/send_paverifikuar_email.py` (halim_guard +
+`_is_test_recipient` + dedup për tag); ledger `data/ops/paverifikuar_sent.csv`.
+Evidenca: `data/evidence/paverifikuar-2026-09-18/`. **Kujdes:** të 7 kishin
+marrë edhe emailin-demo po atë ditë (3 prej tyre edhe ri-aktivizimin) →
+mbivendosje e njohur; kontrollo TË TRE ledger-ët para ri-dërgimit.
+
 **Re-activation one-off (XK, 2026-09-18, owner PO):** 23 personal emails to
 active 0-matter accounts (subject "{office} — llogaria juaj në AvokatIM ju
 pret", 15-minute live-demo offer, sq), sent via `services/notifications.

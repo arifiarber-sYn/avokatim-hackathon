@@ -1,3 +1,22 @@
+## 2026-09-18 — Segmenti #1 i aktivizimit: email te 7 avokatet e dukhmë e te paverifikuar (Halim, PO 15:50)
+- Objektivi (plani i Halimit, `~/.openclaw/workspace/memory/plans/2026-09-18-avokatim-aktivizim.md`):
+  kthimi i bazës në vlerë reale — verifikimi = porta e vlerës (faqja `/avokatet`
+  shfaq vetëm të verifikuarit). Segmenti #1: të dukhmët pa verifikim, 20 → 27.
+- **Marrësit nga DB** (`lawyer_profiles.is_visible = true AND verification_status
+  <> 'verified'` → 7), join `users` për email+emër; përjashtimet e pronarit nuk u
+  prekën. Lista: `data/evidence/paverifikuar-2026-09-18/recipients-paverifikuar.csv`.
+- **Dërguar 7/7, 0 dështime** (Gmail SMTP, i njëjti identitet si demo-ja) me
+  `backend/scripts/send_paverifikuar_email.py` (NEW: halim_guard + `_is_test_recipient`
+  + dedup për tag + ledger-row). Ledger `data/ops/paverifikuar_sent.csv`, tag
+  `paverifikuar-2026-09-18`. Subjekti: "Profili juaj në AvokatIM — një hap larg
+  dukshmërisë".
+- Guard: `allow / act_and_notify`; audit `email paverifikimi derguar` ok.
+  Baseline matjeje: **20** të verifikuar+e dukhmë (`baseline-meta.json`); objektiv 27.
+- **Mësim:** para çdo dërgimi të ri kontrollo TË TRE ledger-ët (`reactivation_sent.csv`,
+  `demo_email_sent.csv`, `paverifikuar_sent.csv`): të 7 kishin marrë demo-n po
+  atë ditë, 3 prej tyre edhe ri-aktivizimin (deri në 3 email-e/ditë). Treguar
+  pronarit në raport.
+
 ## 2026-09-18 — Mbyllje administrative: fushata e demo-email-it (sesion paralel) u dokumentua dhe u commit-ua
 - Sesioni paralel i pasdites (PO i Klloshës 14:10 dhe 15:27) dërgoi email-in
   "Si funksionon AvokatIM në 4 hapa — një demonstrim i shkurtër" (HTML me 3
