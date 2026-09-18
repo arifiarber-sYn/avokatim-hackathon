@@ -228,6 +228,8 @@ class Settings(BaseSettings):
     openclaw_hook_url: str = "http://127.0.0.1:18789/hooks/agent"
     openclaw_hook_token: str = ""
     openclaw_hook_to: str = ""  # Telegram chat id of the operator
+    # The gateway hosts multiple agents since 2026-09; hooks must name one.
+    openclaw_hook_agent_id: str = "main"  # Halim
 
 
 @lru_cache

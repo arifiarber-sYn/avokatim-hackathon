@@ -1,3 +1,26 @@
+## 2026-09-18 — Zbatimi i avancimeve, Faza 1: siguria (Cursor / Fable 5)
+- Konteksti: pronari miratoi zbatimin e 10 avancimeve nga auditimi i sotëm
+  (plani "Zbatimi i 10 avancimeve"). Kjo është Faza 1 (avancimet 1–2).
+- **Patch-et e varësive** (gjetja SEC-1): pip — aiohttp 3.14.3, cryptography
+  50.0.1, pypdf 6.19, setuptools 84, pip 26.2.1, torch 2.14.0+cu130 (2.12.1
+  e kapte setuptools<82, prandaj ngritja ishte e detyruar; CUDA + embeddings
+  verifikuar pas ngritjes), weasyprint 70 (advisory i ri, i dalë pas skanimit
+  të 14.09). `pip-audit`: **No known vulnerabilities found**. npm: `npm audit
+  fix` → 0 vulnerabilitete, Next 16.3.5. Dyshemetë u ngritën në
+  requirements.txt (cryptography>=50, pypdf>=6.15, weasyprint>=70).
+- **Alarmi i heshtur i skanimit** (gjetja SEC-2): gateway-i OpenClaw tani
+  host-on shumë agjentë dhe kthen 400 pa `agentId`. `ops_notify` u rregullua
+  (payload + `openclaw_hook_agent_id` në config, default "main" = Halimi).
+  Verifikuar live: dërgim provë `sent: True` + run i plotë i
+  `security_scan.sh` → "halim notified: True", raporti i pastër.
+- **Migrimi RLS** (gjetja SEC-3): revizion i ri `b7c8d9e0f1a2` që ri-ekzekuton
+  zbulimin + politikën DEFAULT-OPEN të valës origjinale (a1b2c3d4e5f6) mbi çdo
+  tabelë me tenant_id — mbulon 5 tabelat e pambuluara (email_suggestions,
+  deadline_suggestions, notifications, passkey_credentials, api_tokens);
+  downgrade-i prek vetëm të pesë. `isolation_check.py`: **ALL PASS**.
+- Verifikimi: pytest 370/370 pas ngritjeve, build frontend OK, restart
+  backend+frontend, health OK, asset 200, daemon-reload i njësive.
+
 ## 2026-09-18 — Auditim i plotë i sistemit + krahasim me top-10 + analiza HagaDosja (Cursor / Fable 5)
 - Kërkesa e pronarit: auditim i plotë, gjetja e boshllëqeve, krahasim me liderët
   e fushës (top-10 AI-juridikë + praktik-menaxhimi) dhe analiza e platformës

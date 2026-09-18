@@ -54,6 +54,8 @@ async def notify_ops(kind: str, text: str, urgent: bool = False) -> bool:
         ),
         "name": "AvokatIM",
         "wakeMode": "now",
+        # Required since the gateway hosts multiple agents (400 without it).
+        "agentId": settings.openclaw_hook_agent_id,
     }
     if settings.openclaw_hook_to:
         # Explicit delivery context: the runner can verify the assistant's

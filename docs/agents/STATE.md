@@ -1105,15 +1105,15 @@ All core modules exist end-to-end (API + UI) and the stack runs on this machine.
 
 - **From the 2026-09-18 full audit** (details: JOURNAL 2026-09-18, backlog
   in ROADMAP "Advancement backlog"):
-  - **Unpatched dependency vulns** — weekly scan of 14.09 found 20 pip
-    vulns (aiohttp, cryptography, pypdf, setuptools, torch, pip) and 5 npm
-    (1 critical; Next.js advisory batch). The scan's `ops_notify` alert
-    fails silently with HTTP 400 (`scripts/security_scan.sh`), so findings
-    reach no one — fix the hook first.
-  - **RLS missing on 5 tenant tables** (`isolation_check.py` FAIL):
-    email_suggestions, deadline_suggestions, notifications,
-    passkey_credentials, api_tokens. App-layer filtering exists;
-    defense-in-depth does not. Needs an Alembic migration.
+  - ~~Unpatched dependency vulns~~ **fixed same day** (advancement wave
+    Phase 1): pip-audit and npm audit both clean (aiohttp 3.14.3,
+    cryptography 50, pypdf 6.19, setuptools 84, torch 2.14+cu130,
+    weasyprint 70, Next 16.3.5). The silent `ops_notify` HTTP 400 was the
+    gateway requiring `agentId` (multi-agent since 2026-09) — payload fixed,
+    `openclaw_hook_agent_id` setting added (default "main"), verified live.
+  - ~~RLS missing on 5 tenant tables~~ **fixed same day**: migration
+    `b7c8d9e0f1a2` re-applies the discovery+policy wave over all tenant_id
+    tables; `isolation_check.py` ALL PASS.
   - **avokatim-watchdog.service intermittently fails** (exit 1 with no
     logged cause; passes when run manually) and its unit file changed on
     disk without a `daemon-reload`.
