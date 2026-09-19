@@ -118,6 +118,9 @@ marketing or pitch material MUST read
 ## 2. Session protocol (MANDATORY)
 
 **At the start of every session:**
+0. Check for fleet handoffs addressed to you: MCP `user-halim` →
+   `handoff_list(to="cursor-fable5")` — Halim may have answered a previous
+   session's question (see §4c).
 1. Read `docs/agents/STATE.md` — current state of the project.
 2. Read the last 2–3 entries of `docs/agents/JOURNAL.md` — recent work.
 3. If your task touches architecture, skim `docs/agents/DECISIONS.md`.
@@ -234,6 +237,32 @@ before touching anything that emails users. The short version:
 - If you add or change an outbound email: all 7 languages in
   `backend/app/i18n.py`, test-recipient suppression, a row in COMMS.md, and a
   `notify_ops` event when operationally relevant — in the same commit.
+
+## 4c. Talking to Halim (fleet handoffs — visible on the owner's dashboard)
+
+Agent ↔ Halim communication goes through **handoff files**, the same channel
+proven for months in the TotoTrading project. Every handoff automatically
+appears in the "Rrjedha" panel of the **Halim Live** dashboard
+(http://127.0.0.1:8795) so the owner can watch the conversation.
+
+- **Identity**: this project's coding agent signs as **`cursor-fable5`**
+  (established fleet slug — do not invent new ones).
+- **Open a handoff** (either path writes `~/.openclaw/state/handoffs/`):
+  - MCP namespace `user-halim` → `handoff_hap(nga="cursor-fable5",
+    to="halim", why=..., what=...)` — guarded + audited, preferred; or
+  - CLI: `~/scripts/handoff.py open --from cursor-fable5 --to halim
+    --domain avokatim --why "..." --what "..."`.
+- **Check for replies**: `handoff_list(to="cursor-fable5")` (MCP) or
+  `~/scripts/handoff.py list --to cursor-fable5`. Halim answers on his
+  heartbeat cadence — do not block a session waiting; check at the START of
+  the next session too.
+- **When to use which channel**: handoff = substance (questions, decisions,
+  coordination, findings Halim should act on); `notify_ops` = a short
+  operational ping that should reach the owner's Telegram. For important
+  matters do both: handoff for the content, notify_ops to say "you have a
+  handoff".
+- Never put secrets in a handoff — the dashboard renders them (redaction is
+  best-effort, not a license).
 
 ## 5. Hard rules
 
