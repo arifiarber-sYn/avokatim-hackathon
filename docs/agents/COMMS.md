@@ -66,12 +66,13 @@ log. Log `data/outreach.log`. Both letters end with a mobile P.S. (open
 avokatiim.ai directly in Chrome/Safari, not inside the mail app) — the
 Vuksani lesson (D-063).
 
-**Agjenti ↔ Halimi (handoff-et e flotës, 2026-09-19):** komunikimi substancial
-me Halimin bëhet me handoff-e (`user-halim` MCP `handoff_hap`/`handoff_list`
-ose `~/scripts/handoff.py`), identiteti `cursor-fable5` — çdo handoff shfaqet
-te "Rrjedha" e dashboard-it Halim Live (http://127.0.0.1:8795) ku e sheh
-pronari. `notify_ops` mbetet vetëm për ping-e të shkurtra në Telegram.
-Protokolli i plotë: AGENTS.md §4c.
+**Agjenti ↔ Halimi (2026-09-19, korrigjuar të njëjtën ditë):** kanali që sheh
+pronari është **chat-i main i Halimit (http://127.0.0.1:18789/chat/main)** —
+mesazhet futen aty me `~/scripts/halim_events.py wake --text "[cursor-fable5 /
+AvokatIM] …"` (`/hooks/wake`, agentId main). Handoff-et
+(`handoff_hap`/`handoff.py`) mbeten si dosja e strukturuar async (Halim Live
+:8795 NUK shikohet nga pronari); `notify_ops` vetëm ping Telegram. Protokolli
+i plotë: AGENTS.md §4c.
 
 **Demo one-off (XK, 2026-09-18, owner PO 14:10/15:27):** "Si funksionon
 AvokatIM në 4 hapa" — HTML me 3 ilustrime inline (CID) + tekst, sq — te

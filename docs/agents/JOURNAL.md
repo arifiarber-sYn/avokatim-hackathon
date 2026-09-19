@@ -17,23 +17,24 @@
   atë ditë, 3 prej tyre edhe ri-aktivizimin (deri në 3 email-e/ditë). Treguar
   pronarit në raport.
 
-## 2026-09-19 — Kanali agjent ↔ Halim u standardizua (handoff-et e flotës, të dukshme në Halim Live)
+## 2026-09-19 — Kanali agjent ↔ Halim u standardizua (chat-i main i Halimit — aty ku sheh Kllosha)
 - Kërkesë e Klloshës: "si komunikon Cursor-i me Halimin te TotoTrading, që e
-  shoh në dashboard — implemento të njëjtin edhe këtu". Mekanizmi i Toto-s:
-  skedarë handoff në `~/.openclaw/state/handoffs/` (D-074 i flotës), që
-  shfaqen automatikisht te paneli "Rrjedha" i Halim Live (127.0.0.1:8795).
-- U verifikua që kanali punon identikisht nga AvokatIM (handoff-i i sotëm
-  `20260919-102407-cursor-fable5-halim` u shfaq në Rrjedhë) — mungonte vetëm
-  standardizimi. U shtua **AGENTS.md §4c**: identiteti `cursor-fable5`,
-  hapja me MCP `handoff_hap` ose `~/scripts/handoff.py`, kontrolli i
-  përgjigjeve me `handoff_list` (edhe në hapin 0 të protokollit të sesionit),
-  ndarja handoff (substancë) vs `notify_ops` (ping Telegram), kurrë sekrete.
-  Rresht përkatës edhe në COMMS.md.
-- Konteksti: koordinimi për prezentimin e dytë ("Zyra juaj në një vend") po
-  bëhet pikërisht në atë kanal — handoff-i te Halimi me gatishmërinë (21
-  marrës, të gjithë të prekur 2× dje → rekomandim: dërgimi të martën 22.09)
-  dhe pyetjen se cila është gjëja e dytë që pret PO. Dërgimi vetë pret
-  fjalën e Klloshës.
+  shoh unë — implemento të njëjtin këtu". Provë e parë E GABUAR: handoff-et
+  shfaqen te Halim Live :8795, por Kllosha NUK e shikon atë panel — ai lexon
+  dhe ndërvepron te **http://127.0.0.1:18789/chat/main** (gateway-i OpenClaw).
+- Kanali i saktë (u verifikua live, mesazh + përgjigje e Halimit në chat/main
+  brenda 30 sek): `openclaw agent --session-key "agent:main:main" -m
+  "[cursor-fable5 / AvokatIM] …"` — turn i vërtetë në sesionin main; ose
+  `halim_events.py wake` për event më të lehtë. **AGENTS.md §4c** (korrigjuar):
+  1) mesazh në chat/main = kanali primar që sheh pronari; 2) handoff-et
+  (`handoff_hap`/`handoff.py`) = dosja e strukturuar async (referohu me id në
+  mesazh); 3) `notify_ops` = vetëm ping Telegram (sesion i izoluar — pronari
+  s'e sheh në chat/main). Hapi 0 i sesionit: `handoff_list(to=cursor-fable5)`.
+- Përmes kanalit të ri Halimi u përgjigj menjëherë: "gjëja e dytë" që pret
+  PO-në e Klloshës është **Toto** (vendimi mbi ekspozimin live pas
+  walk-forward-it pa edge), jo diçka e AvokatIM. Për prezentimin e dytë
+  Halimi u pajtua me rekomandimin tim: dërgimi të martën 22.09 paradite,
+  tag `prezentim2-2026-09-22`, 21 marrës — dërgimi pret "dërgoji" nga Kllosha.
 
 ## 2026-09-18 — Mbyllje administrative: fushata e demo-email-it (sesion paralel) u dokumentua dhe u commit-ua
 - Sesioni paralel i pasdites (PO i Klloshës 14:10 dhe 15:27) dërgoi email-in

@@ -238,31 +238,32 @@ before touching anything that emails users. The short version:
   `backend/app/i18n.py`, test-recipient suppression, a row in COMMS.md, and a
   `notify_ops` event when operationally relevant — in the same commit.
 
-## 4c. Talking to Halim (fleet handoffs — visible on the owner's dashboard)
+## 4c. Talking to Halim (the channel the owner actually watches)
 
-Agent ↔ Halim communication goes through **handoff files**, the same channel
-proven for months in the TotoTrading project. Every handoff automatically
-appears in the "Rrjedha" panel of the **Halim Live** dashboard
-(http://127.0.0.1:8795) so the owner can watch the conversation.
+**The owner reads and interacts with Halim at http://127.0.0.1:18789/chat/main**
+(the OpenClaw gateway chat). A message only "reaches Halim in front of the
+owner" if it lands in that MAIN session — this is how the TotoTrading agent
+communicates. Three channels, in order of importance:
 
-- **Identity**: this project's coding agent signs as **`cursor-fable5`**
-  (established fleet slug — do not invent new ones).
-- **Open a handoff** (either path writes `~/.openclaw/state/handoffs/`):
-  - MCP namespace `user-halim` → `handoff_hap(nga="cursor-fable5",
-    to="halim", why=..., what=...)` — guarded + audited, preferred; or
-  - CLI: `~/scripts/handoff.py open --from cursor-fable5 --to halim
-    --domain avokatim --why "..." --what "..."`.
-- **Check for replies**: `handoff_list(to="cursor-fable5")` (MCP) or
-  `~/scripts/handoff.py list --to cursor-fable5`. Halim answers on his
-  heartbeat cadence — do not block a session waiting; check at the START of
-  the next session too.
-- **When to use which channel**: handoff = substance (questions, decisions,
-  coordination, findings Halim should act on); `notify_ops` = a short
-  operational ping that should reach the owner's Telegram. For important
-  matters do both: handoff for the content, notify_ops to say "you have a
-  handoff".
-- Never put secrets in a handoff — the dashboard renders them (redaction is
-  best-effort, not a license).
+1. **Message into Halim's main chat** (owner-visible, PRIMARY):
+   `~/scripts/halim_events.py wake --text "[cursor-fable5 / AvokatIM] …"`
+   — POSTs `/hooks/wake` with `agentId: main`, injecting the message into
+   Halim's main session where the owner sees it and can reply. Always prefix
+   with your identity `[cursor-fable5 / AvokatIM]` so the thread is readable.
+   Use for: anything the owner should witness — questions to Halim,
+   coordination, status of campaigns, findings.
+2. **Handoff files** (structured async record, fleet protocol D-074):
+   MCP `user-halim` → `handoff_hap(nga="cursor-fable5", to="halim", …)` or
+   `~/scripts/handoff.py open --from cursor-fable5 --to halim …`. Use for the
+   full dossier (long content, evidence paths); reference the handoff id in
+   the wake message. Check replies with `handoff_list(to="cursor-fable5")`
+   at session start. (These show on Halim Live :8795, which the owner does
+   NOT watch — never rely on it for owner visibility.)
+3. **`notify_ops`** (AvokatIM backend → `/hooks/agent`, ISOLATED session →
+   Telegram relay): short operational pings only; the owner does not see
+   these in chat/main.
+
+Never put secrets in any of these — they render in UIs and logs.
 
 ## 5. Hard rules
 
