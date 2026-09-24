@@ -1,3 +1,24 @@
+## 2026-09-24 — PAUZA e trakës DE (urdhër i Klloshës; koordinim Halim + agjenti-cursor)
+
+- **Urdhri (Kllosha, Cursor 08:39):** "pauzone avokatin gjerman por avokati i
+  kosovës duhet vazhduar punën" — në relacion me H-15 (rekomandimi PO i Halimit
+  23.09). Verdikti: **H-15 PEZULL** — GEX44 + Prighter (219 €/muaj) NUK blihen.
+- **Matja e konsumit DE para pauzës (agjenti-cursor):** DB `legal_corpus` DE =
+  16,906 docs / 284,452 chunks / ~940 MB (XK: 3,086 / 68,990 / ~267 MB);
+  `avokatim-corpus.timer` çdo natë 01:30 (23.09→24.09: 10 vendime të reja, 12 s,
+  244 MB peak + embeddings në GPU); pyetjet DE → DeepSeek (trafik beta ≈ 0);
+  serveri H-15 i papaguar — 0 kosto e re.
+- **Ekzekutimi:** `systemctl --user disable --now avokatim-corpus.timer`
+  (i kthyeshëm me `enable --now`; njësitë mbeten në disk). **Të dhënat DE NUK
+  fshihen.** Banner PAUZE te `docs/legal/DE-LAUNCH-GATE.md` (commit `073078f`,
+  Halimi) + `docs/legal/EU-SERVER-PLAN.md` (ky commit). Sentineli s'e vëzhgon
+  corpus-timer-in (vetëm avokatim.service/tunnel/frontend + kontejnerët) — pa
+  alarm të rremë.
+- **XK zero prekje:** backend/frontend/tunnel aktivë; outreach (vetëm noterë XK),
+  backup, watchdog, secscan, notify-watch — të gjithë timers aktivë.
+- **Kushti i rifillimit (Halimi):** përdorues realë DE pa stack-un e përshtatshëm
+  → porta rihapet me PO të ri të Klloshës. Handoff-et: `20260924-064328`.
+
 ## 2026-09-18 — Segmenti #1 i aktivizimit: email te 7 avokatet e dukhmë e te paverifikuar (Halim, PO 15:50)
 - Objektivi (plani i Halimit, `~/.openclaw/workspace/memory/plans/2026-09-18-avokatim-aktivizim.md`):
   kthimi i bazës në vlerë reale — verifikimi = porta e vlerës (faqja `/avokatet`

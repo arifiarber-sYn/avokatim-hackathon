@@ -1,5 +1,10 @@
 # Plani i serverit në BE + përfaqësuesi Art. 27 (porta DE, itemet 1–2)
 
+> ⛔ **PAUZË (2026-09-24, urdhër i Klloshës):** traka DE e AvokatIM u pauzua —
+> vazhdon vetëm XK. **MOS blej / MOS provizionoj asgjë nga ky plan** pa PO të ri
+> të Klloshës. Plani + numrat mbeten të vlefshëm për rifillim (rekomandimi i
+> Halimit 23.09 qëndron i regjistruar). Detajet: `DE-LAUNCH-GATE.md` §PAUZË.
+
 > Dokument vendimmarrës për pronarin, i përgatitur 2026-09-01 (çmimet e
 > verifikuara në ueb po atë ditë, pa TVSH). Zbatimin teknik e kryen agjenti
 > sapo të vendosësh; këtu s'ka asgjë të nisur.
