@@ -149,6 +149,14 @@ the owner/agent and never wired to a timer.
 
 ## Lane B — Halim (OpenClaw) correspondence protocol
 
+- **Inbox hygiene (2026-09-24, sekretari handoff)**: `backend/scripts/ops_inbox_hygiene.py`
+  buckets unseen mail for the morning line. Bulk/platform senders (e.g.
+  `streaks@chess.com`, `hello@chess.com`) are classified `reklama` via the
+  `_NOISE` keyword list; the "tjera + display name → personale" promotion is
+  guarded by `_BULK_LOCAL` (streaks/hello/welcome/alerts/receipts/…)
+  so a display name alone no longer promotes a bulk sender to
+  "kërkojnë vëmendje" (was: chess.com notifications counted as personal,
+  polluting the morning line and email_allowlist T2).
 - `scripts/ops_inbox_triage.py` (cron every 10 min, read-only IMAP PEEK)
   classifies inbound mail; human mail → Telegram with context + a
   **final, ready-to-send draft** signed "Arbër Arifi — AvokatIM".

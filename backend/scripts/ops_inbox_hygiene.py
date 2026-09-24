@@ -42,8 +42,21 @@ _PLATFORM = ("avokatiim", "avokatim", "opshub", "naturalbeauty", "no-reply@avoka
 _NOISE = (
     "tiktok", "shopify", "newsletter", "noreply", "no-reply", "notification",
     "notifications", "mailer", "marketing", "promo", "cursor", "digest",
-    "updates", "info@", "news@", "team@",
+    "updates", "info@", "news@", "team@", "chess",
 )
+
+# Bulk-sender local parts: a display name alone does NOT make a sender
+# human (sekretari handoff 2026-09-24: chess.com streaks@/hello@ were
+# promoted to "personale" and polluted the morning "kërkojnë vëmendje").
+_BULK_LOCAL = (
+    "streaks", "hello", "welcome", "alerts", "receipts", "no-reply",
+    "noreply", "notifications", "notification",
+)
+
+
+def _local_part(sender: str) -> str:
+    addr = sender.split("<")[-1].split(">")[0].strip()
+    return addr.rsplit("@", 1)[-1].lower()
 
 
 def _bucket(sender: str, subject: str) -> str:
@@ -55,6 +68,16 @@ def _bucket(sender: str, subject: str) -> str:
     if any(k in hay for k in _NOISE):
         return "reklama"
     return "tjera"
+
+
+def _final_bucket(sender: str, subject: str) -> str:
+    bucket = _bucket(sender, subject)
+    # "tjera" from a plausible human (has a display name, not a bulk
+    # sender) is more likely personal-needs-attention.
+    if bucket == "tjera" and "<" in sender and "@" in sender:
+        if not any(k in _local_part(sender) for k in _BULK_LOCAL):
+            bucket = "personale"
+    return bucket
 
 
 def _fetch_headers(imap: imaplib.IMAP4_SSL, uid: int) -> email.message.Message | None:
@@ -93,11 +116,7 @@ def snapshot(max_scan: int) -> dict:
                 continue
             sender = _decode(msg.get("From"))
             subject = _decode(msg.get("Subject"))
-            bucket = _bucket(sender, subject)
-            # "tjera" from a plausible human (has a display name, not a bulk
-            # sender) is more likely personal-needs-attention.
-            if bucket == "tjera" and "<" in sender and "@" in sender:
-                bucket = "personale"
+            bucket = _final_bucket(sender, subject)
             buckets[bucket] += 1
             if bucket == "financiare" and len(finance_samples) < 5:
                 finance_samples.append({"uid": uid, "from": sender, "subject": subject})
