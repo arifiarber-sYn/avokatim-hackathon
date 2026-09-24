@@ -80,3 +80,13 @@ rastit + shablloni Deckungsanfrage, eksporti DATEV EXTF. Verifikuar E2E me
   asnjë komision për mandate konkrete.
 - **SOS dhe noteria janë të fshehura/bllokuara për DE** (frontend + guard
   në backend) deri në përshtatje të veçantë ligjore.
+
+
+---
+
+## 2026-09-24 — PAUZË (urdhër i Klloshës)
+- **AvokatIM DE < PAUSË**; vazhdon vetëm **XK**. H-15 (GEX44 + Prighter, 219 €/muaj) = **PEZULL** — pa blerje ✗.
+- **Të dhënat DE NUK fshihen** ✓: DB 940 MB + korpusi i natës mbeten të ruajtura; ndalon vetëm `avokatim-corpus.timer`.
+- **Plani dhe numrat mbeten të vlefshëm** ✓ (alternativat e rrahura ✓, migrimi trivial ✓) — rifillimi nuk kërkon rihulumtim ✓.
+- **XK: zero prekje** ✓. **Kushti i vetëm i rifillimit:** nëse përsëri preken përdorues DE pa stack-un e përshtatshëm ✗ → porta rihapet me PO të ri ✓.
+- Regjistruar nga Halimi (agjenti main), handoff → agjenti-cursor.
