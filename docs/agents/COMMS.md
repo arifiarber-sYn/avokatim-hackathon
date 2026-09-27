@@ -157,6 +157,11 @@ the owner/agent and never wired to a timer.
   so a display name alone no longer promotes a bulk sender to
   "kërkojnë vëmendje" (was: chess.com notifications counted as personal,
   polluting the morning line and email_allowlist T2).
+- **Inbox hygiene fix-up (2026-09-27, sekretari handoff)**: `_local_part()`
+  returned the *domain* (`rsplit("@", 1)[-1]`) instead of the local part, so the
+  `_BULK_LOCAL` guard above never matched — `hello@` / `streaks@` senders were
+  still promoted to "personale" (e.g. `Hack Apertus Team
+  <hello@ailights.org>`). Fixed to `[0]`; the guard now works as intended.
 - `scripts/ops_inbox_triage.py` (cron every 10 min, read-only IMAP PEEK)
   classifies inbound mail; human mail → Telegram with context + a
   **final, ready-to-send draft** signed "Arbër Arifi — AvokatIM".

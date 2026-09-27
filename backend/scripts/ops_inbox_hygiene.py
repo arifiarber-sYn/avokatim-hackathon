@@ -56,7 +56,7 @@ _BULK_LOCAL = (
 
 def _local_part(sender: str) -> str:
     addr = sender.split("<")[-1].split(">")[0].strip()
-    return addr.rsplit("@", 1)[-1].lower()
+    return addr.rsplit("@", 1)[0].lower()
 
 
 def _bucket(sender: str, subject: str) -> str:
