@@ -48,12 +48,14 @@ PROJECTS: dict[str, dict] = {
         "repairable": True,
     },
     "EdaS": {
-        # NOTE (D-070): edas-acestep / edas-tools are on-demand GPU workers.
-        # EdaS's GPU manager (~/EdaS/data/gpu_manager.json: auto_release=true,
-        # idle_minutes=15) deliberately STOPS edas-acestep when idle to free the
-        # RTX 5090's VRAM. Monitoring it as "must be active" produced false
-        # alarms and restart-fights with the manager, so it is intentionally not
-        # listed here. edas.service + edas-frontend stay always-on.
+        # PAUZË (2026-09-21; STATE.md + LESSONS L-08): u hoq edhe nga monitori i
+        # flotës. edas.service/edas-frontend.service nuk ekzistojnë më si units
+        # në këtë host, ndaj çdo kontroll prodhonte alarm të rremë + exit 1, që
+        # çaktivizoi vetë cron-in pas 10 dështimeve (2026-09-29). Kthe "paused"
+        # në False (dhe units) kur EdaS rikthehet si shërbim.
+        # (Konteksti D-070: edas-acestep/edas-tools ndalen qëllimisht nga GPU
+        # manager-i i EdaS kur janë idle — nuk listohen.)
+        "paused": True,
         "services": ["edas.service", "edas-frontend.service"],
         "url": "http://127.0.0.1:8002/api/health",
         "repairable": True,  # careful: two-agent rule for CODE, restart is ops-only
@@ -131,6 +133,10 @@ def check() -> tuple[list[str], list[str], list[str], list[str]]:
     ok: list[str] = []
     unresolved: list[str] = []
     for name, cfg in PROJECTS.items():
+        if cfg.get("paused"):
+            # Projekt në pauzë: nuk alarmojmë (shih EdaS te PROJECTS).
+            ok.append(name)
+            continue
         down_svcs = [s for s in cfg["services"] if not _svc_active(s)]
         http = _http_up(cfg["url"])
         healthy = not down_svcs and (http is not False)

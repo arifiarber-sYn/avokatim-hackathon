@@ -1,3 +1,20 @@
+## 2026-09-29 — Roster-health: EdaS në PAUZË → ndal çaktivizimin automatik të cron-it (Halim)
+
+- **Problemi (i zbuluar nga alarmi i automations, D-138):** automation-i
+  `avokatim-roster-health` (14a674c6) u çaktivizua vetë pas **10 dështimeve
+  radhazi**. Shkaku: `scripts/ops_roster_health.py` vëzhgonte
+  `edas.service`/`edas-frontend.service`, të cilat **nuk ekzistojnë më si
+  units** në këtë host (EdAS në PAUZË; edhe monitori i flotës i hoqi më 21.09).
+  Çdo kontroll → `unresolved: EdaS` → `exit 1` → cron "error" ×10 → auto-disable.
+- **Rregullimi:** `EdaS` në `PROJECTS` mori flag-un `"paused": True`; `check()`
+  i kalon projektet e pauzuara (shtohen te OK, pa alarm, pa restart). Kthimi:
+  hiq `paused` (ose vendos `False`) kur EdAS rikthehet si shërbim.
+- **Verified:** `.venv/bin/python scripts/ops_roster_health.py --status` →
+  "✅ Të gjitha projektet aktive", `exit 0`; automation-i u riaktivizua
+  (`openclaw automations enable 14a674c6-…`).
+- **Left open:** EdAS mbetet i pauzuar — nëse rikthehet, rivendos units + hiq
+  `paused`, përndryshe mbetet i pamonitoruar me qëllim.
+
 ## 2026-09-24 — PAUZA e trakës DE (urdhër i Klloshës; koordinim Halim + agjenti-cursor)
 
 - **Urdhri (Kllosha, Cursor 08:39):** "pauzone avokatin gjerman por avokati i
