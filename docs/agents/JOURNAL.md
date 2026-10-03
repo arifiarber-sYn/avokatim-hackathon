@@ -1,3 +1,13 @@
+## 2026-10-03 — ops_watchdog: placeholder-i i tokenit Telegram zgjidhet nga mjedisi (Halim; PO i Kllosha-s 20:43)
+
+- **Problemi:** `channels.telegram.botToken` në `~/.openclaw/openclaw.json` është placeholder `${TELEGRAM_BOT_TOKEN}`.
+  Gateway-i e zgjidh nga mjedisi (len=46), por `ops_watchdog._telegram_creds()` lexonte **literalin** (len=21)
+  → `api.telegram/getMe` kthente **HTTP 404** → alarmet e watchdog-ut binin në **email në heshtje** (~20 alarma, uid 17023–17049).
+- **Ndryshimi:** `_zgjero_env()` zgjeron `${VAR}`/`$VAR` nga `os.environ`; `_telegram_creds()` e përdor për tokenin.
+  Skedarë: `backend/scripts/ops_watchdog.py` (+ `import os`/`re`), `backend/tests/test_ops_mail_reliability.py` (+2 teste).
+- **Provat:** placeholder → len 46 · `_telegram_creds()` → chat 5958503553, token_len 46 · **live `getMe` → HTTP 200** (`HalimKlloshaBot`) · `pytest tests/test_ops_mail_reliability.py` → **13/13** (venv-i i projektit).
+- **Kufijtë:** ndryshim vetëm në lexuesin e kredencialeve; pa prekje kontejnerësh/units; tokeni nuk del nga makina (as në log, as në commit).
+
 ## 2026-09-29 — Roster-health: EdaS në PAUZË → ndal çaktivizimin automatik të cron-it (Halim)
 
 - **Problemi (i zbuluar nga alarmi i automations, D-138):** automation-i

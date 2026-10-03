@@ -230,3 +230,19 @@ def test_watchdog_alarm_dedup(monkeypatch):
     assert watchdog._should_alarm("stale_mail", {}) is True
     assert watchdog._should_alarm("stale_mail", {"stale_mail": recent}) is False
     assert watchdog._should_alarm("stale_mail", {"stale_mail": stale}) is True
+
+
+# --- 03.10.2026 (PO i Kllosha-s, handoff 182931): placeholder i tokenit ---------
+def test_telegram_creds_zgjeron_placeholder_nga_mjedisi(monkeypatch):
+    """openclaw.json mban placeholder TELEGRAM_BOT_TOKEN; gateway e zgjidh, skripti jo,
+    dhe getMe kthente 404 -> alarmet binin ne email ne heshtje (~20 alarma 03.10)."""
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "1234567890:AA" + "x" * 33)
+    assert watchdog._zgjero_env("$" + "{TELEGRAM_BOT_TOKEN}").startswith("1234567890:AA")
+    assert watchdog._zgjero_env("pa-placeholder") == "pa-placeholder"
+    assert watchdog._zgjero_env("$" + "{NUK_EKZISTON_KURR}") == ""
+
+
+def test_telegram_creds_kap_tokenin_e_zgjeruar(monkeypatch):
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "1234567890:AA" + "y" * 33)
+    c = watchdog._telegram_creds()
+    assert c is not None and len(c[0]) > 21

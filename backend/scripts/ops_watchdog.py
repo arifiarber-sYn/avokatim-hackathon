@@ -36,6 +36,8 @@ avokatim-db stop that caused the outage came from avokatim.service's ExecStop
 import email.utils
 import imaplib
 import json
+import os
+import re
 import sqlite3
 import sys
 import urllib.parse
@@ -63,10 +65,23 @@ STATUS_ONLY = "--status" in sys.argv
 
 # --- alerting (LLM-free) -----------------------------------------------------
 
+def _zgjero_env(v: str) -> str:
+    """03.10.2026 (PO i Kllosha-s, handoff 182931): openclaw.json mban placeholder
+    ${TELEGRAM_BOT_TOKEN}; gateway e zgjidh nga mjedisi, ky skript e lexonte literalin
+    (len=21) -> getMe 404 -> alarmet binin ne EMAIL ne heshtje. Zgjeroji nga os.environ."""
+    if not v or "$" not in v:
+        return v
+
+    def _z(m: "re.Match") -> str:
+        return os.environ.get(m.group(1) or m.group(2), "")
+
+    return re.sub(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)", _z, v)
+
+
 def _telegram_creds() -> tuple[str, str] | None:
     try:
         tg = json.loads(OPENCLAW_CFG.read_text())["channels"]["telegram"]
-        token = tg.get("botToken") or ""
+        token = _zgjero_env(tg.get("botToken") or "")
         chat = str(settings.openclaw_hook_to or (tg.get("allowFrom") or [""])[0])
         if token and chat:
             return token, chat
