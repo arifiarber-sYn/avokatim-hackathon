@@ -1,3 +1,16 @@
+## 2026-10-05 — ops_inbox_hygiene: mapimi bucket→T bëhet machine-readable (Halim; handoff 2026-10-05T012027Z)
+
+- **Problemi:** rreshti i ledger-it të triazhit (t0..t3) nxirrej nga kujtesa e modelit;
+  bucket-i `platforma` u klasifikua gabimisht T3 (03.10), T0 (04.10) e T0 (05.10) — rast i
+  tretë edhe pas rregullit vetëm-dokument në `sekretari/AGENTS.md` (handoff 20261004-190032).
+- **Ndryshimi:** `backend/scripts/ops_inbox_hygiene.py` tani eksporton `bucket_to_t`
+  (BUCKET_TO_T) + `t_counts` ({t0: reklama+tjera, t1: platforma, t2: 0,
+  t_allowlist_pending: financiare+personale, matter}) në JSON-in e snapshot-it. Vetëm fusha
+  të shtuara; skripti mbetet read-only. U përditësua edhe rregulli te `sekretari/AGENTS.md`
+  (lexo `t_counts`, mos e nxirr mapimin nga kujtesa).
+- **Provat:** `python3 -m py_compile` OK; `ops_inbox_hygiene.py --max 5` → buckets
+  {reklama:2, platforma:3}, t_counts {t0:2, t1:3, t2:0, t_allowlist_pending:0}.
+- **Pse:** heq varësinë e ledger-it nga kujtesa e modelit (burimi kanonik: `RAPORTIMI.md` §Mapimi, D-142).
 ## 2026-10-03 — ops_watchdog: placeholder-i i tokenit Telegram zgjidhet nga mjedisi (Halim; PO i Kllosha-s 20:43)
 
 - **Problemi:** `channels.telegram.botToken` në `~/.openclaw/openclaw.json` është placeholder `${TELEGRAM_BOT_TOKEN}`.

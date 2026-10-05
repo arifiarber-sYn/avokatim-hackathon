@@ -42,7 +42,7 @@ _PLATFORM = ("avokatiim", "avokatim", "opshub", "naturalbeauty", "no-reply@avoka
 _NOISE = (
     "tiktok", "shopify", "newsletter", "noreply", "no-reply", "notification",
     "notifications", "mailer", "marketing", "promo", "cursor", "digest",
-    "updates", "info@", "news@", "team@", "chess",
+    "updates", "info@", "news@", "team@", "chess", "devpost",
 )
 
 # Bulk-sender local parts: a display name alone does NOT make a sender
@@ -52,6 +52,19 @@ _BULK_LOCAL = (
     "streaks", "hello", "welcome", "alerts", "receipts", "no-reply",
     "noreply", "notifications", "notification",
 )
+
+# Canonical bucket -> T-class mapping (RAPORTIMI.md §"Mapimi i bucket-eve", D-142).
+# Authoritative, machine-readable source for the triage ledger line so the loop
+# never re-derives it from model memory (recurred 03.10 T3 / 04.10 T0 / 05.10 T0 —
+# handoffs 2026-10-03T184950Z, 20261004-190032, 2026-10-05T012027Z).
+BUCKET_TO_T = {
+    "reklama": "T0",
+    "tjera": "T0",
+    "platforma": "T1",
+    "financiare": "T1/T2",  # email_allowlist.py: LEJOHET -> T1, REFUZOHET -> T2
+    "personale": "T1/T2",
+    "matter": "MOS-PREK",
+}
 
 
 def _local_part(sender: str) -> str:
@@ -151,6 +164,19 @@ def snapshot(max_scan: int) -> dict:
         "unread_total": total,
         "scanned": min(total, max_scan),
         "buckets": buckets,
+        "bucket_to_t": BUCKET_TO_T,
+        "t_counts": {
+            "t0": buckets["reklama"] + buckets["tjera"],
+            "t1": buckets["platforma"],
+            "t2": 0,
+            "t_allowlist_pending": buckets["financiare"] + buckets["personale"],
+            "matter": buckets["matter"],
+        },
+        "t_counts_note": (
+            "t0/t1/t2 are definitive when t_allowlist_pending == 0; otherwise "
+            "resolve financiare/personale via email_allowlist.py (LEJOHET->T1, "
+            "REFUZOHET->T2) per RAPORTIMI.md. Source: RAPORTIMI.md mapping, D-142."
+        ),
         "oldest_unread": oldest_info,
         "oldest_age_days": oldest_age_days,
         "needs_attention": needs_attention,
