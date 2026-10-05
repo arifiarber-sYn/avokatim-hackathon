@@ -53,6 +53,22 @@ _BULK_LOCAL = (
     "noreply", "notifications", "notification",
 )
 
+# Bulk/marketing domains + ESP subdomain prefixes: the LOCAL part alone is not
+# enough. (sekretari handoff 2026-10-05: "canvadesignschool@engage.canva.com"
+# had an unknown local part and no _NOISE keyword, so it was promoted to
+# "personale"; the domain is clearly a marketing/ESP subdomain.) Conservative:
+# exact known domains + clear ESP subdomain prefixes only.
+_BULK_DOMAIN = (
+    "canva.com", "engage.canva.com", "mailchimp.com", "sendgrid.net",
+    "hubspot.com", "constantcontact.com", "klaviyo.com", "mailgun.org",
+    "postmarkapp.com", "substack.com", "beehiiv.com", "mailerlite.com",
+    "campaign-archive.com", "cmail19.com", "cmail20.com",
+)
+_BULK_DOMAIN_PREFIX = (
+    "engage.", "email.", "mail.", "news.", "marketing.", "notify.",
+    "notifications.", "info.", "em.", "e2.", "cmail",
+)
+
 # Canonical bucket -> T-class mapping (RAPORTIMI.md §"Mapimi i bucket-eve", D-142).
 # Authoritative, machine-readable source for the triage ledger line so the loop
 # never re-derives it from model memory (recurred 03.10 T3 / 04.10 T0 / 05.10 T0 —
@@ -72,6 +88,11 @@ def _local_part(sender: str) -> str:
     return addr.rsplit("@", 1)[0].lower()
 
 
+def _domain(sender: str) -> str:
+    addr = sender.split("<")[-1].split(">")[0].strip()
+    return addr.rsplit("@", 1)[-1].lower() if "@" in addr else ""
+
+
 def _bucket(sender: str, subject: str) -> str:
     hay = f"{sender} {subject}".lower()
     if any(k in hay for k in _FINANCE):
@@ -88,7 +109,11 @@ def _final_bucket(sender: str, subject: str) -> str:
     # "tjera" from a plausible human (has a display name, not a bulk
     # sender) is more likely personal-needs-attention.
     if bucket == "tjera" and "<" in sender and "@" in sender:
-        if not any(k in _local_part(sender) for k in _BULK_LOCAL):
+        local = _local_part(sender)
+        dom = _domain(sender)
+        if (not any(k in local for k in _BULK_LOCAL)
+                and dom not in _BULK_DOMAIN
+                and not any(dom.startswith(p) for p in _BULK_DOMAIN_PREFIX)):
             bucket = "personale"
     return bucket
 
