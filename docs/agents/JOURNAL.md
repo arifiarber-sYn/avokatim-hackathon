@@ -1,3 +1,17 @@
+## 2026-10-06 — ops_inbox_hygiene: prefiks ESP numerik (em1.) nuk shpëtonte filtrin (Halim; handoff sekretari 20261006-021113)
+
+- **Problemi:** `_BULK_DOMAIN_PREFIX` krahasonte me `startswith` literal, ndaj domain-i
+  `em1.cloudflare.com` (prefiks `em1.`) nuk kapet nga `em.` → sender-a marketing
+  `Cloudflare <em@em1.cloudflare.com>` promovohej në `personale` dhe frynte
+  `needs_attention`. Përsëritje e katërt e të njëjtit model (chess.com 24.09,
+  engage.canva 05.10, tani em1.cloudflare 06.10).
+- **Ndryshimi:** `_is_bulk_domain_prefix()` e re — provon `startswith` literal, pastaj
+  heq shifrat nga label-i i parë (`rstrip("0123456789")`) dhe riprovon; `em1./em2./em3. → em.`,
+  `mail2. → mail.`. `_final_bucket` tani e thërret këtë. Vetëm klasifikim; skripti mbetet read-only.
+- **Provat:** import i drejtpërdrejtë → `em1.cloudflare.com -> tjera`, `engage.canva.com -> tjera`,
+  `mail2.mailchimp.com -> tjera`; `gmail.com`/`somefirm.com -> personale` (pa regres); `py_compile` OK.
+- **Pse:** ndal sinjalin e rremë në rreshtin e triazhit (RAPORTIMI.md, D-142).
+
 ## 2026-10-05 — ops_inbox_hygiene: heuristika e domain-it bulk (Halim; handoff-e sekretari 20261005-085100 / 2026-10-05T103156Z)
 
 - **Problemi:** `_final_bucket` promovonte në `personale` çdo sender "tjera" me display-name

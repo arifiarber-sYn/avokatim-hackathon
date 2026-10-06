@@ -69,6 +69,21 @@ _BULK_DOMAIN_PREFIX = (
     "notifications.", "info.", "em.", "e2.", "cmail",
 )
 
+
+def _is_bulk_domain_prefix(dom: str) -> bool:
+    """ESP subdomain-prefix match, tolerant of numeric variants (em1., mail2.).
+
+    sekretari handoff 2026-10-06: "Cloudflare <em@em1.cloudflare.com>"
+    (marketing) escaped the literal "em." prefix, was promoted to "personale"
+    and inflated "needs_attention". Strip trailing digits from the leading
+    label and retry against _BULK_DOMAIN_PREFIX so em1./em2./em3. -> "em.",
+    mail2. -> "mail.", etc. all resolve as bulk.
+    """
+    if any(dom.startswith(p) for p in _BULK_DOMAIN_PREFIX):
+        return True
+    label = dom.split(".", 1)[0].rstrip("0123456789")
+    return bool(label) and f"{label}." in _BULK_DOMAIN_PREFIX
+
 # Canonical bucket -> T-class mapping (RAPORTIMI.md §"Mapimi i bucket-eve", D-142).
 # Authoritative, machine-readable source for the triage ledger line so the loop
 # never re-derives it from model memory (recurred 03.10 T3 / 04.10 T0 / 05.10 T0 —
@@ -113,7 +128,7 @@ def _final_bucket(sender: str, subject: str) -> str:
         dom = _domain(sender)
         if (not any(k in local for k in _BULK_LOCAL)
                 and dom not in _BULK_DOMAIN
-                and not any(dom.startswith(p) for p in _BULK_DOMAIN_PREFIX)):
+                and not _is_bulk_domain_prefix(dom)):
             bucket = "personale"
     return bucket
 

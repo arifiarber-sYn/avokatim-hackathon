@@ -162,6 +162,13 @@ the owner/agent and never wired to a timer.
   `_BULK_LOCAL` guard above never matched — `hello@` / `streaks@` senders were
   still promoted to "personale" (e.g. `Hack Apertus Team
   <hello@ailights.org>`). Fixed to `[0]`; the guard now works as intended.
+- **Inbox hygiene fix-up (2026-10-06, sekretari handoff)**: bulk ESPs with a
+  *numeric* subdomain prefix escaped the literal `startswith` check —
+  `Cloudflare <em@em1.cloudflare.com>` (marketing) has prefix `em1.`, not
+  `em.`, so it was promoted to `personale` and inflated `needs_attention`.
+  New `_is_bulk_domain_prefix()` strips trailing digits from the leading label
+  and retries against `_BULK_DOMAIN_PREFIX`, so `em1./em2./em3. → em.`,
+  `mail2. → mail.`, etc. all classify as bulk. Human senders unchanged.
 - `scripts/ops_inbox_triage.py` (cron every 10 min, read-only IMAP PEEK)
   classifies inbound mail; human mail → Telegram with context + a
   **final, ready-to-send draft** signed "Arbër Arifi — AvokatIM".
