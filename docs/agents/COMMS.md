@@ -169,6 +169,12 @@ the owner/agent and never wired to a timer.
   New `_is_bulk_domain_prefix()` strips trailing digits from the leading label
   and retries against `_BULK_DOMAIN_PREFIX`, so `em1./em2./em3. → em.`,
   `mail2. → mail.`, etc. all classify as bulk. Human senders unchanged.
+- **Inbox hygiene fix-up (2026-10-08, sekretari handoff)**: Meta/Facebook bulk
+  notifications escaped every heuristic — `Facebook Friend Suggestions
+  <friendsuggestion@facebookmail.com>` has no `_NOISE` keyword and no ESP
+  prefix, so it was promoted to `personale` and inflated `needs_attention`.
+  Added `facebookmail.com` to `_BULK_DOMAIN` and `friendsuggestion` to
+  `_BULK_LOCAL`. Human senders unchanged.
 - `scripts/ops_inbox_triage.py` (cron every 10 min, read-only IMAP PEEK)
   classifies inbound mail; human mail → Telegram with context + a
   **final, ready-to-send draft** signed "Arbër Arifi — AvokatIM".

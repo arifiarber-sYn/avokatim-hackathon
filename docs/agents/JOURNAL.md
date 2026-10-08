@@ -1,3 +1,15 @@
+## 2026-10-08 — ops_inbox_hygiene: njoftime bulk Meta (facebookmail.com) promovoheshin në "personale" (Halim; handoff-e sekretari 20261007-212100 / 2026-10-08T011055 / 20261007-233139)
+
+- **Problemi:** `Facebook Friend Suggestions <friendsuggestion@facebookmail.com>` nuk kishte
+  asnjë fjalë të `_NOISE` dhe as prefiks ESP, ndaj `_final_bucket` e promovonte në `personale`
+  dhe frynte `needs_attention` (raportuar personale=1). Përsëritje e pestë e të njëjtit model
+  (chess.com 24.09, engage.canva 05.10, em1.cloudflare 06.10, tani facebookmail 08.10).
+- **Ndryshimi:** shtuar `facebookmail.com` në `_BULK_DOMAIN` + `friendsuggestion` në `_BULK_LOCAL`
+  te `backend/scripts/ops_inbox_hygiene.py`. Vetëm klasifikim; skripti mbetet read-only.
+- **Provat:** import i drejtpërdrejtë i `_final_bucket` → Friend Suggestions = `tjera`,
+  `Filan Fisteku <filan@gmail.com>` = `personale`, `Cloudflare em1.` = `tjera` (pa regres).
+- **Pse:** ndal sinjalin e rremë në rreshtin e triazhit (RAPORTIMI.md, D-142).
+
 ## 2026-10-06 — ops_inbox_hygiene: prefiks ESP numerik (em1.) nuk shpëtonte filtrin (Halim; handoff sekretari 20261006-021113)
 
 - **Problemi:** `_BULK_DOMAIN_PREFIX` krahasonte me `startswith` literal, ndaj domain-i

@@ -50,7 +50,7 @@ _NOISE = (
 # promoted to "personale" and polluted the morning "kërkojnë vëmendje").
 _BULK_LOCAL = (
     "streaks", "hello", "welcome", "alerts", "receipts", "no-reply",
-    "noreply", "notifications", "notification",
+    "noreply", "notifications", "notification", "friendsuggestion",
 )
 
 # Bulk/marketing domains + ESP subdomain prefixes: the LOCAL part alone is not
@@ -63,6 +63,10 @@ _BULK_DOMAIN = (
     "hubspot.com", "constantcontact.com", "klaviyo.com", "mailgun.org",
     "postmarkapp.com", "substack.com", "beehiiv.com", "mailerlite.com",
     "campaign-archive.com", "cmail19.com", "cmail20.com",
+    # Meta/Facebook bulk notifications (sekretari handoff 2026-10-08:
+    # "Facebook Friend Suggestions <friendsuggestion@facebookmail.com>"
+    # escaped _NOISE and promoted to "personale" -> inflated needs_attention).
+    "facebookmail.com",
 )
 _BULK_DOMAIN_PREFIX = (
     "engage.", "email.", "mail.", "news.", "marketing.", "notify.",
