@@ -13,14 +13,24 @@ mail into its own bucket so it is never suggested for cleanup.
 Usage (prints JSON):
     ops_inbox_hygiene.py                 # full snapshot + ready report_line
     ops_inbox_hygiene.py --max 500       # cap how many unread to classify
+    ops_inbox_hygiene.py --seen-hours 48 # also list SEEN mail of the last 48 h (default; 0 = UNSEEN only)
+
+SEEN window (S24, 2026-10-09, audit "Halimi vs fronti" E4): the triage used to
+see only UNSEEN, so anything the owner opened on his phone vanished for the
+assistant before it was triaged. The search is now `(OR UNSEEN SINCE <48 h>)`;
+UNSEEN semantics (counts, buckets, report_line) are unchanged, and the SEEN
+messages are surfaced separately in `seen_recent` with a per-uid `drafted`
+flag read from ~/.openclaw/state/t2_draft_index.json (t2_draft_gate.py), so a
+SEEN mail that already has a T2 draft is never drafted twice.
 """
 import argparse
 import email
 import email.utils
 import imaplib
 import json
+import re
 import sys
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -137,15 +147,47 @@ def _final_bucket(sender: str, subject: str) -> str:
     return bucket
 
 
-def _fetch_headers(imap: imaplib.IMAP4_SSL, uid: int) -> email.message.Message | None:
-    # HEADER only + PEEK: fast and never sets \Seen.
-    status, data = imap.uid("FETCH", str(uid), "(BODY.PEEK[HEADER])")
+# T2 draft dedup index maintained by ~/scripts/t2_draft_gate.py (uid -> files).
+# Read-only here: a SEEN mail that already has a draft must not be re-drafted.
+T2_DRAFT_INDEX = Path.home() / ".openclaw" / "state" / "t2_draft_index.json"
+_FLAGS_RE = re.compile(rb"FLAGS \(([^)]*)\)")
+
+
+def _search_criteria(seen_hours: int, now: datetime | None = None) -> str:
+    """IMAP SEARCH criteria: UNSEEN only when seen_hours == 0, otherwise
+    `(OR UNSEEN SINCE dd-Mon-yyyy)` — UNSEEN of any age plus everything (SEEN
+    included) received in the last `seen_hours`. SINCE is date-granular, so
+    the window is rounded down to the start of that day (never narrower)."""
+    if seen_hours <= 0:
+        return "UNSEEN"
+    now = now or datetime.now(UTC)
+    since = (now - timedelta(hours=seen_hours)).strftime("%d-%b-%Y")
+    return f"(OR UNSEEN SINCE {since})"
+
+
+def _drafted_uids() -> set[str]:
+    """uids that already have a T2 draft (t2_draft_gate index). Missing/broken
+    index -> empty set (fail-open: the LLM still runs `t2_draft_gate.py check`)."""
+    try:
+        data = json.loads(T2_DRAFT_INDEX.read_text(encoding="utf-8"))
+        return {str(k) for k in data} if isinstance(data, dict) else set()
+    except (OSError, ValueError):
+        return set()
+
+
+def _fetch_headers(imap: imaplib.IMAP4_SSL, uid: int) -> tuple[email.message.Message | None, bool]:
+    # HEADER only + PEEK: fast and never sets \Seen. FLAGS ride along so the
+    # SEEN state is known without a second round-trip.
+    status, data = imap.uid("FETCH", str(uid), "(FLAGS BODY.PEEK[HEADER])")
     if status != "OK" or not data or data[0] is None:
-        return None
-    return email.message_from_bytes(data[0][1])
+        return None, False
+    meta = data[0][0] if isinstance(data[0], tuple) else b""
+    m = _FLAGS_RE.search(meta or b"")
+    seen = b"\\Seen" in (m.group(1) if m else b"")
+    return email.message_from_bytes(data[0][1]), seen
 
 
-def snapshot(max_scan: int) -> dict:
+def snapshot(max_scan: int, seen_hours: int = 48) -> dict:
     host, port, user, password = _credentials()
     if not user or not password:
         return {"error": "IMAP/SMTP credentials not configured in backend/.env"}
@@ -154,26 +196,36 @@ def snapshot(max_scan: int) -> dict:
     imap.login(user, password)
     imap.select("INBOX", readonly=True)
     try:
-        status, data = imap.uid("SEARCH", None, "UNSEEN")
+        status, data = imap.uid("SEARCH", None, _search_criteria(seen_hours))
         uids = [int(u) for u in (data[0].split() if status == "OK" and data and data[0] else [])]
-        total = len(uids)
 
         buckets = {"financiare": 0, "platforma": 0, "personale": 0,
                    "reklama": 0, "tjera": 0, "matter": 0}
         oldest_dt: datetime | None = None
         oldest_info = None
         finance_samples: list[dict] = []
+        # SEEN mail of the window: listed, never counted in the UNSEEN stats.
+        drafted = _drafted_uids()
+        seen_recent: list[dict] = []
+        seen_uids: set[int] = set()
 
         for uid in sorted(uids, reverse=True)[:max_scan]:
-            msg = _fetch_headers(imap, uid)
+            msg, is_seen = _fetch_headers(imap, uid)
             if msg is None:
                 continue
             if _is_matter_alias(msg):
-                buckets["matter"] += 1
+                if not is_seen:
+                    buckets["matter"] += 1
                 continue
             sender = _decode(msg.get("From"))
             subject = _decode(msg.get("Subject"))
             bucket = _final_bucket(sender, subject)
+            if is_seen:
+                seen_uids.add(uid)
+                seen_recent.append({"uid": uid, "from": sender, "subject": subject,
+                                    "bucket": bucket, "t": BUCKET_TO_T.get(bucket),
+                                    "drafted": str(uid) in drafted})
+                continue
             buckets[bucket] += 1
             if bucket == "financiare" and len(finance_samples) < 5:
                 finance_samples.append({"uid": uid, "from": sender, "subject": subject})
@@ -189,6 +241,9 @@ def snapshot(max_scan: int) -> dict:
                                    "subject": subject, "date": date_hdr}
     finally:
         imap.logout()
+
+    # UNSEEN semantics unchanged: total/scanned count only unread mail.
+    total = len(uids) - len(seen_uids)
 
     oldest_age_days = None
     if oldest_dt is not None:
@@ -226,6 +281,13 @@ def snapshot(max_scan: int) -> dict:
         "needs_attention": needs_attention,
         "finance_samples": finance_samples,
         "report_line": line,
+        # S24: SEEN mail of the last `seen_hours` (owner opened it) — triage
+        # still evaluates it (R-axis / T2), but `drafted: true` = draft exists,
+        # skip. Before drafting any of these: `t2_draft_gate.py check --uid`.
+        "seen_hours": seen_hours,
+        "seen_recent_total": len(seen_recent),
+        "seen_recent_undrafted": sum(1 for s in seen_recent if not s["drafted"]),
+        "seen_recent": seen_recent[:50],
     }
 
 
@@ -233,8 +295,10 @@ def main() -> dict:
     ap = argparse.ArgumentParser(description="Inbox hygiene snapshot (read-only)")
     ap.add_argument("--max", type=int, default=500,
                     help="max unread messages to classify")
+    ap.add_argument("--seen-hours", type=int, default=48,
+                    help="also list SEEN mail newer than N hours (0 = UNSEEN only, old behaviour)")
     args = ap.parse_args()
-    return snapshot(args.max)
+    return snapshot(args.max, args.seen_hours)
 
 
 if __name__ == "__main__":

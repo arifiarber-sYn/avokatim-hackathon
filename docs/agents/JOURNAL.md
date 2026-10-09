@@ -1,3 +1,10 @@
+## 2026-10-09 — ops_inbox_hygiene: lexon edhe SEEN <=48 h (OR UNSEEN SINCE) + dedup drafti T2 (Halim; patch agjenti-cursor, S24/D-219)
+
+- **Problemi:** triazhi lexonte vetëm `UNSEEN` — çka hapte Kllosha në telefon zhdukej për Halimin para triazhit (E4 i auditimit 09.10).
+- **Ndryshimi:** `_search_criteria()` → `(OR UNSEEN SINCE dd-Mon-yyyy)` (48 h; `--seen-hours 0` = sjellja e vjetër); email-et SEEN dalin veçmas te `seen_recent` me flamurin `drafted` nga `~/.openclaw/state/t2_draft_index.json`; FETCH me PEEK (0 flamuj të ndryshuar). Statistikat UNSEEN mbeten identike.
+- **Provat:** `git apply --check` OK (1 skedar, +76/-12); dry-run read-only → `unread_total 19 · seen_recent 5 · drafted 0`; testet e patch-it (stub `ops_mailbox`) rc=0; `ast.parse` OK.
+- **Pse:** S24 i planit D-219 (E4/E5 i auditimit «Halimi vs fronti») — sinjali i pronarit nuk humbet më kur e hap në telefon.
+
 ## 2026-10-08 — ops_inbox_hygiene: njoftime bulk Meta (facebookmail.com) promovoheshin në "personale" (Halim; handoff-e sekretari 20261007-212100 / 2026-10-08T011055 / 20261007-233139)
 
 - **Problemi:** `Facebook Friend Suggestions <friendsuggestion@facebookmail.com>` nuk kishte
