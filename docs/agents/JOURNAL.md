@@ -1,3 +1,10 @@
+## 2026-10-09 — inbox-triage: korsia `personal_t1` (allowlist personale, D-219/D-220) + SEEN <=48h
+
+- **Problemi:** korsia personale e allowlist-it ishte bosh → çdo dërgs i njohur (22 hyrjet e P-58) binte te drafti T2 edhe pse Kllosha kishte dhënë PO për «vepro + njofto» (D-219 V9 / D-220 a).
+- **Ndryshimi:** patch-i i agjenti-cursor (`t1-personal-aktiv-triage.diff`, +53/-5) shton korsinë `personal_t1` në raport: dërguesit e miratuar të korsisë personale dalin veçmas nga T2. Read-only; pa dërgim.
+- **Provat:** `git apply --check` OK; `tests/test_patch_t1_personal.py` rc=0; commit i kësaj hyrje.
+- **Pse:** D-220 (3) — 22 dërguesit e P-58 kalojnë në T1 «vepro + njofto» ME GARDHE (DKIM/Reply-To), në rend: patch → gardhet → prompt → dry-run 24h → paraprovim i fundit.
+
 ## 2026-10-09 — ops_inbox_hygiene: lexon edhe SEEN <=48 h (OR UNSEEN SINCE) + dedup drafti T2 (Halim; patch agjenti-cursor, S24/D-219)
 
 - **Problemi:** triazhi lexonte vetëm `UNSEEN` — çka hapte Kllosha në telefon zhdukej për Halimin para triazhit (E4 i auditimit 09.10).

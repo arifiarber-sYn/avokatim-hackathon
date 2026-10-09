@@ -12,6 +12,12 @@ classifies them and prints a JSON report to stdout:
             de_company_outreach.py stops follow-ups.
 - "human":  real correspondence (lawyers/notaries/citizens) that may need a
             reply — full sender/subject/snippet so the assistant can draft one.
+- "personal_t1": sender on the owner's PERSONAL allowlist
+            (~/.openclaw/state/email_allowlist.json, lane "personal", D-142/
+            D-219 2026-10-09) — the only private senders the assistant may
+            answer autonomously (act + notify), and only through
+            ops_send_reply.py on the primary model. Allowlist unreadable =
+            empty (fail-closed -> "unknown").
 - "system": notifications sent by AvokatIM itself (From = our own address) —
             counted only; real-time platform events arrive via ops_notify.
 - "bounce": mailer-daemon bounces — counted only, surfaced when spiking.
@@ -39,6 +45,9 @@ from app.config import PROJECT_DIR, settings  # noqa: E402
 from scripts.ops_mailbox import _is_matter_alias  # noqa: E402
 
 STATE_FILE = PROJECT_DIR / "data" / "ops" / "inbox_state.json"
+# Owner's personal allowlist (deny-by-default, maintained via P-## + owner PO;
+# ~/scripts/email_allowlist.py is the gate, this is the same file read-only).
+PERSONAL_ALLOWLIST = Path.home() / ".openclaw" / "state" / "email_allowlist.json"
 MAX_SNIPPET = 1200
 MAX_HUMAN_PER_RUN = 10
 
@@ -188,9 +197,35 @@ def _outreach_contacts() -> set[str]:
     return contacts
 
 
+def _personal_allowlist() -> set[str]:
+    """Lane "personal" of the owner's allowlist: exact addresses + "@domain"
+    suffixes, lower-cased. Missing/broken file or allow_all -> EMPTY set
+    (fail-closed: nobody gets the autonomous personal lane by accident)."""
+    try:
+        data = json.loads(PERSONAL_ALLOWLIST.read_text(encoding="utf-8"))
+        lane = (data.get("korsite") or {}).get("personal") or {}
+        if lane.get("allow_all"):
+            return set()
+        return {str(h).strip().lower() for h in lane.get("derguesit_e_miratuar", [])
+                if str(h).strip() and str(h).strip() != "*"}
+    except (OSError, ValueError, AttributeError):
+        return set()
+
+
+def _in_personal_allowlist(addr: str, allow: set[str]) -> bool:
+    a = (addr or "").strip().lower()
+    if not a or "@" not in a or a in _SELF_ADDRESSES:
+        return False  # never auto-answer ourselves / no-reply@avokatiim.ai
+    local = a.split("@", 1)[0]
+    if local.startswith(("no-reply", "noreply", "do-not-reply", "donotreply")):
+        return False  # allowlisted *domain* does not make a bot a person
+    return a in allow or any(h.startswith("@") and a.endswith(h) for h in allow)
+
+
 def _classify(from_addr: str, subject: str, body: str = "",
               company_domains: dict[str, str] | None = None,
-              firm_linked: bool = False) -> str:
+              firm_linked: bool = False,
+              personal_allow: set[str] | None = None) -> str:
     if BOUNCE_FROM_RE.search(from_addr) or BOUNCE_FROM_RE.search(subject):
         return "bounce"
     addr = email.utils.parseaddr(from_addr)[1].lower()
@@ -218,6 +253,12 @@ def _classify(from_addr: str, subject: str, body: str = "",
     # PO, 05–07.09.
     if firm_linked:
         return "human"
+    # 2026-10-09 (D-219, E-33 verdict KALON, FP=0 proven): the owner's 22
+    # allowlisted private senders get their own lane. Still NOT "human"
+    # (that lane is the firm's) — the prompt rule (c1) governs what the
+    # assistant may do with "personal_t1".
+    if personal_allow and _in_personal_allowlist(addr, personal_allow):
+        return "personal_t1"
     return "unknown"
 
 
@@ -273,6 +314,9 @@ def run() -> dict:
         # dërgues pa lidhje mekanike me firmën (2026-09-07): draft-only, kurrë
         # përgjigje autonome — i sjellë me të njëjtat fusha si "human"
         "unknown": [],
+        # dërgues të allowlist-it PERSONAL (D-219, 2026-10-09): korsia T1
+        # personale — vepro + njofto, vetëm ops_send_reply.py, vetëm model primar
+        "personal_t1": [],
         "system_count": 0,
         "bounce_count": 0,
         "optout_count": 0,
@@ -280,6 +324,7 @@ def run() -> dict:
     }
     company_domains = _company_domains()
     outreach_contacts = _outreach_contacts()
+    personal_allow = _personal_allowlist()
 
     imap = imaplib.IMAP4_SSL(host, port)
     try:
@@ -325,9 +370,11 @@ def run() -> dict:
             sender_addr = email.utils.parseaddr(from_h)[1].lower()
             kind = _classify(from_h, subject, snippet, company_domains,
                              firm_linked=_is_matter_alias(msg)
-                             or sender_addr in outreach_contacts)
-            if (kind in ("human", "unknown")
+                             or sender_addr in outreach_contacts,
+                             personal_allow=personal_allow)
+            if (kind in ("human", "unknown", "personal_t1")
                     and len(report["human"]) + len(report["unknown"])
+                    + len(report["personal_t1"])
                     >= MAX_HUMAN_PER_RUN):
                 report["truncated"] = True
                 report["truncated_at_uid"] = uid
@@ -363,9 +410,10 @@ def run() -> dict:
                 if _record_optout(addr):
                     report["optouts"].append(addr)
             else:
-                # "human" (i lidhur me lëndë) te human; "unknown" te bucket-i
+                # "human" (i lidhur me lëndë) te human; "personal_t1" (allowlist
+                # personal, D-219) te korsia e vet; "unknown" te bucket-i
                 # i vet — draft-only (VENDIM I HALIMIT 2026-09-07).
-                report["human" if kind == "human" else "unknown"].append({
+                report[kind if kind in ("human", "personal_t1") else "unknown"].append({
                     "uid": uid,
                     "from": from_h,
                     "reply_to": email.utils.parseaddr(
