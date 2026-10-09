@@ -1,3 +1,10 @@
+## 2026-10-09 — inbox-triage: gardhet e korsisë `personal_t1` — DKIM/SPF + Reply-To, fail-closed (D-220)
+
+- **Pse:** T1 «vepro + njofto» për 22 dërguesit del nga HOLD (D-220), po vetëm me gardhe: një dërgues i miratuar mund të jetë i falsifikuar ose me `Reply-To` të huaj.
+- **Ndryshimi:** `gardhet_t1(msg) -> (lejohet, arsyet)` në `ops_inbox_triage.py`, thirrur VETËM kur `kind == "personal_t1"`: `dkim=pass` me domain të rreshtuar me `From` ose `spf=pass`; `Reply-To ≠ From` ⇒ refuzo; header mungon ⇒ refuzo. Çdo hyrje mban `t1_gardhet {lejohet, arsyet}`.
+- **Provat:** testi i pranimit 7 passed; import i `gardhet_t1` OK; aplikimi `git apply --check` OK (+103/-3).
+- **Pse fail-closed:** kurrë dërgim i gabuar; dyshimi bie te drafti.
+
 ## 2026-10-09 — inbox-triage: korsia `personal_t1` (allowlist personale, D-219/D-220) + SEEN <=48h
 
 - **Problemi:** korsia personale e allowlist-it ishte bosh → çdo dërgs i njohur (22 hyrjet e P-58) binte te drafti T2 edhe pse Kllosha kishte dhënë PO për «vepro + njofto» (D-219 V9 / D-220 a).

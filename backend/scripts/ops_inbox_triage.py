@@ -17,7 +17,12 @@ classifies them and prints a JSON report to stdout:
             D-219 2026-10-09) — the only private senders the assistant may
             answer autonomously (act + notify), and only through
             ops_send_reply.py on the primary model. Allowlist unreadable =
-            empty (fail-closed -> "unknown").
+            empty (fail-closed -> "unknown"). D-220 gates (gardhet_t1): the
+            mail must carry Authentication-Results with dkim=pass aligned to
+            the From domain OR spf=pass, and Reply-To (if any) must equal
+            From; otherwise the entry is demoted to "unknown" (draft only)
+            with the reasons in "t1_gardhet". Missing/unparseable headers =
+            demoted (fail-closed).
 - "system": notifications sent by AvokatIM itself (From = our own address) —
             counted only; real-time platform events arrive via ops_notify.
 - "bounce": mailer-daemon bounces — counted only, surfaced when spiking.
@@ -222,6 +227,84 @@ def _in_personal_allowlist(addr: str, allow: set[str]) -> bool:
     return a in allow or any(h.startswith("@") and a.endswith(h) for h in allow)
 
 
+# --- D-220 gates for the personal_t1 lane (2026-10-09, patch 2 of S3) -------
+# Spoofing a From: header is trivial; the allowlist alone would let a forged
+# "gareth.jones@jll.com" get an autonomous reply. Before any send the mail
+# must prove its origin via the receiving MTA's Authentication-Results
+# (Gmail: "mx.google.com; dkim=pass header.i=@jll.com ...; spf=pass ...
+# smtp.mailfrom=...") and must not redirect replies to a third party.
+_AUTH_HEADERS = ("Authentication-Results", "ARC-Authentication-Results")
+_DKIM_PASS_RE = re.compile(r"\bdkim\s*=\s*pass\b([^;]*)", re.I)
+_SPF_PASS_RE = re.compile(r"\bspf\s*=\s*pass\b([^;]*)", re.I)
+_DMARC_FAIL_RE = re.compile(r"\bdmarc\s*=\s*fail\b", re.I)
+_HEADER_DOMAIN_RE = re.compile(r"header\.(?:d|i)\s*=\s*@?([\w.-]+)", re.I)
+_MAILFROM_RE = re.compile(r"(?:smtp\.mailfrom|envelope-from)\s*=\s*(?:[^@\s;]*@)?([\w.-]+)|domain of \S+@([\w.-]+)", re.I)
+
+
+def _domain_aligned(dom: str, from_domain: str) -> bool:
+    """Relaxed alignment (RFC 7489 §3.1): same organisational tree."""
+    dom, from_domain = dom.strip(".").lower(), from_domain.strip(".").lower()
+    return bool(dom) and bool(from_domain) and (
+        dom == from_domain or from_domain.endswith("." + dom) or dom.endswith("." + from_domain))
+
+
+def _dkim_ok(ar: str, from_domain: str) -> bool:
+    """dkim=pass counts ONLY when header.d / header.i aligns with the From
+    domain — a pass for the spoofer's own domain proves nothing. A pass
+    without header.d is not enough either (fail-closed)."""
+    for m in _DKIM_PASS_RE.finditer(ar):
+        d = _HEADER_DOMAIN_RE.search(m.group(1))
+        if d and _domain_aligned(d.group(1), from_domain):
+            return True
+    return False
+
+
+def _spf_ok(ar: str, from_domain: str) -> bool:
+    """spf=pass counts when smtp.mailfrom (if stated) aligns with From; a
+    bare spf=pass without any envelope info is accepted (D-220 wording)."""
+    for m in _SPF_PASS_RE.finditer(ar):
+        e = _MAILFROM_RE.search(m.group(1))
+        if e is None:
+            return True
+        if _domain_aligned(e.group(1) or e.group(2) or "", from_domain):
+            return True
+    return False
+
+
+def gardhet_t1(msg: email.message.Message) -> tuple[bool, list[str]]:
+    """D-220 mandatory gates for the personal_t1 lane. Pure function of the
+    parsed message -> (allowed, reasons). Empty reasons == allowed. Any
+    missing header, parse error or exception => NOT allowed (fail-closed);
+    the caller demotes the mail to "unknown" (draft-for-approval) and keeps
+    the reasons in the report so the assistant/owner can see why."""
+    arsyet: list[str] = []
+    try:
+        from_addr = email.utils.parseaddr(_decode(msg.get("From")))[1].strip().lower()
+        if "@" not in from_addr:
+            return False, ["from-pa-adrese"]
+        from_domain = from_addr.rsplit("@", 1)[1]
+        # (1) DKIM/SPF from the receiving MTA
+        ars = [str(v) for h in _AUTH_HEADERS for v in (msg.get_all(h) or [])]
+        if not ars:
+            arsyet.append("auth-results-mungon")
+        else:
+            dkim = any(_dkim_ok(a, from_domain) for a in ars)
+            spf = any(_spf_ok(a, from_domain) for a in ars)
+            if not (dkim or spf):
+                arsyet.append("dkim/spf-jo-pass")
+            if any(_DMARC_FAIL_RE.search(a) for a in ars):
+                arsyet.append("dmarc-fail")
+        # (2) Reply-To must be absent or identical to From (normalised)
+        rt_raw = [_decode(v) for v in (msg.get_all("Reply-To") or []) if str(v).strip()]
+        if rt_raw:
+            rt = [a.strip().lower() for _, a in email.utils.getaddresses(rt_raw)]
+            if not rt or any(a != from_addr for a in rt):
+                arsyet.append("reply-to-i-huaj")
+    except Exception as exc:  # noqa: BLE001 — fail-closed, never a crash
+        arsyet.append(f"gabim:{type(exc).__name__}")
+    return (not arsyet), arsyet
+
+
 def _classify(from_addr: str, subject: str, body: str = "",
               company_domains: dict[str, str] | None = None,
               firm_linked: bool = False,
@@ -317,6 +400,9 @@ def run() -> dict:
         # dërgues të allowlist-it PERSONAL (D-219, 2026-10-09): korsia T1
         # personale — vepro + njofto, vetëm ops_send_reply.py, vetëm model primar
         "personal_t1": [],
+        # D-220: allowlisted senders that FAILED gardhet_t1 (DKIM/SPF,
+        # Reply-To) — they are listed under "unknown" with "t1_gardhet"
+        "personal_t1_gardhet_refuzuar": 0,
         "system_count": 0,
         "bounce_count": 0,
         "optout_count": 0,
@@ -372,6 +458,17 @@ def run() -> dict:
                              firm_linked=_is_matter_alias(msg)
                              or sender_addr in outreach_contacts,
                              personal_allow=personal_allow)
+            t1_gardhet: dict | None = None
+            if kind == "personal_t1":
+                # D-220 gates: no proof of origin / foreign Reply-To =>
+                # draft-only lane, reasons kept for the report + stderr log.
+                lejohet, arsyet = gardhet_t1(msg)
+                t1_gardhet = {"lejohet": lejohet, "arsyet": arsyet}
+                if not lejohet:
+                    kind = "unknown"
+                    report["personal_t1_gardhet_refuzuar"] += 1
+                    print(f"[inbox-triage] personal_t1 -> unknown (gardhet D-220) uid={uid} "
+                          f"from={sender_addr} arsyet={','.join(arsyet)}", file=sys.stderr)
             if (kind in ("human", "unknown", "personal_t1")
                     and len(report["human"]) + len(report["unknown"])
                     + len(report["personal_t1"])
@@ -413,7 +510,7 @@ def run() -> dict:
                 # "human" (i lidhur me lëndë) te human; "personal_t1" (allowlist
                 # personal, D-219) te korsia e vet; "unknown" te bucket-i
                 # i vet — draft-only (VENDIM I HALIMIT 2026-09-07).
-                report[kind if kind in ("human", "personal_t1") else "unknown"].append({
+                hyrja = {
                     "uid": uid,
                     "from": from_h,
                     "reply_to": email.utils.parseaddr(
@@ -423,7 +520,10 @@ def run() -> dict:
                     "date": _decode(msg.get("Date")),
                     "message_id": str(msg.get("Message-ID") or "").strip(),
                     "snippet": snippet,
-                })
+                }
+                if t1_gardhet is not None:
+                    hyrja["t1_gardhet"] = t1_gardhet
+                report[kind if kind in ("human", "personal_t1") else "unknown"].append(hyrja)
             processed_up_to = uid
 
         state["last_uid"] = processed_up_to
