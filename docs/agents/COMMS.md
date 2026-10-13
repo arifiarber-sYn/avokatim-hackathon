@@ -175,6 +175,12 @@ the owner/agent and never wired to a timer.
   prefix, so it was promoted to `personale` and inflated `needs_attention`.
   Added `facebookmail.com` to `_BULK_DOMAIN` and `friendsuggestion` to
   `_BULK_LOCAL`. Human senders unchanged.
+- **Inbox hygiene fix-up (2026-10-13, sekretari handoff)**: Alibaba marketplace
+  notifications escaped every heuristic — `feedback@service.alibaba.com`
+  ("New seller message…") has no `_NOISE` keyword and an unknown local part, so
+  it was promoted to `personale` (the only 1/1 "kërkojnë vëmendje" that morning).
+  Added `alibaba` to `_NOISE`. Human senders unchanged (verified: a plain
+  `Arben <arben@example.com>` mail still classifies `personale`).
 - `scripts/ops_inbox_triage.py` (cron every 10 min, read-only IMAP PEEK)
   classifies inbound mail; human mail → Telegram with context + a
   **final, ready-to-send draft** signed "Arbër Arifi — AvokatIM".

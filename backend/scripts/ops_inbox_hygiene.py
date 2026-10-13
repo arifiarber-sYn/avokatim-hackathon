@@ -53,6 +53,11 @@ _NOISE = (
     "tiktok", "shopify", "newsletter", "noreply", "no-reply", "notification",
     "notifications", "mailer", "marketing", "promo", "cursor", "digest",
     "updates", "info@", "news@", "team@", "chess", "devpost",
+    # Alibaba marketplace notifications (sekretari handoff 2026-10-13:
+    # "feedback@service.alibaba.com" — "New seller message..." — had no
+    # _NOISE keyword and an unknown local part, so it was promoted to
+    # "personale" and inflated "kërkojnë vëmendje" (1/1 that morning).
+    "alibaba",
 )
 
 # Bulk-sender local parts: a display name alone does NOT make a sender
@@ -77,6 +82,11 @@ _BULK_DOMAIN = (
     # "Facebook Friend Suggestions <friendsuggestion@facebookmail.com>"
     # escaped _NOISE and promoted to "personale" -> inflated needs_attention).
     "facebookmail.com",
+    # Monitoring notifications (sekretari handoff 2026-10-11: "Healthchecks.io
+    # <healthchecks.io@healthchecks.io>" UP/DOWN alerts for halim-dead-man had
+    # no _NOISE keyword and an unknown local part, so 2 of 4 that morning were
+    # promoted to "personale" -> inflated needs_attention).
+    "healthchecks.io",
 )
 _BULK_DOMAIN_PREFIX = (
     "engage.", "email.", "mail.", "news.", "marketing.", "notify.",
