@@ -181,6 +181,14 @@ the owner/agent and never wired to a timer.
   it was promoted to `personale` (the only 1/1 "kërkojnë vëmendje" that morning).
   Added `alibaba` to `_NOISE`. Human senders unchanged (verified: a plain
   `Arben <arben@example.com>` mail still classifies `personale`).
+- **Inbox hygiene fix-up (2026-10-14, sekretari handoffs 2026-10-13T191200Z +
+  2026-10-14T062139Z)**: Meta hackathon bulk mail escaped every heuristic —
+  `AI at Meta <update@digital.metamail.com>` ("It's go time: Apply…") has local
+  part `update` (not in `_BULK_LOCAL`) and domain `digital.metamail.com` (a
+  subdomain, so the exact-match `_BULK_DOMAIN` test missed it), so it was
+  promoted to `personale` and inflated `needs_attention` (1/1). Added `metamail`
+  to `_NOISE` (substring token, robust to metamail subdomains). Verified: bulk
+  → `reklama`/T0, plain human senders still `personale`.
 - `scripts/ops_inbox_triage.py` (cron every 10 min, read-only IMAP PEEK)
   classifies inbound mail; human mail → Telegram with context + a
   **final, ready-to-send draft** signed "Arbër Arifi — AvokatIM".

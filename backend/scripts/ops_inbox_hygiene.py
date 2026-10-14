@@ -58,6 +58,13 @@ _NOISE = (
     # _NOISE keyword and an unknown local part, so it was promoted to
     # "personale" and inflated "kërkojnë vëmendje" (1/1 that morning).
     "alibaba",
+    # Meta hackathon bulk mail (sekretari handoffs 2026-10-13T191200Z +
+    # 2026-10-14T062139Z: "AI at Meta <update@digital.metamail.com>" — "It's go
+    # time: Apply..." — local part "update" is not in _BULK_LOCAL and the domain
+    # "digital.metamail.com" escaped _BULK_DOMAIN, so it was promoted to
+    # "personale" and inflated "kërkojnë vëmendje" (1/1). Substring token is
+    # robust to metamail subdomains.)
+    "metamail",
 )
 
 # Bulk-sender local parts: a display name alone does NOT make a sender
