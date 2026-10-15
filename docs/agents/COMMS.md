@@ -189,6 +189,17 @@ the owner/agent and never wired to a timer.
   promoted to `personale` and inflated `needs_attention` (1/1). Added `metamail`
   to `_NOISE` (substring token, robust to metamail subdomains). Verified: bulk
   → `reklama`/T0, plain human senders still `personale`.
+- **Inbox hygiene fix-up (2026-10-15, sekretari handoff 20261015T174128Z)**:
+  Namecheap registrar bulk notice escaped every heuristic —
+  `Namecheap Support <support@namecheap.com>` ("Upcoming price changes on your
+  .com domain") has local part `support` (not in `_BULK_LOCAL`) and domain
+  `namecheap.com` (not in `_BULK_DOMAIN`), so the display name promoted it to
+  `personale` and inflated `needs_attention`. Two fixes: `namecheap` added to
+  `_NOISE` (all namecheap mail → `reklama`/T0) and `support` added to
+  `_BULK_LOCAL` (generic role-mailbox class, so any vendor's `support@` is no
+  longer read as a human — `_FINANCE` still wins first for bank senders).
+  Verified: namecheap → `reklama`; `Raiffeisen <support@raiffeisen.at>` stays
+  `financiare`; plain human sender still `personale`.
 - `scripts/ops_inbox_triage.py` (cron every 10 min, read-only IMAP PEEK)
   classifies inbound mail; human mail → Telegram with context + a
   **final, ready-to-send draft** signed "Arbër Arifi — AvokatIM".

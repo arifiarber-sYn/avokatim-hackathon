@@ -65,6 +65,13 @@ _NOISE = (
     # "personale" and inflated "kërkojnë vëmendje" (1/1). Substring token is
     # robust to metamail subdomains.)
     "metamail",
+    # Namecheap registrar bulk notices (sekretari handoff 20261015T174128Z:
+    # "Namecheap Support <support@namecheap.com>" — "Upcoming price changes on
+    # your .com domain" — local part "support" was not in _BULK_LOCAL and the
+    # domain "namecheap.com" not in _BULK_DOMAIN, so a display name promoted it
+    # to "personale" and inflated "kërkojnë vëmendje". Sender token keeps ALL
+    # namecheap mail in reklama/T0 — price-change/marketing notices included.)
+    "namecheap",
 )
 
 # Bulk-sender local parts: a display name alone does NOT make a sender
@@ -73,6 +80,11 @@ _NOISE = (
 _BULK_LOCAL = (
     "streaks", "hello", "welcome", "alerts", "receipts", "no-reply",
     "noreply", "notifications", "notification", "friendsuggestion",
+    # Role mailboxes (sekretari handoff 20261015T174128Z): a vendor's
+    # "support@" with a display name is still an organisation, not a human —
+    # it must not be promoted to "personale". Generic fix for the recurring
+    # class beyond "namecheap"; _FINANCE still wins for bank/receipt senders.
+    "support",
 )
 
 # Bulk/marketing domains + ESP subdomain prefixes: the LOCAL part alone is not
