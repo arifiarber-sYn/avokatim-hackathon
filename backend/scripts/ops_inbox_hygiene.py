@@ -72,6 +72,12 @@ _NOISE = (
     # to "personale" and inflated "kërkojnë vëmendje". Sender token keeps ALL
     # namecheap mail in reklama/T0 — price-change/marketing notices included.)
     "namecheap",
+    # Hugging Face platform notifications (sekretari handoff 20261016T070129Z:
+    # "Hugging Face <website@huggingface.co>" — login/access notices, a bulk
+    # no-reply sender — escaped _NOISE and _BULK_DOMAIN, so 5 of 5 that morning
+    # were promoted to "personale" and inflated "kërkojnë vëmendje". Substring
+    # token is robust to huggingface subdomains.)
+    "huggingface",
 )
 
 # Bulk-sender local parts: a display name alone does NOT make a sender
@@ -85,6 +91,10 @@ _BULK_LOCAL = (
     # it must not be promoted to "personale". Generic fix for the recurring
     # class beyond "namecheap"; _FINANCE still wins for bank/receipt senders.
     "support",
+    # Vendor "website@" role mailbox (same handoff as above): a generic
+    # org-role local part is not a human, even with a display name, so it must
+    # not be promoted to "personale". Generic fix for this recurring class.
+    "website",
 )
 
 # Bulk/marketing domains + ESP subdomain prefixes: the LOCAL part alone is not

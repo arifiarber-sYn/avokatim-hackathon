@@ -200,6 +200,17 @@ the owner/agent and never wired to a timer.
   longer read as a human — `_FINANCE` still wins first for bank senders).
   Verified: namecheap → `reklama`; `Raiffeisen <support@raiffeisen.at>` stays
   `financiare`; plain human sender still `personale`.
+- **Inbox hygiene fix-up (2026-10-16, sekretari handoff 20261016T070129Z)**:
+  Hugging Face platform notifications escaped every heuristic —
+  `Hugging Face <website@huggingface.co>` (login/access notices, a bulk
+  no-reply sender; `email_allowlist.py check --korsia personal` → REFUZOHET)
+  has local part `website` (not in `_BULK_LOCAL`) and domain `huggingface.co`
+  (not in `_BULK_DOMAIN`), so all 5 of 5 that morning were promoted to
+  `personale` and inflated `needs_attention`. Two fixes: `huggingface` added to
+  `_NOISE` (substring token, robust to HF subdomains → `reklama`/T0) and
+  `website` added to `_BULK_LOCAL` (generic org-role mailbox, so a vendor's
+  `website@` is no longer read as a human). Verified: HF → `reklama`; plain
+  human sender still `personale`.
 - `scripts/ops_inbox_triage.py` (cron every 10 min, read-only IMAP PEEK)
   classifies inbound mail; human mail → Telegram with context + a
   **final, ready-to-send draft** signed "Arbër Arifi — AvokatIM".
