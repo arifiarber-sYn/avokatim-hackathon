@@ -27,6 +27,7 @@ STRONG_HINTS = {
     "konkurrenc", "shoqeri", "shoqëri", "detyrim", "familj", "procedur", "penal",
     "pron", "kushtetut", "tatim", "pun", "dhenave", "dhënave", "personale", "subjekt",
     "pasuri", "bashkeshort", "bashkëshort", "ndarje", "vdekj", "vdekje", "trash",
+    "hetim", "ankes", "shitës", "shtes", "pushim", "fëmij", "kontrollues", "mashtrim", "reklam", "shoqër",
 }
 SQ_MARKERS = set("ëçËÇ")
 

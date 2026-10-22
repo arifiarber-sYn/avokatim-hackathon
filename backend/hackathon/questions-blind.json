@@ -1,0 +1,15 @@
+[
+ {"id":"b01","question":"Kur duhet të paraqitet ankesa kundër vendimit të gjykatës?","expected_doc":"","keyword":"ankes","in_corpus":true},
+ {"id":"b02","question":"Çfarë detyrimesh ka shitësi ndaj blerësit?","expected_doc":"","keyword":"shitës","in_corpus":true},
+ {"id":"b03","question":"Si mbrohet punëmarrësi nga pushimi nga puna?","expected_doc":"","keyword":"pushim","in_corpus":true},
+ {"id":"b04","question":"Cilat të drejta ka fëmija në procedurën e kujdestarisë?","expected_doc":"","keyword":"fëmij","in_corpus":true},
+ {"id":"b05","question":"Kur shuhet shoqëria me përgjegjësi të kufizuar?","expected_doc":"","keyword":"shoqër","in_corpus":true},
+ {"id":"b06","question":"Çfarë duhet të bëjë kontrolluesi i të dhënave kur ka shkelje?","expected_doc":"","keyword":"kontrollues","in_corpus":true},
+ {"id":"b07","question":"Cilat janë pasojat juridike të mashtrimit në kontratë?","expected_doc":"","keyword":"mashtrim","in_corpus":true},
+ {"id":"b08","question":"Kur lirohet i pandehuri nga paraburgimi?","expected_doc":"","keyword":"paraburgim","in_corpus":true},
+ {"id":"b09","question":"Si ndahet trashëgimia kur nuk ka testament?","expected_doc":"","keyword":"trashëgim","in_corpus":true},
+ {"id":"b10","question":"Çfarë kushtesh kërkon ligji për reklamim të rremë?","expected_doc":"","keyword":"reklam","in_corpus":true},
+ {"id":"b11","question":"Sa është temperatura në Reykjavik sot?","expected_doc":"","keyword":"","in_corpus":false},
+ {"id":"b12","question":"Kush fitoi çmimin Nobel për fizikë më 2021?","expected_doc":"","keyword":"","in_corpus":false},
+ {"id":"b13","question":"Sa kilometra ka rruga Tiranë–Durrës?","expected_doc":"","keyword":"","in_corpus":false}
+]

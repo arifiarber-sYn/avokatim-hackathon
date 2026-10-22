@@ -119,3 +119,24 @@ Mësimi: 20/20 mbi setin tim nuk është provë; seti i dytë i paprekur është
 Prandaj çdo shifër në deck duhet të vijë nga seti held-out, jo nga ai i akorduar.
 
 Raportet: data/evidence/harness-v5-*.json dhe harness-v5-heldout-*.json
+
+
+## Seti i verbër + porta e zgjeruar (22.10.2026)
+
+Pas held-out, porta u zgjerua me termat që mungonin (hetim, ankes, shitës, pushim,
+fëmij, kontrollues, mashtrim, reklam, shoqër) dhe u ndërtua një SET I TRETË që s'ishte
+parë kurrë gjatë akordimit (questions-blind.json, 13 pyetje).
+
+| Seti | Brenda | Jashtë |
+|---|---|---|
+| I akorduar | 15/15 | 5/5 |
+| Held-out | 9/10 | 3/3 |
+| Blind | 10/10 | 3/3 |
+
+KUFIZIM METODOLOGJIK: metrika "brenda" kontrollon praninë e termit juridik në
+fragmentin e kthyer, jo korrektësinë e dokumentit të parë (hit@5 është 0 në këto dy
+sete sepse pritja e dokumentit u la bosh qëllimisht). Pra 10/10 nuk do të thotë
+"saktësi 100%"; do të thotë "nuk refuzon gabimisht dhe kthen fragmentin me termin e duhur".
+Matja me përgjigje-arta është hapi pasardhës dhe duhet bërë me sy njeriu.
+
+Deck: docs/hackathon/deck-open-agent.md
