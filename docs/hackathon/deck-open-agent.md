@@ -41,9 +41,9 @@ model lokal + matje e kostos në usage.jsonl.
 
 | Matja | Numri |
 |---|---|
-| Nen i saktë dhe i plotë | 1/10 |
-| Neni i duhur brenda top-3, por jo i pari ose jo i plotë | 5/10 |
-| Ligj i saktë, nen i afërt | 2/10 |
+| Ligji i saktë në vendin e parë | **10/10** |
+| Nen i saktë dhe i plotë | 2/10 |
+| Neni i duhur brenda top-3 | 7/10 |
 | Burim i gabuar në krye | **0/10** |
 
 Dallimi është thelbi: agjenti gjen ligjin e duhur pothuajse gjithmonë, por nuk zgjedh

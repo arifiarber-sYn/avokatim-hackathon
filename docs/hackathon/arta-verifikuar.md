@@ -120,3 +120,36 @@ Regresion: seti blind 10/10 brenda, 3/3 refuzuar, 0 gabime — filtri nuk prishi
 
 Kufizimi i mbetur: 1/10 nen i saktë. Sistemi gjen ligjin e duhur pothuajse gjithmonë,
 por nuk zgjedh gjithmonë nenin që përgjigjet.
+
+
+---
+
+# Raundi i pestë — renditje në nivel NENI (17:20)
+
+Ndryshimet: (a) kandidatët grupohen sipas (dokument, nen) dhe renditen me tekstin e PLOTË
+të nenit, jo me 280 shkronjat e para; (b) bonus për mbulimin e termave në nenin e plotë;
+(c) zbritje për ligj të përkohshëm (-0.15) dhe akt amendues (-0.04).
+
+| # | Pyetja | Neni i pari | Titulli | Verdikti |
+|---|---|---|---|---|
+| 1 | Parashkrimi | LMD 352 | Afati i përgjithshëm i parashkrimit | **SAKTË** (më parë: Ligji i Punës 87) |
+| 2 | Kontrata e punës | Punës 10 + 11 | Përmbajtja e Kontratës | **SAKTË me zgjerim** |
+| 3 | Pasuria e bashkëshortëve | Familjes 47 | Pasuria e përbashkët | PJESSHËM (përkufizim) |
+| 4 | Paraburgimi | KPP 182 | Paraburgimi | PJESSHËM (më parë: kod i shfuqizuar 274) |
+| 5 | Trashëgimia | Trashëgimisë 5 | Personi i vdekur | PJESSHËM |
+| 6 | Të dhënat personale | MDP 14 | E drejta për qasje | PJESSHËM |
+| 7 | SHPK | Tregtare 106 | ...me një Aksionar | PJESSHËM (nëntip) |
+| 8 | Konkurrenca | 08/L-056 20 | — | PJESSHËM (ligj i saktë) |
+| 9 | Martesa | Familjes 16 | Kushtet për lidhjen e martesës | **SAKTË** |
+| 10 | Konsumatori | 06/L-034 117 | — | PJESSHËM (ligj i saktë) |
+
+## Numrat
+
+| Matja | Raundi 4 | Raundi 5 |
+|---|---|---|
+| Ligji i saktë në vendin e parë | 8/10 | **10/10** |
+| Nen i saktë dhe i plotë | 1/10 | **2/10** (+2 gati) |
+| Nen i duhur brenda top-3 | 5/10 | **7/10** |
+| Burim i gabuar në krye | 0/10 | **0/10** |
+
+Regresion: blind 10/10 brenda, 3/3 refuzuar, 0 gabime.

@@ -319,3 +319,14 @@ Numrat e 10 pyetjeve: 1/10 nen i saktë, 5/10 nen i duhur në top-3, 0/10 burim 
 Slide 8 u rishkrua: ndan "kërkimi" (blind 10/10, refuzim 3/3) nga "përgjigjja"
 (1/10 nen i saktë, 5/10 nen i duhur në top-3, 0/10 burim i gabuar).
 PDF u rigjenerua: 10 faqe, 52 KB.
+
+
+## Renditje në nivel neni (22.10.2026, 17:20)
+
+demo.refine_articles(): grupon kandidatët sipas (doc_id, section), lexon tekstin e plotë
+të nenit (deri 6000 shkronja), shton COVERAGE_BONUS*mbulim dhe zbret PENALTY_TEMPORARY
+(0.15, "i përkohshëm") / PENALTY_AMENDMENT (0.04, "ndryshimin dhe plotësim").
+
+Efekti: ligji i saktë në vendin e parë 8/10 -> 10/10; burim i gabuar 0/10 mbetet;
+Kodi i Përkohshëm (neni 274) nuk del më përpara Kodit të Procedurës Penale në fuqi.
+Regresion blind: 10/10, 3/3 refuzuar, 0 gabime.

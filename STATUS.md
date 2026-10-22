@@ -17,7 +17,8 @@ Data: 22.10.2026 · Dega: hackathon/open-agent-2026 · Afati: 27.10.2026 23:45 U
 - E matur: prania e termit juridik ne fragmentin e kthyer; refuzimi i pyetjeve jashte
   korpusit.
 - E matur tani (10 pyetje, verifikim AI mbi titullin dhe tekstin e nenit):
-  1/10 nen i sakte dhe i plote, 5/10 nen i duhur brenda top-3, 0/10 burim i gabuar ne krye.
+  10/10 ligj i sakte ne vendin e pare, 2/10 nen i sakte i plote, 7/10 nen i duhur brenda
+  top-3, 0/10 burim i gabuar ne krye.
   Detajet: docs/hackathon/arta-verifikuar.md
 
 ## Sponsoret
