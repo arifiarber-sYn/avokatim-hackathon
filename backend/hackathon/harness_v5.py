@@ -24,6 +24,7 @@ TOP_K = 5
 CANDIDATES = 50
 MIN_SIM = 0.42
 KW_BONUS = 0.12
+PRIMARY_BONUS = 0.05
 
 
 def strong_terms(terms: list[str]) -> list[str]:
@@ -36,7 +37,8 @@ def rerank(hits: list[dict], terms: list[str]) -> list[dict]:
         text = (h["snippet"] or "").lower()
         hits_count = sum(1 for k in keys if k in text)
         h["kw_hits"] = hits_count
-        h["score"] = h["sim"] + KW_BONUS * min(hits_count, 3)
+        bonus = PRIMARY_BONUS if (h.get("doc_type") or "").lower() in {"law", "code"} else 0.0
+        h["score"] = h["sim"] + KW_BONUS * min(hits_count, 3) + bonus
     return sorted(hits, key=lambda h: h["score"], reverse=True)
 
 
@@ -55,7 +57,7 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     sql = """
-    SELECT d.title, c.seq, c.text, 1 - (c.embedding <=> %(v)s::vector) AS sim
+    SELECT d.title, c.seq, c.text, 1 - (c.embedding <=> %(v)s::vector) AS sim, d.doc_type
     FROM legal_corpus_chunks c
     JOIN legal_corpus_docs d ON d.id = c.doc_id
     WHERE c.embedding IS NOT NULL AND (%(lang)s::text IS NULL OR d.language = %(lang)s::text)
@@ -75,7 +77,7 @@ def main() -> int:
                 lit = "[" + ",".join(f"{x:.6f}" for x in vec.tolist()) + "]"
                 cur.execute(sql, {"v": lit, "k": CANDIDATES, "lang": lang})
                 cand = [
-                    {"title": r[0], "seq": r[1], "snippet": (r[2] or "")[:280], "sim": float(r[3] or 0)}
+                    {"title": r[0], "seq": r[1], "snippet": (r[2] or "")[:280], "sim": float(r[3] or 0), "doc_type": r[4]}
                     for r in cur.fetchall()
                 ]
                 cand = [c for c in cand if c["sim"] >= MIN_SIM]

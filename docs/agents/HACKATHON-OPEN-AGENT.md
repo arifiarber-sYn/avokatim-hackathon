@@ -154,3 +154,11 @@ Neni 87 0.660, [4] LMD Neni 373 0.638 — pra vendimi del mbi ligjin, dhe kjo du
 me një preferencë për burimet primare (ligj/kod) ndaj vendimeve.
 
 Ekzekutimi: AVOKATIM_DSN=<dsn> python hackathon/demo.py "pyetja"
+
+
+## Preferenca për burime primare (22.10.2026)
+
+Demo-ja nxori një defekt: për pyetjen për parashkrimin, një vendim gjykate (0.679)
+dilte mbi ligjin (LMD Neni 373, 0.638). U shtua bonus +0.05 për doc_type law/code.
+Seti blind u ri-mat: 10/10 brenda, 3/3 jashtë — pa regresion.
+Dokumentim dorëzimi: docs/hackathon/README-dorëzimi.md

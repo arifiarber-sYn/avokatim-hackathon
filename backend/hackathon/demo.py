@@ -20,7 +20,7 @@ from harness_v5 import CANDIDATES, MIN_SIM, TOP_K, rerank
 
 MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 _SQL = """
-SELECT d.title, c.section, c.seq, c.text, 1 - (c.embedding <=> %(v)s::vector) AS sim
+SELECT d.title, c.section, c.seq, c.text, 1 - (c.embedding <=> %(v)s::vector) AS sim, d.doc_type
 FROM legal_corpus_chunks c
 JOIN legal_corpus_docs d ON d.id = c.doc_id
 WHERE c.embedding IS NOT NULL AND (%(lang)s::text IS NULL OR d.language = %(lang)s::text)
@@ -40,7 +40,7 @@ def retrieve(question: str, model) -> tuple[list[dict], str]:
         cur.execute(_SQL, {"v": lit, "k": CANDIDATES, "lang": lang})
         rows = cur.fetchall()
     cand = [
-        {"title": r[0], "section": r[1], "seq": r[2], "snippet": (r[3] or "")[:280], "sim": float(r[4] or 0)}
+        {"title": r[0], "section": r[1], "seq": r[2], "snippet": (r[3] or "")[:280], "sim": float(r[4] or 0), "doc_type": r[5]}
         for r in rows
     ]
     cand = [c for c in cand if c["sim"] >= MIN_SIM]
