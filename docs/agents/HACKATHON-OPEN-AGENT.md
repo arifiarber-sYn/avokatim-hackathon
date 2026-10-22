@@ -380,3 +380,9 @@ U provua me token admin (idToken nga /api/auth/login i UI-se):
 Perfundim: ne kete deployment regjistrimi i datasource nuk hapet permes REST-it qe perdor
 UI-ja; kerkon veprim ne UI (SPA) ose rol tjeter. Adapteri mbetet kontrate e provuar
 (SELECT 1 -> 200) dhe kufizimi deklarohet ne submission; federimi i korpusit nuk pretendohet.
+
+## Demo qe xhiron pa baze (22.10.2026)
+
+- backend/hackathon/demo_sample.py + sample_corpus.jsonl (555 nene, 8 ligje, pa baza).
+- BM25 + stemming i lehte + bonus titulli; refuzon pyetjet qe s kane pergjigje ne moster.
+- Qellimi: juria ta shohe sjelljen ne 60 sekonda pa Postgres.
