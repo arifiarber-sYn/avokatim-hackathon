@@ -32,7 +32,7 @@ class Index:
         heads = []
         for r in rows:
             lines = r['text'].split(chr(10))
-            heading = lines[1] if len(lines) > 1 else ''
+            heading = lines[0] if lines else ''
             heads.append(tokens(r['title'] + ' ' + heading + ' ' + r['section']))
         self.heads = heads
         self.N = len(rows)
@@ -77,7 +77,7 @@ def main() -> int:
     for q in questions:
         hits = idx.search(q)
         print('Pyetja:', q)
-        if not hits or hits[0][1] == 0:
+        if not hits or hits[0][0] < 2.0:
             print("  s'e di — asnjë nen në mostër nuk i përgjigjet kësaj pyetjeje.")
             print()
             continue
