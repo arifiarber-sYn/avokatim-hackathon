@@ -81,3 +81,25 @@ raporton available() == False dhe ngre AdapterError (fail-closed, pa thirrje të
 
 Testet: tests/test_adapters_meta.py (3 teste) + tests/test_adapters_contract.py (5 teste)
 — 8 passed, pa rrjet.
+
+
+## Harness v4 — filtër gjuhe (22.10.2026)
+
+Defekti i v3: 16 906 dokumente gjermane vs 3 086 shqipe; kërkimi vektor pa filtër
+tërhiqte BGH/Arbeitsgerichtsgesetz për pyetje shqipe.
+
+Ndryshimi: kur pyetja është shqipe (markerë ë/ç ose fjalë funksionale), kërkohet vetëm
+brenda d.language = 'sq'. Porta e domenit u ngushtua në terma të fortë juridikë.
+
+| Varianti | Brenda (ok/15) | Jashtë (refuzuar/5) | Gjithsej |
+|---|---|---|---|
+| v1 leksikor | 9 | 2 | 11/20 |
+| v2 + portë | 10 | 4 | 14/20 |
+| v3 vektor | 12 | 4 | 16/20 |
+| v4 vektor + gjuhë | 14 | 5 | 19/20 |
+
+hit@5 8/15, keyword@5 13/15. Mbetet q02 (parashkrimi) — retrieval kthen marrëveshje
+kredie, jo LMD.
+
+Raporti: data/evidence/harness-v4-*.json
+Ekzekutimi: AVOKATIM_DSN=<dsn> python hackathon/harness_v4.py
