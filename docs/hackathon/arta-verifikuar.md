@@ -56,3 +56,39 @@ kur neni referon "nenin X", silli edhe ai nen nga i njëjti dokument.
 2. Preferenca për kod e çon në kodin e duhur, por jo domosdoshmërisht në nenin e duhur
    (rasti 164). Duhet renditje në nivel neni, jo dokumenti.
 3. Pyetjet e gjera kanë nevojë për përgjigje me disa nene ose pyetje sqaruese.
+
+
+---
+
+# Raundi i tretë — të dhjetë pyetjet (16:50)
+
+Verifikim nga Halimi (AI) duke lexuar titullin dhe tekstin e nenit. NUK është verifikim juristi.
+
+| # | Pyetja | Neni i kthyer | Titulli i nenit | Verdikti |
+|---|---|---|---|---|
+| 1 | Afati i parashkrimit | Ligji i Punës 87 | Afati i parashkrimit (nga marrëdhënia e punës) | PJESSHËM — vetëm puna |
+| 2 | Përmbajtja e kontratës së punës | Punës 10 + 11 | Përmbajtja e Kontratës së Punës | **SAKTË** |
+| 3 | Ndarja e pasurisë | Familjes 47 (+45/46/50) | Pasuria e përbashkët | PJESSHËM — përkufizim |
+| 4 | Lirimi nga paraburgimi | KPP 182 (+184) | Paraburgimi | PJESSHËM — koncepti, jo lirimi |
+| 5 | Kush trashëgon | Trashëgimisë 5 + 11 | (personi i vdekur / radha) | PJESSHËM |
+| 6 | Të drejtat e subjektit | Mbrojtjes së të Dhënave 14 | E drejta për qasje | PJESSHËM — një e drejtë, jo lista |
+| 7 | Shoqëria me përgjegjësi të kufizuar | Shoqëritë Tregtare 106 | …me një Aksionar | PJESSHËM — nëntip, jo përkufizimi |
+| 8 | Mbrojtja e konkurrencës | e Drejtës Ndërkombëtare Private 92 | — | **GABIM** — domen i gabuar |
+| 9 | Kushtet e martesës | Familjes 16 (i 2-ti) | Kushtet për lidhjen e martesës | PJESSHËM — i saktë, por i 2-ti |
+| 10 | Mbrojtja e konsumatorit | Ushqim 8 (i 1-i), Konsumatorit 117 | — | **GABIM në krye**, ligji i duhur i 2-ti |
+
+## Numrat finalë (10 pyetje)
+
+| Matja | Numri |
+|---|---|
+| Nen i saktë dhe i plotë | **1/10** |
+| Neni i duhur brenda top-3, por jo i pari ose jo i plotë | 5/10 |
+| Ligj i saktë, nen i afërt | 2/10 |
+| Burim i gabuar në krye | **2/10** (konkurrenca, konsumatori) |
+
+## Defekti kryesor i mbetur
+
+Në 2 nga 10 raste, neni i parë vjen nga një ligj tjetër që përmend të njëjtat fjalë
+(konkurrenca → e drejta ndërkombëtare private; konsumatori → ligji i ushqimit).
+Zgjidhja: filtër domeni sipas temës së pyetjes (konkurrencë → ligji i konkurrencës),
+jo vetëm ngjashmëri tekstuale.
