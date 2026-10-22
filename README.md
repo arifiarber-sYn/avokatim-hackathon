@@ -56,3 +56,16 @@ Without the corpus the harness still documents the method and the scoring rules.
 ## License
 
 Code in this submission: MIT. The legal corpus and client data are not included.
+
+## Run it in 60 seconds — no database, no dependencies
+
+    git clone https://github.com/arifiarber-sYn/avokatim-hackathon.git
+    cd avokatim-hackathon/backend/hackathon
+    python3 demo_sample.py "Çfarë duhet të përmbajë kontrata e punës?"
+
+This runs against a 555-article sample of real Kosovo law (8 statutes, laws only — no court
+decisions, no personal data) with pure Python and no installs. It shows the same behaviour as
+production: document + article + fragment, and *"I don't know"* for questions outside the corpus.
+
+The full system (`demo.py`, `harness_v5.py`) needs PostgreSQL + pgvector with the 353k-chunk
+corpus, which is not distributed.
