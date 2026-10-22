@@ -49,3 +49,22 @@ rastësishme nga ligjet. Me të, 4/5 refuzohen saktë.
 
 Raportet: data/evidence/harness-*.json (v1) dhe harness-v2-*.json (v2).
 Ekzekutimi: AVOKATIM_DSN=<dsn> python hackathon/harness_v2.py
+
+
+## Harness v3 — kërkim vektor (22.10.2026)
+
+Modeli paraphrase-multilingual-MiniLM-L12-v2 (384 dim) nga cache lokale; pgvector
+mbi 350 612 chunks. Asnjë tekst nuk del nga makina.
+
+| Varianti | Brenda (ok/15) | Jashtë (refuzuar/5) | Gjithsej |
+|---|---|---|---|
+| v1 leksikor | 9 | 2 | 11/20 |
+| v2 + portë domeni | 10 | 4 | 14/20 |
+| v3 vektor + portë | 12 | 4 | 16/20 |
+
+hit@5 u ngjit nga 6 në 7, keyword@5 nga 8 në 10. Mbeten: q02 (parashkrim),
+q17 (punë), q18 (ekzekutim) — kërkim vektor gjen tekstin e duhur por jo titullin
+e pritur; q15 (Tokio) kalon portën sepse "regjistrim" është term juridik.
+
+Raporti: data/evidence/harness-v3-*.json
+Ekzekutimi: AVOKATIM_DSN=<dsn> python hackathon/harness_v3.py
