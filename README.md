@@ -1,54 +1,58 @@
-# AvokatIM — agjenti që shpjegon pse
+# AvokatIM — the agent that explains why
 
-Dorezim për **Open Agent Hackathon 2026**, track **Wildcard [Tinkerer]**.
+Submission for **Open Agent Hackathon 2026**, track **Wildcard [Tinkerer]**.
 
-Një agjent ligjor për gjuhën shqipe që **nuk jep përgjigje pa burim**: çdo pohim vjen me
-dokument, nen dhe fragment, dhe kur baza mungon thotë *"s'e di"* me arsye — në vend që të
-sajojë.
+A legal agent for the Albanian language that **never answers without a source**: every claim
+comes with a document, an article and a fragment, and when the corpus has no answer it says
+*"I don't know"* with a reason instead of inventing one.
 
-## Çka është brenda
+## What is in this repository
 
-| Dosja | Çka |
+| Path | What |
 |---|---|
-| docs/hackathon/submission.md | përshkrimi i dorezimit |
-| docs/hackathon/deck.pdf | 10 slide |
-| docs/hackathon/video/demo-full.mp4 | demo 90 s mbi produktin real |
-| docs/hackathon/arta-verifikuar.md | verifikimi i 10 përgjigjeve, raund pas raundi |
-| backend/hackathon/ | harness 3 sete + demo CLI |
-| backend/app/adapters/ | Zetaris, Meterless, Meta Model — kontrata + teste |
+| docs/hackathon/submission.md | submission write-up |
+| docs/hackathon/deck.pdf | 10 slides |
+| docs/hackathon/video/demo-full.mp4 | 90 s demo, recorded on the live product |
+| docs/hackathon/arta-verifikuar.md | verification of 10 gold answers, round by round |
+| backend/hackathon/ | retrieval harness (3 question sets) + demo CLI |
+| backend/app/adapters/ | Zetaris, Meterless and Meta Model adapters with contract tests |
 
-## Numrat (të matur, jo të pretenduar)
+## Numbers (measured, not claimed)
 
-**Kërkimi** — set blind 13 pyetje: 10/10 brenda korpusit, 3/3 refuzuar jashtë domenit.
+**Retrieval** — blind set, 13 questions: 10/10 answered inside the corpus, 3/3 out-of-domain
+questions refused with a reason.
 
-**Përgjigjja** — 10 pyetje-etalon, verifikim mbi titullin dhe tekstin e nenit:
+**Answers** — 10 gold questions, checked against the article title and full article text:
 
-| Matja | Numri |
+| Metric | Value |
 |---|---|
-| Ligji i saktë në vendin e parë | 10/10 |
-| Nen i saktë dhe i plotë | 2/10 |
-| Neni i duhur brenda top-3 | 7/10 |
-| Burim i gabuar në krye | 0/10 |
+| Correct law at rank 1 | 10/10 |
+| Exact and complete article | 2/10 |
+| Correct article within top-3 | 7/10 |
+| Wrong source at rank 1 | 0/10 |
 
-Kufiri i deklaruar hapur: sistemi gjen ligjin e duhur pothuajse gjithmonë, por nuk zgjedh
-gjithmonë nenin që përgjigjet. Kjo matet dhe shkruhet, nuk fshihet pas një mesatareje.
+Stated limit: the system finds the right law almost always, but does not always pick the
+article that answers. We measure it and print it instead of hiding it behind an average.
 
-## Si ekzekutohet
+## Verify in two minutes
 
-Kërkon PostgreSQL me pgvector dhe korpusin ligjor (nuk shpërndahet — përmban të dhëna
-reale). Pa korpusin, harness-i shërben si kontratë dhe si dokumentim i metodës.
-
-    export AVOKATIM_DSN="postgresql://user:pass@127.0.0.1:5433/avokatim"
+    git clone https://github.com/arifiarber-sYn/avokatim-hackathon.git
+    cd avokatim-hackathon
+    # the harness needs PostgreSQL + pgvector with the legal corpus (not distributed)
+    export AVOKATIM_DSN="postgresql://user:***@127.0.0.1:5433/avokatim"
     python backend/hackathon/harness_v5.py
-    python backend/hackathon/demo.py "Çfarë duhet të përmbajë kontrata e punës?"
 
-## Sponsoret
+Without the corpus the harness still documents the method and the scoring rules.
 
-- **Zetaris** — adapter live ndaj REST SQL editor; SELECT 1 → 200. Federimi i korpusit
-  kërkon regjistrim datasource në UI; deklarohet si hap i mbetur, jo si i kryer.
-- **Meterless** — adapter + usage.jsonl për kosto/tokens. Nightshift-i nativ nuk ka build
-  për Linux x86_64; kërkesa për build/API është dërguar. Nuk pretendohet integrim i plotë.
+## Sponsors
 
-## Licenca
+- **Zetaris** — live adapter against the REST SQL editor (SELECT 1 → 200). Federating the
+  corpus requires registering a datasource in the platform UI; declared as a remaining step,
+  not as done.
+- **Meterless** — adapter plus usage.jsonl for cost and tokens. The native Nightshift build
+  exists only for macOS, Windows and DGX Spark (arm64); a build/API request was sent.
+  Partial integration is declared, not overstated.
 
-Kodi i këtij dorezimi: MIT. Korpusi ligjor dhe të dhënat e klientëve nuk përfshihen.
+## License
+
+Code in this submission: MIT. The legal corpus and client data are not included.
