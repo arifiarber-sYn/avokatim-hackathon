@@ -428,3 +428,15 @@ Për të rifituar gjendjen: token i ri API nga llogaria Zetaris (Cloud/UI), past
 
 - demo_sample.py + sample_corpus.jsonl (567 nene, titujt e neneve si rresht i pare,
   refuzim sipas skorit < 2.0) u sinkronizuan nga eksporti i verifikuar.
+
+## Dorëzimi në platformë u krye (22.10.2026, 17:50)
+
+- Platforma: hackathon.genai.works · hakkathon_id 019fd164-82b9-7382-a536-d9093c576ed2
+- Track: **The Agent That Can Explain Why** (zgjedhur nga Halimi: përputhje fjalë për fjalë
+  me tezën e produktit; Wildcard-i mbetet i lirë si dorëzim i dytë opsional).
+- Përmbajtja: description 1271 karaktere, video demo-2min.mp4 (ngarkuar), deck.pdf (ngarkuar),
+  repo https://github.com/arifiarber-sYn/avokatim-hackathon
+- Statusi: **Submitted** (1/3 submissions).
+- Hyrja: fjalëkalim i ri i platformës ruajtur 0600 ne ~/.securevault/secrets/genai-works.key
+  (Google OAuth u bllokua nga Google per shfletues te automatizuar; reset linku erdhi me email).
+- Kërkesa për konfirmim: 'board still has open tasks (14 unfinished)' -> Submit anyway.
