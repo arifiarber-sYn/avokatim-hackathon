@@ -179,3 +179,17 @@ Rregullim: "Përgjigjja" -> "Përgjigja" në demo.py.
 U shtuan dy skena me substancë, jo me zë: "para/pas" e renditjes (vendim mbi ligj ->
 ligj i pari) dhe "citimi" (dokument + nen + fragment). Gjithsej 58.4 s, 1.6 MB.
 Skenat: titull, pyetje, deshmi, klik, para/pas, citim, refuzim, matje, arkitekture.
+
+
+## Fletë verifikimi për përgjigje-arta (22.10.2026)
+
+docs/hackathon/arta-per-verifikim.md — 10 pyetje, për secilën 3 kandidatët më të mirë
+(titull, nen, ngjashmëri, fragment) dhe një fushë "i saktë (plotëso)".
+
+Qëllimi: njeriu konfirmon/korrigjon, pastaj matet saktësia e vërtetë ndaj atyre
+përgjigjeve. Pa këtë hap, "saktësia" do të ishte matje e sistemit me vetveten.
+
+Vëzhgim i parë që del nga fleta: për "Kur fillon afati i parashkrimit të kërkesave?"
+kandidati kryesor është Ligji i Punës Neni 87 (parashkrim i kërkesave nga marrëdhënia
+e punës), jo LMD Neni 373 (parashkrim i përgjithshëm civil). Kjo tregon se pyetja
+duhet të jetë më e ngushtë ose renditja duhet të marrë parasysh domenin e pyetjes.
