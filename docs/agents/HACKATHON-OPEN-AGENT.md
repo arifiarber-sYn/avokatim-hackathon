@@ -172,3 +172,10 @@ arkitekturë. Të gjitha kartat janë renderim i output-it real të demo.py, jo 
 inskenuara. Konsole nuk hap dritare në këtë sesion, prandaj u zgjodh rruga e kartave.
 
 Rregullim: "Përgjigjja" -> "Përgjigja" në demo.py.
+
+
+## Video 58 s (22.10.2026)
+
+U shtuan dy skena me substancë, jo me zë: "para/pas" e renditjes (vendim mbi ligj ->
+ligj i pari) dhe "citimi" (dokument + nen + fragment). Gjithsej 58.4 s, 1.6 MB.
+Skenat: titull, pyetje, deshmi, klik, para/pas, citim, refuzim, matje, arkitekture.
