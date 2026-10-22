@@ -140,3 +140,17 @@ sete sepse pritja e dokumentit u la bosh qëllimisht). Pra 10/10 nuk do të thot
 Matja me përgjigje-arta është hapi pasardhës dhe duhet bërë me sy njeriu.
 
 Deck: docs/hackathon/deck-open-agent.md
+
+
+## Demo CLI (22.10.2026)
+
+backend/hackathon/demo.py — pyetje -> dëshmi -> përgjigje me citime, ose "s'e di" me arsye.
+Pa LLM në këtë hap: teksti i përgjigjes ndërtohet vetëm nga dëshmitë e kthyera, që të
+tregojë saktësisht çka do të citohej. Kur lidhet modeli (lokal ose Meta), ndryshon vetëm
+formulimi — citimet vijnë nga i njëjti burim.
+
+Shembull (pyetja për parashkrimin): [1] vendim i Dhomës së Posaçme 0.679, [2] Ligji i Punës
+Neni 87 0.660, [4] LMD Neni 373 0.638 — pra vendimi del mbi ligjin, dhe kjo duhet rregulluar
+me një preferencë për burimet primare (ligj/kod) ndaj vendimeve.
+
+Ekzekutimi: AVOKATIM_DSN=<dsn> python hackathon/demo.py "pyetja"
