@@ -237,6 +237,14 @@ class Settings(BaseSettings):
     # The gateway hosts multiple agents since 2026-09; hooks must name one.
     openclaw_hook_agent_id: str = "main"  # Halim
 
+    # --- Hackathon layer (Open Agent 2026, Wildcard [Tinkerer]) -------------
+    # Off by default: the production assistant behaves exactly as before.
+    hackathon_mode: bool = False
+    zetaris_base_url: str = ""
+    zetaris_api_key: str = ""
+    meterless_base_url: str = ""
+    hackathon_usage_log: str = "data/evidence/usage.jsonl"
+
 
 @lru_cache
 def get_settings() -> Settings:
