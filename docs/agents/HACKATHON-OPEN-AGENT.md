@@ -251,3 +251,20 @@ Gjendja: indeksi gjen nene ligjore, por ende nuk rendit saktë brenda kodit (p.s
 "kur lirohet nga paraburgimi" del KPP Neni 164 'Arrestimi gjatë fazës së hetimit' dhe jo
 Neni 185 'Paraburgimi'). Hapi tjetër: renditje sipas përputhjes së titullit, jo sipas
 gjatësisë së fragmentit.
+
+
+## Titulli i nenit — kufizim i struktures (22.10.2026, 16:30)
+
+Provova tre variante të renditjes së titujve:
+1. ORDER BY length(text) — doli nen i shkurtër i një kodi tjetër.
+2. Përputhje termash në 120 shkronjat e para — barazim, rend arbitrar.
+3. Peshim 3x për 60 shkronjat e para — të gjithë kandidatët dolën me të njëjtin skor (4),
+   sepse shumë ligje e kanë "paraburgim" në titullin e nenit.
+
+Shkaku: korpusi NUK ka kolonë titulli; titulli është brenda tekstit me formatim të
+ndryshueshëm ("Neni 185\nParaburgimi\n1. ..."). Pa fushë titulli, renditja në nivel neni
+nuk është e besueshme.
+
+Zgjidhja e propozuar: tabelë derivative hackathon_article_titles(doc_id, section, title)
+e ndërtuar një herë për dokumentet shqipe, pastaj renditje mbi të. Nuk prek skemën e
+prodhimit; shtohet vetëm në degën e garës.

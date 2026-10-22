@@ -79,7 +79,10 @@ def heading_bonus(hits: list[dict], terms: list[str], amount: float = 0.09) -> l
         n = sum(1 for t in terms if len(t) > 3 and t in head)
         h["head_hits"] = n
         if n:
-            h["score"] = h.get("score", h.get("sim", 0.0)) + amount * min(n, 2)
+            bonus = amount * min(n, 2)
+            if h.get("from_heading"):
+                bonus += 0.06
+            h["score"] = h.get("score", h.get("sim", 0.0)) + bonus
     return sorted(hits, key=lambda x: x.get("score", x.get("sim", 0.0)), reverse=True)
 
 
@@ -94,23 +97,29 @@ LIMIT %(k)s
 """
 
 
-def heading_search(terms: list[str], per_term: int = 3) -> list[dict]:
-    """Kerko ne TITUJT e neneve, jo vetem ne tekst.
+def heading_search(terms: list[str], per_term: int = 15, keep: int = 12) -> list[dict]:
+    """Kerko ne TITUJT e neneve dhe rendit sipas perputhjes se termave.
 
-    Pa kete, neni i duhur (p.sh. 'Paraburgimi', Neni 185) mund te mos hyje fare ne
-    kandidatet e kerkimit vektor, sepse teksti i tij i shkurter i titullit nuk ka
-    ngjashmeri te larte me pyetjen.
+    Renditja me gjatesi te fragmentit nuk punon: per "kur lirohet nga paraburgimi"
+    nxirrte nje nen te shkurter te nje kodi tjeter, jo "Neni 185 Paraburgimi".
+    Tani cdo kandidat vleresohet me sa terma te pyetjes ndodhen ne titull.
     """
-    out, seen = [], set()
+    out: dict[tuple, dict] = {}
+    probes = [t for t in terms if len(t) > 4][:3]
     with psycopg.connect(DSN) as conn, conn.cursor() as cur:
-        for t in [x for x in terms if len(x) > 4][:3]:
+        for t in probes:
             cur.execute(SQL_HEADING, {"t": "%" + t + "%", "k": per_term})
             for row in cur.fetchall():
-                key = (row[0], row[1])
-                if key in seen:
-                    continue
-                seen.add(key)
-                out.append({"title": row[0], "section": row[1], "seq": row[2],
-                            "snippet": (row[3] or "")[:280], "sim": 0.55,
-                            "doc_type": row[4], "from_heading": True})
-    return out
+                title, section, seq, text, dtype = row
+                head = " ".join((text or "").splitlines()[:2]).lower()
+                title_zone = head[:60]
+                score = 3 * sum(1 for x in terms if len(x) > 3 and x in title_zone)
+                score += sum(1 for x in terms if len(x) > 3 and x in head)
+                key = (title, section)
+                item = {"title": title, "section": section, "seq": seq,
+                        "snippet": (text or "")[:280], "sim": 0.60,
+                        "doc_type": dtype, "from_heading": True, "head_score": score}
+                if key not in out or item["head_score"] > out[key]["head_score"]:
+                    out[key] = item
+    ranked = sorted(out.values(), key=lambda x: (x["head_score"], -len(x["snippet"])), reverse=True)
+    return [x for x in ranked if x["head_score"] > 0][:keep]
