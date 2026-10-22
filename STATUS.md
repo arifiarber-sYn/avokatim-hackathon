@@ -26,8 +26,8 @@ Dorëzuar: platforma GenAI.Works — #1 **The Agent That Can Explain Why** (Subm
 
 | Sponsori | Statusi | Prova |
 |---|---|---|
-| Zetaris | Platforma xhiron (4 konteinerë healthy, UI 200); tokeni API refuzohet qe nga 22.10 17:10 -> adapteri NUK eshte live deri ne token te ri | backend/app/adapters/zetaris.py |
-| Zetaris datasource | I papërfunduar (hap manual ne UI) | — |
+| Zetaris | Platforma xhiron (4 konteinerë healthy, UI 307→login); **tokeni API PRANOHET përsëri — verifikuar live 22.10 20:2x** (`SELECT 1`→`[['1']]` 2×, `current_catalog()`→spark_catalog/default); dritarja e dështimit 17:10 ka mbaruar | backend/app/adapters/zetaris.py |
+| Zetaris datasource | **0 datasources** (`SHOW DATASOURCES`→`[]`); `legal_corpus` MUNGON; `CREATE TABLE` kthen metadata por tabela s'lexohet (Spark s'ka warehouse pa datasource) → hapi i mbetur: regjistrim datasource në UI (127.0.0.1:3011) | provë 22.10 20:2x |
 | Meterless | Adapter + usage.jsonl | backend/app/adapters/meterless.py |
 | Meterless Nightshift | Pa build per Linux x86_64; kerkesa derguar 22.10 | — |
 
