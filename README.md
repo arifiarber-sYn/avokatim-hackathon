@@ -13,6 +13,7 @@ comes with a document, an article and a fragment, and when the corpus has no ans
 | docs/hackathon/submission.md | submission write-up |
 | docs/hackathon/deck.pdf | 10 slides |
 | docs/hackathon/video/demo-full.mp4 | 90 s demo, recorded on the live product |
+| docs/hackathon/video/demo-2min.mp4 | 1:56 version with the before/after numbers |
 | docs/hackathon/arta-verifikuar.md | verification of 10 gold answers, round by round |
 | backend/hackathon/ | retrieval harness (3 question sets) + demo CLI |
 | backend/app/adapters/ | Zetaris, Meterless and Meta Model adapters with contract tests |
