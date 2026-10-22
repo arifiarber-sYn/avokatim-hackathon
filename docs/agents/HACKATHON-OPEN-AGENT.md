@@ -204,3 +204,10 @@ duhet të jetë më e ngushtë ose renditja duhet të marrë parasysh domenin e 
 
 Vlerësimi i garës u lexua nga faqja zyrtare; çmimet për Wildcard [Tinkerer]:
 1000/600/400 USD.
+
+
+## Video 81 s — skenat e sponsorëve (22.10.2026)
+
+U shtuan: "pse jo chatbot" (krahasim citimi/refuzimi/privatësie) dhe "statusi i sponsorëve"
+(Zetaris live SELECT 1 + datasource i papërfunduar; Meterless adapter + matje, pa build
+x86_64). Gjithsej 81.2 s, 2.0 MB — brenda kufirit 1-4 min të garës.

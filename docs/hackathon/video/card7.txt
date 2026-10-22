@@ -1,0 +1,10 @@
+Pse jo thjesht nje chatbot?
+
+  Chatbot                          AvokatIM
+  ------------------------------   ------------------------------
+  Pergjigje te sigurta             Pergjigje me burim + nen
+  Shpik kur s'di                   Thote "s'e di" + arsyen
+  Teksti del ne cloud              Dokumentet mbeten lokale
+  S'mund ta kontrollosh           Klik -> dokumenti, neni, fragmenti
+
+  Dallimi nuk eshte modeli. Eshte prova.
