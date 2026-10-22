@@ -25,3 +25,34 @@ juristi. Qëllimi: të dallojmë "gjen ligjin e duhur" nga "gjen nenin e duhur".
 
 ## 5 pyetjet e mbetura
 Nuk janë verifikuar ende. Përpara dorëzimit duhet ose verifikim njerëzor, ose i njëjti proces + rishikim.
+
+
+---
+
+# Raundi i dytë — pas zgjerimit të kontekstit (16:20)
+
+U shtuan: (a) preferencë për KOD në pyetjet procedurale (+0.08), (b) zgjerim konteksti —
+kur neni referon "nenin X", silli edhe ai nen nga i njëjti dokument.
+
+| # | Pyetja | Raundi 1 | Raundi 2 | Çka ndryshoi |
+|---|---|---|---|---|
+| 1 | Afati i parashkrimit | Neni 87 (punë) | Neni 87 (punë) | Pa ndryshim; pyetja e gjerë, duhet sqarim |
+| 2 | Përmbajtja e kontratës së punës | Neni 10 | **Neni 10 + Neni 11** | Zgjerimi solli nenin 11 "Përmbajtja e Kontratës së Punës" — përgjigjja e saktë |
+| 3 | Ndarja e pasurisë | Neni 47 | Neni 47 + 45/46/50 | Më afër procedurës, jo ende neni i ndarjes |
+| 4 | Lirimi nga paraburgimi | vendim gjykate | KPP Neni 164 | Kodi hyri para vendimeve, por neni 164 është "Arrestimi gjatë fazës së hetimit" — nuk është përgjigjja |
+| 5 | Kush trashëgon | Neni 5 | Neni 5 + 11 | Më afër radhës së trashëgimtarëve |
+
+## Numrat
+
+| Matja | Raundi 1 | Raundi 2 |
+|---|---|---|
+| Nen i saktë | 0/5 | **1/5** |
+| Ligj i saktë, nen i afërt | 4/5 | 3/5 |
+| Burim i gabuar | 1/5 | 1/5 |
+
+## Çka mbetet si defekt
+
+1. Zgjerimi funksionon vetëm kur neni referencia shfaqet në 280 shkronjat e para të fragmentit.
+2. Preferenca për kod e çon në kodin e duhur, por jo domosdoshmërisht në nenin e duhur
+   (rasti 164). Duhet renditje në nivel neni, jo dokumenti.
+3. Pyetjet e gjera kanë nevojë për përgjigje me disa nene ose pyetje sqaruese.

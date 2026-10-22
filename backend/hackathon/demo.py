@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from harness_v2 import DSN, terms_of
 from harness_v4 import in_domain, is_albanian
 from harness_v5 import CANDIDATES, MIN_SIM, TOP_K, rerank
+from context_expand import boost_code, expand_context, is_procedural
 
 MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 _SQL = """
@@ -47,6 +48,9 @@ def retrieve(question: str, model) -> tuple[list[dict], str]:
     hits = rerank(cand, terms)[:TOP_K]
     if not hits:
         return [], "pa dëshmi mbi pragun e ngjashmërisë"
+    if is_procedural(question):
+        hits = boost_code(hits)
+    hits, _refs = expand_context(hits, limit_refs=2)
     return hits, ""
 
 

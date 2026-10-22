@@ -223,3 +223,19 @@ që punon — jo mockup. Gjithsej 90.3 s, 2.2 MB, brenda kufirit 1-4 min.
 Regjistrimi me x11grab u ndal dy herë nga konflikte procesesh; u zgjidh me skript
 të veçantë dhe pastrim të x11grab para nisjes. Mësim: kur nis regjistrim në sfond,
 kontrollo pgrep -f x11grab para se ta nisësh përsëri.
+
+
+## Zgjerim konteksti + preferencë për kod (22.10.2026, 16:20)
+
+- backend/hackathon/context_expand.py — kur neni referon "nenin X", sillet edhe ai nen
+  nga i njëjti dokument; në pyetjet procedurale (paraburgim, afat, ankim, lirim) kodi
+  merr +0.08 ndaj vendimeve.
+- demo.py i përdor të dyja.
+
+Efekti i matur mbi 5 pyetjet e verifikuara:
+  nen i saktë 0/5 -> 1/5 (rasti "përmbajtja e kontratës së punës": Neni 10 + Neni 11),
+  ligj i saktë me nen të afërt 4/5 -> 3/5,
+  burim i gabuar 1/5 -> 1/5 (KPP Neni 164 është "arrestimi gjatë hetimit", jo lirimi).
+
+Kufizim: zgjerimi lexon vetëm 280 shkronjat e para të fragmentit.
+Detajet: docs/hackathon/arta-verifikuar.md
