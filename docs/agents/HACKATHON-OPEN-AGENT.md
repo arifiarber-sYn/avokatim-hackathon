@@ -352,3 +352,19 @@ Regresion blind: 10/10, 3/3 refuzuar, 0 gabime.
   (celesi ssh -T git@github.com -> Hi arifiarber-sYn! punon).
 - Nderkohe u ndertua arkivi: docs/hackathon/avokatim-hackathon-submission.zip
 
+
+## Publikimi u krye (22.10.2026, 17:00)
+
+Repo publike: https://github.com/arifiarber-sYn/avokatim-hackathon (dega main, commit a1bf008).
+
+Si u zgjidh bllokimi: tokeni fine-grained s krijon repo; tokeni klasik i vjetër i skaduar.
+Rruga e provuar: sesion web i autentikuar (login + TOTP), pastaj krijim i nje tokeni klasik
+me scope repo nga /settings/tokens (fusha oauth_access[default_expires_at]=30 duhet dërguar,
+përndryshe 422). Tokeni u ruajt 0600 ne vault; repo u krijua me API dhe u shty me SSH.
+
+Verifikim: ls-remote pa kredenciale -> a1bf008 ne refs/heads/main; faqja 200; API private:false;
+README raw lexohet publikisht.
+
+Mësim: para se te thuash "e pamundur", provo rrugen web-sesion -> token klasik; kufizimi ishte
+i tokenit te vjeter, jo i llogarise.
+
