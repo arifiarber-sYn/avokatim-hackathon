@@ -1,0 +1,34 @@
+<!doctype html><html lang="sq"><head><meta charset="utf-8"><style>body{margin:0;font-family:sans-serif;background:#0b0f14;color:#e6edf3}
+.slide{width:1280px;height:720px;box-sizing:border-box;padding:70px 80px;page-break-after:always;display:flex;flex-direction:column;justify-content:center;background:#0b0f14}
+.slide h1{font-size:44px;line-height:1.15;margin:0 0 26px;color:#7cd4ff}
+.slide p{font-size:24px;line-height:1.5;margin:8px 0;color:#c9d6e2}
+.slide li{font-size:23px;line-height:1.5;margin:6px 0;color:#c9d6e2}
+.slide code{background:#16202b;padding:2px 6px;border-radius:5px;font-size:20px}
+.slide table{border-collapse:collapse;margin-top:10px}
+.slide td{border:1px solid #223040;padding:8px 14px;font-size:21px}
+.num{font-size:16px;color:#4c6479;letter-spacing:2px;margin-bottom:14px}
+@page{size:1280px 720px;margin:0}</style></head><body><section class="slide"><div class="num">01</div><h1>1. Problemi</h1><p>1.8 milionë shqiptarë; dokumentet juridike ekzistojnë, por nuk janë të kërkueshme</p>
+<p>në gjuhën e tyre. Avokati i parë është kërkimi në Google — dhe ai nuk citon.</p></section><section class="slide"><div class="num">02</div><h1>2. Pse tani</h1><p>Korpusi është i pranishëm: 3 086 dokumente shqipe (ligje, kode), 353 442 copëza të</p>
+<p>indeksuara, 350 612 me vektor. Modeli multilingual punon lokalisht, pa cloud.</p></section><section class="slide"><div class="num">03</div><h1>3. Demo në një pamje</h1><p>Pyetje në shqip → përgjigje me burim → klik mbi citim → dokumenti, faqja, fragmenti.</p></section><section class="slide"><div class="num">04</div><h1>4. Arkitektura</h1><p>Orchestrator (plan → query → verify) mbi core-in e AvokatIM:</p>
+<ul><li>Zetaris adapter — burime të fragmentuara (SQL federativ)</li>
+<li>Meterless adapter — model lokal + matje kostoje</li>
+<li>Meta Model adapter — modelet e Meta-s (track-u Meta)</li></ul></section><section class="slide"><div class="num">05</div><h1>5. Zetaris</h1><p>Statusi: platforma lokale live (api :8888, ui :3011, driver, postgres).</p>
+<p>Adapteri u provua me SELECT 1 → 200 [['1']]. Kufizim i njohur: DDL/CTAS nuk</p>
+<p>materializohen në këtë build; federimi i vërtetë kërkon regjistrimin e datasource.</p></section><section class="slide"><div class="num">06</div><h1>6. Meterless</h1><p>Statusi: Nightshift nuk ka build për Linux x86_64 (vetëm Mac/Windows/DGX arm64).</p>
+<p>Kërkesa për build/API u dërgua te partnerships@meterless.ai. Alternativa e punës:</p>
+<p>model lokal + matje e kostos në usage.jsonl.</p></section><section class="slide"><div class="num">07</div><h1>7. Citimet e verifikueshme</h1><p>Çdo pohim lidhet me dokument + faqe + fragment. Pa bazë → «s'e di», me arsyen.</p></section><section class="slide"><div class="num">08</div><h1>8. Matjet — dy lloje, të dyja të paprekura</h1><p><b>Kërkimi</b> (seti blind, 13 pyetje): 10/10 brenda korpusit · 3/3 refuzuar.</p>
+
+<p><b>Përgjigjja</b> (10 pyetje, verifikim mbi titullin dhe tekstin e nenit):</p>
+
+<table>
+<tr><td>Matja</td><td>Numri</td></tr>
+<tr><td>Ligji i saktë në vendin e parë</td><td><b>10/10</b></td></tr>
+<tr><td>Nen i saktë dhe i plotë</td><td>2/10</td></tr>
+<tr><td>Neni i duhur brenda top-3</td><td>7/10</td></tr>
+<tr><td>Burim i gabuar në krye</td><td><b>0/10</b></td></tr>
+</table>
+
+<p>Dallimi është thelbi: agjenti gjen ligjin e duhur pothuajse gjithmonë, por nuk zgjedh</p>
+<p>gjithmonë nenin që përgjigjet. Këtë e themi hapur — dhe e matim, në vend që ta fshehim</p>
+<p>pas një mesatareje.</p></section><section class="slide"><div class="num">09</div><h1>9. Çka vjen më pas</h1><p>Meta Global AI Developer Hackathon (26.10–04.11), indie track: i njëjti core, modelet</p>
+<p>e Meta-s, tregimi «Build for Your World».</p></section><section class="slide"><div class="num">10</div><h1>10. Ekipi</h1><p>Arber Arifi — solo builder; AvokatIM live në avokatiim.ai.</p></section></body></html>

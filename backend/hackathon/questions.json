@@ -1,0 +1,22 @@
+[
+ {"id":"q01","question":"Sa është afati për paraqitjen e padisë?","expected_doc":"Procedurën Kontestimore","keyword":"afat","in_corpus":true},
+ {"id":"q02","question":"Kur fillon afati i parashkrimit të kërkesave?","expected_doc":"Marrëdhëniet e Detyrimeve","keyword":"parashkrim","in_corpus":true},
+ {"id":"q03","question":"Cila është mosha minimale për të punuar?","expected_doc":"Ligji i Punës","keyword":"mosh","in_corpus":true},
+ {"id":"q04","question":"Si ndahet pasuria e përbashkët e bashkëshortëve?","expected_doc":"Familjen","keyword":"pasuri","in_corpus":true},
+ {"id":"q05","question":"Çfarë është shoqëria me përgjegjësi të kufizuar?","expected_doc":"Shoqëritë Tregtare","keyword":"përgjegjësi","in_corpus":true},
+ {"id":"q06","question":"Cilat janë të drejtat e subjektit të të dhënave personale?","expected_doc":"të Dhënave Personale","keyword":"të drejta","in_corpus":true},
+ {"id":"q07","question":"Kur konsiderohet se vepra penale është e kryer?","expected_doc":"Kodi Penal","keyword":"vepër","in_corpus":true},
+ {"id":"q08","question":"Sa zgjat paraburgimi dhe kur shqyrtohet?","expected_doc":"Procedurën Penale","keyword":"paraburgim","in_corpus":true},
+ {"id":"q09","question":"Çfarë duhet të përmbajë kontrata e punës?","expected_doc":"Ligji i Punës","keyword":"kontrat","in_corpus":true},
+ {"id":"q10","question":"Kush trashëgon pas vdekjes sipas ligjit?","expected_doc":"Familjen","keyword":"trashëgim","in_corpus":true},
+ {"id":"q11","question":"Sa është TVSH-ja në Norvegji?","expected_doc":"","keyword":"","in_corpus":false},
+ {"id":"q12","question":"Kush fitoi zgjedhjet presidenciale në Brazil më 2022?","expected_doc":"","keyword":"","in_corpus":false},
+ {"id":"q13","question":"Sa kushton bileta e trenit Prishtinë–Shkup?","expected_doc":"","keyword":"","in_corpus":false},
+ {"id":"q14","question":"Cila është formula kimike e sulfurit të bakrit?","expected_doc":"","keyword":"","in_corpus":false},
+ {"id":"q15","question":"Sa banorë ka Tokio sipas regjistrimit të fundit?","expected_doc":"","keyword":"","in_corpus":false},
+ {"id":"q16","question":"Çfarë parashikon ligji për mbrojtjen e konsumatorit?","expected_doc":"konsumator","keyword":"konsumator","in_corpus":true},
+ {"id":"q17","question":"Si rregullohen marrëdhëniet e punës në sektorin privat?","expected_doc":"Ligji i Punës","keyword":"punë","in_corpus":true},
+ {"id":"q18","question":"Çfarë është procedura për ekzekutimin e vendimeve?","expected_doc":"Procedurën","keyword":"ekzekutim","in_corpus":true},
+ {"id":"q19","question":"Cilat janë kushtet për lidhjen e martesës?","expected_doc":"Familjen","keyword":"martes","in_corpus":true},
+ {"id":"q20","question":"Si mbrohet konkurrenca në treg?","expected_doc":"konkurrenc","keyword":"konkurrenc","in_corpus":true}
+]

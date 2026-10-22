@@ -1,0 +1,15 @@
+[
+ {"id":"h01","question":"Çfarë afati ka pala për të ushtruar ankimin?","expected_doc":"","keyword":"afat","in_corpus":true},
+ {"id":"h02","question":"Kur ndalohet ndjekja penale për shkak të parashkrimit?","expected_doc":"","keyword":"parashkrim","in_corpus":true},
+ {"id":"h03","question":"Cilat janë detyrimet e punëdhënësit ndaj punëmarrësit?","expected_doc":"","keyword":"punëdhënës","in_corpus":true},
+ {"id":"h04","question":"Si përcaktohet pjesa e secilit bashkëshort në pasurinë e përbashkët?","expected_doc":"","keyword":"bashkëshort","in_corpus":true},
+ {"id":"h05","question":"Çfarë përgjegjësie ka administratoi i shoqërisë?","expected_doc":"","keyword":"përgjegjësi","in_corpus":true},
+ {"id":"h06","question":"Kur lejohet përpunimi i të dhënave personale?","expected_doc":"","keyword":"përpunim","in_corpus":true},
+ {"id":"h07","question":"Cilat vepra penale parashikohen kundër pasurisë?","expected_doc":"","keyword":"pasuri","in_corpus":true},
+ {"id":"h08","question":"Sa kohë mund të zgjasë hetimi para ngritjes së aktakuzës?","expected_doc":"","keyword":"hetim","in_corpus":true},
+ {"id":"h09","question":"Si bëhet shpërndarja e trashëgimisë mes trashëgimtarëve?","expected_doc":"","keyword":"trashëgim","in_corpus":true},
+ {"id":"h10","question":"Çfarë kërkesash duhet të plotësojë një kontratë për të qenë e vlefshme?","expected_doc":"","keyword":"kontrat","in_corpus":true},
+ {"id":"h11","question":"Sa është paga mesatare në Zvicër?","expected_doc":"","keyword":"","in_corpus":false},
+ {"id":"h12","question":"Kush shkroi romanin Anna Karenina?","expected_doc":"","keyword":"","in_corpus":false},
+ {"id":"h13","question":"Sa metra është maja e Everestit?","expected_doc":"","keyword":"","in_corpus":false}
+]
