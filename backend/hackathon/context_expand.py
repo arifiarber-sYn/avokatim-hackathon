@@ -87,12 +87,15 @@ def heading_bonus(hits: list[dict], terms: list[str], amount: float = 0.09) -> l
 
 
 SQL_HEADING = """
-SELECT d.title, c.section, c.seq, c.text, d.doc_type
-FROM legal_corpus_chunks c
-JOIN legal_corpus_docs d ON d.id = c.doc_id
-WHERE d.language = 'sq' AND d.doc_type IN ('law','code')
-  AND left(c.text, 120) ILIKE %(t)s
-ORDER BY length(c.text)
+SELECT d.title, t.section, c.seq, c.text, d.doc_type, t.title AS art_title
+FROM hackathon_article_titles t
+JOIN legal_corpus_docs d ON d.id = t.doc_id
+JOIN LATERAL (
+    SELECT seq, text FROM legal_corpus_chunks
+    WHERE doc_id = t.doc_id AND section = t.section
+    ORDER BY seq LIMIT 1
+) c ON TRUE
+WHERE t.title ILIKE %(t)s
 LIMIT %(k)s
 """
 
@@ -110,11 +113,18 @@ def heading_search(terms: list[str], per_term: int = 15, keep: int = 12) -> list
         for t in probes:
             cur.execute(SQL_HEADING, {"t": "%" + t + "%", "k": per_term})
             for row in cur.fetchall():
-                title, section, seq, text, dtype = row
-                head = " ".join((text or "").splitlines()[:2]).lower()
-                title_zone = head[:60]
-                score = 3 * sum(1 for x in terms if len(x) > 3 and x in title_zone)
-                score += sum(1 for x in terms if len(x) > 3 and x in head)
+                title, section, seq, text, dtype, art_title = row
+                at = (art_title or "").lower().strip()
+                score = 0
+                for x in terms:
+                    if len(x) < 5:
+                        continue
+                    if at == x:
+                        score += 6
+                    elif at.startswith(x) or x.startswith(at):
+                        score += 4
+                    elif x in at:
+                        score += 2
                 key = (title, section)
                 item = {"title": title, "section": section, "seq": seq,
                         "snippet": (text or "")[:280], "sim": 0.60,

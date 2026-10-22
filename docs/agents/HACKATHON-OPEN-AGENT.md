@@ -268,3 +268,19 @@ nuk është e besueshme.
 Zgjidhja e propozuar: tabelë derivative hackathon_article_titles(doc_id, section, title)
 e ndërtuar një herë për dokumentet shqipe, pastaj renditje mbi të. Nuk prek skemën e
 prodhimit; shtohet vetëm në degën e garës.
+
+
+## Tabelë derivative e titujve (22.10.2026, 16:35)
+
+U ndërtua në bazën e AvokatIM (vetëm dega e garës e përdor):
+
+    hackathon_article_titles(doc_id uuid, section text, title text, PK(doc_id, section))
+
+24 924 rreshta për dokumentet shqipe; titulli nxirret nga rreshti pas "Neni X".
+Prova: Kodi Nr. 04/L-123, Neni 185 -> "Paraburgimi". Kërkimi mbi këtë tabelë kthen
+Neni 182/366 ("Paraburgimi") të kodeve të procedurës, jo ligje të rastësishme.
+
+GJENDJA E INTEGRIMIT: heading_search() punon i vetëm (12 rezultate, Neni 182 në krye,
+skor 6). Por në demo.retrieve() rezultatet e titullit NUK shfaqen në top-5 — një defekt
+lidhjeje që ende s'është gjetur. Hapi tjetër: trace i retrieve() hap pas hapi (sa kandidatë
+hyjnë, sa dalin pas rerank), jo më provë-e-gabim.
