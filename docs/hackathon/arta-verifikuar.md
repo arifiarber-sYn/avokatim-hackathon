@@ -92,3 +92,31 @@ Në 2 nga 10 raste, neni i parë vjen nga një ligj tjetër që përmend të nj�
 (konkurrenca → e drejta ndërkombëtare private; konsumatori → ligji i ushqimit).
 Zgjidhja: filtër domeni sipas temës së pyetjes (konkurrencë → ligji i konkurrencës),
 jo vetëm ngjashmëri tekstuale.
+
+
+---
+
+# Raundi i katërt — filtër domeni (17:00)
+
+U shtua TOPIC_FILTERS: tema e pyetjes -> titulli i ligjit (konkurrencë, konsumator,
+të dhëna personale, shoqëri tregtare, martesë, trashëgimi). Kërkimi vektorial kufizohet
+në atë ligj kur tema njihet.
+
+| Pyetja | Para | Pas |
+|---|---|---|
+| Konkurrenca | e Drejtës Ndërkombëtare Private 92 | **Ligji 08/L-056 Për Mbrojtjen e Konkurrencës** (neni 20/8/9) |
+| Konsumatori | Ligji për Ushqim 8 | **Ligji 06/L-034 Për Mbrojtjen e Konsumatorit** (neni 117/4/133) |
+
+## Numrat finalë (10 pyetje)
+
+| Matja | Raundi 3 | Raundi 4 |
+|---|---|---|
+| Nen i saktë dhe i plotë | 1/10 | 1/10 |
+| Neni i duhur në top-3, jo i pari/jo i plotë | 5/10 | 5/10 |
+| Ligj i saktë, nen i afërt | 2/10 | 2/10 |
+| **Burim i gabuar në krye** | 2/10 | **0/10** |
+
+Regresion: seti blind 10/10 brenda, 3/3 refuzuar, 0 gabime — filtri nuk prishi matjet.
+
+Kufizimi i mbetur: 1/10 nen i saktë. Sistemi gjen ligjin e duhur pothuajse gjithmonë,
+por nuk zgjedh gjithmonë nenin që përgjigjet.

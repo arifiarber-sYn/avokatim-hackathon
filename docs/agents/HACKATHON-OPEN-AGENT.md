@@ -298,3 +298,17 @@ Pass i kalibrimit (sim 0.72, prag head_score >= 4):
   shtohet si referencë. Burimi i gabuar (neni 164 "Arrestimi gjatë hetimit") u hoq.
 
 Mësim: një sinjal i mirë (titulli) bëhet zhurmë kur aplikohet pa kushte.
+
+
+## Filtër domeni sipas temës (22.10.2026, 17:00)
+
+demo.TOPIC_FILTERS: konkurrencë -> %konkurrenc%, konsumator -> %konsumator%,
+të dhëna personale -> %të dhënave personale%, shoqëri -> %shoqëritë tregtare%,
+martesë -> %familjen%, trashëgimi -> %trashëgim%, "kontrata e punës" -> %ligji i punës%.
+
+Efekti: të dy rastet me burim të gabuar në krye u rregulluan.
+- Konkurrenca: Ligji 08/L-056 Për Mbrojtjen e Konkurrencës (neni 20/8/9).
+- Konsumatori: Ligji 06/L-034 Për Mbrojtjen e Konsumatorit (neni 117/4/133).
+
+Regresion: blind 10/10 brenda, 3/3 refuzuar, 0 gabime.
+Numrat e 10 pyetjeve: 1/10 nen i saktë, 5/10 nen i duhur në top-3, 0/10 burim i gabuar.
