@@ -340,3 +340,15 @@ Regresion blind: 10/10, 3/3 refuzuar, 0 gabime.
   demo-full.mp4 (pa draft-e, pa kuadro PNG).
 - Porta e publikimit: halim_guard check --domain publikim -> allow:false ("kerkon PO").
   Prandaj eksporti u përgatit lokalisht dhe shtytja pret miratim.
+
+## Publikimi — i bllokuar nga scope-i i tokenit (22.10.2026, 17:05)
+
+- Para-aprovimi u regjistrua (paraprovime.json, domain publikim, klasa github, deri 27.10)
+  pas PO-se se Klloshas; porta e rojes: allow:true.
+- Krijimi i repon deshtoi: gh repo create -> Resource not accessible by personal access
+  token (createRepository). Tokeni i ruajtur eshte fine-grained dhe nuk krijon repo;
+  github-pat-admin/write/gara kthejne 401 (te skaduar).
+- Alternativa pa fjalekalim: Kllosha krijon repon bosh (3 klikime), pastaj git push me SSH
+  (celesi ssh -T git@github.com -> Hi arifiarber-sYn! punon).
+- Nderkohe u ndertua arkivi: docs/hackathon/avokatim-hackathon-submission.zip
+
