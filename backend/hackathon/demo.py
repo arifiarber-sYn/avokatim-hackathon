@@ -60,7 +60,7 @@ def answer(question: str, model) -> str:
         lines.append(f"  [{i}] {h['title']}{section} — ngjashmëri {h['sim']:.3f}")
         snippet = " ".join((h["snippet"] or "").split())[:220]
         lines.append(f"      «{snippet}»")
-    lines += ["", "Përgjigjja (e ndërtuar vetëm nga dëshmitë e mësipërme):"]
+    lines += ["", "Përgjigja (e ndërtuar vetëm nga dëshmitë e mësipërme):"]
     top = hits[0]
     section = f" ({top.get('section')})" if top.get("section") else ""
     lines.append(f"  Sipas {top['title']}{section}, kjo pyetje trajtohet në fragmentin [1].")

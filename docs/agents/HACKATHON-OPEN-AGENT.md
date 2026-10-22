@@ -162,3 +162,13 @@ Demo-ja nxori një defekt: për pyetjen për parashkrimin, një vendim gjykate (
 dilte mbi ligjin (LMD Neni 373, 0.638). U shtua bonus +0.05 për doc_type law/code.
 Seti blind u ri-mat: 10/10 brenda, 3/3 jashtë — pa regresion.
 Dokumentim dorëzimi: docs/hackathon/README-dorëzimi.md
+
+
+## Video — draft i narratuar (22.10.2026)
+
+docs/hackathon/video/demo-full.mp4 — 44 s, 1920x1080, H.264, zë shqip (Piper edon).
+Skenat: titull → pyetje → dëshmi (ligji i pari, vendimet poshtë) → refuzim → matje →
+arkitekturë. Të gjitha kartat janë renderim i output-it real të demo.py, jo pamje të
+inskenuara. Konsole nuk hap dritare në këtë sesion, prandaj u zgjodh rruga e kartave.
+
+Rregullim: "Përgjigjja" -> "Përgjigja" në demo.py.
