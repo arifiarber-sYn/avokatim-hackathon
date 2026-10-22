@@ -312,3 +312,10 @@ Efekti: të dy rastet me burim të gabuar në krye u rregulluan.
 
 Regresion: blind 10/10 brenda, 3/3 refuzuar, 0 gabime.
 Numrat e 10 pyetjeve: 1/10 nen i saktë, 5/10 nen i duhur në top-3, 0/10 burim i gabuar.
+
+
+## Deck me numrat e verifikuar (22.10.2026, 17:05)
+
+Slide 8 u rishkrua: ndan "kërkimi" (blind 10/10, refuzim 3/3) nga "përgjigjja"
+(1/10 nen i saktë, 5/10 nen i duhur në top-3, 0/10 burim i gabuar).
+PDF u rigjenerua: 10 faqe, 52 KB.

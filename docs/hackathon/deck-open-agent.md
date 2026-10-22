@@ -33,14 +33,22 @@ model lokal + matje e kostos në usage.jsonl.
 ## 7. Citimet e verifikueshme
 Çdo pohim lidhet me dokument + faqe + fragment. Pa bazë → «s'e di», me arsyen.
 
-## 8. Matjet (të paprekura)
-| Seti | Brenda | Jashtë |
-|---|---|---|
-| Held-out (13) | 9/10 | 3/3 |
-| Blind (13) | 10/10 | 3/3 |
+## 8. Matjet — dy lloje, të dyja të paprekura
 
-Shënim metodologjik: matja «brenda» kontrollon praninë e termit juridik në fragment,
-jo ende saktësinë e dokumentit të parë. Matja e artefaktit të artë është hapi tjetër.
+**Kërkimi** (seti blind, 13 pyetje): 10/10 brenda korpusit · 3/3 refuzuar.
+
+**Përgjigjja** (10 pyetje, verifikim mbi titullin dhe tekstin e nenit):
+
+| Matja | Numri |
+|---|---|
+| Nen i saktë dhe i plotë | 1/10 |
+| Neni i duhur brenda top-3, por jo i pari ose jo i plotë | 5/10 |
+| Ligj i saktë, nen i afërt | 2/10 |
+| Burim i gabuar në krye | **0/10** |
+
+Dallimi është thelbi: agjenti gjen ligjin e duhur pothuajse gjithmonë, por nuk zgjedh
+gjithmonë nenin që përgjigjet. Këtë e themi hapur — dhe e matim, në vend që ta fshehim
+pas një mesatareje.
 
 ## 9. Çka vjen më pas
 Meta Global AI Developer Hackathon (26.10–04.11), indie track: i njëjti core, modelet
