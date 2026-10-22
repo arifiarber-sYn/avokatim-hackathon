@@ -211,3 +211,15 @@ Vlerësimi i garës u lexua nga faqja zyrtare; çmimet për Wildcard [Tinkerer]:
 U shtuan: "pse jo chatbot" (krahasim citimi/refuzimi/privatësie) dhe "statusi i sponsorëve"
 (Zetaris live SELECT 1 + datasource i papërfunduar; Meterless adapter + matje, pa build
 x86_64). Gjithsej 81.2 s, 2.0 MB — brenda kufirit 1-4 min të garës.
+
+
+## Video 90 s — pamja e produktit live (22.10.2026)
+
+U shtua skena me ekranin real të AvokatIM-it lokal (127.0.0.1:3000): pyetja
+"Punëdhënësi s'ma ka paguar pagën — çfarë të bëj?" dhe përgjigjja me citime
+(Ligji i Punës Neni 55, Dhoma e Posaçme, Gjykata Supreme), e kapur nga produkti
+që punon — jo mockup. Gjithsej 90.3 s, 2.2 MB, brenda kufirit 1-4 min.
+
+Regjistrimi me x11grab u ndal dy herë nga konflikte procesesh; u zgjidh me skript
+të veçantë dhe pastrim të x11grab para nisjes. Mësim: kur nis regjistrim në sfond,
+kontrollo pgrep -f x11grab para se ta nisësh përsëri.
