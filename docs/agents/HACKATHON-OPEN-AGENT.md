@@ -440,3 +440,10 @@ Për të rifituar gjendjen: token i ri API nga llogaria Zetaris (Cloud/UI), past
 - Hyrja: fjalëkalim i ri i platformës ruajtur 0600 ne ~/.securevault/secrets/genai-works.key
   (Google OAuth u bllokua nga Google per shfletues te automatizuar; reset linku erdhi me email).
 - Kërkesa për konfirmim: 'board still has open tasks (14 unfinished)' -> Submit anyway.
+
+## Dorëzimi i dytë: Wildcard [Tinkerer] (22.10.2026, 17:56)
+
+- Submission #2, track **Wildcard [Tinkerer]: Bring Your Own Project** — status **Submitted**.
+- Përshkrim i veçantë 1380 karaktere (fokusi: produkt live i shtrirë për garën).
+- Video demo-2min.mp4 dhe deck.pdf të ngarkuar; repo i njëjti.
+- Platforma: 2/3 submissions, të dyja Submitted (dy track-e të ndryshme, siç lejohet).

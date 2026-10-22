@@ -1,7 +1,7 @@
 # STATUS — Open Agent Hackathon 2026
 
 Data: 22.10.2026 · Dega: hackathon/open-agent-2026 · Afati: 27.10.2026 23:45 UTC
-Dorëzuar: platforma GenAI.Works, track **The Agent That Can Explain Why**, status Submitted (1/3)
+Dorëzuar: platforma GenAI.Works — #1 **The Agent That Can Explain Why** (Submitted), #2 **Wildcard [Tinkerer]** (Submitted), 2/3
 
 ## Cka punon sot
 
