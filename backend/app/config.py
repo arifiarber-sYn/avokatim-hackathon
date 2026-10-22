@@ -240,8 +240,10 @@ class Settings(BaseSettings):
     # --- Hackathon layer (Open Agent 2026, Wildcard [Tinkerer]) -------------
     # Off by default: the production assistant behaves exactly as before.
     hackathon_mode: bool = False
-    zetaris_base_url: str = ""
+    zetaris_base_url: str = "http://127.0.0.1:8888/api/v1.0"
     zetaris_api_key: str = ""
+    zetaris_org_id: str = "1"
+    zetaris_base_url_default: str = "http://127.0.0.1:8888/api/v1.0"
     meterless_base_url: str = ""
     hackathon_usage_log: str = "data/evidence/usage.jsonl"
 
