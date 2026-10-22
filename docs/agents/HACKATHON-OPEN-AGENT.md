@@ -423,3 +423,8 @@ Për të rifituar gjendjen: token i ri API nga llogaria Zetaris (Cloud/UI), past
 - Narracioni: audio/s13.wav (Piper sq_AL-edon, 22.8 s).
 - Bashkimi me filter_complex concat (concat demuxer deshtoi per shkak te timebase).
 - Verifikim: 115.64 s, 1920x1080, 25 fps, kuadri i kartes u kontrollua vizualisht.
+
+## Sinkronizim i mostres ne degen e punes (22.10.2026, 17:24)
+
+- demo_sample.py + sample_corpus.jsonl (567 nene, titujt e neneve si rresht i pare,
+  refuzim sipas skorit < 2.0) u sinkronizuan nga eksporti i verifikuar.
