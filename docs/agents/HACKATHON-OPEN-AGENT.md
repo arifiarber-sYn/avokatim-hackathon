@@ -68,3 +68,16 @@ e pritur; q15 (Tokio) kalon portën sepse "regjistrim" është term juridik.
 
 Raporti: data/evidence/harness-v3-*.json
 Ekzekutimi: AVOKATIM_DSN=<dsn> python hackathon/harness_v3.py
+
+
+## Meta Model API adapter (22.10.2026)
+
+backend/app/adapters/meta_model.py — klient OpenAI-compatible për modelet e Meta-s
+(Muse/SAM). base_url, api_key dhe modeli vijnë nga konfigurimi; pa to adapteri
+raporton available() == False dhe ngre AdapterError (fail-closed, pa thirrje të rreme).
+
+- MetaModelAdapter.complete(prompt, system) -> Completion(text, model, tokens_in, tokens_out, ms)
+- StubModel — zëvendësues determinist për teste/demo offline, i etiketuar si stub.
+
+Testet: tests/test_adapters_meta.py (3 teste) + tests/test_adapters_contract.py (5 teste)
+— 8 passed, pa rrjet.

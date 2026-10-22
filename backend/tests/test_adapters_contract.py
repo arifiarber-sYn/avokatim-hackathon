@@ -1,8 +1,4 @@
-"""Contract tests for the hackathon adapter layer.
-
-These tests only exercise the new layer; they must pass without any network,
-database or sponsor account.
-"""
+"""Contract tests for the hackathon adapter layer (no network, no DB)."""
 import asyncio
 import json
 
@@ -10,7 +6,7 @@ import pytest
 
 from app.adapters.base import AdapterError, Evidence, QuerySpec, dedupe
 from app.adapters.meterless import MeterlessAdapter, Usage
-from app.adapters.zetaris import FixtureAdapter, ZetarisAdapter
+from app.adapters.zetaris import ZetarisAdapter
 
 
 def test_evidence_roundtrip():
@@ -26,25 +22,17 @@ def test_dedupe_keeps_first():
     assert len(dedupe([a, b, c])) == 2
 
 
-def test_fixture_returns_two_sources(tmp_path):
-    rows = [
-        {"source_id": "ligje", "uri": "file:///ligj.pdf", "fragment": "Neni 12", "page": 4, "confidence": 0.8},
-        {"source_id": "praktika", "uri": "file:///vendim.txt", "fragment": "Vendimi nr. 44", "confidence": 0.7},
-    ]
-    path = tmp_path / "fixture.json"
-    path.write_text(json.dumps(rows), encoding="utf-8")
-    adapter = FixtureAdapter(path=path)
-    assert adapter.available()
-    got = asyncio.run(adapter.query(QuerySpec(text="ndarje pasurie", limit=5)))
-    assert {e.source_id for e in got} == {"ligje", "praktika"}
-    assert all(e.meta.get("mock") is True for e in got)
-
-
-def test_live_adapter_refuses_without_config():
-    adapter = ZetarisAdapter(base_url="", api_key="")
+def test_zetaris_refuses_without_key():
+    adapter = ZetarisAdapter(base_url="http://127.0.0.1:9/api", api_key="", org_id="1")
     assert adapter.available() is False
     with pytest.raises(AdapterError):
-        asyncio.run(adapter.query(QuerySpec(text="x")))
+        asyncio.run(adapter.sql("SELECT 1"))
+
+
+def test_zetaris_available_with_config():
+    adapter = ZetarisAdapter(base_url="http://127.0.0.1:8888/api/v1.0", api_key="k", org_id="1")
+    assert adapter.available() is True
+    assert adapter.org_id == "1"
 
 
 def test_meterless_usage_line(tmp_path):
@@ -54,3 +42,4 @@ def test_meterless_usage_line(tmp_path):
     adapter._write(record)
     line = (tmp_path / "usage.jsonl").read_text(encoding="utf-8").strip()
     assert json.loads(line)["tokens_out"] == 20
+
