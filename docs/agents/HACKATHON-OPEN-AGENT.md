@@ -193,3 +193,14 @@ Vëzhgim i parë që del nga fleta: për "Kur fillon afati i parashkrimit të k�
 kandidati kryesor është Ligji i Punës Neni 87 (parashkrim i kërkesave nga marrëdhënia
 e punës), jo LMD Neni 373 (parashkrim i përgjithshëm civil). Kjo tregon se pyetja
 duhet të jetë më e ngushtë ose renditja duhet të marrë parasysh domenin e pyetjes.
+
+
+## Deck PDF + paketa e dorëzimit (22.10.2026)
+
+- docs/hackathon/deck.html dhe deck.pdf — 10 slide, 16:9, 10 faqe, nga deck-open-agent.md.
+- docs/hackathon/submission.md — tekstet e platformës, deklarata e ndershme për Zetaris
+  dhe Meterless, harta e vlerësimit (Impact 30, Technical 20, Innovation 15, Demo 15,
+  Product & UX 10, Sponsor tech 10), tabela e aseteve dhe checklist-i para dorëzimit.
+
+Vlerësimi i garës u lexua nga faqja zyrtare; çmimet për Wildcard [Tinkerer]:
+1000/600/400 USD.
