@@ -284,3 +284,17 @@ GJENDJA E INTEGRIMIT: heading_search() punon i vetëm (12 rezultate, Neni 182 n�
 skor 6). Por në demo.retrieve() rezultatet e titullit NUK shfaqen në top-5 — një defekt
 lidhjeje që ende s'është gjetur. Hapi tjetër: trace i retrieve() hap pas hapi (sa kandidatë
 hyjnë, sa dalin pas rerank), jo më provë-e-gabim.
+
+
+## Kalibrimi final i titujve (22.10.2026, 16:45)
+
+Rregulli i vendosur: kërkimi dhe bonusi i titujve aktivizohen VETËM për pyetje
+procedurale (paraburgim, afat, ankim, lirim, hetim, masë). Për pyetje të tjera
+("çfarë duhet të përmbajë kontrata") titujt sillnin ligje të rastësishme mbi nenin e duhur.
+
+Pass i kalibrimit (sim 0.72, prag head_score >= 4):
+- Q2 kontrata: Ligji i Punës Neni 10 + Neni 11 (zgjerim) — i saktë.
+- Q4 paraburgimi: Kodi i Procedurës Penale Neni 182 "Paraburgimi" i pari; Neni 184
+  shtohet si referencë. Burimi i gabuar (neni 164 "Arrestimi gjatë hetimit") u hoq.
+
+Mësim: një sinjal i mirë (titulli) bëhet zhurmë kur aplikohet pa kushte.

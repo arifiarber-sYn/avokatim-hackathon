@@ -46,14 +46,15 @@ def retrieve(question: str, model) -> tuple[list[dict], str]:
     ]
     cand = [c for c in cand if c["sim"] >= MIN_SIM]
     seen = {(c["title"], c.get("section")) for c in cand}
-    for h in heading_search(terms):
-        if (h["title"], h["section"]) not in seen:
-            cand.append(h)
+    if is_procedural(question):
+        for h in heading_search(terms):
+            if (h["title"], h["section"]) not in seen:
+                cand.append(h)
     hits = rerank(cand, terms)[:TOP_K]
     if not hits:
         return [], "pa dëshmi mbi pragun e ngjashmërisë"
-    hits = heading_bonus(hits, terms)
     if is_procedural(question):
+        hits = heading_bonus(hits, terms)
         hits = boost_code(hits)
     hits, _refs = expand_context(hits, limit_refs=2)
     return hits, ""

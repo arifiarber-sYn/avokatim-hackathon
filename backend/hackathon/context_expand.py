@@ -127,9 +127,9 @@ def heading_search(terms: list[str], per_term: int = 15, keep: int = 12) -> list
                         score += 2
                 key = (title, section)
                 item = {"title": title, "section": section, "seq": seq,
-                        "snippet": (text or "")[:280], "sim": 0.60,
+                        "snippet": (text or "")[:280], "sim": 0.72,
                         "doc_type": dtype, "from_heading": True, "head_score": score}
                 if key not in out or item["head_score"] > out[key]["head_score"]:
                     out[key] = item
     ranked = sorted(out.values(), key=lambda x: (x["head_score"], -len(x["snippet"])), reverse=True)
-    return [x for x in ranked if x["head_score"] > 0][:keep]
+    return [x for x in ranked if x["head_score"] >= 4][:keep]
