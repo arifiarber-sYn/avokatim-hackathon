@@ -20,7 +20,7 @@ import psycopg
 
 DSN = os.environ.get(
     "AVOKATIM_DSN",
-    "postgresql://avokatim:avokatim-dev-password@127.0.0.1:5433/avokatim",
+    "postgresql://avokatim@127.0.0.1:5433/avokatim"  # pa fjalekalim; vendos AVOKATIM_DSN,
 )
 TOP_K = 5
 

@@ -330,3 +330,13 @@ të nenit (deri 6000 shkronja), shton COVERAGE_BONUS*mbulim dhe zbret PENALTY_TE
 Efekti: ligji i saktë në vendin e parë 8/10 -> 10/10; burim i gabuar 0/10 mbetet;
 Kodi i Përkohshëm (neni 274) nuk del më përpara Kodit të Procedurës Penale në fuqi.
 Regresion blind: 10/10, 3/3 refuzuar, 0 gabime.
+
+
+## Përgatitja për publikim (22.10.2026, 17:35)
+
+- U hoq fjalëkalimi i paracaktuar i DSN-së nga backend/hackathon/harness.py dhe harness_v2.py;
+  lidhja merret vetëm nga AVOKATIM_DSN. Për një repo publik kjo është kusht, jo estetikë.
+- Eksporti publik përmban vetëm: docs/hackathon, backend/hackathon, backend/app/adapters,
+  demo-full.mp4 (pa draft-e, pa kuadro PNG).
+- Porta e publikimit: halim_guard check --domain publikim -> allow:false ("kerkon PO").
+  Prandaj eksporti u përgatit lokalisht dhe shtytja pret miratim.
