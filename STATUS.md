@@ -25,7 +25,7 @@ Data: 22.10.2026 · Dega: hackathon/open-agent-2026 · Afati: 27.10.2026 23:45 U
 
 | Sponsori | Statusi | Prova |
 |---|---|---|
-| Zetaris | Adapter live; SELECT 1 -> 200 | backend/app/adapters/zetaris.py |
+| Zetaris | Platforma xhiron (4 konteinerë healthy, UI 200); tokeni API refuzohet qe nga 22.10 17:10 -> adapteri NUK eshte live deri ne token te ri | backend/app/adapters/zetaris.py |
 | Zetaris datasource | I papërfunduar (hap manual ne UI) | — |
 | Meterless | Adapter + usage.jsonl | backend/app/adapters/meterless.py |
 | Meterless Nightshift | Pa build per Linux x86_64; kerkesa derguar 22.10 | — |

@@ -386,3 +386,22 @@ UI-ja; kerkon veprim ne UI (SPA) ose rol tjeter. Adapteri mbetet kontrate e prov
 - backend/hackathon/demo_sample.py + sample_corpus.jsonl (555 nene, 8 ligje, pa baza).
 - BM25 + stemming i lehte + bonus titulli; refuzon pyetjet qe s kane pergjigje ne moster.
 - Qellimi: juria ta shohe sjelljen ne 60 sekonda pa Postgres.
+
+## Zetaris — gjendja e verifikuar (22.10.2026, 17:10)
+
+Konteinerët: zetaris-ui-1, zetaris-api-1, zetaris-driver-1, zetaris-postgres-1 — të katërt
+`Up 9 hours (healthy)`. UI: http://127.0.0.1:3011/login → 200.
+
+API-ja refuzon tokenin e ruajtur:
+
+    POST /api/v1.0/sql-editor/sqls/run -> 400 {"msg":"Not Allowed"}
+    log: AuthnService.authAsOrgUser <<< Api token is not allowed
+
+I njëjti endpoint ktheu 200 me `SELECT 1` kur u provua më herët; pra platforma xhiron, por
+tokeni nuk pranohet më. Deri sa të merret token i ri, adapteri NUK është live dhe submission
+nuk duhet ta pretendojë si të tillë.
+
+Për të rifituar gjendjen: token i ri API nga llogaria Zetaris (Cloud/UI), pastaj:
+1) ruajtje 0600 ne ~/.securevault/secrets/zetaris-api.key
+2) riprove SELECT 1 -> 200
+3) perditesim i STATUS/submission me provën e re.
