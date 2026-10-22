@@ -103,3 +103,19 @@ kredie, jo LMD.
 
 Raporti: data/evidence/harness-v4-*.json
 Ekzekutimi: AVOKATIM_DSN=<dsn> python hackathon/harness_v4.py
+
+
+## Harness v5 + held-out (22.10.2026)
+
+v5 = vektor + filtër gjuhe + rirenditje hibride (50 kandidatë, bonus 0.12 për termat
+juridikë që shfaqen në tekst).
+
+| Seti | Brenda | Jashtë | Shënim |
+|---|---|---|---|
+| I akorduar (20 pyetje) | 15/15 | 5/5 | i ngopur — rrezik overfitting |
+| Held-out (13 pyetje të reja) | 9/10 | 3/3 | h08 u refuzua: "hetim" mungonte në portë |
+
+Mësimi: 20/20 mbi setin tim nuk është provë; seti i dytë i paprekur është ai që flet.
+Prandaj çdo shifër në deck duhet të vijë nga seti held-out, jo nga ai i akorduar.
+
+Raportet: data/evidence/harness-v5-*.json dhe harness-v5-heldout-*.json
