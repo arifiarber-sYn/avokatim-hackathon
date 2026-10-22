@@ -368,3 +368,15 @@ README raw lexohet publikisht.
 Mësim: para se te thuash "e pamundur", provo rrugen web-sesion -> token klasik; kufizimi ishte
 i tokenit te vjeter, jo i llogarise.
 
+
+## Zetaris datasource — deri ku shkon API-ja (22.10.2026, 17:15)
+
+U provua me token admin (idToken nga /api/auth/login i UI-se):
+
+- GET /datasource/datasources -> 400 Not Allowed
+- POST /datasource/datasources -> 405 Method Not Allowed
+- /datasource/datasources/types -> 404; /metastore/datasource-schemas -> 400 Not Allowed
+
+Perfundim: ne kete deployment regjistrimi i datasource nuk hapet permes REST-it qe perdor
+UI-ja; kerkon veprim ne UI (SPA) ose rol tjeter. Adapteri mbetet kontrate e provuar
+(SELECT 1 -> 200) dhe kufizimi deklarohet ne submission; federimi i korpusit nuk pretendohet.
