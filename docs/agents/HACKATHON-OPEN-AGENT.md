@@ -239,3 +239,15 @@ Efekti i matur mbi 5 pyetjet e verifikuara:
 
 Kufizim: zgjerimi lexon vetëm 280 shkronjat e para të fragmentit.
 Detajet: docs/hackathon/arta-verifikuar.md
+
+
+## Indeks i titujve të neneve (22.10.2026, 16:25)
+
+- context_expand.heading_search() — kërkon në 120 shkronjat e para të fragmentit
+  (titulli i nenit), vetëm për doc_type law/code. Synimi: të goditet neni, jo dokumenti.
+- heading_bonus() — titujt që përmbajnë termat e pyetjes marrin +0.09, vetëm për ligj/kod.
+
+Gjendja: indeksi gjen nene ligjore, por ende nuk rendit saktë brenda kodit (p.sh. për
+"kur lirohet nga paraburgimi" del KPP Neni 164 'Arrestimi gjatë fazës së hetimit' dhe jo
+Neni 185 'Paraburgimi'). Hapi tjetër: renditje sipas përputhjes së titullit, jo sipas
+gjatësisë së fragmentit.

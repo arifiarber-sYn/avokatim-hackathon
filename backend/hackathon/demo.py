@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from harness_v2 import DSN, terms_of
 from harness_v4 import in_domain, is_albanian
 from harness_v5 import CANDIDATES, MIN_SIM, TOP_K, rerank
-from context_expand import boost_code, expand_context, is_procedural
+from context_expand import boost_code, expand_context, heading_bonus, heading_search, is_procedural
 
 MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 _SQL = """
@@ -45,9 +45,14 @@ def retrieve(question: str, model) -> tuple[list[dict], str]:
         for r in rows
     ]
     cand = [c for c in cand if c["sim"] >= MIN_SIM]
+    seen = {(c["title"], c.get("section")) for c in cand}
+    for h in heading_search(terms):
+        if (h["title"], h["section"]) not in seen:
+            cand.append(h)
     hits = rerank(cand, terms)[:TOP_K]
     if not hits:
         return [], "pa dëshmi mbi pragun e ngjashmërisë"
+    hits = heading_bonus(hits, terms)
     if is_procedural(question):
         hits = boost_code(hits)
     hits, _refs = expand_context(hits, limit_refs=2)
