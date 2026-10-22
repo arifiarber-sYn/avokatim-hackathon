@@ -415,3 +415,11 @@ Për të rifituar gjendjen: token i ri API nga llogaria Zetaris (Cloud/UI), past
   (id 167323747, read_only=false, vetem repon avokatim-hackathon).
 - /tmp/pub-hack ka core.sshCommand qe perdor ate celes; nuk preket ~/.ssh/config.
 - Prova: push 71d24c3..d88bd37 -> ok; ssh -T -> 'Hi arifiarber-sYn/avokatim-hackathon!'.
+
+## Video 1:56 me skenen para/pas (22.10.2026, 17:20)
+
+- demo-2min.mp4 = demo-full.mp4 (90 s) + segment 25 s me kartën card9 (8/10->10/10,
+  1/10->2/10, 5/10->7/10, 2/10->0/10).
+- Narracioni: audio/s13.wav (Piper sq_AL-edon, 22.8 s).
+- Bashkimi me filter_complex concat (concat demuxer deshtoi per shkak te timebase).
+- Verifikim: 115.64 s, 1920x1080, 25 fps, kuadri i kartes u kontrollua vizualisht.
