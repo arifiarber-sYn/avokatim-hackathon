@@ -46,9 +46,9 @@ Without the corpus the harness still documents the method and the scoring rules.
 
 ## Sponsors
 
-- **Zetaris** — live adapter against the REST SQL editor (SELECT 1 → 200). Federating the
-  corpus requires registering a datasource in the platform UI; declared as a remaining step,
-  not as done.
+- **Zetaris** — adapter verified against the local REST SQL editor (SELECT 1 → 200 on 22.10).
+  Status 22.10 17:10: the platform runs (4 containers healthy, UI 200) but the stored API token
+  is rejected ("Api token is not allowed"), so the path is not live until a new token is issued.
 - **Meterless** — adapter plus usage.jsonl for cost and tokens. The native Nightshift build
   exists only for macOS, Windows and DGX Spark (arm64); a build/API request was sent.
   Partial integration is declared, not overstated.
