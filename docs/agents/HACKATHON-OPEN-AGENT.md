@@ -405,3 +405,13 @@ Për të rifituar gjendjen: token i ri API nga llogaria Zetaris (Cloud/UI), past
 1) ruajtje 0600 ne ~/.securevault/secrets/zetaris-api.key
 2) riprove SELECT 1 -> 200
 3) perditesim i STATUS/submission me provën e re.
+
+## Publikimi kaloi ne deploy key (22.10.2026, 17:15)
+
+- PAT-t e krijuara gjate diagnostikimit u fshine te gjitha: avokatim-hackathon-publish,
+  hackathon2, t3, avokatim-publish, avokatim-publish-2.
+- Mbetet vetem `halim-write-1018` (e Klloshas, e paprekur).
+- Shtytja tani behet me celes deploy vetem-push: ~/.ssh/avokatim_hack_deploy
+  (id 167323747, read_only=false, vetem repon avokatim-hackathon).
+- /tmp/pub-hack ka core.sshCommand qe perdor ate celes; nuk preket ~/.ssh/config.
+- Prova: push 71d24c3..d88bd37 -> ok; ssh -T -> 'Hi arifiarber-sYn/avokatim-hackathon!'.
