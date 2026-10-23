@@ -16,3 +16,7 @@
 - Shtuar tests/test_demo_corpus.py — 2 teste; gjithsej 7 passed.
 - Shtuar target `make demo-offline`.
 - Dokumentuar defekti i burimit: Vendimi-1292-25.pdf identik me Vendimi_2025-1289.pdf.
+
+## 2026-10-23 — hackathon(open-agent): video demo offline (50s)
+- Shtuar docs/hackathon/video/demo-offline-2026-10-23.mp4 (6 skena, 50.5s, 663 KB).
+- Zë espeak sq; ndërtim me ffmpeg/magick; pa DB dhe pa rrjet.

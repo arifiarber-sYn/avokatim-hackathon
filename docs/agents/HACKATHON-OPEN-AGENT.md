@@ -471,3 +471,11 @@ Për të rifituar gjendjen: token i ri API nga llogaria Zetaris (Cloud/UI), past
 **Defekt i burimit (i dokumentuar):** PDF-ja `Vendimi-1292-25.pdf` është **identike** me `Vendimi_2025-1289.pdf`
 (md5 `63a90422…`, të dyja «OSHP: 2025/1289») — faqja e OSHP-së shërben të njëjtin vendim me dy emra.
 Demo-ja i dedupon sipas përmbajtjes dhe mban emrin që përputhet me numrin në tekst.
+
+## Video demo offline 50s (23.10.2026)
+
+- `docs/hackathon/video/demo-offline-2026-10-23.mp4` — 50.5 s, 663 KB, 6 skena:
+  korpusi → pyetja → vendimi (OSHP 2025/1289) → regjistri (622-25-1796-2-2-1, 80 000 EUR) → ligji (105/106/117) → refuzimi.
+- Zë: espeak-ng `sq` (piper-i shqip mungon në këtë makinë; fallbacku i skill-it `zeri`).
+- Ndërtuar me ffmpeg + magick nga karta tekstuale; pa DB, pa rrjet.
+- Kontroll vizual: kuadri i skenës 3 lexohet qartë, pa mbivendosje.
