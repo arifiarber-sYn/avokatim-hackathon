@@ -1,0 +1,34 @@
+---
+description: Always read the docs/agents layer first and keep it in sync after changes
+alwaysApply: true
+---
+
+# Work through the docs/agents layer — do not bypass it
+
+This repo ships an LLM/tool-agnostic docs layer (AgentStandard v1). It exists
+so a fresh agent gets up to speed fast and reads only what a task needs.
+
+## At the start of any task
+1. Read `AGENTS.md` (root) — entry point + hard rules.
+2. Read `docs/agents/STATE.md` — headline + only the sections your task
+   touches (it is long; search it, don't read linearly).
+3. Read the last 2–3 entries of `docs/agents/JOURNAL.md`; `git log --oneline -5
+   && git status` — unrecognized commits? Read the diff first.
+4. Route via `docs/agents/INDEX.md`. Before proposing to remove/replace
+   anything: check `docs/agents/LESSONS.md` and the relevant D-numbers in
+   `docs/agents/DECISIONS.md`.
+
+## Before you finish ANY change (Definition of done)
+"Change" = code, config, prompts, AND repo/ops work (git, systemd, tooling).
+- [ ] Appended a `docs/agents/JOURNAL.md` entry (newest on top) — never optional.
+- [ ] If the live state changed → updated `docs/agents/STATE.md`.
+- [ ] Architectural decision → `docs/agents/DECISIONS.md`; settled lesson /
+      incident → `docs/agents/LESSONS.md`.
+- [ ] Outbound email / operator notification changed → `docs/agents/COMMS.md`
+      in the same commit (AGENTS.md §4b).
+- [ ] If a hard rule changed → updated `AGENTS.md`.
+- [ ] COMMITTED the finished work (AGENTS.md §6) — never leave finished work
+      uncommitted; never push without an explicit request.
+- [ ] Verified: tests pass + health endpoint OK + the feature works in the UI.
+
+> Full procedure: `docs/agents/UPDATE-PROTOCOL.md`.

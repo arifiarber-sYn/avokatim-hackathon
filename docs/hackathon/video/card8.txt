@@ -1,0 +1,13 @@
+Sponsor technology — statusi i vertet
+
+  Zetaris
+    + Platforma lokale live (api :8888), SELECT 1 -> 200
+    + Adapter me kontrate ne core
+    - Datasource i korpusit: hap manual ne UI (i deklaruar)
+
+  Meterless
+    + Adapter + matje kostoje ne usage.jsonl
+    - Nightshift nuk ka build per Linux x86_64 (Mac/Win/DGX arm64)
+    + Kerkesa per build/API u dergua 22.10
+
+  Asnje pretendim: cdo gjendje eshte e matur ose e deklaruar.

@@ -1,0 +1,151 @@
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    container_name: avokatim-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: avokatim
+      POSTGRES_USER: avokatim
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-avokatim-dev-password}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - avokatim_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U avokatim"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: avokatim-caddy
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro,z
+      - avokatim_caddy_data:/data
+      - avokatim_caddy_config:/config
+
+  # WebRTC SFU for SOS video/audio calls. Signaling on 7880 (localhost,
+  # proxied by Caddy :7443 for LAN wss). Media on 7881/tcp + 7882/udp —
+  # fine on LAN; public access additionally needs router port forwarding
+  # or a TURN relay (see docs/agents/STATE.md).
+  livekit:
+    image: livekit/livekit-server:v1.9
+    container_name: avokatim-livekit
+    restart: unless-stopped
+    command: --config /etc/livekit.yaml
+    environment:
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY:-devkey}: ${LIVEKIT_API_SECRET:-devsecret-change-me-in-dot-env}"
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro,z
+    ports:
+      - "127.0.0.1:7880:7880"
+      # 7881 (TCP fallback per ICE) vetem localhost — media ne LAN kalon permes 7882/udp
+      - "127.0.0.1:7881:7881"
+      - "7882:7882/udp"
+
+  redis:
+    image: redis:7-alpine
+    container_name: avokatim-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6380:6379"
+    volumes:
+      - avokatim_redis:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
+  # Privacy-friendly visit analytics (no cookies, GDPR-safe). Uses its own
+  # database inside the existing Postgres container. Public via the
+  # Cloudflare tunnel at stats.avokatiim.ai.
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    container_name: avokatim-umami
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://avokatim:${DB_PASSWORD:-avokatim-dev-password}@db:5432/umami
+      DATABASE_TYPE: postgresql
+      APP_SECRET: ${UMAMI_APP_SECRET:-umami-dev-secret-change-me}
+    ports:
+      - "127.0.0.1:3210:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Self-hosted error tracking (Sentry-compatible, D-054 F6). Errors from the
+  # backend (sentry-sdk) and the frontend (relayed via /api/public/client-error)
+  # stay on this machine. Own `glitchtip` DB inside the existing Postgres,
+  # Redis DB 2 as broker. UI at http://127.0.0.1:8010.
+  glitchtip:
+    image: glitchtip/glitchtip:v5.1
+    container_name: avokatim-glitchtip
+    restart: unless-stopped
+    environment: &glitchtip_env
+      DATABASE_URL: postgresql://avokatim:${DB_PASSWORD:-avokatim-dev-password}@db:5432/glitchtip
+      REDIS_URL: redis://redis:6379/2
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:-glitchtip-dev-secret-change-me}
+      GLITCHTIP_DOMAIN: http://127.0.0.1:8010
+      EMAIL_URL: consolemail://
+      ENABLE_USER_REGISTRATION: "False"
+      ENABLE_ORGANIZATION_CREATION: "False"
+      CELERY_WORKER_AUTOSCALE: "1,2"
+    ports:
+      - "127.0.0.1:8010:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      glitchtip-migrate:
+        condition: service_completed_successfully
+
+  glitchtip-worker:
+    image: glitchtip/glitchtip:v5.1
+    container_name: avokatim-glitchtip-worker
+    restart: unless-stopped
+    command: ./bin/run-celery-with-beat.sh
+    environment: *glitchtip_env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      glitchtip-migrate:
+        condition: service_completed_successfully
+
+  glitchtip-migrate:
+    image: glitchtip/glitchtip:v5.1
+    container_name: avokatim-glitchtip-migrate
+    command: ./manage.py migrate
+    environment: *glitchtip_env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Telephony-KI (D-059 F4): Asterisk terminates the sipgate SIP trunk and
+  # bridges call audio to the backend's AudioSocket gateway (127.0.0.1:4573,
+  # app/services/phone_gateway.py). Off by default — needs the sipgate
+  # account (owner action). Start with:
+  #   SIPGATE_SIP_USER=... SIPGATE_SIP_PASSWORD=... \
+  #   docker compose --profile telephony up -d asterisk
+  # host network: SIP/RTP to sipgate + loopback to the backend, no NAT games.
+  asterisk:
+    image: andrius/asterisk:alpine-20.5.2
+    container_name: avokatim-asterisk
+    restart: unless-stopped
+    profiles: ["telephony"]
+    network_mode: host
+    environment:
+      SIPGATE_SIP_USER: ${SIPGATE_SIP_USER:-}
+      SIPGATE_SIP_PASSWORD: ${SIPGATE_SIP_PASSWORD:-}
+      SIPGATE_SIP_HOST: ${SIPGATE_SIP_HOST:-sipgate.de}
+    volumes:
+      - ./infra/asterisk:/etc/asterisk-templates:ro,z
+    entrypoint: ["/bin/sh", "/etc/asterisk-templates/entrypoint.sh"]
+
+volumes:
+  avokatim_pgdata:
+  avokatim_redis:
+  avokatim_caddy_data:
+  avokatim_caddy_config:

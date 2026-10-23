@@ -1,0 +1,205 @@
+AVA LEGAL — WHAT IS BUILT, WHAT REMAINS, AND WHERE WE NEED YOU
+Status report for our German partner — August 2026
+
+==================================================================
+1. THE SHORT VERSION
+==================================================================
+
+The platform is live in production today. Against the feature set of
+the established German products (RA-MICRO, Advoware, AnNoText, Kleos,
+DATEV Anwalt, Actaport, JUPUS), we have closed every gap that can be
+closed from the outside. Two items remain for the next phase — beA
+integration and legal fine-tuning of our local AI model — and a small
+number of practical steps that require a licensed German lawyer or a
+German business presence. That is exactly where the partnership
+begins: those steps are yours, everything else is running.
+
+==================================================================
+2. WHAT THE SYSTEM ALREADY DOES (LIVE TODAY)
+==================================================================
+
+COMPLETE LAW-OFFICE SOFTWARE
+- Digital matter files: cases, contacts, opposing parties, documents,
+  notes, tasks, time tracking, full audit trail.
+- Deadline engine with German procedural rules as data (ZPO, ArbGG,
+  VwGO deadlines), German court holidays per Bundesland, automatic
+  deadline suggestions extracted from documents by AI.
+- Billing at German standard: RVG fee calculation engine,
+  ZUGFeRD/XRechnung e-invoices, time-based and flat-fee billing,
+  internal dunning (Mahnwesen), DATEV export for the tax advisor.
+- Legal-expenses-insurance (Rechtsschutzversicherung) workflow:
+  coverage inquiry drafting for the insurer, per-case RSV tracking.
+- Document system with encryption at rest, OCR, full-text search,
+  templates with placeholders, simple e-signature flow.
+
+THE AI LAYER ("AVA") — THE ACTUAL DIFFERENTIATOR
+- Legal research over an indexed German corpus: 99 federal acts
+  (BGB, ZPO, StGB, StPO, KSchG, all relevant SGB books, DSGVO...),
+  Landesrecht for NRW and Bavaria, and 16,200+ published decisions
+  of ALL federal courts (BGH, BAG, BVerfG, BVerwG, BFH, BSG, BPatG)
+  — growing automatically every night.
+- Hybrid retrieval (semantic + full-text) with court + Aktenzeichen
+  citations; deep-research mode for complex questions.
+- Every article, § and case number in Ava's answers is automatically
+  verified against the corpus and badged (verified / law found /
+  unverifiable) — zero tolerance for invented citations.
+- Drafting: pleadings and letters from templates with AI, dictation
+  by voice directly into notes and drafts (transcription runs locally
+  on our hardware, audio never leaves the machine).
+- Agentic execution: give Ava a goal and she executes the steps with
+  your approval (create deadline, draft document...); morning voice
+  briefing; overnight monitoring of new case law against your active
+  matters; at-risk deadline audit.
+- Available everywhere: assistant panel on every page, public chat,
+  matter-aware context, 7 interface languages (German, English,
+  Albanian, Serbian, Turkish, Bosnian, Chinese).
+
+CLIENT ACQUISITION BUILT IN (THE TWO-SIDED PART)
+- Public citizen portal: post a case, structured intake
+  questionnaires per practice area (family, labor, civil, criminal),
+  lawyer directory with BRAV auto-verification, booking with free
+  slots, client portal for ongoing matters.
+- 24/7 AI receptionist on WhatsApp: classifies the case, asks the
+  right follow-up questions per category, collects contact data and
+  creates the case request — localized, country-aware.
+- 24/7 AI receptionist on the PHONE: a real German number rings into
+  our voice gateway, Ava answers with speech, runs the same intake
+  dialog and creates the case — the feature JUPUS sells as "Marie"
+  for 99 EUR/month is included in our platform. (Technically complete;
+  waiting only on the SIP account — see section 4.)
+- Free public tools that bring traffic: litigation cost calculator
+  (Prozesskostenrechner), plain-language legal guides (Ratgeber),
+  online-procedure assistant.
+
+SWITCHING FROM RA-MICRO / ADVOWARE — NEARLY FREE
+- A 4-step migration wizard: upload the export from the old software
+  (RA-MICRO/Advoware presets, generic CSV/Excel), map the columns,
+  preview everything in a dry run, then execute. Opposing parties,
+  old file numbers (Aktenzeichen — kept searchable) and mass document
+  import via ZIP all supported. A switch that consultants price at
+  5,000-15,000 EUR takes hours here.
+- Outlook add-in: "Save email to matter" with one click from Outlook —
+  the email body becomes a note, attachments go through the normal
+  document pipeline (encryption, OCR, indexing, deadline scan).
+
+GERMAN COMPLIANCE POSTURE
+- Local pseudonymization before ANY external AI call: names, emails,
+  phone numbers, IBANs, personal and file numbers are replaced with
+  placeholders on our machine and restored in the answer. The external
+  model never sees client data. This matches the argument RA-MICRO
+  makes for its JURA KI — and for German requests we already route to
+  a local model anyway (see section 5).
+- Documents encrypted at rest; document indexing runs on local
+  embeddings only — document text never leaves the machine.
+- BRAK/KI transparency register in the product, GDPR Art. 30 record
+  of processing template, per-country data scoping.
+- Court dunning procedure (automatisiertes Mahnverfahren): from an
+  overdue invoice the system generates the EDA data file for the
+  Mahngericht plus a human-readable summary PDF (Beta — see below).
+
+==================================================================
+3. WHAT REMAINS FOR THE NEXT PHASE (DEFERRED BY DECISION)
+==================================================================
+
+3.1 beA INTEGRATION — the single biggest remaining barrier
+    What it is: the mandatory electronic mailbox of the German bar
+    (besonderes elektronisches Anwaltspostfach). Without it, a German
+    lawyer still needs a second tool for court communication; with it,
+    we are a complete replacement for the incumbents.
+    What it requires — and why this is partner territory:
+    - A beA card. It is only issued to lawyers admitted in Germany
+      (via the Zertifizierungsstelle der Bundesnotarkammer; the basic
+      card costs roughly 50 EUR per year, a signature-capable card
+      somewhat more). We cannot obtain one — you can.
+    - Access to the software interface (the KSW interface that
+      Kanzleisoftware vendors use), which involves an agreement with
+      BRAK's operator. Applying for this is far more credible with a
+      German Rechtsanwalt / German entity on the application.
+    - Real-mailbox testing: sending and receiving through your actual
+      beA account, empfangsbekenntnis handling, court submission
+      formats (XJustiz). Weeks of joint testing, not a one-day task.
+    Our side is prepared: the document pipeline, matter linkage and
+    audit trail that beA messages will flow into already exist.
+
+3.2 LOCAL LLM FINE-TUNING — from "private" to "specialist"
+    Where we are today: German requests are already answered by a
+    local model (Gemma 3 27B) running on our own GPU (RTX 5090,
+    32 GB VRAM, ~50 tokens/second). No German client data needs to
+    leave our infrastructure even for AI answers.
+    What the next phase adds: fine-tuning that model on German legal
+    language and our corpus (statutes, 16k+ decisions and growing,
+    pleading structures), plus a dedicated inference server so the
+    lawyer-facing latency stays constant as offices are added. The
+    hardware sizing is specified; this is a planned investment, not
+    a research question.
+    Why it matters commercially: "our AI runs in-house and is trained
+    for German law" is a sales argument none of the incumbents can
+    match at our price point — RA-MICRO's JURA KI still calls an
+    external provider.
+
+3.3 EDA / MAHNVERFAHREN END-TO-END CERTIFICATION
+    The EDA file we generate is validated against the public
+    specification ("Bedingungen fuer die maschinelle Bearbeitung")
+    and marked Beta. What is missing is one real submission to a
+    Mahngericht through an EGVP/beA client to confirm acceptance
+    end-to-end. This needs a real German creditor case — ideally one
+    of yours. One successful Mahnbescheid and the Beta label comes off.
+
+==================================================================
+4. CONCRETE PARTNER ACTIONS (WITH THE REAL COSTS)
+==================================================================
+
+These are deliberately small, cheap steps — but each one unlocks a
+finished feature, and each one requires a German presence:
+
+1. SIP TRUNK + GERMAN PHONE NUMBER (unlocks the phone receptionist).
+   A sipgate business account with one German number costs roughly
+   10-20 EUR per month plus cents per minute. We enter the SIP
+   credentials in the configuration and Ava answers calls the same
+   day. The entire voice stack is already built and tested.
+
+2. beA CARD + INTERFACE APPLICATION (unlocks court communication).
+   Your beA card (~50 EUR/year, BNotK) and your name on the interface
+   application to BRAK. Development is our side; testing against your
+   real mailbox is joint work in the next phase.
+
+3. FIRST REAL MAHNBESCHEID (removes the Beta label from EDA).
+   Take one overdue receivable, generate the EDA file from the
+   platform, submit it through your EGVP/beA access. Court fee for a
+   Mahnbescheid starts at 36 EUR (recoverable from the debtor).
+
+4. MICROSOFT 365 SIDELOAD (verifies the Outlook add-in in the field).
+   Any real M365 mailbox (Business Basic is ~6 EUR/user/month, or an
+   existing one) to sideload the add-in manifest and confirm the
+   one-click "save to matter" flow in a genuine Kanzlei inbox.
+
+5. NOTHING TO PAY: the openlegaldata dump (instance courts — LG, OLG,
+   AG decisions) is a free download; once placed on the server, the
+   nightly import extends the corpus from federal courts to the
+   courts where day-to-day cases are actually decided.
+
+==================================================================
+5. HOW READY IS THE SYSTEM — HONEST ASSESSMENT
+==================================================================
+
+- In production now, one codebase, running and monitored 24/7 with
+  error tracking, analytics, encrypted backups and nightly data jobs.
+- Feature-complete against the German competitor checklist with two
+  exceptions: beA (next phase, needs you) and the legal fine-tune of
+  the local model (next phase, planned investment). Everything else
+  — practice management, RVG billing, ZUGFeRD, DATEV export, RSV,
+  Mahnwesen incl. EDA, migration, research with verified citations,
+  dictation, WhatsApp and phone intake, Outlook, client portal,
+  citizen marketplace — is built, tested (300+ automated tests) and
+  live.
+- The corpus grows without human attention: every night the importer
+  pulls the next 2,000 decisions. Federal courts are in; instance
+  courts start the moment the free dump is on disk.
+- What no incumbent offers at all: the built-in client acquisition
+  side (citizen portal + 24/7 AI intake on web, WhatsApp and phone)
+  fused with the office software, in 7 languages, with AI that
+  proves its citations.
+
+The technology is ready. The remaining steps are precisely the ones
+that need a German Rechtsanwalt at the table — which is why this
+partnership is the plan, not a workaround.

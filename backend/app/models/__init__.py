@@ -1,0 +1,102 @@
+from app.models.base import Base
+from app.models.tenancy import ApiToken, Tenant, User
+from app.models.jurisdiction import (
+    DeadlineRule,
+    DocumentTemplate,
+    FeeTariffItem,
+    Holiday,
+    Jurisdiction,
+    LegalCorpusChunk,
+    LegalCorpusDoc,
+)
+from app.models.matters import (
+    Contact,
+    Deadline,
+    DeadlineSuggestion,
+    EmailSuggestion,
+    IntakeRequest,
+    Matter,
+    MatterMember,
+    MatterNote,
+    MatterParty,
+)
+from app.models.documents import Document, DocumentChunk
+from app.models.billing import (
+    Expense,
+    Invoice,
+    InvoiceItem,
+    TimeEntry,
+    TimeSuggestion,
+    TrustTransaction,
+)
+from app.models.assistant import Conversation, Message
+from app.models.audit import AuditLog
+from app.models.collab import MatterMessage, PushSubscription, SignatureRequest
+from app.models.privacy import ConsentRecord
+from app.models.aml import SuspicionReport
+from app.models.tasks import Task
+from app.models.marketplace import (
+    CaseRequest,
+    CaseRequestMessage,
+    CaseReview,
+    CitizenUser,
+    ConsultBooking,
+    LawyerProfile,
+)
+from app.models.platform_billing import PlatformInvoice
+from app.models.feedback import PlatformFeedback
+from app.models.evidence import EvidenceChunk, EvidenceSession
+from app.models.notifications import Notification
+from app.models.passkeys import PasskeyCredential
+
+__all__ = [
+    "Base",
+    "Tenant",
+    "User",
+    "Jurisdiction",
+    "DeadlineRule",
+    "Holiday",
+    "DocumentTemplate",
+    "LegalCorpusDoc",
+    "LegalCorpusChunk",
+    "Contact",
+    "Matter",
+    "MatterMember",
+    "MatterParty",
+    "MatterNote",
+    "Deadline",
+    "DeadlineSuggestion",
+    "EmailSuggestion",
+    "IntakeRequest",
+    "Document",
+    "DocumentChunk",
+    "TimeEntry",
+    "TimeSuggestion",
+    "Expense",
+    "Invoice",
+    "InvoiceItem",
+    "TrustTransaction",
+    "FeeTariffItem",
+    "Task",
+    "Conversation",
+    "Message",
+    "ApiToken",
+    "AuditLog",
+    "MatterMessage",
+    "PushSubscription",
+    "SignatureRequest",
+    "ConsentRecord",
+    "SuspicionReport",
+    "CitizenUser",
+    "LawyerProfile",
+    "CaseRequest",
+    "CaseRequestMessage",
+    "CaseReview",
+    "ConsultBooking",
+    "EvidenceChunk",
+    "EvidenceSession",
+    "PlatformInvoice",
+    "PlatformFeedback",
+    "Notification",
+    "PasskeyCredential",
+]

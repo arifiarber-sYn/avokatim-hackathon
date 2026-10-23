@@ -1,0 +1,75 @@
+# AvokatIM reverse proxy.
+#
+# Default: HTTPS on port 8443 with a locally-trusted certificate (Caddy's
+# internal CA) — works for LAN/WireGuard access via https://<ip-e-serverit>:8443
+#
+# When you get a public domain, replace the site block with:
+#   avokatim.example.com {
+#       reverse_proxy 127.0.0.1:3000
+#   }
+# and Caddy will obtain a real Let's Encrypt certificate automatically.
+
+{
+    auto_https disable_redirects
+}
+
+https://:8443 {
+    tls internal {
+        on_demand
+    }
+
+    # API goes straight to the backend; everything else to Next.js
+    handle /api/* {
+        reverse_proxy 127.0.0.1:8000
+    }
+    handle {
+        reverse_proxy 127.0.0.1:3000
+    }
+
+    # Security headers
+    header {
+        Strict-Transport-Security "max-age=31536000"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+}
+
+# LiveKit signaling over TLS for LAN clients (browsers require wss:// in a
+# secure context). The frontend derives wss://<host>:7443 automatically.
+https://:7443 {
+    tls internal {
+        on_demand
+    }
+    reverse_proxy 127.0.0.1:7880
+}
+
+# Temporary parking page for the old domain (boraarifi.ai) — the Cloudflare
+# tunnel routes that hostname here instead of the app.
+http://:8099 {
+    header Content-Type "text/html; charset=utf-8"
+    respond <<HTML
+        <!doctype html>
+        <html lang="en">
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <meta name="robots" content="noindex">
+          <title>boraarifi.ai</title>
+          <style>
+            body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+                   font-family:system-ui,sans-serif; background:#0f172a; color:#e2e8f0; }
+            main { text-align:center; padding:2rem; }
+            h1 { font-size:1.5rem; font-weight:600; margin:0 0 .5rem; }
+            p { color:#94a3b8; margin:0; }
+          </style>
+        </head>
+        <body>
+          <main>
+            <h1>boraarifi.ai</h1>
+            <p>This domain is parked. / Ky domen është i rezervuar.</p>
+          </main>
+        </body>
+        </html>
+        HTML 200
+}

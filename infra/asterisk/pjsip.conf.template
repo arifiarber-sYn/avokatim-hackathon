@@ -1,0 +1,42 @@
+; sipgate SIP trunk for the Telephony-KI (D-059 F4).
+; Rendered to pjsip.conf by entrypoint.sh — ${SIPGATE_*} placeholders come
+; from backend/.env via docker-compose. Do not edit the rendered file.
+
+[transport-udp]
+type=transport
+protocol=udp
+bind=0.0.0.0:5060
+
+[sipgate]
+type=registration
+outbound_auth=sipgate-auth
+server_uri=sip:__SIPGATE_SIP_HOST__
+client_uri=sip:__SIPGATE_SIP_USER__@__SIPGATE_SIP_HOST__
+retry_interval=60
+
+[sipgate-auth]
+type=auth
+auth_type=userpass
+username=__SIPGATE_SIP_USER__
+password=__SIPGATE_SIP_PASSWORD__
+
+[sipgate-aor]
+type=aor
+contact=sip:__SIPGATE_SIP_HOST__
+
+[sipgate-endpoint]
+type=endpoint
+transport=transport-udp
+context=from-sipgate
+disallow=all
+allow=alaw
+allow=ulaw
+outbound_auth=sipgate-auth
+aors=sipgate-aor
+from_user=__SIPGATE_SIP_USER__
+from_domain=__SIPGATE_SIP_HOST__
+
+[sipgate-identify]
+type=identify
+endpoint=sipgate-endpoint
+match=__SIPGATE_SIP_HOST__

@@ -1,0 +1,55 @@
+#!/bin/sh
+# AgentStandard v1.1 — pre-commit gate: docs ship in the SAME commit as code.
+#
+# Blocks the commit when staged changes touch code but neither docs/agents/
+# nor AGENTS.md is staged. Agent-agnostic by design: Cursor, Claude Code,
+# Codex or a human — everyone who commits passes through this gate
+# (STANDARD.md §1.6: a prose-only rule gets violated sooner or later).
+#
+# The committed source of truth is scripts/git-hooks/pre-commit; the
+# installed copy lives at .git/hooks/pre-commit (init-agent-layer.sh
+# installs it; re-copy after editing).
+#
+# Per-project tuning (edit here or export before committing):
+#   CODE_PATTERN — extended regex for paths that count as "code"
+#   DOCS_DIR     — the agent docs directory (default docs/agents/)
+#   LINT_CMD     — optional project verify script (e.g. OpsHub's
+#                  verify-docs.ts); non-zero exit blocks the commit
+#
+# Emergency bypass ONLY (and fix the docs immediately after):
+#   git commit --no-verify
+
+CODE_PATTERN="${CODE_PATTERN:-\.(py|go|rs|ts|tsx|js|jsx|dart|swift|kt|java|rb|php|html|css|sql|sh)$}"
+DOCS_DIR="${DOCS_DIR:-docs/agents/}"
+LINT_CMD="${LINT_CMD:-}"
+
+cd "$(git rev-parse --show-toplevel)" || exit 1
+
+staged="$(git diff --cached --name-only)"
+[ -z "$staged" ] && exit 0
+
+code_changed="$(printf '%s\n' "$staged" | grep -E "$CODE_PATTERN" | grep -Ev "^${DOCS_DIR}" || true)"
+docs_changed="$(printf '%s\n' "$staged" | grep -E "^${DOCS_DIR}|(^|/)AGENTS\.md$" || true)"
+
+if [ -n "$code_changed" ] && [ -z "$docs_changed" ]; then
+  echo "COMMIT BLOCKED (AgentStandard pre-commit gate):"
+  echo "  Staged code changes without any ${DOCS_DIR} / AGENTS.md update:"
+  printf '%s\n' "$code_changed" | sed 's/^/    /'
+  echo ""
+  echo "  Per the Definition of Done: update the owning topic file in ${DOCS_DIR}"
+  echo "  (+ CHANGELOG.md entry) and stage it in THIS commit, then retry."
+  echo "  Emergency bypass: git commit --no-verify (fix the docs right after)."
+  exit 1
+fi
+
+# Optional project-specific consistency lint (Level 2+): blocks on failure.
+if [ -n "$LINT_CMD" ]; then
+  if ! eval "$LINT_CMD"; then
+    echo ""
+    echo "COMMIT BLOCKED: the project docs lint failed (see above)."
+    echo "Fix the docs/code drift in THIS commit, then retry."
+    exit 1
+  fi
+fi
+
+exit 0

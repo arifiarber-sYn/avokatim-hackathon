@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<partial-response><changes><update id="mainPageContent"><![CDATA[
+<span id="mainPageContent">
+<form id="resultForm" name="resultForm" method="post">
+" class="ui-panelgrid-cell" style="width: 80%;"><span class="resultText" style="font-weight: bold;">Anzahl gefundener Einträge: 11</span>
+                        <br /></td></tr><tr class="ui-widget-content ui-panelgrid-
+<span class="resultCardHeader ui-helper-clearfix">Müller, Juliane Katharina </span></span></div><div id="resultForm:dlResultList:0:j_idt277_content" class="ui-panel-content ui-widget-content"><div id="resultForm:dlResultList:0:j_idt281" class="ui-panel ui-widget ui-widget-content ui-corner-all resultCardContentBox" data-widget="widget_resultForm_dlResultList_0_j_idt281" role="region"><div id="resultForm:dlResultList:0:j_idt281_content" class="ui-panel-content ui-widget-content">
+                            <ul>
+                                
+                                    <li>Rechtsanwältin
+                                    </li>
+                                
+                                    <li>Schubertstr. 6
+                                    </li>
+                                    <li>64859 Eppertshausen
+                                    </li>
+                            </ul>
+<span class="resultCardHeader ui-helper-clearfix">Müller, Katharina </span></span></div><div id="resultForm:dlResultList:1:j_idt277_content" class="ui-panel-content ui-widget-content"><div id="resultForm:dlResultList:1:j_idt281" class="ui-panel ui-widget ui-widget-content ui-corner-all resultCardContentBox" data-widget="widget_resultForm_dlResultList_1_j_idt281" role="region"><div id="resultForm:dlResultList:1:j_idt281_content" class="ui-panel-content ui-widget-content">
+                            <ul>
+                                
+                                    <li>Rechtsanwältin
+                                    </li>
+                                
+                                    <li>Müller
+                                    </li>
+                                    <li>Am Vogelschutzpark 5A
+                                    </li>
+                                    <li>56075 Koblenz
+                                    </li>
+                            </ul>
+</form></span>]]></update></changes></partial-response>

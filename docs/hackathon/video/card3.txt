@@ -1,0 +1,16 @@
+AvokatIM — arkitektura
+
+        Pyetja e përdoruesit
+                 |
+        Orchestrator: plan -> query -> verify
+          /              |               \
+   Zetaris         Meterless        Meta Model
+   (SQL federativ) (model lokal +    (Muse/SAM,
+                    matje kostoje)    OpenAI-compatible)
+          \              |               /
+             Evidence[]: source_id, uri,
+             fragment, page, confidence
+                 |
+        Përgjigje + citime te klikueshme
+                 |
+        ose: "s'e di" + arsyeja

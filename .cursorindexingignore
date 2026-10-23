@@ -1,0 +1,14 @@
+# Keep Cursor's semantic index fast and free of noise/stale context.
+# (Indexing already respects .gitignore — data/, .venv, node_modules, .next;
+# this file adds tracked-but-unhelpful content on top.)
+
+# Deprecated agent-docs archive (pre 2026-08-05) — docs/agents/ is the
+# source of truth; indexing the old copies feeds agents stale STATE/DECISIONS.
+docs/agent/
+
+# Generated / lockfiles — huge, no semantic value
+frontend/package-lock.json
+
+# Runtime artifacts if they ever appear untracked in the tree
+*.log
+*.sqlite

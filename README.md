@@ -1,72 +1,99 @@
-# AvokatIM — the agent that explains why
+# AvokatIM
 
-Submission for **Open Agent Hackathon 2026**, track **Wildcard [Tinkerer]**.
+Platformë moderne për menaxhimin e praktikës ligjore — e ndërtuar që një avokat i vetëm
+të punojë me kapacitetin e një zyre të tërë: nga pranimi i lëndës deri te përgatitja për seancë.
 
-A legal agent for the Albanian language that **never answers without a source**: every claim
-comes with a document, an article and a fragment, and when the corpus has no answer it says
-*"I don't know"* with a reason instead of inventing one.
+## Modulet
 
-## What is in this repository
-
-| Path | What |
+| Moduli | Çfarë bën |
 |---|---|
-| docs/hackathon/submission.md | submission write-up |
-| docs/hackathon/deck.pdf | 10 slides |
-| docs/hackathon/video/demo-full.mp4 | 90 s demo, recorded on the live product |
-| docs/hackathon/video/demo-2min.mp4 | 1:56 version with the before/after numbers |
-| docs/hackathon/arta-verifikuar.md | verification of 10 gold answers, round by round |
-| backend/hackathon/ | retrieval harness (3 question sets) + demo CLI |
-| backend/app/adapters/ | Zetaris, Meterless and Meta Model adapters with contract tests |
+| **Pranimi (Intake)** | Regjistrim i rasteve të reja, kontroll automatik i konfliktit të interesit, klasifikim me AI |
+| **Dosjet (Matters)** | Dosja digjitale e lëndës: palët, dokumentet, afatet, shënimet, historia |
+| **Afatet** | Motor afatesh me rregullat procedurale të Kosovës (LPK, KPPRK, LKA...) — llogaritje automatike me festa zyrtare |
+| **Dokumentet** | Ruajtje e enkriptuar, versionim, nxjerrje teksti + OCR, indeksim për kërkim semantik |
+| **Shabllonet** | Padi, ankesa, autorizime — plotësohen automatikisht me të dhënat e lëndës |
+| **Asistentja Ava** | AI me RAG mbi legjislacionin dhe dokumentet e lëndës: përmbledhje, hulumtim me citime, përgatitje për seancë |
+| **Portali i klientit** | Klienti sheh statusin e lëndës dhe seancat e ardhshme |
+| **Faturimi** | Orët e punës, fatura automatike nga orët e pafaturuara |
+| **Paneli** | Ngarkesa, afatet e javës, financat |
 
-## Numbers (measured, not claimed)
+## Arkitektura
 
-**Retrieval** — blind set, 13 questions: 10/10 answered inside the corpus, 3/3 out-of-domain
-questions refused with a reason.
+- **Backend**: Python / FastAPI, SQLAlchemy (async), Alembic — `backend/`
+- **Databaza**: PostgreSQL 17 + pgvector (kërkim semantik), Redis — në Docker
+- **Frontend**: Next.js + TypeScript + Tailwind, 3 gjuhë (shqip / anglisht / kinezisht) — `frontend/`
+- **AI**: shtresë abstraksioni LLM — DeepSeek V4 (API) sot, LLM lokal (Ollama/vLLM) si opsion
+- **Embeddings**: lokale (sentence-transformers, multilingual) — teksti i dokumenteve NUK del nga ky kompjuter për indeksim
+- **Qasja nga jashtë**: Caddy me HTTPS në portin 8443
+- **Siguria**: 2FA (TOTP), JWT, enkriptim i dokumenteve në disk, audit log i plotë
 
-**Answers** — 10 gold questions, checked against the article title and full article text:
+Multi-juridiksional që nga themeli: rregullat e afateve, festat, shabllonet dhe korpusi ligjor
+janë **të dhëna për juridiksion** (XK aktiv; GB, CN, INTL të përgatitura), jo kod.
 
-| Metric | Value |
-|---|---|
-| Correct law at rank 1 | 10/10 |
-| Exact and complete article | 2/10 |
-| Correct article within top-3 | 7/10 |
-| Wrong source at rank 1 | 0/10 |
+## Nisja
 
-Stated limit: the system finds the right law almost always, but does not always pick the
-article that answers. We measure it and print it instead of hiding it behind an average.
+```bash
+./start.sh
+```
 
-## Verify in two minutes
+Hap `http://127.0.0.1:3000` — hera e parë të kërkon të krijosh llogarinë e avokatit.
 
-    git clone https://github.com/arifiarber-sYn/avokatim-hackathon.git
-    cd avokatim-hackathon
-    # the harness needs PostgreSQL + pgvector with the legal corpus (not distributed)
-    export AVOKATIM_DSN="postgresql://user:***@127.0.0.1:5433/avokatim"
-    python backend/hackathon/harness_v5.py
+Nga rrjeti / jashtë: `https://<IP-e-këtij-kompjuteri>:8443` (certifikatë lokale — prano
+paralajmërimin e shfletuesit; me domen publik Caddy merr certifikatë të vërtetë vetë).
 
-Without the corpus the harness still documents the method and the scoring rules.
+Ndalja: `./stop.sh`
 
-## Sponsors
+## Konfigurimi
 
-- **Zetaris** — adapter verified against the local REST SQL editor (SELECT 1 → 200 on 22.10).
-  Status 22.10 17:10: the platform runs (4 containers healthy, UI 200) but the stored API token
-  is rejected ("Api token is not allowed"), so the path is not live until a new token is issued.
-- **Meterless** — adapter plus usage.jsonl for cost and tokens. The native Nightshift build
-  exists only for macOS, Windows and DGX Spark (arm64); a build/API request was sent.
-  Partial integration is declared, not overstated.
+Sekretet janë te `backend/.env` (çelësi DeepSeek, çelësi i enkriptimit të dokumenteve,
+fjalëkalimi i DB). **Mos e vendos kurrë në git.**
 
-## License
+Opsionale:
 
-Code in this submission: MIT. The legal corpus and client data are not included.
+```bash
+# Embeddings lokale + OCR (të instaluara tashmë në .venv)
+backend/.venv/bin/pip install -r backend/requirements-ai.txt
+# OCR kërkon edhe binarin e sistemit:
+sudo dnf install tesseract tesseract-langpack-sqi tesseract-langpack-eng tesseract-langpack-chi_sim
+```
 
-## Run it in 60 seconds — no database, no dependencies
+LLM lokal (faza 2): vendos te `backend/.env`:
 
-    git clone https://github.com/arifiarber-sYn/avokatim-hackathon.git
-    cd avokatim-hackathon/backend/hackathon
-    python3 demo_sample.py "Çfarë duhet të përmbajë kontrata e punës?"
+```
+LOCAL_LLM_BASE_URL=http://127.0.0.1:11434/v1   # Ollama
+LOCAL_LLM_MODEL=emri-i-modelit
+```
 
-This runs against a 555-article sample of real Kosovo law (8 statutes, laws only — no court
-decisions, no personal data) with pure Python and no installs. It shows the same behaviour as
-production: document + article + fragment, and *"I don't know"* for questions outside the corpus.
+dhe zgjidhe "Lokal" te Asistentja në aplikacion.
 
-The full system (`demo.py`, `harness_v5.py`) needs PostgreSQL + pgvector with the 353k-chunk
-corpus, which is not distributed.
+## Korpusi ligjor
+
+Te **Cilësimet → Baza ligjore** ngarko tekstet e ligjeve (nga Gazeta Zyrtare).
+Ndahen automatikisht për nen ("Neni X"), indeksohen me embeddings, dhe Ava i citon
+me saktësi në përgjigjet e saj.
+
+## Testet
+
+```bash
+cd backend && .venv/bin/python -m pytest tests/ -q
+```
+
+## Struktura
+
+```
+AvokatIM/
+├── backend/            # FastAPI API
+│   ├── app/
+│   │   ├── models/     # SQLAlchemy (multi-tenant + multi-juridiksional)
+│   │   ├── api/        # REST endpoints
+│   │   ├── services/   # afatet, konflikti, RAG, asistentja, storage
+│   │   ├── llm/        # abstraksioni i ofruesve LLM (deepseek | local)
+│   │   └── seeds/      # rregullat e afateve + festat + shabllonet e Kosovës
+│   ├── alembic/        # migrimet e DB
+│   └── tests/
+├── frontend/           # Next.js UI (sq / en / zh)
+├── data/documents/     # dokumentet e enkriptuara (jashtë git)
+├── docker-compose.yml  # Postgres + Redis + Caddy
+├── Caddyfile           # HTTPS reverse proxy
+└── start.sh / stop.sh
+```

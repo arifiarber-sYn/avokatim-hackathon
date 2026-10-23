@@ -1,0 +1,25 @@
+# Secrets — never commit
+.env
+backend/.env
+# backups of .env made by maintenance work (e.g. .env.bak-health-YYYYMMDD)
+backend/.env.bak*
+.env.bak*
+
+# Python
+backend/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Data (client documents, DB dumps)
+data/
+*.log
+backend/secrets/
+
+# Halim (OpenClaw) runtime state — inbox triage cursor, contains third-party email details
+backend/memory/

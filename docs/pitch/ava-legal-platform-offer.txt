@@ -1,0 +1,299 @@
+==================================================================
+AVA LEGAL — PLATFORM OFFER
+A complete, AI-native legal practice platform for the German market
+==================================================================
+
+Date: 5 August 2026
+Validity: 90 days from the date above
+Recipients: selected German legal-technology companies
+
+This document is a complete, self-contained offer. It describes the
+platform in full, states concrete prices for every cooperation and
+purchase option, and explains exactly what is included in each. The
+prices below are our best prices, stated openly from the start. We
+have deliberately set them at the bottom of our range so that no
+negotiation phase is needed: what you read here is what you pay.
+
+
+==================================================================
+1. WHY WE ARE WRITING TO YOU
+==================================================================
+
+The German legal software market is in the middle of its AI
+transition. Every established vendor is announcing AI features;
+building them properly — grounded in the legal corpus, privacy-safe,
+integrated into the daily workflow of a Kanzlei — takes a dedicated
+team of 5-7 engineers roughly 18-24 months before the first customer
+sees anything.
+
+We have already built it. Ava Legal is a production system, live
+today, that combines three things no single German vendor currently
+offers in one product:
+
+  1. A complete, modern Kanzleisoftware (Akten, Fristen, RVG,
+     e-invoicing, Mahnwesen, documents, templates, billing).
+  2. A deep AI layer grounded in an indexed corpus of German law
+     and court decisions, with citation verification and a
+     privacy architecture built for BRAK/DSGVO scrutiny.
+  3. A 24/7 client-acquisition front end: citizen portal,
+     structured intake, WhatsApp and telephone AI receptionist.
+
+We are a small, fast team. Our strength is engineering velocity, not
+distribution in the German market. You have the distribution, the
+brand and the customer trust. This offer exists so that our
+technology reaches the market through you — as a component, as your
+white-label product, or as your outright property.
+
+
+==================================================================
+2. THE PLATFORM — COMPLETE INVENTORY
+==================================================================
+
+2.1 PRACTICE MANAGEMENT CORE
+  - Digital matter files (Akten) with full lifecycle: intake,
+    conflict-of-interest check, parties, opposing parties, notes,
+    documents, deadlines, billing — multi-tenant from the ground up.
+  - Deadline engine where all rules are DATA, not code: ZPO, ArbGG,
+    VwGO deadline rules and German court holidays ship as seed data;
+    new rules are added without touching program logic.
+  - Calendar with deadlines, hearings and appointments; ICS feeds.
+  - Template system with variables, per-jurisdiction template packs,
+    document generation to DOCX/PDF.
+  - Full-text search across matters, contacts, documents and the
+    legal corpus, with fuzzy matching and a Cmd+K command palette.
+  - Contact/client management with legal-entity support.
+  - Audit trail: every user-visible action on matters and documents
+    is logged immutably per tenant.
+
+2.2 GERMAN LEGAL COMPLIANCE, BUILT IN
+  - RVG fee calculation (Verfahrens-/Termins-/Einigungsgebuehr,
+    Anrechnung, tables as data) and a public Prozesskostenrechner.
+  - E-invoicing: ZUGFeRD 2.x and XRechnung generation, DATEV export.
+  - Mahnwesen: dunning runs, interest calculation, and EDA file
+    export for the automated court Mahnverfahren (structure
+    validated against the public specification; marked Beta until
+    first live submission to a Mahngericht).
+  - Rechtsschutzversicherung workflows: coverage request (Deckungs-
+    anfrage) drafting and tracking per matter.
+  - Structured intake questionnaires per legal area (family, labor,
+    tenancy, traffic, inheritance, ...) collected identically via
+    web, WhatsApp and telephone.
+  - Pseudonymization layer: names, emails, phone numbers, IBANs and
+    national IDs are replaced with stable placeholders BEFORE any
+    prompt leaves the server for an external AI provider, and
+    restored transparently in the response — including in streamed
+    responses. Client data never reaches an external model in clear.
+  - Local embeddings (sentence-transformers) for all document and
+    corpus indexing: document text never leaves the machine for
+    indexing purposes.
+  - Documents encrypted at rest; per-tenant isolation; append-only
+    database migration history (52 migrations).
+
+2.3 THE AI LAYER
+  - Assistant grounded (RAG) in an indexed corpus of German federal
+    law and 16,000+ published court decisions, growing every night
+    via automated imports (Bundesgerichte + openlegaldata pipeline);
+    hybrid retrieval (semantic + full-text, reciprocal rank fusion).
+  - Automatic citation verification: every statute and case number
+    the AI cites is checked against the corpus and badged as
+    verified/unverified in the UI — the answer earns trust, not
+    just fluency.
+  - Agentic execution: the assistant plans multi-step actions
+    (create deadline, draft document, schedule appointment) with a
+    visible step plan and explicit lawyer approval before anything
+    is executed.
+  - Proactive AI: morning briefing per lawyer (optionally spoken,
+    local TTS), overnight monitoring of new case law relevant to
+    open matters, automatic deadline audits.
+  - Deep research mode with structured legal analysis.
+  - AI e-mail classification and deadline extraction from documents
+    (suggested deadlines with lawyer confirmation).
+  - LLM-agnostic architecture: one abstraction serves DeepSeek,
+    any OpenAI-compatible API, or a fully LOCAL model (validated on
+    our own GPU infrastructure with gemma3:27b via Ollama). Task-
+    based routing and automatic fallback are built in. A hard
+    "local-pinned" mode guarantees that privacy-sensitive tenants
+    never touch an external model.
+  - Local speech stack: Whisper (STT) and Piper (TTS) run on the
+    server — voice never leaves the machine. Used for dictation,
+    spoken briefings, voice conversation mode and telephony.
+
+2.4 CLIENT ACQUISITION — THE 24/7 FRONT DOOR
+  - Public citizen portal: legal guides (Ratgeber), cost calculator,
+    court-fee calculator, public AI chat with the same corpus
+    grounding and citation verification as the lawyer-side AI.
+  - Structured case intake: citizens describe their problem, the AI
+    classifies the legal area, asks the field-specific questions a
+    lawyer would ask, and delivers a structured case request.
+  - WhatsApp intake: the full intake conversation, including
+    category-specific questionnaires and appointment scheduling,
+    runs over WhatsApp in the citizen's language.
+  - Telephone AI receptionist: Asterisk + SIP trunk (e.g. sipgate),
+    local STT/TTS, conversational intake that creates a structured
+    case request from a phone call — 24/7, no staff.
+  - Client portal for ongoing matters: status, documents, messages.
+  - Online appointment booking.
+
+2.5 SWITCHING TOOLS — BUILT TO BEAT LOCK-IN
+  - 4-step data migration wizard: CSV/XLSX import with column-
+    mapping presets for RA-MICRO and Advoware exports, dry-run
+    preview, opposing parties, legacy Aktenzeichen (searchable),
+    and bulk document import via ZIP with automatic matter
+    assignment.
+  - Outlook add-in: "save e-mail to matter" (message + attachments)
+    directly from the Outlook taskpane, wired into the normal
+    document pipeline and audit trail.
+  - 7 interface languages (DE, EN, SQ, TR, SR, BS, ZH) — relevant
+    for firms with international clientele.
+
+2.6 TECHNICAL FOUNDATION
+  - Stack: Python 3 / FastAPI / SQLAlchemy 2 (async) / PostgreSQL 17
+    with pgvector / Redis / Next.js + TypeScript + Tailwind.
+  - Scale: ~76,000 lines of production code, 287 API endpoints,
+    314 automated tests, 52 append-only DB migrations.
+  - Multi-tenant architecture; per-country jurisdiction profiles —
+    every jurisdiction (deadline rules, holidays, templates, fees,
+    corpus) is data, not code. Expansion to Austria or Switzerland
+    is configuration plus corpus import, not a rewrite.
+  - Self-hosted observability: error tracking (GlitchTip/Sentry-
+    compatible) and privacy-friendly analytics (Umami).
+  - Passkey (WebAuthn) login, Google OAuth, dark mode, PWA install,
+    skeleton loading states — current-generation UX throughout.
+  - Clean dependency licensing (no copyleft contamination), built
+    for due diligence from day one.
+
+2.7 HONEST STATUS OF OPEN ITEMS
+  - beA integration: not yet implemented (requires beA card and
+    certification process). The architecture has a clear slot for
+    it; under Options 2-4 it is the first roadmap item.
+  - Local LLM legal fine-tuning: the local model runs in production
+    quality today; a German-legal fine-tune is specified as the
+    next step and is included in the development agreements below.
+  - EDA/Mahnverfahren: structure validated against the public spec,
+    Beta until the first live court submission.
+
+
+==================================================================
+3. THE OFFER — FOUR OPTIONS, CONCRETE PRICES
+==================================================================
+
+All four options are on the table simultaneously. Choose the level
+of commitment that fits your strategy. Prices are net of VAT.
+
+------------------------------------------------------------------
+OPTION 1 — OEM LICENSE: THE AI LAYER INSIDE YOUR PRODUCT
+------------------------------------------------------------------
+You embed our AI stack into your existing product under your brand:
+corpus-grounded assistant, nightly corpus pipeline, citation
+verification, pseudonymization layer, structured AI intake
+(web/WhatsApp/telephone), local speech stack.
+
+  PRICE:  EUR 30,000 one-time license fee
+          + EUR 3.00 per active user per month
+          (annual minimum EUR 25,000)
+
+  Included: API access or embedded deployment, integration support
+  by our engineers (up to 20 person-days in year one), updates to
+  the AI layer and corpus pipeline for the duration of the license.
+  Term: 3 years, renewable. Non-exclusive.
+
+------------------------------------------------------------------
+OPTION 2 — EXCLUSIVE WHITE-LABEL LICENSE FOR DACH
+------------------------------------------------------------------
+The complete platform (everything in section 2) under your brand,
+exclusively for Germany, Austria and Switzerland. You own the
+customer relationship, the pricing and the go-to-market; we keep
+building the product with your roadmap first.
+
+  PRICE:  EUR 75,000 upfront
+          + 20% revenue share on subscription revenue
+          + development retainer EUR 10,000/month
+            (24-month minimum term)
+
+  Included: full platform under your brand, your domains, your
+  corporate identity; all future development during the retainer
+  (beA integration and the German-legal LLM fine-tune are the first
+  two roadmap items); hosting either on your infrastructure or
+  managed by us. Exclusivity is coupled to a jointly agreed minimum
+  distribution performance; if the minimum is not met, exclusivity
+  (not the license) lapses.
+
+------------------------------------------------------------------
+OPTION 3 — FULL ACQUISITION OF THE PLATFORM FOR DACH
+------------------------------------------------------------------
+You acquire the platform outright for Germany, Austria and
+Switzerland: source code, all rights for the territory, infra-
+structure blueprints, documentation, corpus pipeline, trade name
+"Ava Legal". (Our founder's small home-market operation in Kosovo,
+under a different brand, is carved out and continues independently —
+it does not compete in DACH.)
+
+Two variants, same ownership result:
+
+  VARIANT 3A — with development partnership (recommended):
+          EUR 500,000 at signing
+          + development agreement EUR 120,000/year for 3 years
+            (the team that built the platform delivers YOUR roadmap:
+            beA integration, LLM fine-tuning, feature development,
+            second-level support and knowledge transfer)
+          Total over 3 years: EUR 860,000
+
+  VARIANT 3B — clean purchase, no ongoing obligations:
+          EUR 700,000 at signing
+          + 90 days of transition support included at no charge
+
+  Included in both: complete source code and git history, all
+  documentation (architecture, decisions, operations), seed data,
+  corpus importers, deployment automation, trademark/domain
+  transfer for DACH, non-compete for DACH.
+
+------------------------------------------------------------------
+OPTION 4 — FULL GLOBAL ACQUISITION
+------------------------------------------------------------------
+Everything in Option 3, for all markets and all future
+jurisdictions, including the one-codebase multi-jurisdiction
+architecture. The founder's Kosovo operation receives a perpetual,
+royalty-free license-back for its home market only.
+
+  PRICE:  EUR 1,000,000 at signing
+          + optional development agreement, EUR 120,000/year
+            (same terms as Variant 3A)
+
+------------------------------------------------------------------
+WHY THESE PRICES ARE LOW — AND WHY THEY ARE FINAL
+------------------------------------------------------------------
+Replicating this platform in-house means a 5-7 person team for
+18-24 months: EUR 1.5-2.5M in engineering cost alone, plus the
+18-24 months of market time lost while competitors ship AI. We are
+pricing significantly below replication cost because we value speed
+and a strong partner over maximum price. For the same reason the
+prices are final: we prefer one fast, clean agreement over months
+of negotiation.
+
+
+==================================================================
+4. TRANSITION AND DELIVERY
+==================================================================
+
+  - Live demonstration on the production system: within one week of
+    your reply, on-site or remote.
+  - Due diligence (Options 3/4): full code, test-suite and
+    documentation access after a signed letter of intent and NDA.
+    The codebase was built for this — append-only migration
+    history, 314 automated tests, decision log, clean licensing.
+  - Handover (Options 3/4): complete knowledge transfer program;
+    the development agreement (3A/4) guarantees continuity with
+    the original engineering team.
+  - Deployment: the platform is self-hostable on your
+    infrastructure (Docker Compose today; Kubernetes-ready
+    architecture) or can remain managed during transition.
+
+
+==================================================================
+5. NEXT STEP
+==================================================================
+
+Reply to arrange a live demonstration. All conversations under NDA.
+This offer is valid for 90 days from the date above; the options
+are mutually exclusive per territory and will be granted to the
+first party that signs.

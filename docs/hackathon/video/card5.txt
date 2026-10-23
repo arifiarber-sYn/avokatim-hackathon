@@ -1,0 +1,9 @@
+Para / pas — një rregullim që ndryshon besimin
+
+  PARA                                PAS
+  [1] vendim gjykate   0.679          [1] Ligji i Punes    0.660
+  [2] Ligji i Punes    0.660          [2] LMD              0.638
+  [3] LMD              0.638          [3] vendim gjykate   0.679
+
+  Rregulli: burimi primar (ligj, kod) peshon +0.05
+  mbi burimin dytesor (vendim, koment).

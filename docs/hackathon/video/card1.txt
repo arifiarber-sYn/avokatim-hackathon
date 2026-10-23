@@ -1,0 +1,30 @@
+Pyetja: Kur fillon afati i parashkrimit të kërkesave?
+
+Dëshmitë:
+  [1] Ligji i Punës (Neni 87) — ngjashmëri 0.660
+      «Neni 87 Afati i parashkrimit Të gjitha kërkesat nga marrëdhënia e punës në para, parashkruhen
+      brenda afatit prej tri (3) vitesh, nga dita e paraqitjes së kërkesës. KREU X ORGANIZATAT E TË
+      PUNËSUARVE DHE TË PUNËDHËNËSVE»
+  [2] Ligji për Marrëdhëniet e Detyrimeve (LMD) (Neni 373) — ngjashmëri 0.638
+      «Neni 373 Afati i parashkrimit në rastin e ndërprerjes 1. Pas ndërprerjes parashkrimi fillon të
+      rrjedhë përsëri, kurse koha që ka kaluar para ndërprerjes nuk llogaritet në afatin e caktuar
+      ligjor për parashkrim. 2. Parash»
+  [3] Dhoma e Posaçme, Kolegji i Specializuar IV i Likudimit — C-IV.nr. 13/2844, 27.01.2026 — ngjashmëri
+      0.679
+      «tëvjeçar i parashkrimit. Kërkesa e parashtruesit, e dorëzuar më 01.08.2013, është pas kalimit të
+      afati kohor për paraqitje të kërkesës fillimisht . Edhe nëse pranohet se Propozimi për Ekzekutim
+      datë 08.06.1993 se e ka nd»
+  [4] Dhoma e Posaçme, Ankesë kundër vendimit të Kolegjit të Specializuar — AC-I.nr. 24/0521, 26.03.2026
+      — ngjashmëri 0.642
+      «mbi faktin e afatit të parashkrimit, përderisa ka qenë obligim ligjor i të paditurës për fillimin
+      e kësaj procedure dhe për derisa ankuesi me letrën Numri i lëndës: 2022:240747 Datë: 26.03.2026
+      Numri i dokumentit: 086769»
+  [5] Dhoma e Posaçme, Ankesë kundër vendimit të Kolegjit të Specializuar — AC-I.nr. 23/0252, 09.10.2025
+      — ngjashmëri 0.628
+      «aqitur rrethanat relevante që kanë ndikim n ë ndërprerje të afatit të parashkrimit dhe është bërë
+      anulimi i kohës që ka rrjedh parashkrim i, sepse në Numri i lëndës: 2022:150164 Datë: 09.10.2025
+      Numri i dokumentit: 07871»
+
+Përgjigja (e ndërtuar vetëm nga dëshmitë e mësipërme):
+  Sipas Ligji i Punës (Neni 87), kjo pyetje trajtohet në fragmentin [1].
+  Citimet janë të verifikueshme: dokumenti + neni + fragmenti.

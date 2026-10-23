@@ -1,0 +1,222 @@
+STRATEGJIA E PLOTË PËR TREGUN GJERMAN — DY KANALE PARALELE
+Dokument intern (shqip). Përditësuar: 2026-08-05.
+
+PARIMI: dy kanale që përforcojnë njëri-tjetrin.
+  KANALI A — oferta e platformës u dërgohet kompanive legal-tech
+             (blerje/licencim — dokumentet ava-legal-platform-offer*.txt).
+  KANALI B — provohet fati direkt me avokatë dhe firma avokatësh
+             gjermane si klientë piloti (Ava Legal, 39 €/user/muaj,
+             3 muaj falas).
+  Çdo firmë paguese nga Kanali B e ngre çmimin dhe besueshmërinë e
+  Kanalit A ("kemi klientë realë gjermanë"). Prandaj Kanali B nis
+  MENJËHERË, pa pritur përgjigjet e Kanalit A.
+
+==================================================================
+KANALI A — LISTA E KOMPANIVE PËR OFERTËN (renditur sipas prioritetit)
+==================================================================
+
+1. SEPTEO GROUP / stp.one GmbH (Advoware, Lexolution) — PRIORITETI 1
+   Pse: grup francez që po blen agresivisht softuer juridik nëpër
+   Europë (bleu stp.one/Advoware). Blerja është modeli i tyre i
+   rritjes — oferta jonë bie direkt në playbook-un e tyre. Advoware
+   synon zyrat e vogla/mesme: segmenti ynë. U mungon shtresa AI
+   e thellë dhe akuizicioni 24/7 i mandateve.
+   Kujt i drejtohemi: Septeo Group (Corporate Development / M&A) +
+   Geschäftsführung e stp.one (Karlsruhe).
+   Versioni: anglisht (grup ndërkombëtar). Opsionet kryesore: 3/4;
+   fallback 1.
+
+2. WOLTERS KLUWER DEUTSCHLAND (AnNoText, Kleos) — PRIORITETI 1
+   Pse: korporatë globale me strategji të deklaruar AI dhe histori
+   blerjesh. Kleos është cloud-i i tyre modern por pa shtresën tonë
+   AI (korpus + verifikim citimesh + recepsion 24/7). Për ta edhe
+   Opsioni 1 (OEM) është fitore e shpejtë.
+   Kujt i drejtohemi: WK Legal Software DE (product/corporate
+   development), Hürth/Köln.
+   Versioni: anglisht. Opsionet kryesore: 1/3.
+
+3. HAUFE GROUP (Advolux) — PRIORITETI 2
+   Pse: grup i madh përmbajtjesh me krah softueri; Advolux është
+   solid por pa AI të integruar dhe pa portal qytetarësh. Kanë
+   kapital dhe motiv për të mos mbetur pas në valën AI.
+   Kujt i drejtohemi: Geschäftsführung Advolux / Haufe Group
+   (Freiburg).
+   Versioni: gjermanisht. Opsionet kryesore: 1/2/3.
+
+4. RA-MICRO SOFTWARE AG — PRIORITETI 2
+   Pse: lideri i tregut (~70,000 vende pune) me ambicie të shpallura
+   "Jura-KI". Nuk do të rebrandonin kurrë — por shtresa jonë AI si
+   OEM (Opsioni 1) plus intake-u i qytetarëve u jep atyre menjëherë
+   atë që po e ndërtojnë vetë. Rrezik i ulët për ne, jo ekskluziv.
+   Kujt i drejtohemi: Vorstand / Produktleitung Jura-KI (Berlin).
+   Versioni: gjermanisht. Opsioni kryesor: 1.
+
+5. dokSAFE GmbH (Actaport) — PRIORITETI 3
+   Pse: cloud-native, të fokusuar te M365 dhe zyrat e reja — kultura
+   më e afërt me tonën. Buxheti i blerjes ndoshta i kufizuar, por
+   Opsioni 1/2 u përshtatet; edhe bashkim strategjik i mundshëm.
+   Kujt i drejtohemi: Geschäftsführung dokSAFE.
+   Versioni: gjermanisht. Opsionet kryesore: 1/2.
+
+REZERVA (nëse 5 të parët s'përgjigjen brenda 30 ditësh):
+   - DATEV eG (Anwalt classic po plaket; proces i ngadaltë blerjeje).
+   - C.H.Beck / Verlag Otto Schmidt (gjigantë përmbajtjesh që duan
+     softuer; beck-online + korpusi ynë = sinergji e qartë).
+   - JUPUS (AI-native, VC-backed) — KUJDES: konkurrent i drejtpërdrejtë
+     në filozofi; letra u tregon çfarë kemi. Vetëm demo sipërfaqësore
+     pa NDA të fortë.
+
+RREGULLAT E KANALIT A
+   - Letra shoqëruese e shkurtër (template më poshtë) + oferta e plotë
+     si bashkëngjitje PDF. Çmimet janë finale — pa negociatë.
+   - Demo live brenda javës; kod vetëm pas LOI + NDA.
+   - "I pari që nënshkruan" — të gjithë e dinë që letra shkoi te
+     5 kompani njëkohësisht.
+   - Ndjekje (follow-up) një herë pas 10 ditësh, pastaj heshtje —
+     dëshpërimi ul çmimin.
+
+==================================================================
+KANALI B — AVOKATËT DHE FIRMAT GJERMANE (piloti / klientët e parë)
+==================================================================
+
+PROFILI I SYNUAR (kush ka gjasë të thotë PO):
+   1. Kanzleigründer — avokatë që sapo hapin zyrën (pa softuer
+      ekzistues = pa kosto ndërrimi, të uritur për mandate; blerësi
+      ideal i recepsionit 24/7).
+   2. Zyra 1-10 avokatë në fushat tona të forta: familjare, punë,
+      qira, trafik, trashëgimi (pyetësorët i kemi gati).
+   3. Avokatët gjermanofolës me origjinë shqiptare/ballkanike —
+      dera më e lehtë: 7 gjuhët tona (shqip/serbisht/boshnjakisht/
+      turqisht) janë diferencues real për klientelën e tyre, dhe
+      kontakti i parë bëhet në gjuhën tonë. KY ËSHTË FILLIMI.
+   4. Zyra të pakënaqura me çmimet/moshën e RA-MICRO-s ose në
+      pritje të migrimeve cloud.
+
+KANALET E KONTAKTIT (radhitur sipas efektivitetit ligjor dhe praktik):
+   - KUJDES LIGJOR: email i ftohtë B2B në Gjermani është zonë gri
+     sipas UWG §7 (kërkohet pëlqim i supozuar). Prandaj rendi:
+     (a) rrjeti personal + rekomandime (diaspora juridike shqiptare
+         në DE — lista nga shoqatat, LinkedIn, dhomat lokale),
+     (b) LinkedIn/XING kontakt personal (i lejuar, i pritshëm),
+     (c) letër fizike te zyra (klasike, e lejuar, çuditërisht
+         efektive te avokatët),
+     (d) telefonatë pas letrës,
+     (e) event-e: Anwaltszukunftskongress, Legal Revolution,
+         Anwaltvereine lokale (kur të ketë buxhet udhëtimi).
+   - Demo publike vetë-shërbyese: de.avokatiim.ai është demo-ja —
+     çdo kontakt merr linkun + video 3-minutëshe (për t'u xhiruar).
+
+OFERTA PILOT "GRÜNDUNGSPARTNER" (për 5 firmat e para):
+   - 12 muaj falas (në vend të 3) + migrimi i të dhënave falas
+     (magjistari ynë RA-MICRO/Advoware + ndihma jonë direkte).
+   - Çmim i ngrirë përjetë 39 €/user/muaj pas vitit falas.
+   - Ndikim direkt në roadmap (kërkesat e tyre kanë përparësi).
+   - Në këmbim: testimonial publik + e drejta t'i përmendim si
+     referencë + feedback i strukturuar çdo muaj.
+   Kufiri: vetëm 5 zyra — pas tyre kthehemi te 3 muajt standard.
+
+QËLLIMI REAL I KANALIT B: 3-5 zyra referencë brenda 60-90 ditësh.
+   Edhe pa të ardhura domethënëse, ato e ndryshojnë plotësisht
+   bisedën e Kanalit A: nga "platformë pa klientë" në "platformë e
+   provuar nga zyra gjermane". Çdo firmë paguese pas pilotit e ngre
+   tavolinën e negociatës... që s'kemi — e ngre besueshmërinë.
+
+==================================================================
+TEMPLATE-T E KONTAKTIT (gjermanisht)
+==================================================================
+
+A) LETRA SHOQËRUESE PËR KOMPANITË (Kanali A, email/letër + PDF):
+
+   Betreff: Angebot: KI-native Kanzleiplattform — Lizenz oder Erwerb
+
+   Sehr geehrte Damen und Herren,
+
+   wir haben eine vollständige, KI-native Kanzleisoftware für den
+   deutschen Markt gebaut — RVG, Fristen (ZPO/ArbGG/VwGO), E-Rechnung,
+   Mahnwesen mit EDA-Export, dazu eine KI-Schicht mit indexiertem
+   Gesetzes- und Rechtsprechungskorpus (16.000+ Entscheidungen),
+   Zitatverifizierung und 24/7-Mandantenaufnahme per Web, WhatsApp
+   und Telefon. Produktiv, heute live, ca. 76.000 Zeilen Code,
+   314 automatisierte Tests.
+
+   Unsere Stärke ist Entwicklungsgeschwindigkeit, nicht Vertrieb in
+   Deutschland — Ihre ist genau das. Im Anhang finden Sie unser
+   vollständiges Angebot mit vier Optionen und finalen Preisen, von
+   der OEM-Lizenz der KI-Schicht bis zum vollständigen Erwerb der
+   Plattform. Die Preise liegen bewusst deutlich unter den
+   Nachbaukosten; verhandelt wird nicht — dafür sind sie so gesetzt.
+
+   Eine Live-Demonstration auf dem Produktivsystem ist innerhalb
+   einer Woche möglich, vor Ort oder remote. Das Angebot ging
+   zeitgleich an eine kleine Zahl ausgewählter Unternehmen und gilt
+   je Gebiet für die Partei, die zuerst unterzeichnet.
+
+   Mit freundlichen Grüßen
+   [emri, titulli, de.avokatiim.ai, kontakti]
+
+B) KONTAKTI PËR AVOKATËT (Kanali B, LinkedIn/letër — i shkurtër):
+
+   Betreff: Ihre Kanzlei nimmt Mandate an, während Sie schlafen
+
+   Sehr geehrte/r Frau/Herr [emri],
+
+   Ava Legal ist eine neue Kanzleisoftware, bei der die KI nicht
+   Zusatzmodul ist, sondern das Fundament: Mandantenaufnahme rund
+   um die Uhr per Web, WhatsApp und Telefon, Fristen nach ZPO/ArbGG/
+   VwGO, RVG-Abrechnung, E-Rechnung, Mahnwesen — und ein
+   KI-Assistent, der deutsche Gesetze und über 16.000 Entscheidungen
+   zitiert und jedes Zitat automatisch verifiziert.
+
+   Für die ersten fünf Kanzleien in Deutschland: 12 Monate
+   kostenlos, Datenmigration aus RA-MICRO/Advoware inklusive,
+   Preisgarantie danach 39 €/Nutzer/Monat. Im Gegenzug wünschen wir
+   uns nur ehrliches Feedback und — wenn Sie zufrieden sind — eine
+   Referenz.
+
+   Testen können Sie sofort selbst: https://de.avokatiim.ai
+   Gern zeige ich Ihnen alles in 20 Minuten per Video-Call.
+
+   Mit freundlichen Grüßen
+   [emri, kontakti]
+
+==================================================================
+SEKUENCA DHE AFATET
+==================================================================
+
+JAVA 1
+   - Veprim i pronarit: PDF-imi i dy ofertave (EN+DE), zgjedhja e
+     identitetit të dërguesit (email biznesi, nënshkrimi), përgatitja
+     e një NDA template (model standard gjerman NDA/LOI).
+   - Kanali A: dërgohen 5 letrat (Septeo, Wolters Kluwer, Haufe,
+     RA-MICRO, dokSAFE) — email + letër fizike për efekt.
+   - Kanali B: lista e parë me 20 avokatë (fillo me rrethin
+     shqiptaro-gjerman), 5 kontakte të para personale.
+
+JAVA 2-4
+   - Kanali A: follow-up pas 10 ditësh; demo për këdo që përgjigjet.
+   - Kanali B: 20 kontakte/javë LinkedIn/letra; synim 5 demo/muaj.
+   - Xhirimi i video-demos 3-minutëshe (gjermanisht, me subtitles).
+
+DITA 30 — PIKË KONTROLLI
+   - Nëse Kanali A pa përgjigje: aktivizohet lista rezervë (DATEV,
+     C.H.Beck, Otto Schmidt).
+   - Nëse Kanali B pa pilot: rishiko mesazhin/kanalin, jo produktin.
+
+DITA 90 — RIVLERËSIM STRATEGJIK
+   - Oferta skadon. Me LOI në dorë: mbyllje. Pa LOI por me pilotë:
+     vazhdon Kanali B dhe oferta ripërtërihet me çmime PËR LART
+     (traction = vlerë më e lartë), jo poshtë.
+
+KPI-TË
+   Kanali A: 5 letra javën 1 · ≥2 demo brenda 30 ditësh · 1 LOI
+   brenda 90 ditësh.
+   Kanali B: 20 kontakte/javë · ≥5 demo/muaj · 3 pilotë brenda
+   60 ditësh · testimonial i parë brenda 90 ditësh.
+
+VEPRIMET QË VETËM PRONARI MUND T'I BËJË
+   1. Email biznesi + nënshkrim për dërgesat (jo adresë private).
+   2. NDA/LOI template (një avokat gjerman i njohur mund ta japë).
+   3. Lista e kontakteve nga rrethi personal shqiptaro-gjerman.
+   4. Vendimi për buxhet udhëtimi (demo on-site / evente).
+   5. sipgate-llogaria që telefonia-KI të demonstrohet live (pa të,
+      demoja e telefonisë mbetet lokale).

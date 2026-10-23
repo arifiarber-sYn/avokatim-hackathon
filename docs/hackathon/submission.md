@@ -2,7 +2,8 @@
 
 Track: Wildcard [Tinkerer]
 Deadline: 27.10.2026, 23:45 UTC
-Repo: github.com/<llogaria>/AvokatIM (dega hackathon/open-agent-2026)
+Repo: github.com/arifiarber-sYn/avokatim-hackathon (publik, vetem shtresa e gares)
+Arkiv: docs/hackathon/avokatim-hackathon-submission.zip (2.1 MB, 35 skedare)
 
 ## Titulli
 AvokatIM — agjenti që shpjegon pse
