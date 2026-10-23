@@ -512,3 +512,20 @@ burim në platformë (SHOW DATASOURCES -> []). Hapi i radhës: regjistrimi i
 LIGJE/PRAKTIKA përmes UI-së, pastaj i njëjti test integrimi mbi ato dy burime.
 Adapteri nuk pretendon federim të korpusit derisa ai regjistrim të bëhet.
 
+
+## Demoni i integruar me sponsorët (23.10.2026)
+
+`backend/hackathon/demo_integrated.py` — lidh tri shtresa me rend të deklaruar:
+1. **Zetaris** — `SELECT 1` përmes REST `/sql-editor/sqls/run`; nëse s'ka datasource, kalon te 2.
+2. **Korpusi K-a** — `demo_corpus.py` (i njëjti zinxhir vendim → OCDS → ligj).
+3. **Meterless** — model lokal + `usage.jsonl`; nëse hotspot-i mungon, mbetet përgjigjja ekstraktive.
+
+Prova reale (23.10):
+```
+ZETARIS: lidhja OK, SELECT 1 -> [['1']]
+ZETARIS: 0 datasource te regjistruar - kaloj te korpusi vendas
+METERLESS: hotspot lokal i padisponueshem
+```
+
+**Kufizim i deklaruar:** Zetaris është i lidhur dhe përgjigjet, por `metastore.datasource` ka **0 rreshta** —
+pa burim të regjistruar adapteri nuk kthen dëshmi. Kjo është hapi i radhës, jo defekt i kodit.

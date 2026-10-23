@@ -20,3 +20,8 @@
 ## 2026-10-23 — hackathon(open-agent): video demo offline (50s)
 - Shtuar docs/hackathon/video/demo-offline-2026-10-23.mp4 (6 skena, 50.5s, 663 KB).
 - Zë espeak sq; ndërtim me ffmpeg/magick; pa DB dhe pa rrjet.
+
+## 2026-10-23 — hackathon(open-agent): demo i integruar (Zetaris + Meterless)
+- Shtuar backend/hackathon/demo_integrated.py — rend i deklaruar: Zetaris → korpus → Meterless.
+- Shtuar `make demo-integrated`.
+- Prova: Zetaris SELECT 1 OK; 0 datasource (metastore.datasource); Meterless i padisponueshem.
