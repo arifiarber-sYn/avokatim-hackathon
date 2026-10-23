@@ -447,3 +447,13 @@ Për të rifituar gjendjen: token i ri API nga llogaria Zetaris (Cloud/UI), past
 - Përshkrim i veçantë 1380 karaktere (fokusi: produkt live i shtrirë për garën).
 - Video demo-2min.mp4 dhe deck.pdf të ngarkuar; repo i njëjti.
 - Platforma: 2/3 submissions, të dyja Submitted (dy track-e të ndryshme, siç lejohet).
+
+## Testet e kontratës së korpusit + Makefile (23.10.2026)
+
+- `tests/test_corpus_contract.py` — 5 teste offline (pa DB, pa rrjet): ekzistenca e manifestit,
+  numri i skedarëve për çdo seksion, përputhja e sha256 për 50+ skedarë, lidhja vendim→OCDS
+  (`Vendimi_2025-1289` → `622-25-1796-2-2-1` → 80 000 EUR) dhe parakushti i refuzimit
+  (numër i rremë → asnjë hit, pra «s'e di» është i justifikuar).
+- `Makefile` — `make test`, `make corpus-check`, `make corpus-size`, `make demo` (udhëzim, kërkon `AVOKATIM_DSN`).
+- Prova: `python3 -m pytest tests -q` → **5 passed in 0.13s**; `make corpus-check` → të gjitha OK.
+- Korpusi i kontrolluar: `~/oa-korpus/k-a` (56 MB, 53 skedarë të hash-uar, i jashtëm ndaj repo-s).
