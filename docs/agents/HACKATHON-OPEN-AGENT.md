@@ -457,3 +457,17 @@ Për të rifituar gjendjen: token i ri API nga llogaria Zetaris (Cloud/UI), past
 - `Makefile` — `make test`, `make corpus-check`, `make corpus-size`, `make demo` (udhëzim, kërkon `AVOKATIM_DSN`).
 - Prova: `python3 -m pytest tests -q` → **5 passed in 0.13s**; `make corpus-check` → të gjitha OK.
 - Korpusi i kontrolluar: `~/oa-korpus/k-a` (56 MB, 53 skedarë të hash-uar, i jashtëm ndaj repo-s).
+
+## Demo offline mbi korpusin + 2 teste (23.10.2026)
+
+- `backend/hackathon/demo_corpus.py` — demo pa DB, pa LLM, pa rrjet: kërkon në vendimet e Panelit,
+  nxjerr numrin e prokurimit nga afërsia e citatit, e lidh me regjistrin OCDS dhe me nenet e ligjit.
+- Shembull i provuar: «Kush u ankua për dezinsektimin e Prizrenit?» → `Vendimi_2025-1289`
+  (OE «Ekologjia» dhe «Mburoya» kundër Komunës së Prizrenit) → `622-25-1796-2-2-1` → **80 000 EUR** → nenet **105, 106, 117**.
+- Refuzimi: pyetje pa bazë («Sa kushton qiraja në Berlin?») → «s'e di — asnje vendim nuk mbulon pyetjen».
+- Testet: `tests/test_demo_corpus.py` (2 teste) — gjithsej **7 passed**.
+- `make demo-offline` — xhiron demonstrimin me një komandë.
+
+**Defekt i burimit (i dokumentuar):** PDF-ja `Vendimi-1292-25.pdf` është **identike** me `Vendimi_2025-1289.pdf`
+(md5 `63a90422…`, të dyja «OSHP: 2025/1289») — faqja e OSHP-së shërben të njëjtin vendim me dy emra.
+Demo-ja i dedupon sipas përmbajtjes dhe mban emrin që përputhet me numrin në tekst.

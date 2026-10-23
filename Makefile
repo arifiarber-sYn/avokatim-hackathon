@@ -4,7 +4,7 @@
 PY ?= python3
 CORPUS ?= $(HOME)/oa-korpus/k-a
 
-.PHONY: help test corpus-check corpus-size demo
+.PHONY: help test corpus-check corpus-size demo demo-offline
 
 help:
 	@echo "make test          - testet e kontrates se korpusit (offline)"
@@ -21,6 +21,9 @@ corpus-check:
 corpus-size:
 	du -sh $(CORPUS)
 	find $(CORPUS) -type f | wc -l
+
+demo-offline:
+	cd backend && $(PY) hackathon/demo_corpus.py "Kush u ankua per dezinsektimin e Prizrenit dhe cka vendosi paneli?"
 
 demo:
 	@echo "Demo kerkon Postgres me korpusin e ngarkuar:"
