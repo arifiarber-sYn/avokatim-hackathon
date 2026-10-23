@@ -243,6 +243,10 @@ class Settings(BaseSettings):
     zetaris_base_url: str = "http://127.0.0.1:8888/api/v1.0"
     zetaris_api_key: str = ""
     zetaris_org_id: str = "1"
+    # JSON list of Zetaris sources the adapter federates, e.g.
+    # [{"source":"LIGJE","table":"legal_corpus","title":"doc_title","page":"page","snippet":"snippet"}]
+    # Empty keeps the original single-table behaviour (legal_corpus).
+    zetaris_sources: str = ""
     zetaris_base_url_default: str = "http://127.0.0.1:8888/api/v1.0"
     meterless_base_url: str = ""
     hackathon_usage_log: str = "data/evidence/usage.jsonl"

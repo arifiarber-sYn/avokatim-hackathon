@@ -9,6 +9,12 @@ The local Zetaris platform (docker: zetaris-api-1) exposes a REST SQL editor:
 
 This module is the only place that knows that wire format. The rest of the
 system sees Evidence, so the agent never depends on a sponsor SDK.
+
+Federation (23.10.2026): one question can be answered from several registered
+sources. Each source is described by a small declaration (catalog/schema, table,
+which columns carry title/page/snippet), so adding a source is configuration,
+not code. A dead source degrades the answer instead of silencing it; if every
+source fails the adapter raises (fail-closed, no invented evidence).
 """
 from __future__ import annotations
 
@@ -17,6 +23,7 @@ import json
 import logging
 import os
 import uuid
+from dataclasses import dataclass
 from pathlib import Path
 
 import httpx
@@ -41,6 +48,54 @@ def _load_key() -> str:
     return ""
 
 
+@dataclass(slots=True)
+class ZetarisSource:
+    """One federated source and the columns a citation needs.
+
+    source is a registered datasource (tables queried as SOURCE.table); an
+    empty value keeps the legacy plain table form.
+    """
+
+    source: str
+    table: str
+    title: str = "doc_title"
+    snippet: str = "snippet"
+    page: str | None = "page"
+
+    @property
+    def label(self) -> str:
+        return self.source or "corpus"
+
+    @property
+    def qualified(self) -> str:
+        return f"{self.source}.{self.table}" if self.source else self.table
+
+
+def parse_sources(raw: str) -> list[ZetarisSource]:
+    """Parse the operator JSON; an empty value keeps the single-table default."""
+    raw = (raw or "").strip()
+    if not raw:
+        return [ZetarisSource(source="", table="legal_corpus")]
+    try:
+        items = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise AdapterError(f"zetaris: zetaris_sources is not JSON ({exc})")
+    out: list[ZetarisSource] = []
+    for item in items if isinstance(items, list) else []:
+        if not isinstance(item, dict) or not item.get("table"):
+            continue
+        out.append(
+            ZetarisSource(
+                source=str(item.get("source") or ""),
+                table=str(item["table"]),
+                title=str(item.get("title") or "doc_title"),
+                snippet=str(item.get("snippet") or "snippet"),
+                page=(str(item["page"]) if item.get("page") else None),
+            )
+        )
+    return out or [ZetarisSource(source="", table="legal_corpus")]
+
+
 class ZetarisAdapter:
     name = "zetaris"
 
@@ -49,10 +104,12 @@ class ZetarisAdapter:
         base_url: str | None = None,
         api_key=None,
         org_id: str | None = None,
+        sources: list[ZetarisSource] | None = None,
     ) -> None:
         self.base_url = (base_url or settings.zetaris_base_url).rstrip("/")
         self.api_key = api_key if api_key is not None else _load_key()
         self.org_id = org_id or settings.zetaris_org_id
+        self.sources = sources if sources is not None else parse_sources(settings.zetaris_sources)
 
     def available(self) -> bool:
         return bool(self.base_url and self.api_key)
@@ -86,42 +143,71 @@ class ZetarisAdapter:
         return rows
 
     async def query(self, spec: QuerySpec) -> list[Evidence]:
-        """Search the corpus through the platform's SQL surface.
+        """Search every configured source and return citable evidence.
 
-        The corpus tables are created by the bootstrap step; if they are not
-        present yet we fall back to a metadata probe so the caller still gets
-        a truthful answer instead of an exception storm.
+        One question, several sources: every row keeps the source it came from
+        and its own URI, so a merged answer can still point at the exact place
+        the claim came from.
         """
+        sources = self.sources
+        if spec.sources:
+            wanted = {str(x).lower() for x in spec.sources}
+            sources = [
+                src for src in sources
+                if src.label.lower() in wanted or src.table.lower() in wanted
+            ]
+        if not sources:
+            raise AdapterError("zetaris: no source matches the request")
+
+        out: list[Evidence] = []
+        errors: list[str] = []
+        for src in sources:
+            try:
+                rows = await self.sql(self._sql_for(src, spec), limit=spec.limit)
+            except AdapterError as exc:
+                logger.warning("zetaris source %s failed: %s", src.qualified, exc)
+                errors.append(f"{src.qualified}: {exc}")
+                continue
+            out.extend(self._to_evidence(src, rows))
+
+        if not out and errors:
+            raise AdapterError("zetaris: every source failed — " + "; ".join(errors[:3]))
+        return dedupe(out)[: spec.limit]
+
+    def _sql_for(self, src: ZetarisSource, spec: QuerySpec) -> str:
         term = spec.text.replace("'", "''")
-        sql = (
-            "SELECT doc_title, page, snippet FROM legal_corpus "
-            f"WHERE snippet ILIKE '%{term}%' OR doc_title ILIKE '%{term}%' "
+        cols = [src.title, src.snippet]
+        if src.page:
+            cols.insert(1, src.page)
+        return (
+            f"SELECT {', '.join(cols)} FROM {src.qualified} "
+            f"WHERE {src.snippet} ILIKE '%{term}%' OR {src.title} ILIKE '%{term}%' "
             f"LIMIT {int(spec.limit)}"
         )
-        try:
-            rows = await self.sql(sql, limit=spec.limit)
-        except AdapterError as exc:
-            logger.warning("zetaris corpus query failed: %s", exc)
-            raise
+
+    def _to_evidence(self, src: ZetarisSource, rows: list[list[object]]) -> list[Evidence]:
         out: list[Evidence] = []
         for row in rows:
             if not isinstance(row, (list, tuple)) or not row:
                 continue
-            title = str(row[0]) if len(row) > 0 else "zetaris"
-            page = row[1] if len(row) > 1 else None
-            snippet = str(row[2]) if len(row) > 2 else json.dumps(row, ensure_ascii=False)
-            uri = "zetaris://corpus/" + hashlib.sha1(
-                f"{title}|{page}|{snippet}".encode("utf-8")
+            title = str(row[0]) if len(row) > 0 else src.label
+            if src.page and len(row) > 2:
+                page_raw = row[1]
+                snippet = str(row[2])
+            else:
+                page_raw = None
+                snippet = str(row[1]) if len(row) > 1 else json.dumps(row, ensure_ascii=False)
+            uri = f"zetaris://{src.label}/" + hashlib.sha1(
+                f"{src.qualified}|{title}|{page_raw}|{snippet}".encode("utf-8")
             ).hexdigest()[:16]
             out.append(
                 Evidence(
-                    source_id="zetaris",
+                    source_id=src.label,
                     uri=uri,
                     fragment=snippet,
-                    page=int(page) if isinstance(page, int) else None,
+                    page=int(page_raw) if isinstance(page_raw, int) else None,
                     confidence=0.75,
-                    meta={"title": title, "engine": "zetaris-local"},
+                    meta={"title": title, "engine": "zetaris-local", "table": src.qualified},
                 )
             )
-        return dedupe(out)[: spec.limit]
-
+        return out

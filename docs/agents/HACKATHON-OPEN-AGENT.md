@@ -479,3 +479,36 @@ Demo-ja i dedupon sipas përmbajtjes dhe mban emrin që përputhet me numrin në
 - Zë: espeak-ng `sq` (piper-i shqip mungon në këtë makinë; fallbacku i skill-it `zeri`).
 - Ndërtuar me ffmpeg + magick nga karta tekstuale; pa DB, pa rrjet.
 - Kontroll vizual: kuadri i skenës 3 lexohet qartë, pa mbivendosje.
+
+## Federimi Zetaris — dy burime, një pyetje (23.10.2026, dritare e lirë)
+
+Adapteri tani federon disa burime: çdo burim deklarohet me katër fusha
+(burimi, tabela, kolona e titullit, kolona e fragmentit, opsionalisht faqja) dhe
+jepet te settings.zetaris_sources si JSON. Pa konfigurim, sjellja mbetet e
+vjetra (tabela e vetme legal_corpus).
+
+Çfarë u provua live sot (platforma lokale, org 1):
+
+- SELECT 1 -> 200; SHOW CATALOGS -> spark_catalog.
+- Burimet e platformës janë të lexueshme vetëm me emrin e kualifikuar:
+  SELECT * FROM NY_TAXI.customers LIMIT 3 -> 200, 17 kolona, 6.5 s.
+  SELECT i_item_id, i_item_desc FROM TPCDS_DB.item WHERE i_item_id LIKE 'AAAA%' -> 200, 9.3 s.
+  (SHOW NAMESPACES/SHOW TABLES janë çaktivizuar; SHOW DATASOURCES kthen [] në këtë org.)
+- Nëpërmjet adapterit: NY_TAXI.customers -> 3 rreshta në 6.5 s.
+
+Zbulim i rëndësishëm për UI-në: faqja flet me /api/proxy/sql-editor/sqls/run-query
+me header X-Org-ID: 1 dhe Bearer idToken (localStorage zetaris_id_token). Pa atë
+header çdo kërkesë kthehet 400 "missing X-Org-ID"; me të, ekzekutimi i SQL-it
+funksionon nga shfletuesi. Kjo shpjegon pse provat e 22.10 me token admin
+dështuan: mungonte header-i, jo leja.
+
+Testet (backend/tests/test_adapters_zetaris_sources.py): 8 teste njësie pa rrjet
+(federim, URI të ndryshme, burim i vdekur nuk i hesht të tjerët, fail-closed kur
+të gjithë dështojnë, filtrim sipas burimit, escape i termit) + 1 test integrimi
+opt-in (ZETARIS_LIVE=1) kundër platformës reale.
+
+Kufizimi i mbetur, i deklaruar: korpusi ligjor nuk është ende i regjistruar si
+burim në platformë (SHOW DATASOURCES -> []). Hapi i radhës: regjistrimi i
+LIGJE/PRAKTIKA përmes UI-së, pastaj i njëjti test integrimi mbi ato dy burime.
+Adapteri nuk pretendon federim të korpusit derisa ai regjistrim të bëhet.
+
