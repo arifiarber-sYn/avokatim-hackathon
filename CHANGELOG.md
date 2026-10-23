@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2026-10-23 — hackathon(open-agent): B2 — kosto Meterless + usage në UI
+- meterless.py: `cost_of()` (USD/1M token), `Usage.cost_usd`, `summarize()` mbi usage.jsonl (rreshtat e korruptuar numërohen).
+- Shtuar `GET /api/hackathon/usage` (app/api/hackathon.py), vetëm lexim + auth.
+- Shtuar `frontend/src/components/meterless-cost.tsx` në /assistant: thirrje, token, kosto, «dokumentet nuk dolën nga makina»; fshihet kur log-u është bosh.
+- demo_integrated.py: shtyp ms/token/kosto (më parë `latency_ms` → «?»).
+- Prova: `PYTHONPATH=. pytest tests/test_meterless_usage.py tests/test_adapters_contract.py -q` → 11 passed.
+
 ## 2026-10-22 — hackathon(open-agent): adapter layer
 - Shtuar backend/app/adapters/ (base, zetaris, meterless) — kontratë e re, e fikshme.
 - Shtuar backend/tests/test_adapters_contract.py (5 teste, të gjelbra).

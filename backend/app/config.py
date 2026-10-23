@@ -250,6 +250,9 @@ class Settings(BaseSettings):
     zetaris_base_url_default: str = "http://127.0.0.1:8888/api/v1.0"
     meterless_base_url: str = ""
     hackathon_usage_log: str = "data/evidence/usage.jsonl"
+    # USD per 1M tokens. Zero = local model on this machine (the demo claim).
+    meterless_price_in_per_mtok: float = 0.0
+    meterless_price_out_per_mtok: float = 0.0
     meta_model_base_url: str = ""
     meta_model_api_key: str = ""
     meta_model_name: str = "muse-spark"

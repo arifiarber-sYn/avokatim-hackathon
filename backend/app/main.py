@@ -24,6 +24,7 @@ from app.api import (
     exports,
     feedback,
     firm,
+    hackathon,
     imports,
     intake,
     marketplace,
@@ -141,6 +142,7 @@ app.include_router(public_tools.router, prefix=api_prefix)
 app.include_router(bookings.router, prefix=api_prefix)
 app.include_router(bookings.public_router, prefix=api_prefix)
 app.include_router(evidence.router, prefix=api_prefix)
+app.include_router(hackathon.router, prefix=api_prefix)
 app.include_router(evidence.lawyer_router, prefix=api_prefix)
 app.include_router(feedback.public_router, prefix=api_prefix)
 app.include_router(feedback.admin_router, prefix=api_prefix)

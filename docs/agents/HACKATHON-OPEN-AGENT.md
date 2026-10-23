@@ -529,3 +529,18 @@ METERLESS: hotspot lokal i padisponueshem
 
 **Kufizim i deklaruar:** Zetaris është i lidhur dhe përgjigjet, por `metastore.datasource` ka **0 rreshta** —
 pa burim të regjistruar adapteri nuk kthen dëshmi. Kjo është hapi i radhës, jo defekt i kodit.
+
+## Kontabiliteti Meterless — B2 (23.10.2026)
+
+Çdo thirrje te hotspot-i lokal shkruan një rresht në `data/evidence/usage.jsonl`:
+`{job_id, model, tokens_in, tokens_out, ms, ok, ts, cost_usd}`.
+
+- **Kostoja** llogaritet nga `cost_of(tokens, price_in, price_out)` me çmime USD/1M token;
+  parazgjedhja `0.0` sepse modeli xhiron në këtë makinë — kosto marxhinale zero.
+- **Agregati**: `summarize(path, last=N)` → thirrje, të suksesshme/të dështuara, token,
+  kosto, ms mesatare, rreshta të korruptuar (numërohen, nuk ndalin leximin).
+- **UI**: `GET /api/hackathon/usage` + `components/meterless-cost.tsx` në `/assistant`:
+  «Meterless · N thirrje · X token · kosto $0.0000 · dokumentet nuk dolën nga makina».
+  Badge-i zhduket kur log-u është bosh, ndaj prod-i (pa `hackathon_mode`) s'ndryshon.
+- **Prova**: `PYTHONPATH=. pytest tests/test_meterless_usage.py -q` — 6 teste (matematika e
+  kostos, append-i JSONL, agregimi me rresht të korruptuar, skedari që mungon).

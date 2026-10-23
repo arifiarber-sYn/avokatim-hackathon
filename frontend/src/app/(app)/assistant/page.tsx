@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { apiGet, apiPost, apiStream } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import PageIntro from "@/components/page-intro";
+import MeterlessCost from "@/components/meterless-cost";
 import { MicButton, SpeakButton, useVoiceAvailable } from "@/components/voice-controls";
 import CitationChecks, { CitationCheck } from "@/components/citation-checks";
 import CitationSourceModal from "@/components/citation-source-modal";
@@ -153,6 +154,7 @@ export default function AssistantPage() {
   return (
     <div className="flex flex-col gap-4 h-[calc(100vh-9rem)] md:h-[calc(100vh-6rem)]">
       <PageIntro k="assistant" title={t.assistantIntroT} body={t.assistantIntro} />
+      <MeterlessCost />
       <div className="flex gap-2">
         {(
           [

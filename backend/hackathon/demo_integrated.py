@@ -57,7 +57,17 @@ async def try_meterless(prompt: str):
         return None
     try:
         text, usage = await ad.chat(prompt)
-        print("METERLESS: %s | kohe=%sms" % (getattr(usage, "model", "?"), getattr(usage, "latency_ms", "?")))
+        print(
+            "METERLESS: %s | kohe=%sms | token=%s+%s | kosto=$%.6f"
+            % (
+                usage.model,
+                usage.ms,
+                usage.tokens_in,
+                usage.tokens_out,
+                usage.cost_usd,
+            )
+        )
+        print("METERLESS: usage -> %s" % ad.usage_log)
         return text
     except Exception as e:
         print("METERLESS: deshtoi ->", str(e)[:100])
