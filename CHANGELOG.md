@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2026-10-24 — hackathon(open-agent): B5 — 31 teste të reja (kontratë + integrim + regresion)
+- Shtuar `backend/tests/test_hackathon_b5_contract_integration.py`: 31 teste offline mbi `Evidence`/`QuerySpec`/`dedupe`, adapterin Zetaris (parsim, SQL, mapim, filtër, limit, fail-closed), adapterin Meterless (kosto, usage.jsonl, summarizim, `chat` me dublues httpx) dhe federimin e dy burimeve.
+- Pa ndryshime prodhuese; `apertus_harness.py` dhe `~/hackapertus-1a` të paprekur.
+- Prova: `pytest tests/test_hackathon_b5_contract_integration.py -q` → 31 passed; bashkë me 3 skedarët ekzistues → 50 passed, 1 skipped (live Zetaris offline).
+
 ## 2026-10-24 — hackathon(open-agent): B3 — gjurmë arsyetimi në UI (klik → burimi)
 - Shtuar `frontend/src/components/reasoning-trace.tsx`: `buildReasoningTrace()` + panel i mbyllur «Gjurmë arsyetimi» (pyetje → kërkim → burime → verifikim → përfundim).
 - `/assistant`: ruhen nënpyetjet e deep-research për çdo përgjigje; rreshtat e verifikimit me `doc_id` hapin `CitationSourceModal` (i njëjti modal i badge-ve).

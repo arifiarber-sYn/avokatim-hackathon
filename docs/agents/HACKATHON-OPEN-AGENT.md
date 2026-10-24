@@ -565,3 +565,30 @@ Për çdo përgjigje, nën të shfaqet një panel «Gjurmë arsyetimi» (i mbyll
   i lidhur në `frontend/src/app/(app)/assistant/page.tsx`.
 - **Prova:** `tsc --noEmit` → 0 gabime; eslint mbi të dy skedarët → vetëm gabimi i vjetër
   `react-hooks/set-state-in-effect` në rreshtin 63 (ekzistues, i palidhur).
+
+## Testet B5 — kontratë, integrim, regresion (24.10.2026)
+
+B5 kërkonte ≥15 teste të reja. U shtuan **31**, të gjitha offline (pa rrjet, pa DB), në
+`backend/tests/test_hackathon_b5_contract_integration.py`:
+
+- **Kontratë (5):** parazgjedhjet e `QuerySpec`; `meta` e `Evidence` nuk ndahet mes instancave;
+  `dedupe` krahason vetëm 80 karakteret e para të fragmentit, i mban të njëjtin URI nga burime
+  të ndryshme dhe ruan rendin e hyrjes.
+- **Zetaris (14):** `parse_sources` (anëtarë të pavlefshëm, JSON jo-listë, label i vjetër, JSON i
+  thyer → `AdapterError`); `_sql_for` (rendi i kolonave, apostrofi i dyfishuar, LIMIT); `_to_evidence`
+  (pa kolonë faqe → `page=None`, me faqe → int, URI i qëndrueshëm dhe i lidhur me përmbajtjen,
+  payload-e jo-rresht të hedhura); `query` (limit pas mapimit, filtër sipas tabelës pa dallim
+  shkronjash, burim i panjohur → gabim pa SQL, zero hit-e nuk është gabim, të gjitha burimet dështojnë
+  → fail-closed).
+- **Meterless (8):** kosto lineare; `Usage.as_dict` me `cost_usd` zero; log i pandashëm (append);
+  `summarize` (dritarja `last`, mesatarja, `by_model`, kosto string/e munguar, skedar bosh);
+  `chat` me dublues httpx — sukses me kosto `0.00014` (100/20 token @ $1/$2 për 1M), dështim 503
+  shkruan rresht `ok=false` pastaj ngre gabim, pa `base_url` nuk shkruan asgjë.
+- **Integrim (2):** `Evidence` + `Usage` serializohen në të njëjtin kontratë JSON; federimi i dy
+  burimeve kthen dy URI të dallueshme me `source_id` të ruajtur dhe `confidence=0.75`.
+
+**Prova:** `python3 -m pytest tests/test_hackathon_b5_contract_integration.py -q` → **31 passed**;
+bashkë me `test_adapters_contract.py`, `test_adapters_zetaris_sources.py`,
+`test_meterless_usage.py` → **50 passed, 1 skipped** (skipped = testi live i Zetaris, i pamundur
+offline). Asnjë skedar prodhues nuk u prek; `apertus_harness.py` dhe `~/hackapertus-1a` mbetën të
+paprekur.
