@@ -26,13 +26,6 @@ Evidence we hold:
 4. Repeated payment-failure notices: USD 100.35 on 26 and 29 August; USD 46.32 on 18 and 20 October; USD 100.09 twice on 21 October; USD 100.09 and USD 46.32 on 23 October.
 
 
-Since my last message I have extracted the invoice history from the account API. For the period 23 August to 21 October 2026 alone:
-
-- 100 invoices issued
-- USD 10,072.93 paid
-- USD 146.41 currently open
-- September 2026: 60 invoices totalling USD 6,145.03 - an average of two invoices per day
-
 An average of USD 3,357.64 per month, with a single month at USD 6,145.03, is not a pattern that can be explained by a fixed subscription plus transparent usage. It is the reason the three questions above are not procedural: if the October discrepancy is real, the same defect may run back through the entire history, and the total at stake is an order of magnitude larger than the two open invoices.
 
 The three questions, repeated:
