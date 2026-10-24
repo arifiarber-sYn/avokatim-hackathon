@@ -238,3 +238,30 @@ Minimumet e te dyjave jane pikerisht faturat $200.00 (abonimi) — pra nuk jane 
 5. **Asnje fature nuk itemizohet** — ky mbetet pretendimi kryesor i mbrojtshem.
 
 > Korrigjim: versioni i meparshem i ketij dokumenti trajtoi faturat $200.00 si anomali faturimi. Ishte gabim — ato jane abonimi.
+## 8. KORRIGJIM (24.10, v2) — Included vs On-Demand
+
+Versioni paraprak raportoi **0 tokena** per 16.10 18:19 -> 18.10 14:36. Ishte gabim: filtri merrte vetem `Kind=On-Demand`.
+
+| Dritarja | Included | On-Demand | Gjithsej |
+|---|---|---|---|
+| 16.10 18:19 -> 18.10 14:36 | 112,083,553 (36 rreshta) | **0** | 112,083,553 |
+| 18.10 14:36 -> 21.10 15:13 | 2,858,948 (4) | 81,844,537 (62) | 84,703,485 |
+
+**Interpretim:** gjate 44 oreve pas abonimit $200 u punua intensivisht (112M tokena), te gjitha brenda kuotes se abonimit. Zero shpenzim On-Demand -> asnje prag $100 nuk u kap.
+
+### Kalimi Included -> On-Demand ndodh me 18 tetor
+
+| Data | On-Demand | Included |
+|---|---|---|
+| 16.10 | 175,535,738 | 1,348,817 |
+| 17.10 | 0 | 37,111,049 |
+| 18.10 | 15,922,823 | 77,831,452 |
+| 19.10 | 43,175,335 | **0** |
+| 20.10 | 10,663,504 | **0** |
+| 21.10 | 12,082,875 | **0** |
+
+Nga 19.10 e tutje **cdo token eshte On-Demand** — kuota e abonimit ishte shteruar. Pra 81.8M tokena te 19-21 tetorit jane te gjitha mbi paketen, dhe ato gjenerojne pragun $100.09.
+
+### Pyetja e mbetur (fakt, jo hipoteze)
+
+Nese puna u nderpre me 18.10 14:36, atehere 81.8M tokena On-Demand te 19-21 tetorit u konsumuan pa perdoruesin. Kjo nuk zgjidhet nga faturat — kerkojne log-et e sesioneve nga Cursor.
