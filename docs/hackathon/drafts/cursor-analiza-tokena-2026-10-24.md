@@ -295,3 +295,26 @@ Kontroll kryq: 74 baza `workspaceStorage/*/state.vscdb` — asnje sesion ne ate 
 66 milione tokena te faturuar si On-Demand ne tri dite pa asnje sesion lokal. Kjo eshte pyetja per Cursor: nga cili sesion/klient u gjeneruan?
 
 Kufizim: nese perdoruesi ka punuar nga nje pajisje tjeter, sesionet nuk shfaqen ketu. Duhet perjashtuar para se te dergohet.
+## 10. PROVA VENDIMTARE — app-i i Cursor ishte i mbyllur
+
+| Fakte | Vlera |
+|---|---|
+| Shkrimi i fundit ne log-et e Cursor | **18.10.2026 16:59** |
+| Nisja e radhes e aplikacionit | **22.10.2026 08:02** |
+| Sesione composer 19-21 tetor | **0** (nga 553 gjithsej) |
+| Sesione ne 74 baza workspaceStorage | **0** |
+| Sesione ne serverin sYn (app.syn.local) | **0** (nuk ka baze composer) |
+| Aktivitet i Cursor CLI (~/.cursor) | **0** |
+
+### Tokenat e faturuar ne dritaren kur app-i ishte i mbyllur
+
+| Dritarja | On-Demand | Included |
+|---|---|---|
+| 18.10 12:36-16:59 (app hapur) | 5,691,233 | 35,398,457 |
+| **18.10 16:59 -> 21.10 15:13 (app i MBYLLUR)** | **76,153,304** | **0** |
+
+Fatura `ALdOoWbp` $100.09 e 21.10 15:13 eshte gjeneruar pikerisht mbi kete dritare.
+
+### Kufizim i mbetur
+
+Nje klient tjeter (web, pajisje e dyte, CLI ne nje makine te trete) nuk mund te perjashtohet 100% nga kjo makin. Por: perdoruesi deklaron se Cursor perdoret vetem nga kjo makine; CLI nuk ka gjurme; serveri sYn nuk ka sesione.
