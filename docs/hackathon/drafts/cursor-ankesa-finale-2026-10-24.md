@@ -5,7 +5,19 @@ Hello,
 
 I am writing a second time because ticket T-I12995 has not received a substantive reply to the three questions I submitted in writing on 23 October 2026.
 
-To be clear about what this is and is not: we are not disputing the price, the Ultra plan, or the value of the product. We have spent several thousand dollars per month with Cursor, and in peak months close to USD 5,000. The complaint has exactly one focus - invoices that cannot be reconciled with documented usage.
+To be clear about what this is and is not: we are not disputing the price, the Ultra plan,
+or the value of the product. The complaint has exactly one focus - invoices that cannot be
+reconciled with documented usage.
+
+What we can verify from the account today: between 23 August and 21 October 2026 Cursor
+issued 100 invoices - USD 10,072.93 paid and USD 146.41 open. September 2026 alone carries
+60 invoices totalling USD 6,145.03, an average of two per day.
+
+What we cannot verify, and what this request is therefore about: the account dashboard
+exposes only three months of invoices (August, September, October 2026). Earlier history is
+not available to us. If a billing defect has existed since July 2026, as the email of 12 August
+suggests, the amount at stake extends beyond the period we can see - which is precisely why we
+ask Cursor to produce the full statement rather than asserting a figure we cannot document.
 
 Evidence we hold:
 1. Your own email of 12 August 2026 states that on-demand usage incurred on or after 1 July 2026 was not invoiced when the billing cycle ended, and that a correction invoice covering more than one completed billing period would be issued. That is a written admission of a billing defect.
