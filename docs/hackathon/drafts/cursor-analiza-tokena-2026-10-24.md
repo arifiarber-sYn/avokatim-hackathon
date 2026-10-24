@@ -318,3 +318,19 @@ Fatura `ALdOoWbp` $100.09 e 21.10 15:13 eshte gjeneruar pikerisht mbi kete drita
 ### Kufizim i mbetur
 
 Nje klient tjeter (web, pajisje e dyte, CLI ne nje makine te trete) nuk mund te perjashtohet 100% nga kjo makin. Por: perdoruesi deklaron se Cursor perdoret vetem nga kjo makine; CLI nuk ka gjurme; serveri sYn nuk ka sesione.
+## 11. Kronologjia e komunikimit
+
+| Koha (lokale) | Ngjarja |
+|---|---|
+| 21.10 15:13 | Fature `ALdOoWbp` $100.09 — e hapur |
+| 18.10 14:36 | Fature `upAyazBX` $46.32 — e hapur |
+| 24.10 08:56 | Derguar ankesa e trete te `hi@cursor.com` (subjekt: 76,153,304 tokena me klient te mbyllur) |
+| 24.10 08:58 | Përgjigje automatike nga `Sam, Cursor AI Support Assistant`: krijoi tiketen **T-I29308**, e shpalli dublikat te **T-I12995**, e mbylli |
+
+**Asnje prej pikeve a-d nuk u trajtua.** Pergjigja eshte shabllon rendor, jo pergjigje thelbesore.
+
+### Pasoja praktike
+
+- Cdo email i ri te `hi@cursor.com` gjeneron tikete te re qe mbylltet si dublikat. Rruga e emailit eshte e bllokuar nga triazhi automatik.
+- Vazhdimi duhet te behet brenda thread-it te **T-I12995** (ose portalit in-app), jo me email te ri.
+- Kjo pergjigje automatike, bashke me mungesen e trajtimit, eshte prove per proceduren e disputimit me banken.
