@@ -544,3 +544,24 @@ pa burim të regjistruar adapteri nuk kthen dëshmi. Kjo është hapi i radhës,
   Badge-i zhduket kur log-u është bosh, ndaj prod-i (pa `hackathon_mode`) s'ndryshon.
 - **Prova**: `PYTHONPATH=. pytest tests/test_meterless_usage.py -q` — 6 teste (matematika e
   kostos, append-i JSONL, agregimi me rresht të korruptuar, skedari që mungon).
+
+## Gjurmë arsyetimi në UI — B3 (24.10.2026)
+
+Për çdo përgjigje, nën të shfaqet një panel «Gjurmë arsyetimi» (i mbyllur si parazgjedhje):
+
+1. **Pyetja** — teksti i pyetjes që e nxori përgjigjen.
+2. **Kërkimi në korpus** — një rresht për çdo nënpyetje të deep-research (ose «kërkim semantik»
+   kur s'ka nënpyetje).
+3. **Burimet** — titulli i çdo citimi + seksioni/referenca.
+4. **Verifikimi** — çdo citim me statusin e citation_check (verifikuar / i përafërt / ligji u gjet /
+   i paverifikuar) dhe shënimin e verifikuesit.
+5. **Përfundimi** — «N/M citime të verifikuara» ose «pa citime për verifikim».
+
+- **Klik → burimi:** rreshtat e verifikimit që kanë `doc_id` hapin të njëjtin
+  `CitationSourceModal` si badge-t e citimeve — fragmenti i korpusit, dokumenti, lidhja zyrtare.
+- **Pa backend të ri:** të dhënat vijnë nga `citations` + eventet `step` / `citation_check`
+  që stream-i i asistencës tashmë i dërgon; asnjë migrim DB, asnjë thirrje shtesë modeli.
+- **Kodi:** `frontend/src/components/reasoning-trace.tsx` (`buildReasoningTrace` + komponenti),
+  i lidhur në `frontend/src/app/(app)/assistant/page.tsx`.
+- **Prova:** `tsc --noEmit` → 0 gabime; eslint mbi të dy skedarët → vetëm gabimi i vjetër
+  `react-hooks/set-state-in-effect` në rreshtin 63 (ekzistues, i palidhur).

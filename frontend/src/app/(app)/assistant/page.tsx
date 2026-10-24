@@ -7,6 +7,7 @@ import PageIntro from "@/components/page-intro";
 import MeterlessCost from "@/components/meterless-cost";
 import { MicButton, SpeakButton, useVoiceAvailable } from "@/components/voice-controls";
 import CitationChecks, { CitationCheck } from "@/components/citation-checks";
+import ReasoningTrace, { buildReasoningTrace } from "@/components/reasoning-trace";
 import CitationSourceModal from "@/components/citation-source-modal";
 import { Conversation, Matter, Message } from "@/lib/types";
 import { Button, Card, ErrorNote, Select, Textarea } from "@/components/ui";
@@ -32,6 +33,8 @@ export default function AssistantPage() {
   const [error, setError] = useState("");
   const [deep, setDeep] = useState(false);
   const [steps, setSteps] = useState<string[]>([]);
+  // B3 (plani i garës 22.10): kërkimet e një përgjigjeje, për gjurmën e arsyetimit
+  const [traceQueries, setTraceQueries] = useState<Record<string, string[]>>({});
   const [mode, setMode] = useState<"legal" | "office">("legal");
   // Per-message citation verification results (D-059 F6)
   const [checks, setChecks] = useState<Record<string, CitationCheck[]>>({});
@@ -82,6 +85,7 @@ export default function AssistantPage() {
       let finalMessage: Message | null = null;
       let errorDetail: string | null = null;
       let citationChecks: CitationCheck[] = [];
+      const searchQueries: string[] = [];
       await apiStream(
         deep ? "/assistant/deep-research" : "/assistant/ask-stream",
         {
@@ -98,6 +102,7 @@ export default function AssistantPage() {
             if (ev.step === "subquestions" && ev.status === "start") {
               setSteps([t.drSubq]);
             } else if (ev.step === "search") {
+              searchQueries.push(ev.question as string);
               setSteps((prev) => [
                 ...prev,
                 `${t.drSearch} (${ev.index as number}/${ev.total as number}): ${ev.question as string}`,
@@ -134,6 +139,7 @@ export default function AssistantPage() {
       // TS cannot see assignments made inside the stream callback
       const reply = finalMessage as Message;
       if (citationChecks.length) setChecks((prev) => ({ ...prev, [reply.id]: citationChecks }));
+      if (searchQueries.length) setTraceQueries((prev) => ({ ...prev, [reply.id]: searchQueries }));
       if (newConversationId) setConversationId(newConversationId);
       setMessages((prev) => [
         ...prev.filter((m) => m.id !== "tmp" && m.id !== "streaming"),
@@ -323,6 +329,21 @@ export default function AssistantPage() {
                 </div>
                 {m.role === "assistant" && (
                   <CitationChecks checks={checks[m.id]} onOpenSource={setSourceCitation} />
+                )}
+                {m.role === "assistant" && m.id !== "streaming" && (
+                  <ReasoningTrace
+                    steps={buildReasoningTrace(
+                      {
+                        question:
+                          messages[i - 1]?.role === "user" ? messages[i - 1].content : undefined,
+                        queries: traceQueries[m.id],
+                        citations: m.citations || [],
+                        checks: checks[m.id],
+                      },
+                      locale === "en" ? "en" : "sq"
+                    )}
+                    onOpenSource={setSourceCitation}
+                  />
                 )}
                 {m.role === "assistant" && m.id !== "streaming" && m.content && (
                   <SpeakButton text={m.content} locale={locale} serverTts={voice.tts} />

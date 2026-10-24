@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 2026-10-24 — hackathon(open-agent): B3 — gjurmë arsyetimi në UI (klik → burimi)
+- Shtuar `frontend/src/components/reasoning-trace.tsx`: `buildReasoningTrace()` + panel i mbyllur «Gjurmë arsyetimi» (pyetje → kërkim → burime → verifikim → përfundim).
+- `/assistant`: ruhen nënpyetjet e deep-research për çdo përgjigje; rreshtat e verifikimit me `doc_id` hapin `CitationSourceModal` (i njëjti modal i badge-ve).
+- Pa ndryshime backend/DB: burimet vijnë nga `citations` + eventet `step` / `citation_check`.
+- Prova: `tsc --noEmit` 0 gabime; eslint — vetëm gabimi i vjetër `set-state-in-effect` (rreshti 63).
+
 ## 2026-10-23 — hackathon(open-agent): B2 — kosto Meterless + usage në UI
 - meterless.py: `cost_of()` (USD/1M token), `Usage.cost_usd`, `summarize()` mbi usage.jsonl (rreshtat e korruptuar numërohen).
 - Shtuar `GET /api/hackathon/usage` (app/api/hackathon.py), vetëm lexim + auth.
