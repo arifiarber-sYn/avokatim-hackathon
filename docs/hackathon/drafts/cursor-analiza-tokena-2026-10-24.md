@@ -265,3 +265,33 @@ Nga 19.10 e tutje **cdo token eshte On-Demand** — kuota e abonimit ishte shter
 ### Pyetja e mbetur (fakt, jo hipoteze)
 
 Nese puna u nderpre me 18.10 14:36, atehere 81.8M tokena On-Demand te 19-21 tetorit u konsumuan pa perdoruesin. Kjo nuk zgjidhet nga faturat — kerkojne log-et e sesioneve nga Cursor.
+## 9. Prova lokale — sesionet e Cursor (state.vscdb)
+
+Baza lokale e Cursor: `~/.config/Cursor/User/globalStorage/state.vscdb` (9.8 GB), tabela `composerHeaders` (553 sesione).
+
+Sesionet e fundit para 19 tetorit:
+
+| Krijuar | Fundit | ID |
+|---|---|---|
+| 18.10 08:09 | 18.10 08:10 | c69067ce |
+| 18.10 08:10 | 18.10 08:58 | dd9ef5b6 |
+| 18.10 11:52 | 18.10 11:55 | ff3c3a2d |
+| 18.10 11:55 | 18.10 15:04 | 09b5e4a5 |
+| 18.10 15:27 | 18.10 15:48 | f61d7ae7 |
+| 18.10 15:48 | 18.10 15:48 | 34468382 |
+
+**19, 20, 21 tetor: ZERO sesione** (`SELECT COUNT(*) ... WHERE lastUpdatedAt BETWEEN ... = 0`).
+Kontroll kryq: 74 baza `workspaceStorage/*/state.vscdb` — asnje sesion ne ate interval. `~/.cursor` — asnje aktivitet CLI (vetem 2 skedare SKILL.md te modifikuar).
+
+### Kontradikta
+
+| Data | Tokena On-Demand (API) | Sesione lokale |
+|---|---|---|
+| 19.10 | 43,175,335 | 0 |
+| 20.10 | 10,663,504 | 0 |
+| 21.10 | 12,082,875 | 0 |
+| **Gjithsej** | **65,921,714** | **0** |
+
+66 milione tokena te faturuar si On-Demand ne tri dite pa asnje sesion lokal. Kjo eshte pyetja per Cursor: nga cili sesion/klient u gjeneruan?
+
+Kufizim: nese perdoruesi ka punuar nga nje pajisje tjeter, sesionet nuk shfaqen ketu. Duhet perjashtuar para se te dergohet.
