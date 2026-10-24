@@ -1,0 +1,42 @@
+Sam,
+
+This is a continuation of ticket T-I12995, not a new request. Please do not close it as a duplicate - it is the original.
+
+Since my message of 23 October, two automated replies have been sent to me (T-I22353 and T-I29308), both closing the conversation as a duplicate of T-I12995. Neither answered a single one of the questions asked. I am therefore answering inside the original thread, where the ticket is actually open.
+
+I now have evidence that changes the nature of this dispute. It is no longer about how much I used, or about pricing.
+
+THE FACTS
+
+1. Invoice ALdOoWbp, USD 100.09, was issued on 21 October 2026 at 15:13 (Europe/Belgrade).
+
+2. The Cursor desktop application on my machine last wrote to its log files on 18 October 2026 at 16:59. It was next launched on 22 October 2026 at 08:02. Between those timestamps the application was not running.
+
+3. The application's local database contains 553 chat sessions. Between 19 and 21 October 2026 it contains zero. I also checked the 74 per-workspace databases: zero sessions in that window.
+
+4. I develop against a remote host over SSH. That host has no Cursor session store and shows no session in that window.
+
+5. The Cursor CLI directory on the machine shows no activity in that window.
+
+6. Your own usage export, however, records 76,153,304 On-Demand tokens between 18 October 2026 16:59 and 21 October 2026 15:13 - precisely the window that produced the USD 100.09 invoice, and precisely the window in which the client was closed.
+
+For comparison: in the 4 hours and 23 minutes when the application WAS open on 18 October, the account recorded 5,691,233 On-Demand tokens. In the 70 hours when it was closed, it recorded 76,153,304 - thirteen times more, with no client running.
+
+WHAT I AM ASKING
+
+a) Identify the client, device and IP address that generated those 76,153,304 tokens, with request-level identifiers and timestamps.
+
+b) If no such client can be identified, reverse invoice ALdOoWbp and the corresponding usage.
+
+c) A human audit of the account from 1 July 2026 to today, with per-invoice itemisation (dates, models, token counts, amounts) sufficient to reconcile each charge.
+
+d) Written confirmation that no service action will be taken against the account while the review is open.
+
+Please route this to a human reviewer. If the next reply is another automated message closing the thread without answering points (a) to (d), I will treat it as a refusal to provide the requested records and will proceed with the card issuer's dispute process, relying on this correspondence.
+
+No further payment will be made until these questions are answered.
+
+Regards,
+Arber Arifi
+arifi.arber@gmail.com
+Ticket: T-I12995 - Account: arifi.arber@gmail.com
