@@ -3,6 +3,10 @@
 Platformë moderne për menaxhimin e praktikës ligjore — e ndërtuar që një avokat i vetëm
 të punojë me kapacitetin e një zyre të tërë: nga pranimi i lëndës deri te përgatitja për seancë.
 
+> **Open Agent Hackathon 2026 — dorëzimi:** [`docs/hackathon/README.md`](docs/hackathon/README.md)
+> — provat e riprodhueshme, statusi i çdo sponsori (Zetaris, Meterless, Meta Model) i shkruar
+> hapur me të mirat dhe të këqijat, dhe kufizimet e njohura. Integrimi me Zetaris: `backend/app/adapters/zetaris.py`.
+
 ## Modulet
 
 | Moduli | Çfarë bën |
