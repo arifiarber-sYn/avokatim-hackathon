@@ -101,3 +101,9 @@ AvokatIM/
 ├── Caddyfile           # HTTPS reverse proxy
 └── start.sh / stop.sh
 ```
+
+## Licenca
+
+© 2026 Arber Arifi. Të gjitha të drejtat e rezervuara — shih skedarin LICENSE.
+Repo publikohet për vlerësim nga juria e hackathon-it dhe për lexim; asnjë e drejtë
+përdorimi, kopjimi ose shpërndarjeje nuk jepet pa leje me shkrim.
